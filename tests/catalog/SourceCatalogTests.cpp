@@ -40,7 +40,7 @@ void TestSourceCatalog() {
                 [](const auto&) {return api::PresentationConfigInput{};}});
             prepare.Player({player.id,0,0});prepare.Advance();
             Check(prepare.Status().finished && prepare.Status().character && reads==0);
-            Check(prepare.Status().character->npc_id==60001);
+            Check(prepare.Status().character->npc_id==0 && prepare.Status().character->construction==ConstructionKind::StoryActor);
             Check(prepare.Status().character->avatar_id==player.avatar);
             Check(prepare.Status().character->appearance->template_prefab==player.prefab);
             const auto plan=CharacterPlan::FromPrepared(prepare.Status());
@@ -162,15 +162,14 @@ void TestSourceCatalog() {
         [&](const std::string& path) { ++identity_reads; return api::TextInput{true,path=="Player/A" || path=="NPC/Preferred"?"A":"B",{}}; },
         [&](const std::string& path) { ++presentation_reads; return api::PresentationConfigInput{path,{true,"StandBy",{}},{true,{"Event/A"},{}},{true,{}, {}}}; }});
     prepare.Player({20,1,0}); prepare.Advance();
-    Check(identity_reads==1 && !prepare.Status().finished);
-    prepare.Advance(); Check(identity_reads==2 && !prepare.Status().finished);
-    prepare.Advance(); Check(prepare.Status().finished && prepare.Status().character->npc_id==777 && prepare.Status().presentation && presentation_reads==1);
-    prepare.Advance(); Check(presentation_reads==1 && identity_reads==2);
+    Check(identity_reads==0 && prepare.Status().finished);
+    Check(prepare.Status().character->npc_id==0 && prepare.Status().character->construction==ConstructionKind::StoryActor && prepare.Status().presentation && presentation_reads==1);
+    prepare.Advance(); Check(presentation_reads==1 && identity_reads==0);
     prepare.Player({20,1,0}); prepare.Advance();
-    Check(prepare.Status().finished && presentation_reads==1 && identity_reads==2); // cached immutable inputs, no reload
+    Check(prepare.Status().finished && presentation_reads==1 && identity_reads==0); // cached immutable inputs, no reload
     auto authored=SourceCatalog::PlayerPackage(p,rows.npcs.rows[0]); authored.source=SourceKind::External;
     prepare.Package(authored); prepare.Advance();
-    Check(prepare.Status().character->npc_id==91 && prepare.Status().presentation && identity_reads==2 && presentation_reads==1);
+    Check(prepare.Status().character->npc_id==91 && prepare.Status().presentation && identity_reads==0 && presentation_reads==1);
     prepare.Player({20,0,0}); Check(prepare.Status().finished && !prepare.Status().character); // not the first variant
     SourcePreparation failed(rows,{{},[](const auto&)->api::PresentationConfigInput {throw std::runtime_error("config failure");}});
     failed.Package(authored); failed.Advance();

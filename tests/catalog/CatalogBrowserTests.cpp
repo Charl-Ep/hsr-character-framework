@@ -4,7 +4,8 @@
 namespace {
 namespace api=hksr::api;
 using namespace hksr::framework;
-void Check(bool condition) {if(!condition) throw std::runtime_error("catalog browser test failed");}
+void CheckAt(bool condition,int line) {if(!condition) throw std::runtime_error("catalog browser test failed at line "+std::to_string(line));}
+#define Check(...) CheckAt((__VA_ARGS__),__LINE__)
 void Finish(CatalogBrowser& browser) {
     for(unsigned i=0;i!=100;++i) {
         browser.Advance();const auto out=browser.Snapshot();
@@ -69,7 +70,8 @@ void TestCatalogBrowser() {
     auto selection=browser.Prepare(BrowsePlayer{{11,0,1},{}});Check(table_reads==0 && identity_reads==0);
     Finish(browser);auto view=browser.Snapshot();
     Check(std::get<BrowsePlayer>(view->Source(selection)->input).key.skin==1);
-    Check(table_reads==1 && identity_reads==2 && view->Source(selection)->result.character->appearance->template_prefab=="Skin.prefab");
+    Check(table_reads==1 && identity_reads==0 && view->Source(selection)->result.character->appearance->template_prefab=="Skin.prefab");
+    Check(browser.Plan(selection).package.npc_id==0 && browser.Plan(selection).package.construction==ConstructionKind::StoryActor);
     Check(document_reads["Battle/A"]==1 && document_reads["Event/Shared"]==1 && ability_reads==1);
     Check(view->Source(selection)->actions.proposals.size()>=4 && browser.Plan(selection).alternate);
     // Exercise the production CatalogReaders -> Browser -> ActionCatalog ->
@@ -86,7 +88,7 @@ void TestCatalogBrowser() {
     Check(std::get<BrowseNpc>(browser.Snapshot()->Source(current)->input).id==91u);
     Check(immutable->sources.size()==1 && immutable->Source(selection)->result.character->appearance.has_value());
     browser.Prepare(BrowsePlayer{{11,0,1},{}});Finish(browser);
-    Check(identity_reads==2 && document_reads["Battle/A"]==1 && table_reads==1);
+    Check(identity_reads==0 && document_reads["Battle/A"]==1 && table_reads==1);
     Check(ready_reads==1); // shared defaults are not reread for each selection
     browser.RefreshAbility("ability/A");Finish(browser);Check(ability_reads==2 && document_reads["Event/Shared"]==1);
     browser.RefreshDocument({api::ActionConfigKind::AnimationEvent,"Event/Shared"});Finish(browser);
@@ -116,11 +118,11 @@ void TestCatalogBrowser() {
     rows.npcs.rows={{91,"Npc/A","Entity/Standard"},{92,"Npc/A","Entity/Other"}};
     rows.players.rows={{1202,1202,0,0,"Player/A","Player.prefab"}};
     CatalogBrowser variants(readers);const auto ambiguous=variants.Prepare(BrowsePlayer{{1202,0,0},{}});Finish(variants);
-    Check(variants.Snapshot()->Source(ambiguous)->result.foundation.status==SourceResolution::Ambiguous);
+    Check(variants.Snapshot()->Source(ambiguous)->phase==SourceRequestPhase::Ready);
     for(auto id:{91u,92u}) {
         const auto key=std::get<BrowsePlayer>(variants.Snapshot()->Source(ambiguous)->input).key;
         const auto chosen=variants.Prepare(BrowsePlayer{key,id});Finish(variants);
-        Check(variants.Plan(chosen).package.npc_id==id && variants.Plan(chosen).package.appearance->template_prefab=="Player.prefab");
+        Check(variants.Plan(chosen).package.npc_id==0 && variants.Plan(chosen).package.appearance->template_prefab=="Player.prefab");
     }
     auto unavailable_readers=readers;
     unavailable_readers.ready_defaults=[]()->api::ReadyAnimationDefaults {throw std::runtime_error("defaults read failed");};
@@ -135,7 +137,7 @@ void TestCatalogBrowser() {
     incremental.begin_abilities=[&](const auto& names){Check(!names.empty());++sliced_begins;return std::make_unique<SlicedRead>(sliced_steps);};
     CatalogBrowser slices(incremental);const auto sliced=slices.Prepare(BrowsePlayer{{1202,0,0},91});Finish(slices);
     Check(sliced_steps==3 && sliced_begins==1 && slices.Snapshot()->Source(sliced)->actions.finished);
-    slices.RefreshAbility("ability/A");slices.Advance();Check(sliced_steps==4);
+    slices.RefreshAbility("ability/A");slices.Advance(0);Check(sliced_steps==4);
     Check(!slices.CancelPending());Check(slices.CancelPending());Check(sliced_steps==6);
     // No source-window selection or table query is needed to discover two
     // saved actors. Cache reads are shared, but projected actions are not.
@@ -202,18 +204,18 @@ void TestCatalogBrowser() {
     Check(queued->Source(abandoned)->phase==SourceRequestPhase::Queued && !requests.Snapshot()->Source(abandoned));
     Check(concurrent_tables==0 && identities.empty());
     bool early=false;try{requests.Plan(slow);}catch(const std::runtime_error&){early=true;}Check(early);
-    requests.Advance();requests.Advance();requests.Advance();
-    Check(requests.Snapshot()->Source(fast)->phase==SourceRequestPhase::Ready && requests.Snapshot()->Source(slow)->Pending());
+    for(int i=0;i<6;++i)requests.Advance();
+    Check(requests.Snapshot()->Source(fast)->phase==SourceRequestPhase::Ready && requests.Snapshot()->Source(slow)->phase==SourceRequestPhase::Ready);
     Check(requests.Plan(fast).package.npc_id==32); // no head-of-line block
     Finish(requests);
-    Check(requests.Plan(slow).package.npc_id==31 && requests.Plan(duplicate).package.npc_id==31);
+    Check(requests.Plan(slow).package.npc_id==0 && requests.Plan(duplicate).package.npc_id==0);
     Check(requests.Snapshot()->Source(fault)->phase==SourceRequestPhase::Failed);
-    Check(concurrent_tables==1 && identities["P11"]==1 && identities["N31"]==1 && identities["N32"]==1);
+    Check(concurrent_tables==1 && identities.empty());
     const auto completed=requests.Snapshot();const auto copied_plan=requests.Plan(slow);
     requests.Request(true);Check(requests.Plan(fast).package.npc_id==32); // table refresh doesn't revoke copied results
     requests.ReleaseSource(slow);bool released=false;
     try{requests.Plan(slow);}catch(const std::invalid_argument&){released=true;}Check(released);
-    Check(copied_plan.package.npc_id==31 && completed->Source(slow)->phase==SourceRequestPhase::Ready);
-    Finish(requests);Check(concurrent_tables==2 && requests.Plan(duplicate).package.npc_id==31);
+    Check(copied_plan.package.npc_id==0 && completed->Source(slow)->phase==SourceRequestPhase::Ready);
+    Finish(requests);Check(concurrent_tables==2 && requests.Plan(duplicate).package.npc_id==0);
     std::cout<<"Catalog browser passed: shared reads, per-instance projections, source revision isolation, production ready defaults, explicit retries and immutable snapshots; no game.\n";
 }

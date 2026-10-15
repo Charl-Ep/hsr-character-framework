@@ -392,7 +392,7 @@ void TestModelAssets() {
     api::WorldFrame frame; frame.world=npc_world; frame.disposing={{false},{true,0}};
     auto payload=std::make_shared<const framework::ModelAssetInput>(input);
     {
-        api::NpcCreationSession npc(api::EntityOwner{},M(CreateNpc),entity_methods,refs); npc.Create(create);
+        api::EntityCreationSession npc(api::EntityOwner{},M(CreateNpc),entity_methods,refs); npc.Create(create);
         framework::NpcModels models(npc,npc_world,payload,TestModelServices(refs,lifetime,renderers,entity_methods,api::ModelAccess(model_methods)));
         models.Service(frame,services,scene); Check(models.Status().incarnations==0);
         model_loaded=true; models.Service(frame,services,scene);
@@ -413,7 +413,7 @@ void TestModelAssets() {
         models.Service(other_world,services,scene); Check(models.Status().closed && handles.empty());
     }
     {
-        api::NpcCreationSession npc(api::EntityOwner{},M(CreateNpc),entity_methods,refs); npc.Create(create);
+        api::EntityCreationSession npc(api::EntityOwner{},M(CreateNpc),entity_methods,refs); npc.Create(create);
         framework::NpcModels models(npc,npc_world,payload,TestModelServices(refs,lifetime,renderers,entity_methods,api::ModelAccess(model_methods)));
         models.Service(frame,services,scene); Check(models.Active()->published);
         Unload(model_component,false,&info);
@@ -531,7 +531,7 @@ void TestModelAssets() {
         Check(official.Close(visuals).complete && handles.empty() && source_loads==source_releases);
     }
     // Source selection, private appearance and extra events share one actual
-    // api::NpcCreationSession. These checks exercise production coordinators, not an
+    // api::EntityCreationSession. These checks exercise production coordinators, not an
     // independently mocked "actor ready" flag.
     {
         visual_model.current=&prefab; expect_payload=true; model_loaded=false;
@@ -544,7 +544,7 @@ void TestModelAssets() {
         const api::NpcEventBindings event_bindings{api::EntityAccess(entity_methods),
             {offsetof(Data,config),true,{}},configs,api::AnimationEvents(event_methods),arrays,
             api::ManagedReferenceList({M(Length),M(Get),{}}),scene};
-        auto event_services=[=](api::NpcCreationSession& npc,api::GameWorld* owner_world) {
+        auto event_services=[=](api::EntityCreationSession& npc,api::GameWorld* owner_world) {
             return std::make_unique<api::NpcEventSupplement>(npc,owner_world,visual_refs,event_bindings);
         };
         const api::AnimationInputTypes types{{{true,0},&data_type},{{true,0},&event_type}};
@@ -552,7 +552,7 @@ void TestModelAssets() {
         framework::AppearanceServices appearance_services{services,scene,visuals,configs,component_config};
         api::ModelAccessMethods owned_model{M(PrivateArt),{},{},M(Changing),{},M(LoadedArt)};
         std::vector<api::EntityOrigin> character_births;
-        auto create_npc=[&,owner=api::EntityOwner{}]{return std::make_unique<api::NpcCreationSession>(owner,M(CreateNpc),entity_methods,visual_refs,
+        auto create_npc=[&,owner=api::EntityOwner{}]{return std::make_unique<api::EntityCreationSession>(owner,M(CreateNpc),entity_methods,visual_refs,
             [&](api::EntityOrigin origin){character_births.push_back(origin);});};
         framework::CharacterMethods methods{create_npc,TestModelServices(visual_refs,lifetime,renderers,entity_methods,api::ModelAccess(owned_model),admission)};
         framework::CharacterPackage package; package.source=framework::SourceKind::External; package.appearance=appearance;
@@ -566,11 +566,11 @@ void TestModelAssets() {
         character.Service(frame,appearance_services,types); Check(!character.AppearanceConsumer()->Active());
         model_loaded=true; character.Service(frame,appearance_services,types);
         Check(character.AppearanceConsumer()->Active()->Slot().adopted && event_registers==1);
-        Check(character.Events()->Active()->Files().size()==1 && character.Npc().entities.size()==1);
+        Check(character.Events()->Active()->Files().size()==1 && character.Creation().entities.size()==1);
         character.Service(frame,appearance_services,types);
         Check(source_loads==loads_before+1 && event_registers==1); // no per-frame construction
         character.Remove(); character.Service(frame,appearance_services,types);
-        Check(character.Npc().closed && !character.Status().closed && event_detaches==1 && event_disposals==1);
+        Check(character.Creation().closed && !character.Status().closed && event_detaches==1 && event_disposals==1);
         game_object.alive=renderer.alive=false;
         const auto reads=entity_reads;
         character.Service(foreign,appearance_services,types);
@@ -625,7 +625,7 @@ void TestModelAssets() {
         failed.Create(create); failed.Service(frame,appearance_services,types); material_fault=false;
         const auto failed_loads=source_loads,failed_registrations=event_registers;
         failed.Service(frame,appearance_services,types);
-        Check(failed.Npc().create_returned && !failed.Npc().removal_requested && !failed.Status().event_preparation_attempted);
+        Check(failed.Creation().create_returned && !failed.Creation().removal_requested && !failed.Status().event_preparation_attempted);
         Check(source_loads==failed_loads && event_registers==failed_registrations && visual_model.current==&prefab);
         failed.Remove(); failed.Service(frame,appearance_services,types);
         failed.Service(foreign,appearance_services,types); failed.Service(foreign,appearance_services,types);
@@ -634,7 +634,7 @@ void TestModelAssets() {
         // Action handoff pauses source adoption without ending the NPC. Native
         // Art destruction may remain deferred after payload/slot detachment.
         visual_model.current=&prefab;
-        api::NpcCreationSession paused_npc(api::EntityOwner{},M(CreateNpc),entity_methods,visual_refs); paused_npc.Create(create);
+        api::EntityCreationSession paused_npc(api::EntityOwner{},M(CreateNpc),entity_methods,visual_refs); paused_npc.Create(create);
         framework::NpcAppearance paused(paused_npc,npc_world,appearance,payload,framework::VisualRoot::Prefab,"",
             methods.models);
         paused.Service(frame,appearance_services); Check(paused.Active()->Slot().adopted && !paused.InputsDetached());
@@ -656,7 +656,7 @@ void TestModelAssets() {
         handoff.EnableActionPlayback(animations);
         Check(!handoff.ExplorationInputsDetached() && event_records.slots.size()==1);
         handoff.SetExplorationInputsEnabled(false); handoff.Service(frame,appearance_services,types);
-        Check(handoff.ExplorationInputsDetached() && event_records.slots.empty() && game_object.alive && !handoff.Npc().closed);
+        Check(handoff.ExplorationInputsDetached() && event_records.slots.empty() && game_object.alive && !handoff.Creation().closed);
         game_object.alive=renderer.alive=false; handoff.Service(frame,appearance_services,types);
         handoff.SetExplorationInputsEnabled(true); handoff.Service(frame,appearance_services,types);
         Check(event_records.slots.empty()); // no Art yet: don't put Player events on an unadopted model
@@ -677,7 +677,7 @@ void TestModelAssets() {
         handoff.Service(frame,appearance_services,types);
         Check(handoff.AlternatePayload()->Active()->published && !handoff.AppearanceConsumer()->Active() && event_records.slots.empty());
         handoff.SetAlternatePayloadEnabled(false); handoff.Service(frame,appearance_services,types);
-        Check(handoff.AlternatePayloadDetached() && renderer.mesh==&source_mesh && !handoff.Npc().removal_requested);
+        Check(handoff.AlternatePayloadDetached() && renderer.mesh==&source_mesh && !handoff.Creation().removal_requested);
         handoff.Service(frame,appearance_services,types);
         visual_model.current=&prefab; game_object.alive=renderer.alive=false;
         handoff.SetExplorationInputsEnabled(true); handoff.Service(frame,appearance_services,types);
@@ -741,7 +741,7 @@ void TestModelAssets() {
             if(coordinated.Playback().last) std::cerr<<"action="<<coordinated.Playback().last->detail<<'\n';
         }
         Check(coordinated.Status().phase==Stage::Ready && battle_motion_calls==1 && profile_events==1 && complete.AlternatePayload()->Active()->published);
-        Check(!complete.AppearanceConsumer()->Active() && !complete.Npc().removal_requested);
+        Check(!complete.AppearanceConsumer()->Active() && !complete.Creation().removal_requested);
         coordinated.Queue(Domain::Exploration,framework::NpcMotion{17}); coordinated.Service(frame,appearance_services,types);
         Check(coordinated.Status().phase==Stage::Loading && profile_restores==1 && renderer.mesh==&source_mesh);
         game_object.alive=renderer.alive=false; coordinated.Service(frame,appearance_services,types);

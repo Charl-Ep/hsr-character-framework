@@ -4,7 +4,7 @@
 namespace hksr::framework {
 CharacterInstance::CharacterInstance(api::GameWorld* world,const CharacterPackage& package,
     std::shared_ptr<const ModelAssetInput> payload,std::string look_source,
-    CharacterMethods methods,api::PresentationContext::NpcEventFactory events,VisualRoot root)
+    CharacterMethods methods,api::PresentationContext::EntityEventFactory events,VisualRoot root)
     :world_(world),models_(std::move(methods.models)),entities_(models_->Entities()),npc_(methods.create()) {
     if(!world_) throw std::invalid_argument("character creation epoch requires its owner world");
     if(!npc_) throw std::invalid_argument("character creation factory returned no session");
@@ -17,7 +17,11 @@ CharacterInstance::CharacterInstance(api::GameWorld* world,const CharacterPackag
         alternate_=std::make_unique<NpcModels>(*npc_,world_,payload,models_);
         alternate_->SetEnabled(false);
     }
-    if(package.appearance) {
+    if(package.construction==ConstructionKind::StoryActor) {
+        if(!package.appearance || package.source!=SourceKind::Official || payload)throw std::invalid_argument("independent story actor requires an official model source");
+        direct_config_=package.appearance->character_config;direct_roots_=models_->CreateRoots();
+        if(events)events_=events(*npc_,world_);
+    } else if(package.appearance) {
         appearance_=std::make_unique<NpcAppearance>(*npc_,world_,*package.appearance,std::move(payload),root,
             std::move(look_source),models_);
         if(events) events_=events(*npc_,world_);
@@ -26,6 +30,10 @@ CharacterInstance::CharacterInstance(api::GameWorld* world,const CharacterPackag
 }
 void CharacterInstance::Create(const api::NpcCreateInput& input) {
     if(input.world!=world_) throw std::invalid_argument("character creation world differs from its owner");
+    npc_->Create(input);
+}
+void CharacterInstance::Create(const api::StoryCreateInput& input) {
+    if(input.world!=world_)throw std::invalid_argument("character creation world differs from its owner");
     npc_->Create(input);
 }
 void CharacterInstance::Remove() {
@@ -101,7 +109,24 @@ void CharacterInstance::Service(const api::WorldFrame& frame,AppearanceServices 
     }
     if(events_ && status_.exploration_inputs_enabled && status_.exploration_events_enabled && !npc_->Status().removal_requested &&
         frame.world==world_ && frame.disposing.read.returned && !frame.disposing.value) {
-        const auto* visual=appearance_->Active();
+        const auto* visual=appearance_?appearance_->Active():nullptr;
+        if(!direct_config_.empty()) {
+            if(!status_.event_preparation_attempted) {
+                status_.event_preparation_attempted=true;
+                try {
+                    auto keep=[&](api::ObjectResult result) {
+                        if(!result.call.returned || !result.object)throw std::runtime_error("independent event input unavailable");
+                        direct_handles_.push_back(0);direct_handles_.back()=direct_roots_->Keep(result.object);
+                        if(!direct_roots_->Status(direct_handles_.back()).ready)throw std::runtime_error("independent event input retention failed");
+                        return result.object;
+                    };
+                    auto* path=keep(services.assets.objects.NewStringUtf8(direct_config_.c_str()));
+                    auto* config=keep(services.config.Load(path));
+                    events_->Prepare(types,services.config.Read(config).event_paths);
+                }catch(const std::exception& e){status_.errors.push_back(e.what());}
+            }
+            if(events_->Status().prepared){events_->SetEnabled(true);events_->Service(frame);}
+        }
         if(visual && visual->Slot().adopted && visual->Slot().supply.returned && visual->Inputs().Character().ready) {
             if(!status_.event_preparation_attempted) {
                 status_.event_preparation_attempted=true;
@@ -125,7 +150,9 @@ void CharacterInstance::Service(const api::WorldFrame& frame,AppearanceServices 
     npc_->Service(frame);
     if(actions_ && npc_->Status().closed) actions_->Close(frame);
     if(outfit_ && npc_->Status().closed)outfit_->Close(false);
-    status_.closed=npc_->Status().closed && (!outfit_ || outfit_->Status().closed) && (!appearance_ || appearance_->Status().closed) &&
+    bool direct_closed=true;
+    if(npc_->Status().closed && direct_roots_)for(auto id:direct_handles_)direct_closed=direct_roots_->Release(id).complete && direct_closed;
+    status_.closed=direct_closed && npc_->Status().closed && (!outfit_ || outfit_->Status().closed) && (!appearance_ || appearance_->Status().closed) &&
         (!events_ || events_->Status().closed) && (!actions_ || actions_->Status().closed) &&
         (!alternate_ || alternate_->Status().closed);
 }

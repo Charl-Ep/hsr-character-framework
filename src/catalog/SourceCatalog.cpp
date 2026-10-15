@@ -117,6 +117,11 @@ CharacterPackage SourceCatalog::PlayerPackage(const api::PlayerCatalogRow& playe
     out.avatar_id=player.avatar;
     out.appearance=Appearance{player.prefab,{},player.character_config,player.character_config,ShapeData::None}; return out;
 }
+CharacterPackage SourceCatalog::PlayerPackage(const api::PlayerCatalogRow& player) {
+    auto result=PlayerPackage(player,api::NpcCatalogRow{});
+    result.construction=ConstructionKind::StoryActor;
+    return result;
+}
 BattlePresentation SourceCatalog::Presentation(const api::AvatarCatalogRow& avatar,const api::PresentationConfigInput& config) {
     if(config.path!=avatar.character_config || avatar.prefab.empty()) throw std::invalid_argument("presentation input does not match the selected official source");
     if(!config.event_files.available || !config.disabled_event_layers.available)
@@ -171,15 +176,7 @@ void SourcePreparation::Advance() {
         SelectBattle(avatar); return;
     }
     if(!player_) { result_.finished=true; return; }
-    result_.foundation=catalog_.Foundation(*player_,explicit_npc_);
-    if(!result_.foundation.needed_configs.empty()) {
-        const auto path=result_.foundation.needed_configs.front(); api::TextInput identity;
-        try { identity=queries_.identity(path); }
-        catch(const std::exception& error) { identity.error=error.what(); }
-        catalog_.SetIdentity(path,std::move(identity)); return;
-    }
-    if(!result_.foundation.selected) { result_.finished=true; return; }
-    result_.character=SourceCatalog::PlayerPackage(*player_,*result_.foundation.selected);
+    result_.character=SourceCatalog::PlayerPackage(*player_);
     SelectBattle(player_->avatar);
 }
 void SourcePreparation::Retry() {

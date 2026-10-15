@@ -8,7 +8,7 @@
 namespace hksr::framework {
 struct CharacterSessionServices {
     CharacterMethods character;
-    api::PresentationContext::NpcEventFactory events;
+    api::PresentationContext::EntityEventFactory events;
     HandoffServices handoff;
     api::PresentationContext::BaselineFactory baseline;
 };
@@ -20,6 +20,7 @@ class CharacterSession {
 public:
     CharacterSession(api::GameWorld* world,CharacterPlan plan,CharacterSessionServices services);
     void Create(const api::NpcCreateInput& input);
+    void Create(const api::StoryCreateInput& input);
     std::uint64_t Queue(ActionDomain domain,ActionRequest action);
     void Remove();
     void Service(const api::WorldFrame& frame,AppearanceServices appearance,api::AnimationInputTypes types);

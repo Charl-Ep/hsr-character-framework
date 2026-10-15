@@ -24,6 +24,8 @@ Frontends submit `CharacterCommand` values to `ApplicationService`. `Application
 
 Creation, animation inputs, model transitions, controls and effect requests use SDK factories. Appearance consumers share `ModelServices` but retain separate root, asset-lease and native-object owners.
 
+Player selections create an independent story actor from the selected prefab/configuration; NPC selections use map-NPC inputs. Catalog work and batches of new instances advance within elapsed-time slices. Individual engine calls are not preemptible.
+
 ## Data and builds
 
 File codecs return `CharacterPackage`, `AssetManifest`, `SceneLayout` and typed presentation profiles. HTTP and development transports encode/decode at their boundaries. Runtime state uses structures, enums and variants.

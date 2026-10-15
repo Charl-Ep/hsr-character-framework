@@ -19,9 +19,9 @@ void RuntimeServices::CollectIsolation(){context_->Collect();}
 bool RuntimeServices::Close(){return context_->Close();}
 CharacterSessionServices RuntimeServices::Sessions(bool event_tracking) const {
     const auto& r=context_->Resources();
-    auto npc_events=event_tracking?context_->NpcEvents():api::PresentationContext::NpcEventFactory{};
+    auto npc_events=event_tracking?context_->EntityEvents():api::PresentationContext::EntityEventFactory{};
     return {
-        {context_->Npcs(),context_->Models(),context_->Outfits(),context_->NpcInputs()},
+        {context_->Entities(),context_->Models(),context_->Outfits(),context_->NpcInputs()},
         std::move(npc_events),
         {context_->Animations(),context_->ModelTransitions(),context_->EffectServices(),&r.Components()},
         context_->Baselines()

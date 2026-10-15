@@ -2,7 +2,7 @@
 #include <stdexcept>
 
 namespace hksr::framework {
-NpcAppearance::NpcAppearance(api::NpcCreationSession& npc,api::GameWorld* world,Appearance source,
+NpcAppearance::NpcAppearance(api::EntityCreationSession& npc,api::GameWorld* world,Appearance source,
     std::shared_ptr<const ModelAssetInput> payload,VisualRoot root,std::string look_source,
     std::shared_ptr<const api::ModelServices> services)
     :npc_(npc),world_(world),source_(std::move(source)),payload_(std::move(payload)),root_(root),

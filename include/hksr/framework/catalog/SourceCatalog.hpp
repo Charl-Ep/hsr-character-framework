@@ -25,6 +25,7 @@ public:
     std::vector<api::PlayerCatalogRow> PackageSources(const CharacterPackage& package) const;
     static CharacterPackage NpcPackage(const api::NpcCatalogRow& npc);
     static CharacterPackage PlayerPackage(const api::PlayerCatalogRow& player,const api::NpcCatalogRow& npc);
+    static CharacterPackage PlayerPackage(const api::PlayerCatalogRow& player);
     static BattlePresentation Presentation(const api::AvatarCatalogRow& avatar,const api::PresentationConfigInput& config);
 private:
     api::CharacterCatalog rows_;

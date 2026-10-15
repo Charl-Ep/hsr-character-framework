@@ -1,6 +1,7 @@
 #include <hksr/framework/character/SceneCharacters.hpp>
 #include <stdexcept>
 #include <cmath>
+#include <chrono>
 
 namespace hksr::framework {
 void SceneCharacters::BindProfile(CharacterPlan& plan) const {
@@ -14,6 +15,13 @@ void SceneCharacters::BindProfile(CharacterPlan& plan) const {
 SceneCharacters::SceneCharacters(CharacterSessionServices services)
     :services_(std::move(services)) {
     create_=[this](CharacterSession& session,const api::WorldFrame& frame,const SceneCreation& placement) {
+        const auto& package=session.Plan().package;
+        if(package.construction==ConstructionKind::StoryActor) {
+            if(!package.appearance)throw std::invalid_argument("independent actor model source absent");
+            session.Create(api::StoryCreateInput{frame.world,frame.manager.value,"hksr.character."+std::to_string(placement.id),
+                package.appearance->template_prefab,package.appearance->character_config});
+            return;
+        }
         // Store the owner before construction can return a partial result.
         // Prepare itself returns that result with all known GC roots.
         creation_inputs_.push_back({placement.id,{}});
@@ -22,7 +30,7 @@ SceneCharacters::SceneCharacters(CharacterSessionServices services)
             ("hksr.character."+std::to_string(placement.id)).c_str(),placement.placement.position,placement.placement.rotation);
         if(!input->Status().ready) throw std::runtime_error(input->Status().error.empty()?"private NPC inputs not ready":input->Status().error);
         session.Create({frame.world,frame.manager.value,input->Definition(),input->Row(),true});
-        // api::NpcCreationSession retains its own roots before calling the factory. These
+        // api::EntityCreationSession retains its own roots before calling the factory. These
         // construction roots can now drain independently of actor lifetime.
     };
 }
@@ -140,7 +148,7 @@ void SceneCharacters::Retire(Entry& entry) {
     entry.retired.push_back(std::move(*entry.active)); entry.active.reset();
 }
 bool SceneCharacters::LiveEntities(const Epoch& epoch) {
-    const auto& state=epoch.session->Character().Npc();
+    const auto& state=epoch.session->Character().Creation();
     if(state.creation.incomplete) return true; // unknown footprint is an actual ownership uncertainty
     for(const auto& entity:state.entities)
         if(!entity.disposed && !api::TrackedEntities().IsDisposed(entity.token)) return true;
@@ -158,6 +166,8 @@ void SceneCharacters::Service(const api::WorldFrame& frame,const std::optional<S
     const bool can_create=!closing_ && address_available && frame.world &&
         frame.manager.read.returned && frame.manager.value && frame.disposing.read.returned && !frame.disposing.value &&
         frame.battle.read.returned && !frame.battle.value;
+    bool started_creation=false;
+    std::chrono::steady_clock::time_point creation_start;
     for(auto id:ids) {
         auto& entry=entries_.at(id);
         auto advance=[&](Epoch& epoch) {
@@ -196,7 +206,7 @@ void SceneCharacters::Service(const api::WorldFrame& frame,const std::optional<S
                 api::GameEntity* target=nullptr;
                 if(entry.look.mode==LookMode::Player && player_)target=player_(frame);
                 else if(entry.look.mode==LookMode::Instance && entries_.count(entry.look.target)) {
-                    if(const auto* other=Active(entry.look.target,frame))target=other->Character().Npc().factory.entity;
+                    if(const auto* other=Active(entry.look.target,frame))target=other->Character().Creation().factory.entity;
                 }
                 const auto* handoff=entry.active->session->Handoff();
                 const bool pending_action=entry.action && entry.active->action_intent!=entry.action_intent;
@@ -212,6 +222,11 @@ void SceneCharacters::Service(const api::WorldFrame& frame,const std::optional<S
             if(old.world==frame.world && old.incarnation==scene->incarnation && LiveEntities(old)) predecessor_live=true;
         if(predecessor_live) continue; // GC/native cleanup alone does not prevent a replacement
         if(entry.attempted_world==frame.world && entry.attempted_incarnation==scene->incarnation && entry.attempted_revision==entry.revision) continue;
+        // Spread a restored batch across frames. Native factories cannot be
+        // preempted; always admit the first pending creation to avoid starving
+        // it behind already-active actors, then use elapsed time, not a count cap.
+        if(started_creation && std::chrono::steady_clock::now()-creation_start>=std::chrono::milliseconds(2))continue;
+        if(!started_creation){creation_start=std::chrono::steady_clock::now();started_creation=true;}
         entry.attempted_world=frame.world; entry.attempted_incarnation=scene->incarnation; entry.attempted_revision=entry.revision;
         entry.status.error.clear();
         entry.action_error.clear();
@@ -230,11 +245,11 @@ void SceneCharacters::Service(const api::WorldFrame& frame,const std::optional<S
                 if(entry.look_submission)entry.look_submission->Complete(api::ControlPhase::Failed,entry.creation_error);
             }
             if(create_controls_) {
-                const auto& npc=entry.active->session->Character().Npc();
+                const auto& npc=entry.active->session->Character().Creation();
                 for(const auto& entity:npc.entities)if(entity.token.entity==npc.factory.entity && !entity.disposed) {
                     try {
                         entry.active->controls=std::make_unique<CharacterControls>(create_controls_(entity.token,frame.world));
-                        if(entry.placement.snap_to_ground)
+                        if(entry.placement.snap_to_ground || entry.plan.package.construction==ConstructionKind::StoryActor)
                             entry.active->controls->Place(entry.placement.position,entry.placement.rotation,false,entry.placement.snap_to_ground);
                         auto receipt=entry.active->controls->Look(entry.look);
                         if(entry.look_submission)entry.look_submission->Bind(entry.status.creations,std::move(receipt));
@@ -288,7 +303,7 @@ SceneCharacterStatus SceneCharacters::Status(std::uint64_t id) const {
         out.active_revision=entry.active->revision;
         out.session=entry.active->session->Status();
         const auto& character=entry.active->session->Character();
-        const auto& npc=character.Npc();
+        const auto& npc=character.Creation();
         if(npc.create_returned && !npc.removal_requested && !npc.closed && out.active_revision==out.revision) {
             for(const auto& receipt:npc.entities)if(receipt.token.entity==npc.factory.entity && !receipt.disposed &&
                 !api::TrackedEntities().IsDisposed(receipt.token) && receipt.observation.loaded.read.returned && receipt.observation.loaded.value)

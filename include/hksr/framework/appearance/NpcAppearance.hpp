@@ -1,5 +1,5 @@
 #pragma once
-#include <hksr/entity/NpcCreationSession.hpp>
+#include <hksr/entity/EntityCreationSession.hpp>
 #include "AppearanceModel.hpp"
 #include <memory>
 
@@ -26,7 +26,7 @@ struct NpcAppearanceStatus {
 // new NPC epoch is a new attempt. No destructor calls into the engine.
 class NpcAppearance {
 public:
-    NpcAppearance(api::NpcCreationSession& npc,api::GameWorld* world,Appearance source,
+    NpcAppearance(api::EntityCreationSession& npc,api::GameWorld* world,Appearance source,
         std::shared_ptr<const ModelAssetInput> payload,VisualRoot root,std::string look_source,
         std::shared_ptr<const api::ModelServices> services);
     void Service(const api::WorldFrame& frame,AppearanceServices services);
@@ -41,7 +41,7 @@ public:
 private:
     void Retire(bool owner_gone,bool superseded);
     void Drain(bool own_frame,bool owner_gone,const api::VisualObjects& visuals);
-    api::NpcCreationSession& npc_;
+    api::EntityCreationSession& npc_;
     api::GameWorld* world_;
     Appearance source_;
     std::shared_ptr<const ModelAssetInput> payload_;

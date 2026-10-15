@@ -26,9 +26,9 @@ void CharacterSession::Create(const api::NpcCreateInput& input) {
     if(status_.phase!=SessionPhase::NotCreated || removing_) throw std::logic_error("session creation epoch is single-use");
     character_.Create(input);
     status_.phase=SessionPhase::PreparingBaseline;
-    for(const auto& receipt:character_.Npc().entities)
-        if(receipt.token.entity==character_.Npc().factory.entity && !receipt.disposed) owner_=receipt.token;
-    if(!character_.Npc().create_returned || !owner_.entity || character_.Npc().removal_requested) {
+    for(const auto& receipt:character_.Creation().entities)
+        if(receipt.token.entity==character_.Creation().factory.entity && !receipt.disposed) owner_=receipt.token;
+    if(!character_.Creation().create_returned || !owner_.entity || character_.Creation().removal_requested) {
         status_.phase=SessionPhase::Failed; status_.errors.push_back("NPC creation did not produce a live owned result");
         Remove();
     }
@@ -37,6 +37,15 @@ std::uint64_t CharacterSession::Queue(ActionDomain domain,ActionRequest action) 
     if(removing_ || status_.closed) throw std::logic_error("session closing");
     desired_=Intent{++status_.selected_action,domain,std::move(action)};
     return status_.selected_action;
+}
+void CharacterSession::Create(const api::StoryCreateInput& input) {
+    if(status_.phase!=SessionPhase::NotCreated || removing_)throw std::logic_error("session creation epoch is single-use");
+    character_.Create(input);status_.phase=SessionPhase::PreparingBaseline;
+    for(const auto& receipt:character_.Creation().entities)
+        if(receipt.token.entity==character_.Creation().factory.entity && !receipt.disposed)owner_=receipt.token;
+    if(!character_.Creation().create_returned || !owner_.entity || character_.Creation().removal_requested) {
+        status_.phase=SessionPhase::Failed;status_.errors.push_back("independent actor creation did not produce a live owned result");Remove();
+    }
 }
 void CharacterSession::Remove() { removing_=true; desired_.reset(); if(baseline_)baseline_->Cancel(); }
 bool CharacterSession::Ended() const {
@@ -78,12 +87,12 @@ bool CharacterSession::PrepareBaseline(const api::WorldFrame& frame,AppearanceSe
 void CharacterSession::Service(const api::WorldFrame& frame,AppearanceServices appearance,api::AnimationInputTypes types) {
     if(busy_ || status_.closed || (status_.phase==SessionPhase::NotCreated && !removing_)) return;
     busy_=true; struct Exit { bool& flag; ~Exit(){flag=false;} } exit{busy_};
-    if(Ended() || character_.Npc().removal_requested || character_.Npc().closed) removing_=true;
+    if(Ended() || character_.Creation().removal_requested || character_.Creation().closed) removing_=true;
     if(removing_) {
         status_.phase=SessionPhase::Closing;
         if(handoff_) { handoff_->Remove(); handoff_->Service(frame,appearance,types); }
-        else if(character_.Npc().create_started) { character_.Remove(); character_.Service(frame,appearance,types); }
-        status_.closed=CloseBaseline() && (!character_.Npc().create_started || character_.Status().closed) && (!handoff_ || handoff_->Status().closed);
+        else if(character_.Creation().create_started) { character_.Remove(); character_.Service(frame,appearance,types); }
+        status_.closed=CloseBaseline() && (!character_.Creation().create_started || character_.Status().closed) && (!handoff_ || handoff_->Status().closed);
         if(status_.closed) status_.phase=SessionPhase::Closed;
         return;
     }

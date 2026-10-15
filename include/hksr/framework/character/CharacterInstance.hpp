@@ -8,7 +8,7 @@
 
 namespace hksr::framework {
 struct CharacterMethods {
-    api::PresentationContext::NpcFactory create;
+    api::PresentationContext::EntityFactory create;
     std::shared_ptr<const api::ModelServices> models;
     std::function<std::unique_ptr<api::CharacterOutfit>()> outfit;
     api::PresentationContext::NpcInputFactory prepare;
@@ -31,9 +31,10 @@ class CharacterInstance {
 public:
     CharacterInstance(api::GameWorld* world,const CharacterPackage& package,
         std::shared_ptr<const ModelAssetInput> payload,std::string npc_look_source,
-        CharacterMethods methods,api::PresentationContext::NpcEventFactory events,
+        CharacterMethods methods,api::PresentationContext::EntityEventFactory events,
         VisualRoot root=VisualRoot::UniqueAnimator);
     void Create(const api::NpcCreateInput& input);
+    void Create(const api::StoryCreateInput& input);
     void EnableActionPlayback(const api::PresentationContext::AnimationFactory& animations);
     // Exploration only; whole-model/battle handoff must use its own readiness
     // before submitting FreeStyleState to ActionPlayback.
@@ -52,7 +53,7 @@ public:
     bool AlternatePayloadDetached() const;
     void Service(const api::WorldFrame& frame,AppearanceServices services,api::AnimationInputTypes event_types);
     const CharacterInstanceStatus& Status() const { return status_; }
-    const api::NpcCreationStatus& Npc() const { return npc_->Status(); }
+    const api::EntityCreationStatus& Creation() const { return npc_->Status(); }
     const NpcAppearance* AppearanceConsumer() const { return appearance_.get(); }
     const api::NpcEventSupplement* Events() const { return events_.get(); }
     const ActionPlayback* Actions() const { return actions_.get(); }
@@ -62,7 +63,10 @@ private:
     api::GameWorld* world_;
     std::shared_ptr<const api::ModelServices> models_;
     const api::EntityAccess& entities_;
-    std::unique_ptr<api::NpcCreationSession> npc_;
+    std::unique_ptr<api::EntityCreationSession> npc_;
+    std::string direct_config_;
+    std::unique_ptr<api::ManagedRoots> direct_roots_;
+    std::vector<api::ManagedRootId> direct_handles_;
     // Reverse destruction keeps callback owners alive until their consumers
     // are gone. Explicit Service closure is still required before destruction.
     std::unique_ptr<NpcAppearance> appearance_;

@@ -1,5 +1,5 @@
 #pragma once
-#include <hksr/entity/NpcCreationSession.hpp>
+#include <hksr/entity/EntityCreationSession.hpp>
 #include "ModelEpoch.hpp"
 #include <memory>
 
@@ -12,7 +12,7 @@ struct NpcModelStatus {
     bool enabled=true,closing=false,closed=false;
     std::vector<std::string> errors;
 };
-// External mesh overlay consumer for an already-owned api::NpcCreationSession. Does not
+// External mesh overlay consumer for an already-owned api::EntityCreationSession. Does not
 // change its prefab, controller, events, position, rootBone or official state.
 // The actor service must service this consumer BEFORE submitting NPC removal;
 // natural release is handled synchronously by ModelEpoch's SDK registration.
@@ -20,7 +20,7 @@ struct NpcModelStatus {
 // loaded before engine work. Service only on the actual engine frame thread.
 class NpcModels {
 public:
-    NpcModels(api::NpcCreationSession& npc,api::GameWorld* owner_world,std::shared_ptr<const ModelAssetInput> input,
+    NpcModels(api::EntityCreationSession& npc,api::GameWorld* owner_world,std::shared_ptr<const ModelAssetInput> input,
         std::shared_ptr<const api::ModelServices> services);
     void Service(const api::WorldFrame& frame,ModelAssetServices assets,const api::SceneObjects& scene);
     void SetEnabled(bool enabled) noexcept { status_.enabled=enabled; }
@@ -32,7 +32,7 @@ public:
 private:
     void Retire(bool owner_gone);
     void Drain(bool allow_live_restore);
-    api::NpcCreationSession& npc_;
+    api::EntityCreationSession& npc_;
     api::GameWorld* world_;
     std::shared_ptr<const ModelAssetInput> input_;
     std::shared_ptr<const api::ModelServices> services_;

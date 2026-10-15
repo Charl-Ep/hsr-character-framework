@@ -2,6 +2,7 @@
 #include <stdexcept>
 #include <type_traits>
 #include <algorithm>
+#include <chrono>
 
 namespace hksr::framework {
 CatalogBrowser::CatalogBrowser(CatalogReaders readers)
@@ -68,8 +69,7 @@ void CatalogBrowser::AdvanceSource() {
     catch(...) {value->phase=SourceRequestPhase::Failed;value->error="unknown source preparation failure";}
     state_.sources[id]=std::move(value);RequestActions();
 }
-void CatalogBrowser::Advance() {
-    try {
+bool CatalogBrowser::AdvanceOne() {
         if(table_pending_) {
             table_pending_=false;state_.attempted=true;
             api::CharacterCatalog rows;state_.table_error.clear();
@@ -81,15 +81,27 @@ void CatalogBrowser::Advance() {
                 readers_.identity,[this](const auto& path) {
                     return actions_.Load({api::ActionConfigKind::Battle,path}).presentation;
                 }});
-            Publish();return;
+            return true;
         }
         const bool action_pending=actions_.ReadingAbilities() || (actions_started_ && !actions_.Status().finished);
         if(preparation_ && !pending_sources_.empty() && (source_turn_ || !action_pending)) {
-            AdvanceSource();source_turn_=false;Publish();return;
+            AdvanceSource();source_turn_=false;return true;
         }
-        if(action_pending) {actions_.Advance();source_turn_=true;Publish();}
-    } catch(const std::exception& error) {state_.error=error.what();Publish();}
-    catch(...) {state_.error="unknown catalog query failure";Publish();}
+        if(action_pending) {actions_.Advance();source_turn_=true;return true;}
+        return false;
+}
+void CatalogBrowser::Advance(std::uint32_t budget_microseconds) {
+    const auto started=std::chrono::steady_clock::now();bool changed=false;
+    try {
+        do {
+            if(!AdvanceOne())break;
+            changed=true;
+        }while(std::chrono::steady_clock::now()-started<std::chrono::microseconds(budget_microseconds));
+    }catch(const std::exception& error){state_.error=error.what();changed=true;}
+    catch(...){state_.error="unknown catalog query failure";changed=true;}
+    // Publish one immutable projection per slice, not once per cheap cached
+    // request. Individual engine calls remain non-preemptible.
+    if(changed)Publish();
 }
 std::uint64_t CatalogBrowser::RetrySource(std::uint64_t request) {
     const auto found=state_.sources.find(request);

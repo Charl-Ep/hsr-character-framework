@@ -7,6 +7,7 @@
 namespace hksr::framework {
 enum class SourceKind { Official, External };
 enum class ShapeData { None, MatchingTemplate };
+enum class ConstructionKind { MapNpc, StoryActor };
 struct Appearance {
     std::string template_prefab;
     std::string asset_directory;
@@ -22,6 +23,7 @@ struct CharacterPackage {
     // Selected official Avatar identity, not the NPC carrier ID. Zero for
     // pure NPC/authored packages which have not selected an official Avatar.
     std::uint32_t avatar_id=0;
+    ConstructionKind construction=ConstructionKind::MapNpc;
 };
 // File-format parsing only. No game calls, pointers, hook or diagnostic state.
 CharacterPackage ParseCharacterPackage(std::string_view json);

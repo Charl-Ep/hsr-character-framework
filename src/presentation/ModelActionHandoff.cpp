@@ -8,7 +8,7 @@ ModelActionHandoff::ModelActionHandoff(CharacterInstance& character,api::EntityT
     transition_(services.transition(owner,world,std::move(request))),
     controllers_(std::move(controllers)),actions_(owner,world,services.animations(owner),
         services.effects,services.text),initial_state_name_(std::move(initial_state)) {
-    if(character.Actions() || character.Npc().factory.entity!=owner.entity)
+    if(character.Actions() || character.Creation().factory.entity!=owner.entity)
         throw std::invalid_argument("handoff requires its character and exclusive action consumer");
 }
 std::uint64_t ModelActionHandoff::Queue(ActionDomain domain,ActionRequest action) {
@@ -64,7 +64,7 @@ void ModelActionHandoff::Service(const api::WorldFrame& frame,AppearanceServices
     if(busy_ || status_.closed)return;
     busy_=true;struct Exit{bool& flag;~Exit(){flag=false;}} exit{busy_};
     actions_.ServiceEffects(frame);
-    if(removing_ || Ended() || character_.Npc().removal_requested || character_.Npc().closed) {
+    if(removing_ || Ended() || character_.Creation().removal_requested || character_.Creation().closed) {
         removing_=true;Finish(frame,appearance,types);return;
     }
     if(!OwnFrame(frame)){character_.Service(frame,appearance,types);return;}

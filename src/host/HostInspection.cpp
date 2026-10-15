@@ -19,7 +19,7 @@ void FrameworkHost::ReadControllerActions(const api::WorldFrame& frame) {
     const auto creation=characters_->Status(id).creations;
     const auto domain=*handoff->Status().ready_domain;
     try {
-        const auto& npc=session->Character().Npc();api::EntityToken owner;
+        const auto& npc=session->Character().Creation();api::EntityToken owner;
         for(const auto& receipt:npc.entities)if(receipt.token.entity==npc.factory.entity && !receipt.disposed)owner=receipt.token;
         auto alive=[&]{return owner.entity && !api::TrackedEntities().IsDisposed(owner) && api::TrackedEntities().Current(owner.entity).generation==owner.generation;};
         if(npc.removal_requested || !alive())return;
@@ -64,7 +64,7 @@ void FrameworkHost::ReadControllerActions(const api::WorldFrame& frame) {
 void FrameworkHost::ReadNpcActions(std::uint64_t id,const api::WorldFrame& frame) {
     auto& browser=Browser();const auto* session=characters_->Active(id,frame);
     if(!session) throw std::runtime_error("selected character has no active instance in this world");
-    const auto& npc=session->Character().Npc();api::EntityToken owner;
+    const auto& npc=session->Character().Creation();api::EntityToken owner;
     for(const auto& receipt:npc.entities)
         if(receipt.token.entity==npc.factory.entity && !receipt.disposed) owner=receipt.token;
     auto alive=[&]{return owner.entity && !api::TrackedEntities().IsDisposed(owner) && api::TrackedEntities().Current(owner.entity).generation==owner.generation;};

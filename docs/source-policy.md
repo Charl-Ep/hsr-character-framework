@@ -2,20 +2,11 @@
 
 `SourceCatalog` resolves official NPC, Player and Avatar catalog rows. Player identity is the tuple `id/enhanced/skin`.
 
-## Player carriers
+## NPC and Player creation
 
-NPC foundation selection uses this order:
+NPC selections use their NPC row and private map definition. Player selections use their model prefab and adventure configuration directly through an independent story-actor session.
 
-1. An explicitly selected NPC ID.
-2. Exact resource matches from `OfficialSourcePreferences.cpp`.
-3. A unique same-number NPC whose FreeStyle identity matches the Player.
-4. A full search for matching FreeStyle identities.
-
-Pending reads remain pending; multiple matches return candidates. Preference rows match Player configuration, NPC configuration and entity-resource paths. Numeric NPC IDs come from the current catalog.
-
-## Protagonist carriers
-
-The preference table maps Boy/Girl paths `00`, `10`, `20`, `30` and `40` to their same-gender base NPC carrier. The selected Avatar ID separately determines outfit and battle resources.
+Player preparation does not require a matching NPC. The selected Avatar ID determines outfit and battle resources; `id/enhanced/skin` keeps Player variants distinct.
 
 ## Battle sources
 
@@ -25,4 +16,4 @@ Authored packages match Player rows by configuration and template-prefab referen
 
 ## Display families
 
-`OfficialCharacterFamilies.cpp` groups exact resource references for the menu. Grouping does not combine model, controller or event resources. Update source preferences and resolver tests together when changing mappings.
+`OfficialCharacterFamilies.cpp` groups exact resource references for the menu. Grouping does not combine model, controller or event resources.

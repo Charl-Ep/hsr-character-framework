@@ -481,7 +481,7 @@ void TestModelProfileInputs() {
     auto animations=[=](api::EntityToken owner){return std::make_unique<api::ActorAnimationSession>(owner,references,entities,
         api::ModelAccess(model_methods),animation,api::ProfileInputs(input_methods));};
     framework::HandoffServices handoff_services{animations,transition};
-    auto create_npc=[=]{return std::make_unique<api::NpcCreationSession>(api::EntityOwner{},M(Create),entity_methods,references);};
+    auto create_npc=[=]{return std::make_unique<api::EntityCreationSession>(api::EntityOwner{},M(Create),entity_methods,references);};
     framework::CharacterMethods character_methods{create_npc,TestModelServices(references,{}, {},entity_methods,api::ModelAccess(model_methods))};
     framework::CharacterPackage package; package.id="test.npc";
     api::NpcCreateInput create{world_ptr,reinterpret_cast<api::EntityManager*>(&npc_manager),
@@ -495,7 +495,7 @@ void TestModelProfileInputs() {
     framework::AppearanceServices appearance{assets,scene,visuals,config,components};
     api::AnimationInputTypes types; types.events={{true,0},&event_type}; current_event_component=event_object;
     framework::CharacterInstance character(world_ptr,package,nullptr,"",character_methods,{});
-    character.Create(create); Check(character.Npc().create_returned);
+    character.Create(create); Check(character.Creation().create_returned);
     auto request=make();
     framework::DomainControllers controllers;
     controllers.exploration=api::ControllerSource{api::ControllerSourceKind::ResourcePath,"Controller/exploration"};
@@ -518,7 +518,7 @@ void TestModelProfileInputs() {
     // only the newest state is played when the official model really loads.
     const auto replacement_request=handoff.Queue(Domain::Alternate,framework::FreeStyleState{"OtherState"}); load_state=5;
     handoff.Service(frame,appearance,types);
-    Check(battle_plays==1 && handoff.Status().phase==Handoff::Ready && !character.Npc().removal_requested);
+    Check(battle_plays==1 && handoff.Status().phase==Handoff::Ready && !character.Creation().removal_requested);
     Check(handoff.Status().servicing==replacement_request && handoff.Status().output->serial==handoff.Status().playback_serial &&
         std::get<framework::FreeStyleState>(handoff.Status().output->request).name=="OtherState");
     const auto loaded_begins=begins;
@@ -534,7 +534,7 @@ void TestModelProfileInputs() {
     Check(controller_installed && controller_sets==2 && handoff.Status().ready_domain==Domain::Exploration);
     // Event adoption failure does not delete the character or silently play.
     event_noop=true; handoff.Queue(Domain::Alternate,framework::FreeStyleState{"OtherState"}); handoff.Service(frame,appearance,types);
-    Check(handoff.Status().phase==Handoff::Failed && battle_plays==3 && !character.Npc().removal_requested);
+    Check(handoff.Status().phase==Handoff::Failed && battle_plays==3 && !character.Creation().removal_requested);
     event_noop=false;
     handoff.Queue(Domain::Exploration,framework::AnimatorState{"SomeState"}); handoff.Service(frame,appearance,types);
     Check(animator_plays==1 && handoff.Status().phase==Handoff::Ready && controller_installed);
@@ -609,7 +609,7 @@ void TestModelProfileInputs() {
         Check(session.Status().phase==framework::SessionPhase::Active && npc_plays==count+1 && begins==begin_count);
         Check(!session.Status().baseline_attempted && !session.Handoff()->ModelRequest());
         const auto unsupported=session.Queue(Domain::Alternate,framework::FreeStyleState{"SomeState"}); session.Service(frame,appearance,{});
-        Check(!session.Status().errors.empty() && !session.Character().Npc().removal_requested && begins==begin_count);
+        Check(!session.Status().errors.empty() && !session.Character().Creation().removal_requested && begins==begin_count);
         Check(session.Status().submitted_action==unsupported && !session.Status().handoff_request && !session.Status().dispatch_error.empty());
         session.Queue(Domain::Exploration,framework::AnimatorState{"SomeState"}); session.Service(frame,appearance,{});
         Check(session.Handoff()->Playback().last->outcome==framework::ActionOutcome::Returned);

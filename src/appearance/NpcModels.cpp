@@ -2,7 +2,7 @@
 #include <stdexcept>
 
 namespace hksr::framework {
-NpcModels::NpcModels(api::NpcCreationSession& npc,api::GameWorld* world,std::shared_ptr<const ModelAssetInput> input,
+NpcModels::NpcModels(api::EntityCreationSession& npc,api::GameWorld* world,std::shared_ptr<const ModelAssetInput> input,
     std::shared_ptr<const api::ModelServices> services)
     :npc_(npc),world_(world),input_(std::move(input)),services_(std::move(services)),
     entities_(services_->Entities()),models_(services_->Models()),roots_(services_->CreateRoots()) {

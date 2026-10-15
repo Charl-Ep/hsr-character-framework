@@ -28,7 +28,7 @@ public:
     // another controller. Release cancels queued work and forgets its result.
     std::uint64_t RetrySource(std::uint64_t request);
     void ReleaseSource(std::uint64_t request);
-    void Advance();
+    void Advance(std::uint32_t budget_microseconds=2000);
     bool CancelPending() { return actions_.CancelPending(); }
     void RefreshDocument(const ActionSourceKey& source);
     void RefreshAbility(const std::string& ability);
@@ -41,6 +41,7 @@ public:
 private:
     void BeginSource(const BrowseSource& input);
     void AdvanceSource();
+    bool AdvanceOne();
     void Publish();
     void RequestActions();
     struct CharacterSources {std::uint64_t revision;std::vector<ActionSourceRoot> roots;};

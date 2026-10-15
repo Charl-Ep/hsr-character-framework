@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.25)
-project(HksrCharacterFramework VERSION 0.2.1 LANGUAGES C CXX)
+project(HksrCharacterFramework VERSION 0.3.0 LANGUAGES C CXX)
 
 if(NOT WIN32 OR NOT MSVC OR NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
     message(FATAL_ERROR "CharacterFramework requires an x64 MSVC-compatible Windows toolchain")
