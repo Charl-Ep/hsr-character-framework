@@ -1,0 +1,7 @@
+{
+  "sdk": {"version": "4.6.1", "interface": 1, "repository": "Charl-Ep/hsr-api"},
+  "minhook": {"repository": "TsudaKageyu/minhook", "revision": "c3fcafdc10146beb5919319d0683e44e3c30d537"},
+  "json": {"repository": "nlohmann/json", "version": "3.12.0", "revision": "55f93686c01528224f448c19128836e7df245f72"},
+  "imgui": {"repository": "ocornut/imgui", "version": "1.91.9b", "revision": "f5befd2d29e66809cd1110a152e375a7f1981f06"},
+  "httplib": {"repository": "yhirose/cpp-httplib", "version": "0.60.1", "revision": "00afaaed6aaba592e4d079742dfecfba2dcd1196"}
+}

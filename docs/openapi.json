@@ -1,0 +1,121 @@
+{
+  "openapi": "3.1.0",
+  "info": {"title": "Character Framework Control API", "version": "0.1.0", "description": "Character commands, snapshots and SSE updates. Enable the listener in http-settings.cfg. See http-api.md for authentication and asynchronous operation semantics."},
+  "security": [{"accessToken": []}],
+  "paths": {
+    "/v1/commands": {"post": {
+      "operationId": "submitCommand",
+      "description": "Enqueue an application command. Inspect its receipt and operation for completion. Requests are not idempotent.",
+      "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Command"}}}},
+      "responses": {
+        "202": {"description": "Queued for application dispatch.", "headers": {"Location": {"schema": {"type": "string"}, "description": "Dispatch receipt URL"}}, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Queued"}}}},
+        "400": {"$ref": "#/components/responses/Invalid"}, "401": {"$ref": "#/components/responses/Unauthorized"},
+        "403": {"$ref": "#/components/responses/Forbidden"}, "413": {"$ref": "#/components/responses/TooLarge"},
+        "415": {"$ref": "#/components/responses/ContentType"}, "429": {"$ref": "#/components/responses/Capacity"},
+        "503": {"$ref": "#/components/responses/Unavailable"}, "default": {"$ref": "#/components/responses/Error"}
+      }
+    }},
+    "/v1/requests/{serial}": {"get": {
+      "operationId": "getDispatchReceipt", "parameters": [{"name": "serial", "in": "path", "required": true, "schema": {"$ref": "#/components/schemas/Id"}}],
+      "responses": {"200": {"description": "queued or dispatched; reply only exists after dispatch", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Dispatch"}}}}, "404": {"$ref": "#/components/responses/Missing"}, "default": {"$ref": "#/components/responses/Error"}}
+    }},
+    "/v1/snapshot": {"get": {
+      "operationId": "getSnapshot",
+      "responses": {"200": {"description": "Atomic current snapshot and cursor, reset=true", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Sync"}}}}, "default": {"$ref": "#/components/responses/Error"}}
+    }},
+    "/v1/catalog": {"get": {
+      "operationId": "getCatalog", "description": "Read already published values. POST catalog/prepare_source to initiate queries.",
+      "responses": {"200": {"description": "Official tables and source preparation results", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Catalog"}}}}, "default": {"$ref": "#/components/responses/Error"}}
+    }},
+    "/v1/characters/{id}/actions": {"get": {
+      "operationId": "getActions", "parameters": [{"name": "id", "in": "path", "required": true, "schema": {"$ref": "#/components/schemas/Id"}}],
+      "description": "Read this instance's published actions. POST browse_actions or browse_npc_actions to initiate discovery.",
+      "responses": {"200": {"description": "Partial or complete action view", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Actions"}}}}, "404": {"$ref": "#/components/responses/Missing"}, "default": {"$ref": "#/components/responses/Error"}}
+    }},
+    "/v1/events": {"get": {
+      "operationId": "subscribeEvents",
+      "description": "SSE reset/update events. Each JSON data payload is Sync; id equals cursor. No header means reset. An expired/different-stream cursor resets; malformed syntax is 400. Use authenticated fetch streaming in browsers. Idle comments every 15s. Closure ends the stream.",
+      "parameters": [{"name": "Last-Event-ID", "in": "header", "schema": {"type": "string"}, "description": "Last applied cursor, or HTTP snapshot cursor. Empty means reset."}],
+      "responses": {"200": {"description": "UTF-8 event stream", "content": {"text/event-stream": {"schema": {"type": "string"}}}}, "400": {"$ref": "#/components/responses/Invalid"}, "429": {"$ref": "#/components/responses/Capacity"}, "default": {"$ref": "#/components/responses/Error"}}
+    }}
+  },
+  "components": {
+    "securitySchemes": {"accessToken": {"type": "http", "scheme": "bearer", "description": "Opaque token configured in http-settings.cfg; required in the Authorization header on every interface."}},
+    "responses": {
+      "Error": {"description": "Structured HTTP error. Application command failures instead appear in dispatch replies and operations.", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}},
+      "Invalid": {"description": "Malformed JSON, fields, values or cursor", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}},
+      "Unauthorized": {"description": "Missing or invalid Bearer token", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}},
+      "Forbidden": {"description": "Origin not explicitly allowed", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}},
+      "Missing": {"description": "Unknown character or unknown/expired dispatch receipt.", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}},
+      "TooLarge": {"description": "Body exceeds 64 KiB", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}},
+      "ContentType": {"description": "Expected application/json", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}},
+      "Capacity": {"description": "HTTP pending dispatch or SSE capacity reached; no new command enqueued", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}},
+      "Unavailable": {"description": "Application closing or HTTP stopping", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}}
+    },
+    "schemas": {
+      "Id": {"type": "string", "pattern": "^[0-9]+$", "maxLength": 20, "description": "Unsigned uint64 decimal string. Value must not exceed 18446744073709551615."},
+      "InputId": {"oneOf": [{"$ref": "#/components/schemas/Id"}, {"type": "integer", "minimum": 0, "maximum": 9007199254740991}]},
+      "Vector": {"type": "object", "additionalProperties": false, "required": ["x","y","z"], "properties": {"x": {"type": "number"}, "y": {"type": "number"}, "z": {"type": "number"}}},
+      "Quaternion": {"type": "object", "description": "Finite unit quaternion, norm squared within 0.001 of 1.", "additionalProperties": false, "required": ["x","y","z","w"], "properties": {"x": {"type": "number"}, "y": {"type": "number"}, "z": {"type": "number"}, "w": {"type": "number"}}},
+      "Placement": {"type": "object", "additionalProperties": false, "required": ["position","rotation"], "properties": {"position": {"$ref": "#/components/schemas/Vector"}, "rotation": {"$ref": "#/components/schemas/Quaternion"}, "snap_to_ground": {"type": "boolean", "description": "Omit to preserve policy. False uses official direct motion without terrain/collision correction, retaining animation/navigation deltas. True restores the session's original movement mode and permits grounding, subject to terrain and character state. Does not remove colliders."}}},
+      "Source": {"oneOf": [
+        {"type": "object", "additionalProperties": false, "required": ["kind","npc_id"], "properties": {"kind": {"const": "npc"}, "npc_id": {"$ref": "#/components/schemas/InputId", "description": "uint32 official NPC ID"}}},
+        {"type": "object", "additionalProperties": false, "required": ["kind","player_id"], "properties": {"kind": {"const": "player"}, "player_id": {"$ref": "#/components/schemas/InputId"}, "enhanced": {"$ref": "#/components/schemas/InputId", "default": 0}, "skin": {"$ref": "#/components/schemas/InputId", "default": 0}, "npc_id": {"$ref": "#/components/schemas/InputId"}}, "description": "All identity fields are uint32. npc_id optionally resolves a foundation ambiguity."}
+      ]},
+      "ConfiguredAction": {"type": "object", "additionalProperties": false, "required": ["kind","domain","state"], "properties": {"kind": {"const": "configured"}, "domain": {"enum": ["exploration","battle"]}, "state": {"type": "string", "minLength": 1}}},
+      "ReadyAction": {"type": "object", "additionalProperties": false, "required": ["kind","source","pose"], "properties": {"kind": {"const": "ready"}, "source": {"type": "string", "minLength": 1}, "pose": {"$ref": "#/components/schemas/InputId"}}},
+      "NpcAction": {"type": "object", "additionalProperties": false, "required": ["kind","id"], "properties": {"kind": {"const": "npc"}, "id": {"$ref": "#/components/schemas/InputId", "description": "uint32 motion ID"}}},
+      "Command": {"oneOf": [
+        {"type": "object", "additionalProperties": false, "required": ["op","operation"], "properties": {"op": {"const": "layout"}, "operation": {"enum": ["refresh","save","load","delete","retry_current","keep_current"]}, "name": {"type": "string"}, "overwrite": {"type": "boolean", "default": false}, "scene": {"type": "string"}}},
+        {"type": "object", "additionalProperties": false, "required": ["op"], "properties": {"op": {"const": "catalog"}, "refresh": {"type": "boolean", "default": false}}},
+        {"type": "object", "additionalProperties": false, "required": ["op","source"], "properties": {"op": {"const": "prepare_source"}, "source": {"$ref": "#/components/schemas/Source"}}},
+        {"type": "object", "additionalProperties": false, "required": ["op","source_request"], "properties": {"op": {"enum": ["retry_source","release_source"]}, "source_request": {"$ref": "#/components/schemas/InputId"}}},
+        {"type": "object", "additionalProperties": false, "required": ["op","source_request"], "properties": {"op": {"const": "create"}, "source_request": {"$ref": "#/components/schemas/InputId"}, "scene": {"type": "string", "default": ""}, "placement": {"$ref": "#/components/schemas/Placement"}, "near_player": {"type": "boolean", "default": false}, "player_world_offset": {"$ref": "#/components/schemas/Vector"}}},
+        {"type": "object", "additionalProperties": false, "required": ["op","character","source_request"], "properties": {"op": {"const": "replace_source"}, "character": {"$ref": "#/components/schemas/InputId"}, "source_request": {"$ref": "#/components/schemas/InputId"}}},
+        {"type": "object", "additionalProperties": false, "required": ["op","character","enabled"], "properties": {"op": {"const": "enable"}, "character": {"$ref": "#/components/schemas/InputId"}, "enabled": {"type": "boolean"}}},
+        {"type": "object", "additionalProperties": false, "required": ["op","character"], "properties": {"op": {"enum": ["rebuild","browse_actions","browse_npc_actions","delete","idle"]}, "character": {"$ref": "#/components/schemas/InputId"}}},
+        {"type": "object", "additionalProperties": false, "required": ["op","character","placement"], "properties": {"op": {"const": "place"}, "character": {"$ref": "#/components/schemas/InputId"}, "placement": {"$ref": "#/components/schemas/Placement"}, "relative": {"type": "boolean", "default": false}}},
+        {"type": "object", "additionalProperties": false, "required": ["op","character","mode"], "properties": {"op": {"const": "look"}, "character": {"$ref": "#/components/schemas/InputId"}, "mode": {"enum": ["automatic","disabled","player","instance","point"]}, "target": {"$ref": "#/components/schemas/InputId"}, "point": {"$ref": "#/components/schemas/Vector"}, "max_distance": {"type":"number","minimum":0,"default":0}}, "allOf": [{"if": {"properties": {"mode": {"const": "instance"}}}, "then": {"required": ["target"]}}, {"if": {"properties": {"mode": {"const": "point"}}}, "then": {"required": ["point"]}}]},
+        {"type": "object", "additionalProperties": false, "required": ["op","character","action"], "properties": {"op": {"const": "action"}, "character": {"$ref": "#/components/schemas/InputId"}, "revision": {"$ref": "#/components/schemas/InputId"}, "action": {"oneOf": [{"$ref": "#/components/schemas/ConfiguredAction"},{"$ref": "#/components/schemas/ReadyAction"},{"$ref": "#/components/schemas/NpcAction"}]}}, "allOf": [{"if": {"properties": {"action": {"properties": {"kind": {"enum": ["configured","ready"]}}}}}, "then": {"required": ["revision"]}}]}
+      ]},
+      "Error": {"type": "object", "required": ["error"], "properties": {"error": {"type": "object", "required": ["code","message"], "properties": {"code": {"type": "string"}, "message": {"type": "string"}}}}},
+      "Queued": {"type": "object", "required": ["serial","state","request_url"], "properties": {"serial": {"$ref": "#/components/schemas/Id"}, "state": {"const": "queued"}, "request_url": {"type": "string"}}},
+      "Reply": {"type": "object", "required": ["serial","accepted","error","character","source_request","action_intent","operation"], "properties": {"serial": {"$ref": "#/components/schemas/Id"}, "accepted": {"type": "boolean"}, "error": {"type": "string"}, "character": {"$ref": "#/components/schemas/Id"}, "source_request": {"$ref": "#/components/schemas/Id"}, "action_intent": {"$ref": "#/components/schemas/Id"}, "operation": {"$ref": "#/components/schemas/Id"}}},
+      "Dispatch": {"type": "object", "required": ["serial","state"], "properties": {"serial": {"$ref": "#/components/schemas/Id"}, "state": {"enum": ["queued","dispatched"]}, "reply": {"$ref": "#/components/schemas/Reply"}}},
+      "Operation": {"type": "object", "required": ["id","kind","phase","terminal","detail"], "properties": {
+        "id": {"$ref": "#/components/schemas/Id"}, "kind": {"enum": ["prepare_source","create","rebuild","replace_source","enable","disable","action","placement","gaze","delete"]},
+        "phase": {"enum": ["waiting","running","returned","failed","cancelled","superseded"]}, "terminal": {"type": "boolean"}, "detail": {"type": "string"},
+        "character": {"$ref": "#/components/schemas/Id"}, "source_request": {"$ref": "#/components/schemas/Id"}, "revision": {"$ref": "#/components/schemas/Id"}, "creation": {"$ref": "#/components/schemas/Id"}, "action_intent": {"$ref": "#/components/schemas/Id"}
+      }},
+      "Runtime": {"type": "object", "properties": {"prepared": {"type": "boolean"}, "closing": {"type": "boolean"}, "closed": {"type": "boolean"}, "map_error": {"type": "string"}, "binding_errors": {"type": "array", "items": {"type": "string"}}, "layouts": {"$ref": "#/components/schemas/Layouts"}, "scene": {"oneOf": [{"type": "null"},{"type": "object", "properties": {"key": {"type": "string"}, "incarnation": {"$ref": "#/components/schemas/Id"}}}]}}},
+      "Layouts": {"type": "object", "properties": {"available": {"type": "boolean"}, "sequence": {"$ref": "#/components/schemas/Id"}, "maps": {"type": "object", "additionalProperties": {"$ref": "#/components/schemas/MapLayout"}}}},
+      "MapLayout": {"type": "object", "properties": {"initialized": {"type": "boolean"}, "busy": {"type": "boolean"}, "phase": {"enum": ["io","reading","preparing","removing","applying","ready","failed","cancelled"]}, "command": {"$ref": "#/components/schemas/Id"}, "revision": {"$ref": "#/components/schemas/Id"}, "saved_revision": {"$ref": "#/components/schemas/Id"}, "operation": {"type": "string"}, "name": {"type": "string"}, "error": {"type": "string"}, "storage_error": {"type": "string"}, "snapshots": {"type": "array", "items": {"type": "string"}}}},
+      "Character": {"type": "object", "required": ["id","enabled","active","creation","placement"], "properties": {
+        "id": {"$ref": "#/components/schemas/Id"}, "name": {"type": "string"}, "package": {"type": "string"}, "npc_id": {"$ref": "#/components/schemas/Id"}, "avatar_id": {"$ref": "#/components/schemas/Id"},
+        "creation": {"$ref": "#/components/schemas/Id"}, "revision": {"$ref": "#/components/schemas/Id"}, "active_revision": {"$ref": "#/components/schemas/Id"},
+        "enabled": {"type": "boolean"}, "active": {"type": "boolean"}, "creation_ready": {"type": "boolean"}, "creation_error": {"type": "string"}, "error": {"type": "string"},
+        "retiring": {"type": "integer"}, "pending_inputs": {"type": "integer"}, "scene": {"type": "string"}, "placement": {"$ref": "#/components/schemas/Placement"}, "domain": {"enum": ["exploration","battle",null]},
+        "look": {"type": "object", "properties": {"mode": {"enum": ["automatic","disabled","player","instance","point"]}, "target": {"$ref": "#/components/schemas/Id"}, "point": {"$ref": "#/components/schemas/Vector"}, "max_distance":{"type":"number","minimum":0}}},
+        "look_support": {"type": "string"}, "deleting": {"type": "boolean"}, "battle_idle_state": {"type": "string"}, "controls": {"type": "object", "description": "Observed pose and locale-independent control state; errors remain raw diagnostics.", "properties": {"placement_phase":{"enum":["idle","waiting","applied","failed","unknown"]}, "gaze_phase":{"enum":["automatic","following","disabled","target_unavailable","failed","out_of_range","restoring","unknown"]}, "placement_error":{"type":"string"}, "gaze_error":{"type":"string"}}},
+        "action": {"type": "object", "properties": {"id": {"$ref": "#/components/schemas/Id"}, "creation": {"$ref": "#/components/schemas/Id"}, "phase": {"enum": ["waiting","dispatching","returned","failed","cancelled"]}, "detail": {"type": "string"}}},
+        "playback": {"type": "object", "description": "pending/completion_pending plus completion, ready, effect and visual notes. Not animation progress."}
+      }},
+      "Sources": {"type": "object", "additionalProperties": {"type": "object", "properties": {"phase": {"enum": ["queued","preparing","ready","unresolved","failed"]}, "error": {"type": "string"}, "errors": {"type": "array", "items": {"type": "string"}}, "finished": {"type": "boolean"}, "npc_candidates": {"type": "array", "items": {"type": "integer"}}, "package": {"type": "object", "properties": {"id": {"type": "string"}, "name": {"type": "string"}}}}}},
+      "Snapshot": {"type": "object", "required": ["runtime","characters","operations","sources"], "properties": {"runtime": {"$ref": "#/components/schemas/Runtime"}, "characters": {"type": "object", "additionalProperties": {"$ref": "#/components/schemas/Character"}}, "operations": {"type": "object", "additionalProperties": {"$ref": "#/components/schemas/Operation"}}, "sources": {"$ref": "#/components/schemas/Sources"}, "catalog_url": {"const": "/v1/catalog"}, "actions_url_template": {"const": "/v1/characters/{id}/actions"}}},
+      "Sync": {"type": "object", "required": ["cursor","reset"], "properties": {
+        "cursor": {"type": "string", "pattern": "^[a-f0-9]{32}:[0-9]+$"}, "reset": {"type": "boolean"}, "snapshot": {"$ref": "#/components/schemas/Snapshot"},
+        "characters": {"type": "object", "additionalProperties": {"oneOf": [{"type": "null"},{"$ref": "#/components/schemas/Character"}]}},
+        "operations": {"type": "object", "additionalProperties": {"oneOf": [{"type": "null"},{"$ref": "#/components/schemas/Operation"}]}},
+        "runtime": {"$ref": "#/components/schemas/Runtime"}, "sources": {"$ref": "#/components/schemas/Sources"}, "catalog_changed": {"type": "boolean"}, "actions_changed": {"type": "boolean"}
+      }, "description": "reset=true supplies snapshot; otherwise changed-resource maps. Null means removal/expiry. Changes can be coalesced. Refresh visible directories when invalidated."},
+      "Catalog": {"type": "object", "properties": {"available": {"type": "boolean"}, "requested": {"type": "boolean"}, "attempted": {"type": "boolean"}, "error": {"type": "string"}, "table_error": {"type": "string"}, "sources": {"$ref": "#/components/schemas/Sources"},
+        "npcs": {"type": "array", "items": {"type": "object", "properties": {"npc_id": {"$ref": "#/components/schemas/Id"}, "character_config": {"type": "string"}, "model_config": {"type": "string"}}}},
+        "players": {"type": "array", "items": {"type": "object", "properties": {"player_id": {"$ref": "#/components/schemas/Id"}, "avatar": {"$ref": "#/components/schemas/Id"}, "enhanced": {"type": "integer"}, "skin": {"type": "integer"}, "character_config": {"type": "string"}, "prefab": {"type": "string"}}}}
+      }},
+      "Actions": {"type": "object", "properties": {"character": {"$ref": "#/components/schemas/Id"}, "available": {"type": "boolean"}, "revision": {"$ref": "#/components/schemas/Id"}, "finished": {"type": "boolean"}, "configured": {"type": "array", "items": {"$ref": "#/components/schemas/ConfiguredAction"}},
+        "ready": {"type": "array", "items": {"type": "object", "properties": {"action": {"$ref": "#/components/schemas/ReadyAction"}, "label": {"type": "string"}, "state": {"type": "string"}, "attacks": {"type": "array", "items": {"$ref": "#/components/schemas/ConfiguredAction"}}}}},
+        "npc": {"type": "array", "items": {"type": "object", "properties": {"action": {"$ref": "#/components/schemas/NpcAction"}, "name": {"type": "string"}}}}
+      }}
+    }
+  }
+}

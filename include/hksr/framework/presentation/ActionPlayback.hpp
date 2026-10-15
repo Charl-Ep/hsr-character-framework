@@ -1,0 +1,117 @@
+#pragma once
+#include "ActionTypes.hpp"
+#include <hksr/animation/AnimationControl.hpp>
+#include <hksr/entity/EntityAccess.hpp>
+#include <hksr/entity/LifecycleHooks.hpp>
+#include <hksr/animation/AnimationResources.hpp>
+#include <hksr/animation/ActorAnimationSession.hpp>
+#include <hksr/animation/AnimationOverrides.hpp>
+#include <hksr/model/ProfileInputs.hpp>
+#include <hksr/world/WorldFrames.hpp>
+#include <hksr/animation/OfficialCatalog.hpp>
+#include <optional>
+#include "ReadyActions.hpp"
+#include <hksr/presentation/effects/OwnedEffectRequest.hpp>
+#include <hksr/presentation/effects/PresentationEffects.hpp>
+#include "ActionRetirement.hpp"
+#include "PresentationProfile.hpp"
+#include <variant>
+
+namespace hksr::framework {
+// Engine-thread consumer for one owned entity. Queue is data-only; callbacks
+// may queue a replacement, which is serviced at a later boundary. This is NOT
+// an Animator transition graph or whole skill/gameplay executor.
+class ActionPlayback {
+public:
+    ActionPlayback(api::EntityToken owner,api::GameWorld* world,std::unique_ptr<api::ActorAnimationSession> engine,
+        std::shared_ptr<const api::PresentationEffects> effects={},const api::ComponentConfig* text=nullptr);
+    std::uint64_t Queue(ActionRequest request);
+    void SetCompletionState(std::string state) { completion_state_=std::move(state); }
+    std::string CurrentIdle() const {return CompletionState();}
+    void ConfigurePresentation(std::shared_ptr<const PresentationProfile> profile,const std::string& phase={}) {
+        presentation_.Configure(std::move(profile),phase);SyncPresentation();
+    }
+    void SetPresentationDomain(bool battle) {presentation_enabled_=battle;if(!battle)presentation_.LeaveDomain();SyncPresentation();}
+    void CancelPending(bool interrupt_presentation=true);
+    // inputs_ready comes from model/event/appearance handoff, not a UI cache.
+    void Service(const api::WorldFrame& frame,bool inputs_ready,api::ManagedObjects& objects);
+    // Continue cancellation during model/domain handoff; no old Animator calls.
+    void ServiceEffects(const api::WorldFrame& frame);
+    bool Close(const api::WorldFrame& frame);
+    const ActionPlaybackStatus& Status() const { return status_; }
+private:
+    struct VisualPlayback;
+    bool Ended() const;
+    bool OwnFrame(const api::WorldFrame& frame) const;
+    void Complete(const api::WorldFrame& frame,api::ManagedObjects& objects);
+    void StartVisual(const VisualState& request,void* animator,void* style,const api::WorldFrame& frame,
+        api::ManagedObjects& objects,ActionReceipt& receipt);
+    void TickVisual(void* animator,void* style,const api::WorldFrame& frame);
+    void ReleaseVisual(void* animator);
+    void StartReady(const ReadyState& request,void* animator,void* style,const api::WorldFrame& frame,
+        api::ManagedObjects& objects,ActionReceipt& receipt);
+    void TickReady(void* animator,void* style,const api::WorldFrame& frame,api::ManagedObjects& objects);
+    void ReleaseReady(void* animator,bool preserve_effect=false);
+    void ReplaceReadyEffect(const ReadyPose& pose,api::ManagedObjects& objects);
+    void CancelReadyEffect();
+    void PrepareRetirements(const FreeStyleState&);
+    void ServiceRetirements(const api::WorldFrame&);
+    void RetireActionEvents();
+    int HashName(const std::string& name,api::ManagedObjects& objects);
+    api::AnimationOverrideTarget OverrideTarget() { return {owner_,resources_,models_,actions_}; }
+    api::EntityToken owner_;
+    api::GameWorld* world_;
+    std::unique_ptr<api::ActorAnimationSession> engine_;
+    const api::EntityAccess& entities_;
+    const api::ModelAccess& models_;
+    const api::AnimationControl& actions_;
+    const api::ProfileInputs& inputs_;
+    api::AnimationResources& resources_;
+    const api::ComponentConfig* text_;
+    bool servicing_=false;
+    std::uint64_t intent_revision_=0;
+    std::optional<ActionReceipt> pending_;
+    ActionPlaybackStatus status_;
+    struct Completion {void* animator=nullptr;int hash=0,layer=0;std::uint64_t boundary=0;bool observed=false;std::uint64_t serial=0;bool following_official=false;};
+    std::optional<Completion> completion_;
+    std::string completion_state_;
+    PresentationState presentation_;
+    bool presentation_enabled_=false;
+    std::string CompletionState() const {return presentation_enabled_?presentation_.Idle(completion_state_):completion_state_;}
+    void SyncPresentation(){status_.presentation_phase=presentation_.Phase();status_.presentation_note=presentation_.Note();}
+    struct VisualPlayback {
+        VisualState request;
+        void* animator=nullptr;
+        int phase=0,body[3]{};
+        bool body_seen=false;
+        std::shared_ptr<api::ExpressionOverride> expression;
+        std::shared_ptr<api::BlinkOverride> blink;
+        std::uint64_t boundary=0;
+    };
+    std::optional<VisualPlayback> visual_;
+    bool visual_cancelled_=false;
+    struct ReadyPlayback {
+        ReadyState request;
+        void* animator=nullptr;
+        int from=-1,pose_hash=0,edge_hash=0;
+        float reverse_until=0;
+        std::shared_ptr<api::ReadySpeedOverride> speed;
+        // Selected skill is intent, not the identity of its current clip. An
+        // official controller successor must not erase that selection.
+        bool edge_seen=false,pose_seen=false,successor_seen=false,reversing=false;
+        std::optional<ReadyState> pending;
+        std::uint64_t boundary=0;
+    };
+    std::optional<ReadyPlayback> ready_;
+    bool ready_cancelled_=false;
+    std::shared_ptr<const api::PresentationEffects> effect_services_;
+    struct EffectEntry {std::uint64_t serial;std::string path;std::unique_ptr<api::OwnedEffectRequest> request;};
+    std::vector<EffectEntry> effects_;
+    api::OwnedEffectRequest* ready_effect_=nullptr;
+    std::uint64_t effect_serial_=0;
+    std::optional<std::uint64_t> effect_intent_revision_;
+    std::unique_ptr<api::EventRegistrationLease> action_exit_;
+    std::vector<std::unique_ptr<api::EventRegistrationLease>> retired_exits_;
+    bool retire_action_events_=false;
+};
+}

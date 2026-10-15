@@ -1,0 +1,8 @@
+{
+  "package": "CharacterFramework",
+  "version": "@PROJECT_VERSION@",
+  "sdk_version": "@HksrApi_VERSION@",
+  "license": "WTFPL",
+  "build_configuration": "$<CONFIG>",
+  "build_flavor": "@HKSR_DISTRIBUTION_FLAVOR@"
+}
