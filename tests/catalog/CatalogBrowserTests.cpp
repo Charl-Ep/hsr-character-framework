@@ -217,5 +217,19 @@ void TestCatalogBrowser() {
     try{requests.Plan(slow);}catch(const std::invalid_argument&){released=true;}Check(released);
     Check(copied_plan.package.npc_id==0 && completed->Source(slow)->phase==SourceRequestPhase::Ready);
     Finish(requests);Check(concurrent_tables==2 && requests.Plan(duplicate).package.npc_id==0);
+    const auto before_batch=requests.Snapshot();
+    std::uint64_t batched=0;
+    requests.BatchSources([&]{
+        batched=requests.Prepare(BrowseNpc{31});
+        requests.BatchSources([&]{requests.Prepare(BrowseNpc{32});});
+        Check(requests.Snapshot()==before_batch);
+    });
+    Check(requests.Snapshot()!=before_batch && requests.Snapshot()->Source(batched));
+    const auto before_throw=requests.Snapshot();std::uint64_t interrupted=0;
+    try {requests.BatchSources([&]{interrupted=requests.Prepare(BrowseNpc{31});throw std::runtime_error("fixture");});}
+    catch(const std::runtime_error&) {}
+    Check(requests.Snapshot()==before_throw);requests.Advance();
+    Check(requests.Snapshot()->Source(interrupted)); // no stuck batch after exception
+    Finish(requests);const auto stable=requests.Snapshot();requests.Advance();Check(requests.Snapshot()==stable);
     std::cout<<"Catalog browser passed: shared reads, per-instance projections, source revision isolation, production ready defaults, explicit retries and immutable snapshots; no game.\n";
 }

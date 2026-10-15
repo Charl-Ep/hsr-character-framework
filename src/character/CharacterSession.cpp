@@ -30,6 +30,7 @@ void CharacterSession::Create(const api::NpcCreateInput& input) {
         if(receipt.token.entity==character_.Creation().factory.entity && !receipt.disposed) owner_=receipt.token;
     if(!character_.Creation().create_returned || !owner_.entity || character_.Creation().removal_requested) {
         status_.phase=SessionPhase::Failed; status_.errors.push_back("NPC creation did not produce a live owned result");
+        const auto& errors=character_.Creation().errors;status_.errors.insert(status_.errors.end(),errors.begin(),errors.end());
         Remove();
     }
 }
@@ -44,7 +45,8 @@ void CharacterSession::Create(const api::StoryCreateInput& input) {
     for(const auto& receipt:character_.Creation().entities)
         if(receipt.token.entity==character_.Creation().factory.entity && !receipt.disposed)owner_=receipt.token;
     if(!character_.Creation().create_returned || !owner_.entity || character_.Creation().removal_requested) {
-        status_.phase=SessionPhase::Failed;status_.errors.push_back("independent actor creation did not produce a live owned result");Remove();
+        status_.phase=SessionPhase::Failed;status_.errors.push_back("independent actor creation did not produce a live owned result");
+        const auto& errors=character_.Creation().errors;status_.errors.insert(status_.errors.end(),errors.begin(),errors.end());Remove();
     }
 }
 void CharacterSession::Remove() { removing_=true; desired_.reset(); if(baseline_)baseline_->Cancel(); }

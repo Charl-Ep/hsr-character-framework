@@ -29,6 +29,7 @@ public:
     std::uint64_t RetrySource(std::uint64_t request);
     void ReleaseSource(std::uint64_t request);
     void Advance(std::uint32_t budget_microseconds=2000);
+    void BatchSources(const std::function<void()>& update);
     bool CancelPending() { return actions_.CancelPending(); }
     void RefreshDocument(const ActionSourceKey& source);
     void RefreshAbility(const std::string& ability);
@@ -55,5 +56,8 @@ private:
     CatalogSnapshot state_;
     std::shared_ptr<const CatalogSnapshot> snapshot_;
     bool table_pending_=false,source_turn_=true,actions_started_=false;
+    bool publication_dirty_=false;
+    unsigned source_batch_=0;
+    bool sources_dirty_=false;
 };
 }

@@ -8,6 +8,8 @@ namespace hksr::framework {
 CatalogBrowser::CatalogBrowser(CatalogReaders readers)
     :readers_(std::move(readers)),actions_(readers_.document,readers_.abilities,readers_.visuals,readers_.ready_defaults,readers_.begin_abilities) {Publish();}
 void CatalogBrowser::Publish() {
+    if(source_batch_){publication_dirty_=true;return;}
+    publication_dirty_=false;
     for(const auto& entry:source_roots_) {
         auto value=std::make_shared<SourceRequestStatus>(*state_.sources.at(entry.first));
         value->actions=actions_.View(entry.second);state_.sources[entry.first]=std::move(value);
@@ -18,10 +20,21 @@ void CatalogBrowser::Publish() {
     snapshot_=std::make_shared<const CatalogSnapshot>(state_);
 }
 void CatalogBrowser::RequestActions() {
+    if(source_batch_){sources_dirty_=true;return;}
+    sources_dirty_=false;
     std::vector<ActionSourceRoot> roots;
     for(const auto& entry:source_roots_)roots.insert(roots.end(),entry.second.begin(),entry.second.end());
     for(const auto& entry:character_sources_)roots.insert(roots.end(),entry.second.roots.begin(),entry.second.roots.end());
     actions_.Request(std::move(roots));actions_started_=true;
+}
+void CatalogBrowser::BatchSources(const std::function<void()>& update) {
+    ++source_batch_;
+    try{update();}catch(...){--source_batch_;throw;}
+    --source_batch_;
+    if(!source_batch_) {
+        if(sources_dirty_)RequestActions();
+        if(publication_dirty_)Publish();
+    }
 }
 void CatalogBrowser::Request(bool refresh) {
     if(!state_.requested || refresh) {
@@ -67,7 +80,7 @@ void CatalogBrowser::AdvanceSource() {
         } else pending_sources_.push_back(id);
     } catch(const std::exception& error) {value->phase=SourceRequestPhase::Failed;value->error=error.what();}
     catch(...) {value->phase=SourceRequestPhase::Failed;value->error="unknown source preparation failure";}
-    state_.sources[id]=std::move(value);RequestActions();
+    state_.sources[id]=std::move(value);RequestActions();publication_dirty_=true;
 }
 bool CatalogBrowser::AdvanceOne() {
         if(table_pending_) {
@@ -81,6 +94,7 @@ bool CatalogBrowser::AdvanceOne() {
                 readers_.identity,[this](const auto& path) {
                     return actions_.Load({api::ActionConfigKind::Battle,path}).presentation;
                 }});
+            publication_dirty_=true;
             return true;
         }
         const bool action_pending=actions_.ReadingAbilities() || (actions_started_ && !actions_.Status().finished);
@@ -91,17 +105,17 @@ bool CatalogBrowser::AdvanceOne() {
         return false;
 }
 void CatalogBrowser::Advance(std::uint32_t budget_microseconds) {
-    const auto started=std::chrono::steady_clock::now();bool changed=false;
+    if(sources_dirty_ && !source_batch_)RequestActions();
+    const auto started=std::chrono::steady_clock::now();const auto revision=actions_.Revision();
     try {
         do {
             if(!AdvanceOne())break;
-            changed=true;
         }while(std::chrono::steady_clock::now()-started<std::chrono::microseconds(budget_microseconds));
-    }catch(const std::exception& error){state_.error=error.what();changed=true;}
-    catch(...){state_.error="unknown catalog query failure";changed=true;}
+    }catch(const std::exception& error){state_.error=error.what();publication_dirty_=true;}
+    catch(...){state_.error="unknown catalog query failure";publication_dirty_=true;}
     // Publish one immutable projection per slice, not once per cheap cached
     // request. Individual engine calls remain non-preemptible.
-    if(changed)Publish();
+    if(publication_dirty_ || actions_.Revision()!=revision)Publish();
 }
 std::uint64_t CatalogBrowser::RetrySource(std::uint64_t request) {
     const auto found=state_.sources.find(request);

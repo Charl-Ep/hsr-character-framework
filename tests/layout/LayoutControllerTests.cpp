@@ -14,6 +14,14 @@ struct NoObjects final:hksr::api::ManagedObjects {
     hksr::api::ObjectResult AllocateObject(const char*,const char*) override {throw std::runtime_error("unexpected engine call");}
     hksr::api::ObjectResult ManagedType(const char*,const char*) override {throw std::runtime_error("unexpected engine call");}
 };
+struct DelayedAbilities final:hksr::api::AbilitySourceRead {
+    bool& ready;
+    explicit DelayedAbilities(bool& value):ready(value){}
+    void Advance(std::uint32_t) override {}
+    void Cancel() override {ready=true;}
+    bool Done() const override {return ready;}
+    hksr::api::AbilitySources Take() override {return {};}
+};
 }
 void TestLayoutController() {
     using namespace hksr::framework;namespace api=hksr::api;
@@ -37,8 +45,12 @@ void TestLayoutController() {
     readers.document=[](auto kind,const auto& path){
         api::ActionConfigInput a;a.kind=kind;a.path=path;a.loaded=true;
         a.presentation={path,{true,"OfficialIdle",{}},{true,{},{}},{true,{},{}}};
-        a.states={{kind==api::ActionConfigKind::Battle?"OfficialIdle":"IdleShow","declared"}};return a;
+        a.states={{kind==api::ActionConfigKind::Battle?"OfficialIdle":"IdleShow","declared"}};
+        if(kind==api::ActionConfigKind::Battle)a.abilities={{"SlowUnrelatedAttack","AbilityList[0]"}};
+        return a;
     };
+    bool abilities_ready=false;
+    readers.begin_abilities=[&](const auto&){return std::make_unique<DelayedAbilities>(abilities_ready);};
     SceneLayout saved;saved.scene="mapA";
     SavedCharacter a;a.key=90;a.source=BrowseNpc{77};a.enabled=false;a.placement={{1,2,3},{0,0,0,1}};a.action=NpcMotion{123};
     auto b=a;b.key=91;b.look={LookMode::Instance,90,{}};b.source=BrowsePlayer{{11,0,0},77};
@@ -49,13 +61,15 @@ void TestLayoutController() {
     unsigned removed=0;LayoutController controller(registry,catalog,io,[&](auto){++removed;});
     const SceneAddress mapA{"mapA",1},mapB{"mapB",2};
     auto tick=[&](const SceneAddress& scene) {
-        io->Pump();controller.Advance(scene);catalog.Advance();
+        io->Pump();controller.Advance(scene);catalog.Advance(0);
         registry.Service({},scene,runtime.Appearance(),{});controller.Capture(true);
     };
     controller.Advance(mapA);controller.Capture(true);io->Pump();
     Check(store.Current("mapA")->characters.size()==2,"startup empty state overwrote saved layout");
     for(unsigned i=0;i<32;++i)tick(mapA);
     auto ids=registry.Ids();Check(ids.size()==2 && ids[0]!=90,"layout identities were not remapped");
+    Check(!abilities_ready && !catalog.Snapshot()->Actions(ids[1])->actions.finished,"fixture did not delay unrelated action lookup");
+    abilities_ready=true;
     Check(registry.Status(ids[1]).look.target==ids[0],"layout gaze target was not remapped");
     Check(controller.Snapshot().maps.at("mapA").phase=="ready","disabled layout did not finish");
     Check(std::get<NpcMotion>(registry.DesiredAction(ids[0])->request).id==123,"saved action missing");

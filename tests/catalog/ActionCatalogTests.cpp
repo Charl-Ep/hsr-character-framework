@@ -21,6 +21,11 @@ struct PendingRead final : api::AbilitySourceRead {
 }
 void TestActionCatalog() {
     {
+        ActionCatalog empty([](auto kind,const auto& path){return Document(kind,path);});
+        empty.Request({});Check(empty.Status().finished);
+        const auto revision=empty.Revision();empty.Request({});Check(empty.Revision()==revision);
+    }
+    {
         int linked_reads=0;
         ActionCatalog linked([&](auto kind,const auto& path){
             auto out=Document(kind,path);
@@ -180,6 +185,9 @@ void TestActionCatalog() {
     },{},{},{},[&](const auto& names){++begins;return std::make_unique<PendingRead>(steps,names);});
     sliced.Request({{ActionDomain::Alternate,{K::Battle,"old-batch"}}});sliced.Advance();sliced.Advance();
     Check(begins==1 && steps==1 && !sliced.Status().finished && sliced.Status().proposals.empty());
+    const auto slice_revision=sliced.Revision();
+    sliced.Request({{ActionDomain::Alternate,{K::Battle,"old-batch"}}, {ActionDomain::Alternate,{K::Battle,"old-batch"}}});
+    Check(sliced.Revision()==slice_revision); // duplicate source ownership adds no work
     // Replacing selection cannot publish stale proposals. The completed old
     // batch is still useful cache; the new selection gets its own batch next.
     sliced.Request({{ActionDomain::Alternate,{K::Battle,"new-batch"}}});

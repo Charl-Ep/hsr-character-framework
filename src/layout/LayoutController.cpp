@@ -15,7 +15,7 @@ LayoutController::LayoutController(SceneCharacters& characters,CatalogBrowser& c
     std::function<void(std::uint64_t)> removed,bool private_models)
     :characters_(characters),catalog_(catalog),io_(std::move(io)),removed_(std::move(removed)),private_models_(private_models) {}
 void LayoutController::Release(Map& map) {
-    for(auto id:map.sources)catalog_.ReleaseSource(id);
+    catalog_.BatchSources([&]{for(auto id:map.sources)catalog_.ReleaseSource(id);});
     map.sources.clear();map.plans.clear();map.actions.clear();
 }
 void LayoutController::Fail(Map& map,std::string error) {
@@ -24,7 +24,7 @@ void LayoutController::Fail(Map& map,std::string error) {
 void LayoutController::Begin(Map& map,SceneLayout layout) {
     ValidateSceneLayout(layout);Release(map);map.incoming=std::move(layout);
     map.phase=Phase::Preparing;map.status.phase="preparing";map.status.busy=true;map.status.error.clear();
-    for(const auto& row:map.incoming->characters)map.sources.push_back(catalog_.Prepare(row.source));
+    catalog_.BatchSources([&]{for(const auto& row:map.incoming->characters)map.sources.push_back(catalog_.Prepare(row.source));});
 }
 void LayoutController::Prepare(Map& map) {
     std::vector<CharacterPlan> plans;std::vector<std::optional<PlacedAction>> actions;
@@ -44,13 +44,18 @@ void LayoutController::Prepare(Map& map) {
             throw std::runtime_error("private model restoration requires the model release observer");
         const auto& saved=map.incoming->characters[i].action;
         std::optional<PlacedAction> action;
+        const auto* configured=saved?std::get_if<SavedConfiguredAction>(&*saved):nullptr;
+        const bool initial_battle=configured && configured->domain==ActionDomain::Alternate && plan.alternate &&
+            plan.alternate->initial_state.available && plan.alternate->initial_state.value==configured->state;
         // Even a proposal seen early can gain exit tasks during discovery. A
         // configured/ready request waits for its source's complete projection,
         // not unrelated sources in the shared catalog.
-        if(saved && !std::holds_alternative<NpcMotion>(*saved) && !source->actions.finished){pending=true;continue;}
-        try {action=RestoreLayoutAction(saved,source->actions);}
+        if(saved && !initial_battle && !std::holds_alternative<NpcMotion>(*saved) && !source->actions.finished){pending=true;continue;}
+        try {
+            if(initial_battle && !source->actions.finished)action=PlacedAction{ActionDomain::Alternate,FreeStyleState{configured->state}};
+            else action=RestoreLayoutAction(saved,source->actions);
+        }
         catch(const std::exception&) {
-            const auto* configured=saved?std::get_if<SavedConfiguredAction>(&*saved):nullptr;
             if(!configured || configured->domain!=ActionDomain::Alternate || !plan.alternate ||
                 !plan.alternate->initial_state.available || plan.alternate->initial_state.value!=configured->state)throw;
             action=PlacedAction{ActionDomain::Alternate,FreeStyleState{configured->state}};
@@ -68,6 +73,7 @@ void LayoutController::Prepare(Map& map) {
 void LayoutController::Install(Map& map) {
     if(std::any_of(map.old.begin(),map.old.end(),[&](auto id){return characters_.Contains(id);}))return;
     std::map<std::uint64_t,std::uint64_t> keys;
+    catalog_.BatchSources([&] {
     for(std::size_t i=0;i<map.incoming->characters.size();++i) {
         const auto& saved=map.incoming->characters[i];
         const auto id=characters_.Add(map.incoming->scene,std::move(map.plans[i]),std::move(map.actions[i]),saved.placement);
@@ -81,6 +87,7 @@ void LayoutController::Install(Map& map) {
         characters_.Look(map.added[i],look);
     }
     Release(map);map.status.initialized=true;map.phase=Phase::Applying;map.status.phase="applying";
+    });
     // The intended layout is now installed. Persist it even if the game later
     // refuses a particular actor; keep that actor's actual failure visible.
     map.captured.reset();map.incoming.reset();

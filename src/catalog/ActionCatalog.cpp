@@ -9,7 +9,13 @@ ActionCatalog::ActionCatalog(api::OfficialCatalog& api,api::TypeRelationships& t
 },{},[&api](const auto& path) {
     return api.ReadVisualConfigSources(path);
 },[&api]{return api.ReadReadyAnimationDefaults();},[&api,&types](const auto& names){return api.BeginAbilitySources(names,types);}){}
-void ActionCatalog::Request(std::vector<ActionSourceRoot> roots) { requested_=std::move(roots); Rebuild(); }
+void ActionCatalog::Request(std::vector<ActionSourceRoot> roots) {
+    auto key=[](const ActionSourceRoot& r){return std::tie(r.domain,r.source.kind,r.source.path);};
+    std::sort(roots.begin(),roots.end(),[&](const auto& a,const auto& b){return key(a)<key(b);});
+    roots.erase(std::unique(roots.begin(),roots.end(),[&](const auto& a,const auto& b){return key(a)==key(b);}),roots.end());
+    if(revision_ && roots.size()==requested_.size() && std::equal(roots.begin(),roots.end(),requested_.begin(),[&](const auto& a,const auto& b){return key(a)==key(b);}))return;
+    requested_=std::move(roots);Rebuild();
+}
 const api::ActionConfigInput* ActionCatalog::Document(const ActionSourceKey& source) const {
     const auto found=documents_.find(source); return found==documents_.end()?nullptr:&found->second;
 }
@@ -92,10 +98,10 @@ void ActionCatalog::Advance() {
     }
     const auto source=pending_.front(); advancing_=true;
     Load(source); advancing_=false;
-    // A synchronous callback may replace Request; rebuild the CURRENT intent.
-    Rebuild();
+    // Load already rebuilds the current intent, including synchronous changes.
 }
 void ActionCatalog::Rebuild() {
+    ++revision_;
     auto view=Project(requested_);
     status_=std::move(view.status);pending_=std::move(view.documents);
     pending_abilities_=std::move(view.abilities);pending_visuals_=std::move(view.visuals);

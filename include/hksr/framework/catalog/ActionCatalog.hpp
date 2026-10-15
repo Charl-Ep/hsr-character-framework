@@ -27,6 +27,7 @@ public:
     void Refresh(const ActionSourceKey& source); // explicit retry, no per-frame failure loop
     void RefreshAbility(const std::string& ability);
     const ActionCatalogStatus& Status() const { return status_; }
+    std::uint64_t Revision() const {return revision_;}
     // Pure projection of the shared cache. Does not change queued discovery,
     // read the engine, or merge another character's actions into this view.
     ActionCatalogStatus View(const std::vector<ActionSourceRoot>& roots) const;
@@ -61,5 +62,6 @@ private:
     std::vector<std::string> pending_abilities_;
     ActionCatalogStatus status_;
     bool advancing_=false;
+    std::uint64_t revision_=0;
 };
 }
