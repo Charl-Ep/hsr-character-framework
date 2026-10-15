@@ -1,0 +1,136 @@
+#include "../../tools/DevelopmentControl.hpp"
+#include "../../tools/DevelopmentProtocol.hpp"
+#include <stdexcept>
+#include <thread>
+
+using namespace hksr::framework;
+using namespace hksr::research;
+namespace {
+void Check(bool value){if(!value)throw std::runtime_error("development control test failed");}
+}
+void TestDevelopmentControl() {
+    using Json=nlohmann::json;
+    struct Pending {CharacterCommand command;ApplicationService::ReplySink reply;};
+    std::vector<Pending> pending;
+    ApplicationSnapshot snapshot;snapshot.prepared=true;
+    SceneCharacterStatus actor;actor.id=7;actor.active=true;actor.creations=3;actor.placement.position={1,2,3};
+    actor.outfit.emplace();actor.outfit->avatar=8005;actor.outfit->gender=1;actor.outfit->base_type=4;actor.outfit->applicable=actor.outfit->applied=true;
+    actor.action=ActionIntentStatus{17,3,ActionIntentPhase::Returned,ActionOutcome::Returned,"official call returned"};
+    snapshot.characters.push_back(actor);
+    OperationStatus operation;operation.id=91;operation.character=7;operation.kind=OperationKind::Disable;operation.phase=OperationPhase::Running;
+    snapshot.operations.sequence=4;snapshot.operations.entries.emplace(91,operation);
+    operation.id=92;operation.kind=OperationKind::Placement;snapshot.operations.entries.emplace(92,operation);
+    operation.id=93;operation.kind=OperationKind::Gaze;snapshot.operations.entries.emplace(93,operation);
+    DevelopmentControl control(42,{
+        [&](auto command,auto reply){pending.push_back({std::move(command),std::move(reply)});return static_cast<std::uint64_t>(pending.size());},
+        [&]{return snapshot;}});
+    auto drain=[&]{std::vector<Json> rows;for(const auto& text:control.Drain())rows.push_back(Json::parse(text));return rows;};
+    control.Submit("");control.Submit(" \t\r\n");
+    Check(drain().empty() && pending.empty());
+    control.Submit("{");
+    const auto malformed=drain();
+    Check(malformed.size()==1 && malformed[0]["event"]=="request_error" && pending.empty());
+    Json request={{"format","hksr.development-commands"},{"process_id",42},{"request_id","first"},{"commands",Json::array({
+        {{"op","select"},{"character",7}},
+        {{"op","state"},{"character",7},{"domain","battle"},{"name","StandBy"}},
+        {{"op","snapshot"}}})}};
+    control.Submit(request.dump());Check(pending.size()==2);
+    Check(std::get<BrowseCharacterActions>(pending[0].command).id==7);
+    const auto& action=std::get<SelectCharacterAction>(pending[1].command);
+    Check(action.id==7 && action.action.domain==ActionDomain::Alternate && std::get<AnimatorState>(action.action.request).name=="StandBy");
+    auto rows=drain();Check(rows.size()==3 && rows[0]["event"]=="queued" && rows[2]["snapshot"]["characters"][0]["creations"]==3);
+    Check(rows[2]["snapshot"]["characters"][0]["outfit"]["avatar"]==8005 && rows[2]["snapshot"]["characters"][0]["outfit"]["base_type"]==4);
+    Check(rows[2]["snapshot"]["characters"][0]["action_intent"]["id"]==17 && rows[2]["snapshot"]["characters"][0]["action_intent"]["phase"]=="returned");
+    Check(rows[2]["snapshot"]["operations"]["sequence"]==4 && rows[2]["snapshot"]["operations"]["entries"]["91"]["phase"]=="running");
+    Check(rows[2]["snapshot"]["operations"]["entries"]["92"]["kind"]=="placement" && rows[2]["snapshot"]["operations"]["entries"]["93"]["kind"]=="gaze");
+    std::thread frame([&]{pending[0].reply({1,7,true,"",0,17});pending[1].reply({2,7,false,"missing state",0});});frame.join();
+    rows=drain();Check(rows.size()==2 && rows[0]["accepted"]==true && rows[1]["error"]=="missing state");
+    Check(rows[0]["action_intent"]==17);
+    control.Submit(request.dump());Check(pending.size()==2 && drain()[0]["event"]=="duplicate_ignored");
+    request["request_id"]="wrong-process";request["process_id"]=43;control.Submit(request.dump());
+    Check(pending.size()==2 && drain()[0]["event"]=="request_error");
+    request["process_id"]=42;request["request_id"]="independent-errors";
+    request["commands"]=Json::array({{{"op","state"},{"character",7},{"domain","wrong"},{"name","StandBy"}},
+        {{"op","enable"},{"character",7},{"enabled",false}}});
+    control.Submit(request.dump());rows=drain();Check(rows.size()==2 && rows[0]["event"]=="command_error" && pending.size()==3);
+    Check(!std::get<EnableCharacter>(pending.back().command).enabled);
+    pending.back().reply({3,7,true,"",0});drain();
+    control.Submit("{broken");Check(drain()[0]["event"]=="request_error" && pending.size()==3);
+    Check(std::get<BrowsePlayer>(std::get<PrepareSource>(ParseDevelopmentCommand({{"op","source_player"},{"player_id",1217},{"npc_id",77}})).source).key.id==1217);
+    const auto create=std::get<AddPreparedCharacter>(ParseDevelopmentCommand({{"op","create_prepared"},{"source_request",12}}));
+    Check(create.source_request==12 && create.near_player);
+    const auto placed=std::get<AddPreparedCharacter>(ParseDevelopmentCommand({{"op","create_prepared"},{"source_request",12},
+        {"near_player",false},{"position",{{"x",1},{"y",2},{"z",3}}},{"rotation",{{"x",0},{"y",0},{"z",0},{"w",1}}}}));
+    Check(!placed.near_player && placed.placement.position.z==3 && placed.placement.rotation.w==1);
+    const auto replace=std::get<ReplacePreparedCharacter>(ParseDevelopmentCommand({{"op","replace_prepared"},{"character",7},{"source_request",12}}));
+    Check(replace.id==7 && replace.source_request==12 && !replace.payload);
+    Check(std::get<RetrySource>(ParseDevelopmentCommand({{"op","retry_source"},{"source_request",12}})).request==12);
+    Check(std::get<ReleaseSource>(ParseDevelopmentCommand({{"op","release_source"},{"source_request",12}})).request==12);
+    const auto layout=std::get<LayoutCommand>(ParseDevelopmentCommand({{"op","layout"},{"operation","load"},{"name","test"},{"scene","mapA"}}));
+    Check(layout.operation==LayoutOperation::Load && layout.name=="test" && layout.scene=="mapA");
+    Check(std::get<ReadCharacterControllerActions>(ParseDevelopmentCommand({{"op","controllers"},{"character",7}})).id==7);
+    Check(std::get<ObserveCharacter>(ParseDevelopmentCommand({{"op","observe"},{"character",7}})).id==7);
+    Check(std::get<ObserveCharacter>(ParseDevelopmentCommand({{"op","observe"},{"character",0}})).id==0);
+    const auto free_state=std::get<SelectCharacterAction>(ParseDevelopmentCommand({{"op","free_state"},{"character",7},{"domain","battle"},{"name","Skill02_V1"}}));
+    Check(free_state.action.domain==ActionDomain::Alternate && std::get<FreeStyleState>(free_state.action.request).name=="Skill02_V1");
+    Check(std::get<PlaceCharacter>(ParseDevelopmentCommand({{"op","place"},{"character",7},{"relative",true},
+        {"position",{{"x",1},{"y",0},{"z",0}}},{"rotation",{{"x",0},{"y",0},{"z",0},{"w",1}}}})).relative);
+    Check(std::get<PlaceCharacter>(ParseDevelopmentCommand({{"op","place"},{"character",7},{"snap_to_ground",false},
+        {"position",{{"x",0},{"y",1},{"z",0}}},{"rotation",{{"x",0},{"y",0},{"z",0},{"w",1}}}})).pose.snap_to_ground==false);
+    auto catalog=std::make_shared<CatalogSnapshot>();auto sources=std::make_shared<hksr::api::CharacterCatalog>();
+    sources->players.rows.push_back({17,23,0,1,"character.json","character.prefab"});
+    catalog->rows=sources;auto preparation=std::make_shared<SourceRequestStatus>();preparation->id=12;
+    preparation->phase=SourceRequestPhase::Unresolved;preparation->input=BrowsePlayer{{17,0,1},{}};
+    preparation->result.finished=true;preparation->result.foundation.candidates={31,32};catalog->sources[12]=preparation;snapshot.catalog=catalog;
+    request["request_id"]="catalog-snapshot";request["commands"]=Json::array({{{"op","snapshot"},{"catalog",true}}});
+    control.Submit(request.dump());rows=drain();
+    Check(rows[0]["snapshot"]["catalog"]["rows"]["players"][0]["id"]==17 && rows[0]["snapshot"]["catalog"]["rows"]["players"][0]["avatar"]==23);
+    Check(rows[0]["snapshot"]["catalog"]["sources"]["12"]["npc_candidates"].size()==2 && rows[0]["snapshot"]["catalog"]["sources"]["12"]["phase"]=="unresolved");
+    auto actor_catalog=std::make_shared<CharacterActionCatalog>();actor_catalog->revision=18;
+    catalog->characters[7]=actor_catalog;
+    ActionProposal proposal;proposal.domain=ActionDomain::Alternate;proposal.state="AnyState";
+    proposal.retirements.push_back({"AnyState",{}});actor_catalog->actions.proposals.push_back(proposal);
+    request["request_id"]="configured";request["commands"]=Json::array({{{"op","configured_state"},{"character",7},{"revision",18},{"domain","battle"},{"name","AnyState"}}});
+    control.Submit(request.dump());rows=drain();Check(rows[0]["event"]=="queued");
+    const auto& configured=std::get<SelectCatalogAction>(pending.back().command);
+    Check(configured.action.revision==18 && std::get<ConfiguredActionKey>(configured.action.key).state=="AnyState");
+    Check(std::get<FreeStyleState>(ResolveCatalogAction(*actor_catalog,configured.action).request).retirements.size()==1);
+    request["request_id"]="configured-other-owner";request["commands"][0]["character"]=9;
+    control.Submit(request.dump());Check(drain()[0]["event"]=="queued");
+    Check(std::get<SelectCatalogAction>(pending.back().command).id==9); // actor validation belongs to the application frame
+    auto ready=std::make_shared<ReadyActions>();ready->source="Original/Character.json";
+    ReadyPose pose;pose.skill_index=9;pose.variant_index=2;pose.state="UnrelatedPoseName";
+    pose.entry_ability={true,"ActualAbilityKey",{}};pose.child_skills={true,{"ChildKey"},{}};
+    ready->poses.push_back(pose);actor_catalog->actions.ready_actions.push_back(ready);
+    request["request_id"]="ready-exact";request["commands"]=Json::array({
+        {{"op","ready_pose"},{"character",7},{"revision",18},{"source",ready->source},{"pose",0}},{{"op","snapshot"},{"actions",true}}});
+    control.Submit(request.dump());rows=drain();Check(rows[0]["event"]=="queued");
+    const auto& ready_request=std::get<ReadyActionKey>(std::get<SelectCatalogAction>(pending.back().command).action.key);
+    Check(ready_request.source==ready->source && ready_request.pose==0);
+    const auto& captured=rows[1]["snapshot"]["catalog"]["character_actions"]["7"];
+    Check(captured["ready"][0]["poses"][0]["skill_index"]==9 && captured["ready"][0]["poses"][0]["entry_ability"]["value"]=="ActualAbilityKey");
+    Check(captured["proposals"][0]["state"]=="AnyState");
+    request["request_id"]="ready-out-of-range";request["commands"]=Json::array({{{"op","ready_pose"},{"character",7},{"revision",18},{"source",ready->source},{"pose",3}}});
+    control.Submit(request.dump());Check(drain()[0]["event"]=="queued");
+    bool absent=false;try{ResolveCatalogAction(*actor_catalog,std::get<SelectCatalogAction>(pending.back().command).action);}catch(const std::runtime_error&){absent=true;}Check(absent);
+    // Two independent clients can target two catalogs without selecting either
+    // in a menu. The worker queues identity; frame-time resolution owns data.
+    auto other_catalog=std::make_shared<CharacterActionCatalog>();other_catalog->revision=19;
+    other_catalog->actions.proposals.push_back({ActionDomain::Exploration,"OtherState",{}});
+    catalog->characters[9]=other_catalog;
+    request["request_id"]="two-actors";request["commands"]=Json::array({
+        {{"op","configured_state"},{"character",9},{"revision",19},{"domain","exploration"},{"name","OtherState"}},
+        {{"op","configured_state"},{"character",7},{"revision",18},{"domain","battle"},{"name","AnyState"}}});
+    control.Submit(request.dump());rows=drain();Check(rows.size()==2 && rows[0]["event"]=="queued" && rows[1]["event"]=="queued");
+    Check(std::get<SelectCatalogAction>(pending[pending.size()-2].command).id==9 && std::get<SelectCatalogAction>(pending.back().command).id==7);
+    const auto saved_selection=std::get<SelectCatalogAction>(pending.back().command).action;
+    actor_catalog->revision=20;bool changed=false;
+    try{ResolveCatalogAction(*actor_catalog,saved_selection);}catch(const std::runtime_error&){changed=true;}Check(changed);
+    bool rejected=false;try{ParseDevelopmentCommand({{"op","enable"},{"character",-1},{"enabled",true}});}catch(...){rejected=true;}Check(rejected);
+    // A queued result owns only copied data and its mailbox, never the adapter.
+    ApplicationService::ReplySink late;
+    request["commands"]=Json::array({{{"op","select"},{"character",7}}});
+    {DevelopmentControl temporary(42,{[&](auto,auto reply){late=std::move(reply);return 1;},[&]{return snapshot;}});
+        temporary.Submit(request.dump());}
+    late({1,7,true,"",0});
+}

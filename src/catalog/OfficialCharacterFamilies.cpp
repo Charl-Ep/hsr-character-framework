@@ -1,0 +1,117 @@
+#include <hksr/framework/character/CharacterDirectory.hpp>
+
+namespace hksr::framework {
+const std::vector<CharacterFamily>& OfficialCharacterFamilies() {
+    // Curated display relations, not game identities or animation compatibility.
+    // Policy and maintenance scope: docs/source-policy.md#display-families.
+    // Player references are exact rows observed in the 4.6 official catalog.
+    static const std::vector<CharacterFamily> rows={
+        {"family:tingyun","停云",
+         {"Config/ConfigCharacter/LocalPlayer/LocalPlayer_Tingyun_00_Config.json"},
+         {{"Config/ConfigCharacter/NPC/Avatar/NPC_Avatar_Tingyun_00_Config.json",
+           "Config/ConfigEntity/NPC/Avatar/NPC_Avatar_Maid_Tingyun_00_Entity.json","常规控制器"},
+          {"Config/ConfigCharacter/NPC/Avatar/NPC_Avatar_Tingyun_00_Config.json",
+           "Config/ConfigEntity/NPC/Avatar/NPC_Avatar_Maid_Tingyun_00_NoGraph_Entity.json","NoGraph：网格相同，控制器独立，另含4个表情片段"}}},
+        {"family:mydeimos","万敌",
+         {"Config/ConfigCharacter/LocalPlayer/LocalPlayer_Mydeimos_00_Config.json"},
+         {{"Config/ConfigCharacter/NPC/Avatar/NPC_Avatar_Mydeimos_00_Config.json",
+           "Config/ConfigEntity/NPC/Avatar/NPC_Avatar_Male_Mydeimos_00_Entity.json","普通尺寸"},
+          {"Config/ConfigCharacter/NPC/Avatar/NPC_Avatar_Mydeimos_00_Config.json",
+           "Config/ConfigEntity/NPC/Avatar/NPC_Avatar_Male_Mydeimos_00_Big_Entity.json","Big：渲染节点缩放1.5"}}},
+        {"family:mar-7th","三月七",
+         {"Config/ConfigCharacter/LocalPlayer/LocalPlayer_Mar_7th_00_Config.json",
+          "Config/ConfigCharacter/LocalPlayer/LocalPlayer_Mar_7th_10_Config.json"},
+         {
+          {"Config/ConfigCharacter/NPC/Avatar/NPC_Avatar_Mar_7th_00_Config.json",
+           "Config/ConfigEntity/NPC/Avatar/NPC_Avatar_Maid_Mar_7th_00_Entity.json","外观和动作配置独立；服装名称尚未逐项确认"},
+          {"Config/ConfigCharacter/NPC/Avatar/NPC_Avatar_Mar_7th_01_Config.json",
+           "Config/ConfigEntity/NPC/Avatar/NPC_Avatar_Maid_Mar_7th_01_Entity.json","外观和动作配置独立；服装名称尚未逐项确认"},
+          {"Config/ConfigCharacter/NPC/Avatar/NPC_Avatar_Mar_7th_10_Config.json",
+           "Config/ConfigEntity/NPC/Avatar/NPC_Avatar_Maid_Mar_7th_10_Entity.json","外观和动作配置独立；服装名称尚未逐项确认"}
+         }},
+        {"family:kafka","卡芙卡",
+         {"Config/ConfigCharacter/LocalPlayer/LocalPlayer_Kafka_00_Config.json"},
+         {
+          {"Config/ConfigCharacter/NPC/Avatar/NPC_Avatar_Kafka_00_Config.json",
+           "Config/ConfigEntity/NPC/Avatar/NPC_Avatar_Lady_Kafka_00_Entity.json","共用NPC控制器，网格／材质／对话表情有差异"},
+          {"Config/ConfigCharacter/NPC/Avatar/NPC_Avatar_Kafka_01_Config.json",
+           "Config/ConfigEntity/NPC/Avatar/NPC_Avatar_Lady_Kafka_01_Entity.json","共用NPC控制器，网格／材质／对话表情有差异"}
+         }},
+        {"family:huohuo","藿藿",
+         {"Config/ConfigCharacter/LocalPlayer/LocalPlayer_Huohuo_00_Config.json"},
+         {
+          {"Config/ConfigCharacter/NPC/Avatar/NPC_Avatar_Huohuo_00_Config.json",
+           "Config/ConfigEntity/NPC/Avatar/NPC_Avatar_Girl_Huohuo_00_Entity.json","身体网格共用；部件显隐、特效与部分动作不同"},
+          {"Config/ConfigCharacter/NPC/Avatar/NPC_Avatar_Huohuo_01_Config.json",
+           "Config/ConfigEntity/NPC/Avatar/NPC_Avatar_Girl_Huohuo_01_Entity.json","身体网格共用；部件显隐、特效与部分动作不同"}
+         }},
+        {"family:ratio","真理医生",
+         {"Config/ConfigCharacter/LocalPlayer/LocalPlayer_Dr_Ratio_00_Config.json"},
+         {
+          {"Config/ConfigCharacter/NPC/Avatar/NPC_Avatar_Dr_Ratio_00_Config.json",
+           "Config/ConfigEntity/NPC/Avatar/NPC_Avatar_Male_Dr_Ratio_00_Entity.json","头部资源结构不同；共用NPC控制器"},
+          {"Config/ConfigCharacter/NPC/Avatar/NPC_Avatar_Dr_Ratio_01_Config.json",
+           "Config/ConfigEntity/NPC/Avatar/NPC_Avatar_Male_Dr_Ratio_01_Entity.json","头部资源结构不同；共用NPC控制器"}
+         }},
+        {"family:acheron","黄泉",
+         {"Config/ConfigCharacter/LocalPlayer/LocalPlayer_Acheron_00_Config.json"},
+         {
+          {"Config/ConfigCharacter/NPC/Avatar/NPC_Avatar_Acheron_00_Config.json",
+           "Config/ConfigEntity/NPC/Avatar/NPC_Avatar_Lady_Acheron_00_Entity.json","头发／材质及动作／事件配置不同"},
+          {"Config/ConfigCharacter/NPC/Avatar/NPC_Avatar_Acheron_01_Config.json",
+           "Config/ConfigEntity/NPC/Avatar/NPC_Avatar_Lady_Acheron_01_Entity.json","头发／材质及动作／事件配置不同"}
+         }},
+        {"family:sunday","星期日",
+         {"Config/ConfigCharacter/LocalPlayer/LocalPlayer_Sunday_10_Config.json"},
+         {
+          {"Config/ConfigCharacter/NPC/Avatar/NPC_Avatar_Sunday_10_Config.json",
+           "Config/ConfigEntity/NPC/Avatar/NPC_Avatar_Lad_Sunday_10_Entity.json","两套独立表现资源；当前Player使用10"},
+          {"Config/ConfigCharacter/NPC/Avatar/NPC_Avatar_Sunday_00_Config.json",
+           "Config/ConfigEntity/NPC/Avatar/NPC_Avatar_Lad_Sunday_00_Entity.json","两套独立表现资源；当前Player使用10"}
+         }},
+        {"family:tribbie","缇宝",
+         {"Config/ConfigCharacter/LocalPlayer/LocalPlayer_Tribbie_00_Config.json"},
+         {
+          {"Config/ConfigCharacter/NPC/Avatar/NPC_Avatar_Tribbie_00_Config.json",
+           "Config/ConfigEntity/NPC/Avatar/NPC_Avatar_Kid_Tribbie_00_Entity.json","身体网格／控制器共用；脸／材质／表情不同"},
+          {"Config/ConfigCharacter/NPC/Avatar/NPC_Avatar_Tribbie_01_Config.json",
+           "Config/ConfigEntity/NPC/Avatar/NPC_Avatar_Kid_Tribbie_01_Entity.json","身体网格／控制器共用；脸／材质／表情不同"},
+          {"Config/ConfigCharacter/NPC/Avatar/NPC_Avatar_Tribbie_02_Config.json",
+           "Config/ConfigEntity/NPC/Avatar/NPC_Avatar_Kid_Tribbie_02_Entity.json","身体网格／控制器共用；脸／材质／表情不同"}
+         }},
+        {"family:phainon","白厄",
+         {"Config/ConfigCharacter/LocalPlayer/LocalPlayer_Phainon_00_Config.json"},
+         {
+          {"Config/ConfigCharacter/NPC/Avatar/NPC_Avatar_Phainon_00_Config.json",
+           "Config/ConfigEntity/NPC/Avatar/NPC_Avatar_Male_Phainon_00_Entity.json","10为带翼表现，模型／动作／事件独立"},
+          {"Config/ConfigCharacter/NPC/Avatar/NPC_Avatar_Phainon_10_Config.json",
+           "Config/ConfigEntity/NPC/Avatar/NPC_Avatar_Male_Phainon_10_Entity.json","10为带翼表现，模型／动作／事件独立"}
+         }},
+        {"family:evernight","长夜月",
+         {"Config/ConfigCharacter/LocalPlayer/LocalPlayer_Evernight_00_Config.json"},
+         {
+          {"Config/ConfigCharacter/NPC/Avatar/NPC_Avatar_Evernight_00_Config.json",
+           "Config/ConfigEntity/NPC/Avatar/NPC_Avatar_Maid_Evernight_00_Entity.json","已读网格／材质／控制器相同；对话表情配置不同"},
+          {"Config/ConfigCharacter/NPC/Avatar/NPC_Avatar_Evernight_01_Config.json",
+           "Config/ConfigEntity/NPC/Avatar/NPC_Avatar_Maid_Evernight_01_Entity.json","已读网格／材质／控制器相同；对话表情配置不同"}
+         }},
+        {"family:cyrene","Cyrene",
+         {"Config/ConfigCharacter/LocalPlayer/LocalPlayer_Cyrene_00_Config.json"},
+         {
+          {"Config/ConfigCharacter/NPC/Avatar/NPC_Avatar_Cyrene_00_Config.json",
+           "Config/ConfigEntity/NPC/Avatar/NPC_Avatar_Maid_Cyrene_00_Entity.json","不同体型、模型、动作及事件配置"},
+          {"Config/ConfigCharacter/NPC/Avatar/NPC_Avatar_CyreneNPC_00_Config.json",
+           "Config/ConfigEntity/NPC/Avatar/NPC_Avatar_Girl_CyreneNPC_00_Entity.json","不同体型、模型、动作及事件配置"}
+         }},
+        {"family:evanescia","Evanescia",
+         {"Config/ConfigCharacter/LocalPlayer/LocalPlayer_Evanescia_00_Config.json"},
+         {
+          {"Config/ConfigCharacter/NPC/Avatar/NPC_Avatar_Evanescia_00_Config.json",
+           "Config/ConfigEntity/NPC/Avatar/NPC_Avatar_Maid_Evanescia_00_Entity.json","Combat配置读取失败，尚未验证可用性"},
+          {"Config/ConfigCharacter/NPC/Avatar/NPC_Avatar_EvanesciaCombat_00_Config.json",
+           "Config/ConfigEntity/NPC/Avatar/NPC_Avatar_Maid_EvanesciaCombat_00_Entity.json","Combat配置读取失败，尚未验证可用性"}
+         }},
+    };
+    return rows;
+}
+}

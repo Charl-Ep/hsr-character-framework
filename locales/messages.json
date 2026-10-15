@@ -1,0 +1,537 @@
+{
+  "default_language": "en",
+  "messages": {
+    "WindowTitle": {
+      "parameters": {}
+    },
+    "Title": {
+      "parameters": {}
+    },
+    "ToggleHint": {
+      "parameters": {}
+    },
+    "Connecting": {
+      "parameters": {}
+    },
+    "Closing": {
+      "parameters": {}
+    },
+    "ClearError": {
+      "parameters": {}
+    },
+    "NewCharacter": {
+      "parameters": {}
+    },
+    "SearchInstances": {
+      "parameters": {}
+    },
+    "Removed": {
+      "parameters": {}
+    },
+    "Active": {
+      "parameters": {}
+    },
+    "Waiting": {
+      "parameters": {}
+    },
+    "NoInstances": {
+      "parameters": {}
+    },
+    "SelectInstanceHint": {
+      "parameters": {}
+    },
+    "InstanceCaption": {
+      "parameters": {
+        "name": "text",
+        "id": "count"
+      }
+    },
+    "InstanceError": {
+      "parameters": {}
+    },
+    "Remove": {
+      "parameters": {}
+    },
+    "RestoreInstance": {
+      "parameters": {}
+    },
+    "DeleteInstance": {
+      "parameters": {}
+    },
+    "ConfirmDelete": {
+      "parameters": {}
+    },
+    "DeleteInstanceHelp": {
+      "parameters": {}
+    },
+    "BattleIdle": {
+      "parameters": {}
+    },
+    "IdleState": {
+      "parameters": {}
+    },
+    "Rebuild": {
+      "parameters": {}
+    },
+    "RefreshActions": {
+      "parameters": {}
+    },
+    "Actions": {
+      "parameters": {}
+    },
+    "Controls": {
+      "parameters": {}
+    },
+    "Diagnostics": {
+      "parameters": {}
+    },
+    "SourcePrefix": {
+      "parameters": {}
+    },
+    "MapPrefix": {
+      "parameters": {}
+    },
+    "CreationCount": {
+      "parameters": {
+        "creations": "count",
+        "retiring": "count"
+      }
+    },
+    "ReloadDocument": {
+      "parameters": {}
+    },
+    "ReloadAbility": {
+      "parameters": {}
+    },
+    "CreationTitle": {
+      "parameters": {}
+    },
+    "OfficialNpc": {
+      "parameters": {}
+    },
+    "OfficialPlayer": {
+      "parameters": {}
+    },
+    "ExternalAdvanced": {
+      "parameters": {}
+    },
+    "NpcSourceHelp": {
+      "parameters": {}
+    },
+    "PlayerSourceHelp": {
+      "parameters": {}
+    },
+    "ExternalHelp": {
+      "parameters": {}
+    },
+    "PackagePath": {
+      "parameters": {}
+    },
+    "ReadPackage": {
+      "parameters": {}
+    },
+    "ReadingFile": {
+      "parameters": {}
+    },
+    "SourceColumn": {
+      "parameters": {}
+    },
+    "SelectionDetails": {
+      "parameters": {}
+    },
+    "SearchSources": {
+      "parameters": {}
+    },
+    "ShowEnhanced": {
+      "parameters": {}
+    },
+    "RefreshList": {
+      "parameters": {}
+    },
+    "ItemCount": {
+      "parameters": {
+        "count": "count"
+      }
+    },
+    "EnhancedSuffix": {
+      "parameters": {}
+    },
+    "SkinSuffix": {
+      "parameters": {}
+    },
+    "PreparingSource": {
+      "parameters": {}
+    },
+    "ChooseFoundation": {
+      "parameters": {}
+    },
+    "TechnicalDetails": {
+      "parameters": {}
+    },
+    "RetryPreparation": {
+      "parameters": {}
+    },
+    "SelectSourceHint": {
+      "parameters": {}
+    },
+    "ReadingCatalog": {
+      "parameters": {}
+    },
+    "NearPlayer": {
+      "parameters": {}
+    },
+    "WorldOffset": {
+      "parameters": {}
+    },
+    "InitialPosition": {
+      "parameters": {}
+    },
+    "YawDegrees": {
+      "parameters": {}
+    },
+    "CreateInstance": {
+      "parameters": {}
+    },
+    "ReloadExternal": {
+      "parameters": {}
+    },
+    "Cancel": {
+      "parameters": {}
+    },
+    "WaitingScene": {
+      "parameters": {}
+    },
+    "StateMissing": {
+      "parameters": {}
+    },
+    "ReadyPose": {
+      "parameters": {}
+    },
+    "RecoverBodyFace": {
+      "parameters": {}
+    },
+    "BodyFaceRequest": {
+      "parameters": {}
+    },
+    "RecentRequest": {
+      "parameters": {}
+    },
+    "NpcActionsHelp": {
+      "parameters": {}
+    },
+    "BrowseExploration": {
+      "parameters": {}
+    },
+    "BrowseBattle": {
+      "parameters": {}
+    },
+    "BattleModelHelp": {
+      "parameters": {}
+    },
+    "BattleCategoryHelp": {
+      "parameters": {}
+    },
+    "CurrentDomain": {
+      "parameters": {
+        "domain": "text"
+      }
+    },
+    "Battle": {
+      "parameters": {}
+    },
+    "ExplorationNpc": {
+      "parameters": {}
+    },
+    "ConfiguredActions": {
+      "parameters": {}
+    },
+    "BattleStates": {
+      "parameters": {}
+    },
+    "BodyFace": {
+      "parameters": {}
+    },
+    "RawStates": {
+      "parameters": {}
+    },
+    "NpcMotions": {
+      "parameters": {}
+    },
+    "ActionCategory": {
+      "parameters": {}
+    },
+    "SearchActions": {
+      "parameters": {}
+    },
+    "ReadyHelp": {
+      "parameters": {}
+    },
+    "ConditionalVariant": {
+      "parameters": {}
+    },
+    "ReadyTooltip": {
+      "parameters": {}
+    },
+    "NoReadyMatches": {
+      "parameters": {}
+    },
+    "ReadyAttackHelp": {
+      "parameters": {}
+    },
+    "ReadyAttackMissing": {
+      "parameters": {}
+    },
+    "BodyFaceHelp": {
+      "parameters": {}
+    },
+    "EnterHold": {
+      "parameters": {}
+    },
+    "Recover": {
+      "parameters": {}
+    },
+    "NoVisualMatches": {
+      "parameters": {}
+    },
+    "RawStateHelp": {
+      "parameters": {}
+    },
+    "ConfiguredHelp": {
+      "parameters": {}
+    },
+    "NpcFoundationHelp": {
+      "parameters": {}
+    },
+    "TypeColumn": {
+      "parameters": {}
+    },
+    "ExecuteColumn": {
+      "parameters": {}
+    },
+    "Play": {
+      "parameters": {}
+    },
+    "LoopState": {
+      "parameters": {}
+    },
+    "NonLoopState": {
+      "parameters": {}
+    },
+    "RawState": {
+      "parameters": {}
+    },
+    "Exploration": {
+      "parameters": {}
+    },
+    "ControllerNotRead": {
+      "parameters": {}
+    },
+    "NoActionMatches": {
+      "parameters": {}
+    },
+    "ReadingActions": {
+      "parameters": {}
+    },
+    "PositionHeading": {
+      "parameters": {}
+    },
+    "WorldPosition": {
+      "parameters": {}
+    },
+    "ApplyPlacement": {
+      "parameters": {}
+    },
+    "ReadPosition": {
+      "parameters": {}
+    },
+    "MoveStep": {
+      "parameters": {}
+    },
+    "TurnStep": {
+      "parameters": {}
+    },
+    "AxesHelp": {
+      "parameters": {}
+    },
+    "GazeHeading": {
+      "parameters": {}
+    },
+    "Automatic": {
+      "parameters": {}
+    },
+    "Disabled": {
+      "parameters": {}
+    },
+    "LookPlayer": {
+      "parameters": {}
+    },
+    "LookInstance": {
+      "parameters": {}
+    },
+    "LookPoint": {
+      "parameters": {}
+    },
+    "LookMode": {
+      "parameters": {}
+    },
+    "LookTarget": {
+      "parameters": {}
+    },
+    "SelectInstance": {
+      "parameters": {}
+    },
+    "GazePosition": {
+      "parameters": {}
+    },
+    "ApplyGaze": {
+      "parameters": {}
+    },
+    "LookEntity": {
+      "parameters": {}
+    },
+    "GazeDistanceLimit": {
+      "parameters": {}
+    },
+    "GazeMaxDistance": {
+      "parameters": {}
+    },
+    "GazeOutOfRange": {
+      "parameters": {}
+    },
+    "TurnLeft": {
+      "parameters": {}
+    },
+    "SnapGround": {
+      "parameters": {}
+    },
+    "SnapGroundHelp": {
+      "parameters": {}
+    },
+    "TurnRight": {
+      "parameters": {}
+    },
+    "PlayerTarget": {
+      "parameters": {}
+    },
+    "NpcPlacementHint": {
+      "parameters": {}
+    },
+    "ExternalPackage": {
+      "parameters": {}
+    },
+    "PlayerMode": {
+      "parameters": {}
+    },
+    "AxisY": {
+      "parameters": {}
+    },
+    "TurnAxis": {
+      "parameters": {}
+    },
+    "Language": {
+      "parameters": {}
+    },
+    "RawDiagnostics": {
+      "parameters": {}
+    },
+    "PlacementApplied": {
+      "parameters": {}
+    },
+    "PlacementFailed": {
+      "parameters": {}
+    },
+    "PlacementWaiting": {
+      "parameters": {}
+    },
+    "GazeAutomatic": {
+      "parameters": {}
+    },
+    "GazeSubmitted": {
+      "parameters": {}
+    },
+    "GazeDisabled": {
+      "parameters": {}
+    },
+    "GazeWaiting": {
+      "parameters": {}
+    },
+    "SettingsNotSaved": {
+      "parameters": {}
+    },
+    "MapLayouts": {
+      "parameters": {}
+    },
+    "LayoutHelp": {
+      "parameters": {}
+    },
+    "LayoutUnavailable": {
+      "parameters": {}
+    },
+    "LayoutReady": {
+      "parameters": {}
+    },
+    "LayoutReading": {
+      "parameters": {}
+    },
+    "LayoutPreparing": {
+      "parameters": {}
+    },
+    "LayoutRemoving": {
+      "parameters": {}
+    },
+    "LayoutApplying": {
+      "parameters": {}
+    },
+    "LayoutFailed": {
+      "parameters": {}
+    },
+    "LayoutCancelled": {
+      "parameters": {}
+    },
+    "LayoutSaved": {
+      "parameters": {}
+    },
+    "LayoutUnsaved": {
+      "parameters": {}
+    },
+    "LayoutRetry": {
+      "parameters": {}
+    },
+    "LayoutKeep": {
+      "parameters": {}
+    },
+    "LayoutName": {
+      "parameters": {}
+    },
+    "LayoutSave": {
+      "parameters": {}
+    },
+    "LayoutRefresh": {
+      "parameters": {}
+    },
+    "LayoutLoad": {
+      "parameters": {}
+    },
+    "LayoutDelete": {
+      "parameters": {}
+    },
+    "LayoutConfirm": {
+      "parameters": {}
+    },
+    "LayoutProceed": {
+      "parameters": {}
+    },
+    "LayoutLoadHelp": {
+      "parameters": {}
+    },
+    "LayoutOverwriteHelp": {
+      "parameters": {}
+    },
+    "LayoutDeleteHelp": {
+      "parameters": {}
+    },
+    "LayoutKeepHelp": {
+      "parameters": {}
+    }
+  }
+}
