@@ -1,4 +1,5 @@
 #include <hksr/framework/presentation/VisualEffectContext.hpp>
+#include <hksr/framework/presentation/VisualEffectBindings.hpp>
 #include <array>
 #include <cstring>
 #include <functional>
@@ -104,5 +105,35 @@ void TestVisualEffectContext() {
     a.state=3;release_on_remove=true;observed.Service();
     Check(observed.Drained() && a.removes==2 && b.removes==1 && roots.empty());
     Check(a.callback==&official_callback && b.callback==&official_callback && delegates.size()==previous_delegates);
+    // Actual execution receipts, not the selected body action, choose the
+    // persistent visual context. Completion of one sequence keeps effects.
+    int sequence=0,world=0;VisualEffectBindings bindings;
+    auto program=std::make_shared<VisualEffectContext>(services);
+    AnimationSequenceExecution execution;
+    execution.construction=1;execution.definition=2;execution.serial=3;execution.sequence=&sequence;
+    execution.origin={{reinterpret_cast<GameEntity*>(&entity),4},reinterpret_cast<GameWorld*>(&world)};
+    bindings.Bind(execution,program);a={};a.state=1;a.callback=&official_callback;
+    EffectSubmission submission;submission.sequence=execution;submission.origin=execution.origin;
+    submission.trigger.serial=8;submission.manager=&manager;submission.request={0,0,&a};
+    Check(bindings.Track("original-event",submission).has_value() && a.removes==0);
+    AnimationSequenceObservation done;done.execution=execution;done.original_returned=true;done.state_read=true;
+    bindings.Observe(done);
+    Check(bindings.Size()==0 && !program->Closing() && program->PendingRequests()==1 && a.callback==&official_callback);
+    // A later body action can share this program; an unrelated generation or
+    // direct submission cannot acquire it merely by reusing its sequence ID.
+    execution.serial=4;bindings.Bind(execution,program);submission.sequence=execution;
+    ++submission.origin.token.generation;Check(!bindings.Track("wrong-owner",submission));--submission.origin.token.generation;
+    submission.trigger.serial=0;Check(!bindings.Track("direct",submission));submission.trigger.serial=9;
+    ++submission.sequence.definition;Check(!bindings.Track("wrong-definition",submission));--submission.sequence.definition;
+    done.execution=execution;done.continues=true;bindings.Observe(done);Check(bindings.Size()==1);
+    program->End(false);b={};b.state=3;submission.request={0,0,&b};
+    Check(bindings.Track("late-event",submission).has_value() && b.removes==0);
+    program->Service();Check(program->Drained() && a.removes==1 && b.removes==1 && roots.empty());
+    // A new playback cannot take effects still attributed to the old one.
+    auto replacement=std::make_shared<VisualEffectContext>(services);execution.serial=5;bindings.Bind(execution,replacement);
+    Check(!bindings.Track("old-playback",submission) && bindings.Size()==1);
+    bool duplicate=false;try{bindings.Bind(execution,program);}catch(const std::logic_error&){duplicate=true;}Check(duplicate);
+    done.execution=execution;done.continues=false;done.original_returned=false;bindings.Observe(done);Check(bindings.Size()==0);
+    bindings.Bind(execution,replacement);replacement.reset();bindings.Collect();Check(bindings.Size()==0);
     delegates.clear();
 }

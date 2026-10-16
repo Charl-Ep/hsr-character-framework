@@ -71,6 +71,7 @@ set(HKSR_RUNTIME_SOURCES
     src/presentation/ReadyPlayback.cpp
     src/presentation/VisualPlayback.cpp
     src/presentation/VisualEffectContext.cpp
+    src/presentation/VisualEffectBindings.cpp
 
     # src/serialization
     src/serialization/PresentationProfileCodec.cpp

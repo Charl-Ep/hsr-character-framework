@@ -26,6 +26,14 @@ Creation, animation inputs, model transitions, controls and effect requests use 
 
 Player selections create an independent story actor from the selected prefab/configuration; NPC selections use map-NPC inputs. Catalog work and batches of new instances advance within elapsed-time slices. Individual engine calls are not preemptible.
 
+## Visual effect ownership
+
+`VisualEffectContext` owns explicitly submitted or adopted effect requests. It can persist across body actions. `End` requests cancellation; `Service` drains asynchronous results. Progress and Animator controls address retained requests, not global names.
+
+`VisualEffectBindings` maps an SDK sequence execution to a selected context. Feed execution notifications to `Observe` and matching official effect submissions to `Track`. Sequence completion releases the binding without ending the context. The program owner controls the context's lifetime and keeps it alive through cleanup.
+
+These are composition primitives; `FrameworkHost` does not install sequence observers or choose program bindings automatically.
+
 ## Data and builds
 
 File codecs return `CharacterPackage`, `AssetManifest`, `SceneLayout` and typed presentation profiles. HTTP and development transports encode/decode at their boundaries. Runtime state uses structures, enums and variants.
