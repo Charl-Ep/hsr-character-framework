@@ -170,7 +170,14 @@ void SceneCharacters::Service(const api::WorldFrame& frame,const std::optional<S
     std::chrono::steady_clock::time_point creation_start;
     for(auto id:ids) {
         auto& entry=entries_.at(id);
+        const auto* pending_handoff=entry.active?entry.active->session->Handoff():nullptr;
+        const bool pending=!entry.active ||
+            entry.active->revision!=entry.revision || entry.active->action_intent!=entry.action_intent ||
+            entry.active->session->Status().selected_action!=entry.active->session->Status().submitted_action ||
+            !pending_handoff || pending_handoff->Status().phase!=HandoffPhase::Ready;
+        const api::OperationTrace::Sink disabled;
         auto advance=[&](Epoch& epoch) {
+            api::OperationSpan span("character.advance");
             try { epoch.session->Service(frame,appearance,types); }
             catch(const std::exception& error) { entry.status.error=error.what(); }
             catch(...) { entry.status.error="unknown character service failure"; }
@@ -181,11 +188,15 @@ void SceneCharacters::Service(const api::WorldFrame& frame,const std::optional<S
         if(entry.active && (closing_ || !entry.status.enabled || entry.active->revision!=entry.revision ||
             (address_available && (!here || entry.active->incarnation!=scene->incarnation || entry.active->world!=frame.world)))) Retire(entry);
         for(auto it=entry.retired.begin();it!=entry.retired.end();) {
+            api::OperationTrace timing("character.retire",id,it->creation,frame.sequence,
+                it->session->Plan().package.id.c_str(),timing_enabled_?timing_:disabled);
             const bool controls_closed=!it->controls || it->controls->Close(frame);
             advance(*it);
             if(it->session->Status().closed && controls_closed) it=entry.retired.erase(it); else ++it;
         }
         if(entry.active) {
+            api::OperationTrace timing("character.advance",id,entry.active->creation,frame.sequence,
+                entry.plan.package.id.c_str(),timing_enabled_ && pending?timing_:disabled);
             SubmitAction(entry);
             advance(*entry.active);
             // Adopt only a successfully played automatic successor of THIS
@@ -232,19 +243,29 @@ void SceneCharacters::Service(const api::WorldFrame& frame,const std::optional<S
         entry.action_error.clear();
         entry.failed_revision=0;entry.creation_error.clear();
         ++entry.status.creations; // includes constructor failures before an epoch exists
+        api::OperationTrace timing("character.create",id,entry.status.creations,frame.sequence,
+            entry.plan.package.id.c_str(),timing_enabled_?timing_:disabled);
         try {
-            entry.active.emplace(Epoch{std::make_unique<CharacterSession>(frame.world,entry.plan,services_),frame.world,scene->incarnation,entry.revision});
+            {
+                api::OperationSpan span("character.construct");
+                entry.active.emplace(Epoch{std::make_unique<CharacterSession>(frame.world,entry.plan,services_),frame.world,scene->incarnation,entry.revision});
+                entry.active->creation=entry.status.creations;
+            }
             if(entry.action) {
                 entry.active->session_action=entry.active->session->Queue(entry.action->domain,entry.action->request);
                 entry.active->action_intent=entry.action_intent;
             }
-            create_(*entry.active->session,frame,SceneCreation{id,entry.placement});
+            {
+                api::OperationSpan span("character.factory");
+                create_(*entry.active->session,frame,SceneCreation{id,entry.placement});
+            }
             if(entry.active->session->Status().phase==SessionPhase::Failed) {
                 entry.failed_revision=entry.attempted_revision;
                 entry.creation_error=entry.active->session->Status().errors.empty()?"NPC creation failed":entry.active->session->Status().errors.front();
                 if(entry.look_submission)entry.look_submission->Complete(api::ControlPhase::Failed,entry.creation_error);
             }
             if(create_controls_) {
+                api::OperationSpan span("controls.initialize");
                 const auto& npc=entry.active->session->Character().Creation();
                 for(const auto& entity:npc.entities)if(entity.token.entity==npc.factory.entity && !entity.disposed) {
                     try {
@@ -264,7 +285,7 @@ void SceneCharacters::Service(const api::WorldFrame& frame,const std::optional<S
             // Callback may remove/rebuild/shutdown. Retain its newer intent;
             // don't run appearance/actions for a superseded creation.
             if(closing_ || !entry.status.enabled || entry.active->revision!=entry.revision) Retire(entry);
-            else entry.active->session->Service(frame,appearance,types);
+            else {api::OperationSpan span("character.first-service");entry.active->session->Service(frame,appearance,types);}
         } catch(const std::exception& error) {
             entry.status.error=error.what();entry.creation_error=error.what();
             if(entry.look_submission)entry.look_submission->Complete(api::ControlPhase::Failed,error.what());

@@ -60,6 +60,8 @@ struct Extension {
     std::filesystem::file_time_type control_modified{};
     void ReadControlRequests() {
         if(!framework)return;
+        std::error_code timing_error;
+        framework->SetOperationTracing(std::filesystem::exists(http_settings.parent_path()/L"ENABLE_OPERATION_TIMING",timing_error) && !timing_error);
         if(!control)control=std::make_unique<hksr::research::DevelopmentControl>(GetCurrentProcessId(),
             hksr::research::DevelopmentControl::Services{
                 [this](auto command,auto reply){return framework->Application().Post(std::move(command),std::move(reply));},

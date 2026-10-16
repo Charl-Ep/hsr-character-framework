@@ -4,6 +4,7 @@
 #include "CharacterControls.hpp"
 #include <hksr/entity/MapNpcInputs.hpp>
 #include <hksr/presentation/PresentationContext.hpp>
+#include <hksr/runtime/OperationTrace.hpp>
 #include <map>
 
 namespace hksr::framework {
@@ -36,6 +37,8 @@ public:
         create_controls_=std::move(create);player_=std::move(player);
     }
     void ConfigureProfiles(std::shared_ptr<const PresentationProfiles> profiles) {profiles_=std::move(profiles);}
+    void ConfigureTiming(api::OperationTrace::Sink sink){timing_=std::move(sink);}
+    void EnableTiming(bool enabled){timing_enabled_=enabled;}
     std::shared_ptr<const ControlSubmission> Place(std::uint64_t id,CharacterPlacement pose,bool relative);
     std::shared_ptr<const ControlSubmission> Look(std::uint64_t id,LookIntent intent);
     void Shutdown();
@@ -55,6 +58,7 @@ private:
         std::uint64_t incarnation=0,revision=0;
         std::unique_ptr<CharacterControls> controls;
         std::uint64_t action_intent=0,session_action=0;
+        std::uint64_t creation=0;
     };
     struct Entry {
         CharacterPlan plan;
@@ -81,6 +85,8 @@ private:
     struct CreationInput {std::uint64_t character;std::unique_ptr<api::MapNpcInputs> value;};
     std::vector<CreationInput> creation_inputs_;
     std::map<std::uint64_t,Entry> entries_;
+    api::OperationTrace::Sink timing_;
+    bool timing_enabled_=false;
     std::uint64_t next_=0;
     bool closing_=false,servicing_=false;
     api::PresentationContext::ControlFactory create_controls_;

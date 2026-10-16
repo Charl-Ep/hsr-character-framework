@@ -668,13 +668,17 @@ void TestModelProfileInputs() {
             session.Create(create);
         });
         const auto id=registry.Add("Map/A",plan,framework::PlacedAction{Domain::Exploration,framework::NpcMotion{18}},{{12,3,4},{0,0,0,1}});
+        std::vector<api::OperationTraceReport> timings;
+        registry.ConfigureTiming([&](const auto& report){timings.push_back(report);});registry.EnableTiming(true);
         const framework::SceneAddress a{"Map/A",1},b{"Map/B",2},returned{"Map/A",3};
         auto count=npc_plays;
         registry.Service(scene_frame,a,appearance,{});
         Check(registry.Status(id).active && registry.Status(id).creations==1 && npc_plays==count+1);
         Check(registry.Status(id).action->id==1 && registry.Status(id).action->creation==1 && registry.Status(id).action->phase==framework::ActionIntentPhase::Returned);
         registry.Service(scene_frame,std::nullopt,appearance,{});
+        const auto timing_count=timings.size();
         registry.Service(scene_frame,framework::SceneAddress{},appearance,{});
+        Check(timings.size()==timing_count); // Stable frames do not collect native calls.
         Check(registry.Status(id).active && registry.Status(id).creations==1); // missing identity is not map departure
         const auto superseded=registry.Select(id,{Domain::Exploration,framework::AnimatorState{"OtherState"}});
         const auto action_id=registry.Select(id,{Domain::Exploration,framework::AnimatorState{"SomeState"}});
@@ -689,6 +693,9 @@ void TestModelProfileInputs() {
         auto animator_count=animator_plays;
         registry.Service(scene_frame,returned,appearance,{});
         Check(registry.Status(id).creations==2 && animator_plays==animator_count+1); // replay latest selected action, from its request start
+        Check(std::any_of(timings.begin(),timings.end(),[&](const auto& r){return r.subject==id && r.generation==1 && r.rows[0].stage=="character.retire";}));
+        Check(std::any_of(timings.begin(),timings.end(),[&](const auto& r){return r.subject==id && r.generation==2 && r.rows[0].stage=="character.create";}));
+        registry.EnableTiming(false);const auto stopped_timings=timings.size();
         Check(registry.Status(id).action->id==action_id && registry.Status(id).action->creation==2 && registry.Status(id).action->phase==framework::ActionIntentPhase::Returned);
         registry.SetEnabled(id,false); registry.Service(scene_frame,returned,appearance,{});
         Check(!registry.Status(id).active && roots.empty());
@@ -698,6 +705,7 @@ void TestModelProfileInputs() {
         Check(registry.Status(id).creations==3);
         registry.Rebuild(id); registry.Service(scene_frame,returned,appearance,{});
         Check(registry.Status(id).creations==4 && registry.Status(id).active);
+        Check(timings.size()==stopped_timings); // Disabling collection leaves lifecycle behavior unchanged.
         registry.Look(id,{framework::LookMode::Point,0,{8,9,10}});
         registry.Select(id,{Domain::Exploration,framework::NpcMotion{18}});
         auto variant=plan;variant.package.id="another-variant";

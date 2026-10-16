@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include <type_traits>
 #include <sstream>
+#include <iomanip>
 #include <algorithm>
 
 namespace hksr::framework {
@@ -50,6 +51,21 @@ void FrameworkHost::Prepare(api::RuntimeMetadata& metadata,api::RuntimeCapabilit
     characters_=std::make_unique<SceneCharacters>(services_->Sessions(capabilities.event_record_lifetime));
     characters_->ConfigureProfiles(profiles_);
     characters_->ConfigureControls(services_->Controls(),services_->Player());
+    characters_->ConfigureTiming([this](const api::OperationTraceReport& report) {
+        if(report.rows.size()<2)return; // No operation ran, e.g. a deferred creation.
+        for(std::size_t i=0;i<report.rows.size();++i) {
+            const auto& row=report.rows[i];
+            std::ostringstream text;
+            text<<"operation-timing actor="<<report.subject<<" generation="<<report.generation
+                <<" frame="<<report.frame<<" tick="<<report.tick_ms<<" source="<<report.source
+                <<" row="<<i<<" parent="<<row.parent<<" stage="<<row.stage
+                <<" target=0x"<<std::hex<<row.native_target<<" rva=0x"<<row.native_rva<<std::dec
+                <<" module="<<std::quoted(row.native_module)<<" calls="<<row.calls
+                <<" inclusive_ns="<<row.inclusive_ns<<" self_ns="<<row.self_ns
+                <<" max_ns="<<row.max_ns<<" failures="<<row.failures<<" dropped="<<report.dropped;
+            Trace(text.str());
+        }
+    });
     official_catalog_=services_->CreateCatalog();
     catalog_metadata_=&metadata; // same host lifetime as official_catalog_; reader is created only on explicit request
     try {
@@ -135,6 +151,7 @@ bool FrameworkHost::Frame(const api::WorldFrame& frame,bool stop_requested) {
         try {Measure("types.prepare",[&]{PrepareTypes();});}
         catch(const std::exception& error) {binding_errors_.push_back(error.what());}
     }
+    characters_->EnableTiming(operation_tracing_.load());
     Measure("instances.service",[&]{characters_->Service(frame,scene,services_->Appearance(),types_);});
     if(!closing_)coordinator_->CaptureLayouts();
     Measure("isolation.collect",[&]{services_->CollectIsolation();});

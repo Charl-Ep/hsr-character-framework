@@ -19,6 +19,7 @@ public:
     ApplicationService& Application() {return application_;}
     const ApplicationService& Application() const {return application_;}
     void SetMenuMouse(bool requested) {menu_mouse_.store(requested);}
+    void SetOperationTracing(bool enabled) {operation_tracing_.store(enabled);}
     // Set once before registering with the SDK runtime. Pump this mailbox on
     // the bootstrap worker; the host only exchanges values with it.
     void SetLayoutIo(std::shared_ptr<LayoutIo> io) {layout_io_=std::move(io);}
@@ -79,6 +80,7 @@ private:
     std::unique_ptr<ApplicationCoordinator> coordinator_;
     std::unique_ptr<api::MouseModeLease> mouse_;
     std::atomic<bool> menu_mouse_{false};
+    std::atomic<bool> operation_tracing_{false};
     std::atomic<std::uint64_t> observed_character_{0};
     std::string mouse_trace_;
     std::map<std::uint64_t,std::shared_ptr<const CharacterNpcActions>> npc_actions_;
