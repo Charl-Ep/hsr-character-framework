@@ -1,4 +1,6 @@
 #include <hksr/framework/catalog/ActionCatalog.hpp>
+#include <hksr/framework/presentation/ActionSelection.hpp>
+#include <hksr/framework/layout/SceneLayout.hpp>
 #include <stdexcept>
 
 namespace {
@@ -18,8 +20,91 @@ struct PendingRead final : api::AbilitySourceRead {
     bool Done() const override {return remaining==0;}
     api::AbilitySources Take() override {Check(Done());return cancelled?api::AbilitySources{}:std::move(result);}
 };
+struct ProgressiveRead final : api::ProgressiveAbilitySourceRead {
+    std::vector<std::string> names;std::size_t next=0;api::CompletedAbilitySources completed;bool cancelled=false;
+    explicit ProgressiveRead(std::vector<std::string> input):names(std::move(input)){}
+    void Advance(std::uint32_t) override {
+        if(Done())return;
+        const auto name=names[next++];completed.abilities.push_back(name);
+        api::AnimationTaskSource task;task.ability=name;task.state={true,"action-"+name,{}};
+        completed.sources.animations.push_back(std::move(task));
+    }
+    void Cancel() override {cancelled=true;completed={};}
+    bool Done() const override {return cancelled || next==names.size();}
+    api::CompletedAbilitySources DrainCompleted() override {auto result=std::move(completed);completed={};return result;}
+    api::AbilitySources Take() override {Check(Done());return std::move(completed.sources);}
+};
 }
 void TestActionCatalog() {
+    {
+        using K=api::ActionConfigKind;
+        ActionCatalog progressive([](auto kind,const auto& path){
+            auto doc=Document(kind,path);doc.states={{"declared-"+path,"fixture"}};
+            if(kind==K::Battle)doc.abilities={{path,"ability"}};return doc;
+        },{},{},{},[](const auto& names){return std::make_unique<ProgressiveRead>(names);});
+        const ActionSourceRoot a{ActionDomain::Alternate,{K::Battle,"a"}},b{ActionDomain::Alternate,{K::Battle,"b"}},
+            exploration{ActionDomain::Exploration,{K::Adventure,"exploration"}};
+        progressive.Request({a,b,exploration});
+        progressive.Advance();progressive.Advance();progressive.Advance();
+        const auto before=progressive.Snapshot({a,exploration});
+        Check(before->Ready(ActionDomain::Exploration) && !before->Ready(ActionDomain::Alternate));
+        CharacterActionCatalog catalog{1,*before};
+        Check(std::get<AnimatorState>(ResolveCatalogAction(catalog,{1,ConfiguredActionKey{
+            ActionDomain::Exploration,"declared-exploration"}}).request).name=="declared-exploration");
+        bool rejected=false;try{ResolveCatalogAction(catalog,{1,ConfiguredActionKey{ActionDomain::Alternate,"declared-a"}});}
+        catch(const std::runtime_error&){rejected=true;}Check(rejected);
+        rejected=false;try{RestoreLayoutAction(SavedConfiguredAction{ActionDomain::Alternate,"declared-a"},catalog.actions);}
+        catch(const std::runtime_error&){rejected=true;}Check(rejected);
+        progressive.Advance();const auto first=progressive.Snapshot({a});
+        Check(first->finished && !progressive.Finished() && progressive.ReadingAbilities());
+        Check(first->proposals.back().state=="action-a" && !progressive.Snapshot({b})->finished);
+        progressive.Advance();Check(progressive.Finished() && progressive.Snapshot({a})==first);
+        CharacterActionCatalog completed{1,*first};
+        const auto menu=ResolveCatalogAction(completed,{1,ConfiguredActionKey{ActionDomain::Alternate,"action-a"}});
+        const auto restored=RestoreLayoutAction(SavedConfiguredAction{ActionDomain::Alternate,"action-a"},*first);
+        Check(std::get<FreeStyleState>(menu.request).name==std::get<FreeStyleState>(restored->request).name);
+    }
+    {
+        // Every source can advance while unrelated consumers retain exactly
+        // their previous immutable projection. No character/action name shortcut.
+        using K=api::ActionConfigKind;
+        int reads=0;bool replacement=false;
+        ActionCatalog many([&](auto kind,const auto& path){
+            ++reads;auto value=Document(kind,path);
+            value.states.push_back({replacement?"changed-"+path:path,"fixture"});
+            if(path=="0" || path=="1")value.presentation.event_files={true,{"shared-event"},{}};
+            if(path=="shared-event")value.referenced_event_file={true,"shared-event",{}};
+            return value;
+        });
+        std::vector<ActionSourceRoot> roots;
+        for(int i=0;i<98;++i)roots.push_back({i%2?ActionDomain::Alternate:ActionDomain::Exploration,
+            {i%2?K::Battle:K::Adventure,std::to_string(i)}});
+        many.Request(roots);
+        std::vector<std::shared_ptr<const ActionCatalogStatus>> before;
+        for(const auto& root:roots)before.push_back(many.Snapshot({root}));
+        std::size_t changed=0;
+        for(const auto& root:roots) {
+            many.Load(root.source);
+            for(std::size_t i=0;i<roots.size();++i) {
+                auto after=many.Snapshot({roots[i]});
+                if(after!=before[i]) {++changed;Check(roots[i].source.path==root.source.path);before[i]=after;}
+            }
+        }
+        Check(changed==98 && reads==98 && !many.Finished());
+        many.Advance();Check(many.Finished() && reads==99);
+        for(std::size_t i=0;i<roots.size();++i) {
+            auto after=many.Snapshot({roots[i]});
+            Check((after!=before[i])==(i<2));before[i]=after;
+        }
+        // Reloading a cycle-shared input invalidates all its consumers, but no
+        // other source. Held snapshots keep their old data and row ordering.
+        replacement=true;many.Refresh({K::AnimationEvent,"shared-event"});
+        Check(!many.Snapshot({roots[0]})->finished && !many.Snapshot({roots[1]})->finished);
+        Check(many.Snapshot({roots[2]})==before[2]);many.Advance();
+        Check(many.Snapshot({roots[0]})->proposals.back().state=="changed-shared-event");
+        Check(before[0]->proposals.back().state=="shared-event" && reads==100);
+        many.Request({roots[2]});Check(many.Finished() && many.Snapshot({roots[2]})==before[2]);
+    }
     {
         ActionCatalog empty([](auto kind,const auto& path){return Document(kind,path);});
         empty.Request({});Check(empty.Status().finished);
@@ -122,6 +207,12 @@ void TestActionCatalog() {
     catalog.Advance(); catalog.Advance(); catalog.Advance(); catalog.Advance(); catalog.Advance();
     Check(!catalog.Status().finished && counts.size()==5 && ability_reads==0);
     catalog.Advance(); Check(catalog.Status().finished && ability_reads==1 && catalog.Status().proposals.size()==8);
+    const auto exploration_view=catalog.Snapshot({requests[0]});
+    const auto battle_view=catalog.Snapshot({requests[1]});
+    catalog.RefreshAbility("BrokenAbility");
+    Check(catalog.Snapshot({requests[0]})==exploration_view && catalog.Snapshot({requests[1]})!=battle_view);
+    // Refresh the other root too; the fixture returns one joint batch.
+    catalog.RefreshAbility("AutomaticAbility");catalog.Advance();Check(ability_reads==2);
     Check(catalog.Status().abilities.size()==2 && catalog.Status().abilities[0].attempted && catalog.Status().abilities[1].issues.size()==1);
     const auto task_entry=std::find_if(catalog.Status().proposals.begin(),catalog.Status().proposals.end(),[](const auto& p) { return p.state=="Skill_From_Task"; });
     Check(task_entry!=catalog.Status().proposals.end() && task_entry->references[0].task.has_value() && !task_entry->references[0].task->enabled.value);
@@ -134,7 +225,7 @@ void TestActionCatalog() {
     Check(catalog.Document({K::Battle,"battle"})->abilities[0].value=="AutomaticAbility");
     catalog.Request(requests); catalog.Advance(); Check(counts.at({K::Adventure,"player"})==1 && counts.at({K::AnimationEvent,"missing"})==1);
     missing=true; catalog.Refresh({K::AnimationEvent,"missing"}); Check(!catalog.Status().finished);
-    catalog.Advance(); Check(catalog.Status().finished && catalog.Status().proposals.size()==10 && counts.at({K::AnimationEvent,"missing"})==2 && ability_reads==1);
+    catalog.Advance(); Check(catalog.Status().finished && catalog.Status().proposals.size()==10 && counts.at({K::AnimationEvent,"missing"})==2 && ability_reads==2);
     ActionCatalog* reentrant=nullptr;
     ActionCatalog changed([&](K kind,const std::string& path) {
         if(path=="old") reentrant->Request({{ActionDomain::Alternate,{K::Battle,"new"}}});

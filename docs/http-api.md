@@ -109,6 +109,8 @@ Instance gaze references are remapped on restoration. Cross-map targets, externa
 
 GET reads published data. Request catalog/action queries through POST first; lists may be partial while `finished=false`.
 
+Action views expose `domain_ready.exploration` and `domain_ready.battle`. Configured and ready actions are selectable after their domain is ready, including exit-effect data. The other domain may still be loading.
+
 Cursors use `<32 lowercase hex stream characters>:<decimal sequence>`. Connect without Last-Event-ID for a reset containing a full snapshot. Reconnect with the last applied event ID. Invalid syntax returns 400; expired, future or foreign-stream cursors produce reset.
 
 Updates contain changed character/operation maps, with null indicating deletion or history expiry. Runtime and sources appear when changed; catalog_changed and actions_changed invalidate larger views. Apply the whole event before saving its cursor. Intermediate changes may be coalesced.

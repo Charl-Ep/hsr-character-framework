@@ -26,11 +26,13 @@ public:
     bool ReadingAbilities() const {return bool(ability_read_);}
     void Refresh(const ActionSourceKey& source); // explicit retry, no per-frame failure loop
     void RefreshAbility(const std::string& ability);
-    const ActionCatalogStatus& Status() const { return status_; }
+    const ActionCatalogStatus& Status() const;
+    bool Finished() const { return finished_; }
     std::uint64_t Revision() const {return revision_;}
     // Pure projection of the shared cache. Does not change queued discovery,
     // read the engine, or merge another character's actions into this view.
     ActionCatalogStatus View(const std::vector<ActionSourceRoot>& roots) const;
+    std::shared_ptr<const ActionCatalogStatus> Snapshot(const std::vector<ActionSourceRoot>& roots) const;
     const api::ActionConfigInput* Document(const ActionSourceKey& source) const;
     // Source preparation shares this exact document read with discovery.
     const api::ActionConfigInput& Load(const ActionSourceKey& source);
@@ -40,8 +42,23 @@ private:
         std::vector<ActionSourceKey> documents;
         std::vector<std::string> abilities,visuals;
         bool ready=false;
+        std::set<ActionSourceKey> used_documents;
+        std::set<std::string> used_abilities,used_visuals;
+        bool uses_ready=false;
     };
-    Projection Project(const std::vector<ActionSourceRoot>& roots) const;
+    using ViewKey=std::vector<std::tuple<ActionDomain,api::ActionConfigKind,std::string>>;
+    struct CachedView {
+        std::shared_ptr<const ActionCatalogStatus> value;
+        std::set<ActionSourceKey> documents;
+        std::set<std::string> abilities,visuals;
+        bool ready=false;
+    };
+    // One dependency walk for discovery and projection. Discovery skips value
+    // assembly; projections additionally retain their invalidation dependencies.
+    Projection Project(const std::vector<ActionSourceRoot>& roots,bool values=true) const;
+    void InvalidateDocument(const ActionSourceKey& source);
+    void InvalidateAbility(const std::string& ability);
+    void StoreAbilities(const std::vector<std::string>& names,api::AbilitySources result);
     void Rebuild();
     Read read_;
     ReadAbility read_ability_;
@@ -59,8 +76,12 @@ private:
     std::map<ActionSourceKey,api::ActionConfigInput> documents_;
     std::vector<ActionSourceKey> pending_;
     std::map<std::string,api::AbilitySources> ability_sources_;
+    std::map<std::string,std::vector<ActionRetirement>> retirements_;
     std::vector<std::string> pending_abilities_;
-    ActionCatalogStatus status_;
+    mutable ActionCatalogStatus status_;
+    mutable std::uint64_t status_revision_=0;
+    mutable std::map<ViewKey,CachedView> views_;
+    bool finished_=false;
     bool advancing_=false;
     std::uint64_t revision_=0;
 };

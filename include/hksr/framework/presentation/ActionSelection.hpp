@@ -24,6 +24,11 @@ inline PlacedAction ResolveCatalogAction(const CharacterActionCatalog& catalog,c
         throw std::runtime_error("action source changed; read this instance's catalog again");
     return std::visit([&](const auto& key)->PlacedAction {
         using T=std::decay_t<decltype(key)>;
+        const auto domain=[&] {
+            if constexpr(std::is_same_v<T,ConfiguredActionKey>)return key.domain;
+            else return ActionDomain::Alternate;
+        }();
+        if(!catalog.actions.Ready(domain))throw std::runtime_error("action data is still being read");
         if constexpr(std::is_same_v<T,ConfiguredActionKey>) {
             for(const auto& row:catalog.actions.proposals)
                 if(row.domain==key.domain && row.state==key.state)return {row.domain,row.Request()};

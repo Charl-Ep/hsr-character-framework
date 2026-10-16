@@ -48,8 +48,14 @@ void Menu::Actions(ApplicationService& host,const ApplicationSnapshot& snapshot,
         if(!SourceMatches(label+" "+detail,action_filter_))return;
         ImGui::PushID(shown++);
         const float width=std::max(1.0f,ImGui::GetContentRegionAvail().x);
+        bool pending=false;
+        if(const auto* selection=std::get_if<SelectCatalogAction>(&command))
+            pending=current && !current->actions.Ready(std::holds_alternative<ReadyActionKey>(selection->action.key)?
+                ActionDomain::Alternate:std::get<ConfiguredActionKey>(selection->action.key).domain);
+        ImGui::BeginDisabled(pending);
         if(ImGui::Selectable(label.c_str(),false,0,{width,ImGui::GetTextLineHeight()+12}))host.Post(std::move(command));
         if(ImGui::IsItemHovered() && (!detail.empty() || ImGui::CalcTextSize(label.c_str()).x>width)){BeginHelp();Text(label);Text(detail);EndHelp();}
+        ImGui::EndDisabled();
         ImGui::PopID();
     };
     if(show_ready && current) {

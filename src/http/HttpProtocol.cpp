@@ -242,6 +242,8 @@ Json Actions(const ApplicationSnapshot& s,std::uint64_t character) {
         {"configured",Json::array()},{"ready",Json::array()},{"npc",Json::array()}};
     if(const auto* c=s.catalog?s.catalog->Actions(character):nullptr) {
         out["available"]=true;out["revision"]=std::to_string(c->revision);out["finished"]=c->actions.finished;
+        out["domain_ready"]={{"exploration",c->actions.Ready(ActionDomain::Exploration)},
+            {"battle",c->actions.Ready(ActionDomain::Alternate)}};
         for(const auto& p:c->actions.proposals)out["configured"].push_back(Configured(p.domain,p.state));
         for(const auto& set:c->actions.ready_actions)for(std::size_t i=0;i<set->poses.size();++i) {
             const auto& pose=set->poses[i];Json attacks=Json::array();

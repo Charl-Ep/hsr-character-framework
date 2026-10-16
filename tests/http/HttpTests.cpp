@@ -83,6 +83,11 @@ void Protocol() {
     auto set=std::make_shared<ReadyActions>();set->source="battle/config";set->poses.resize(1);set->poses[0].label="Skill ready";
     actions->actions.ready_actions.push_back(set);catalog->characters[3]=actions;state.catalog=catalog;state.characters.resize(1);state.characters[0].id=3;
     const auto list=http::Actions(state,3);Check(list["revision"]=="4" && list["ready"].size()==1 && list["configured"].size()==1,"per-character action view");
+    Check(list["domain_ready"]["exploration"]==true && list["domain_ready"]["battle"]==true,"settled action domains");
+    actions->actions.finished=false;actions->actions.pending_domains.insert(ActionDomain::Alternate);
+    const auto partial_list=http::Actions(state,3);
+    Check(partial_list["domain_ready"]["exploration"]==true && partial_list["domain_ready"]["battle"]==false,"independent domain readiness");
+    actions->actions.pending_domains.clear();actions->actions.finished=true;
     auto motions=std::make_shared<CharacterNpcActions>();motions->creation=1;motions->source.motions.resize(1);motions->source.motions[0].id=17;
     state.npc_actions[3]=motions;state.characters[0].creations=2;
     Check(http::Actions(state,3)["npc"].empty(),"do not expose a prior creation's NPC motions");

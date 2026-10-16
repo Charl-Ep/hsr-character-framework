@@ -67,9 +67,11 @@ void TestLayoutController() {
     controller.Advance(mapA);controller.Capture(true);io->Pump();
     Check(store.Current("mapA")->characters.size()==2,"startup empty state overwrote saved layout");
     for(unsigned i=0;i<32;++i)tick(mapA);
-    auto ids=registry.Ids();Check(ids.size()==2 && ids[0]!=90,"layout identities were not remapped");
-    Check(!abilities_ready && !catalog.Snapshot()->Actions(ids[1])->actions.finished,"fixture did not delay unrelated action lookup");
+    Check(registry.Ids().empty(),"default idle bypassed the same domain completion required by other actions");
+    Check(store.Current("mapA")->characters.size()==2,"pending action preparation overwrote saved layout");
     abilities_ready=true;
+    for(unsigned i=0;i<32;++i)tick(mapA);
+    auto ids=registry.Ids();Check(ids.size()==2 && ids[0]!=90,"layout identities were not remapped");
     Check(registry.Status(ids[1]).look.target==ids[0],"layout gaze target was not remapped");
     Check(controller.Snapshot().maps.at("mapA").phase=="ready","disabled layout did not finish");
     Check(std::get<NpcMotion>(registry.DesiredAction(ids[0])->request).id==123,"saved action missing");

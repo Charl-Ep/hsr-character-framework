@@ -5,23 +5,27 @@
 #include <chrono>
 
 namespace hksr::framework {
-ActionCatalogStatus CatalogBrowser::DomainActions(std::uint64_t source,ActionDomain domain) const {
-    std::vector<ActionSourceRoot> roots;
-    for(const auto& root:source_roots_.at(source))if(root.domain==domain)roots.push_back(root);
-    return actions_.View(roots);
-}
-CatalogBrowser::CatalogBrowser(CatalogReaders readers)
-    :readers_(std::move(readers)),actions_(readers_.document,readers_.abilities,readers_.visuals,readers_.ready_defaults,readers_.begin_abilities) {Publish();}
+CatalogBrowser::CatalogBrowser(CatalogReaders readers,std::function<void(const CatalogWork&)> report)
+    :readers_(std::move(readers)),actions_(readers_.document,readers_.abilities,readers_.visuals,readers_.ready_defaults,readers_.begin_abilities),
+     report_(std::move(report)) {Publish();}
 void CatalogBrowser::Publish() {
     if(source_batch_){publication_dirty_=true;return;}
     publication_dirty_=false;
     for(const auto& entry:source_roots_) {
+        const auto view=actions_.Snapshot(entry.second);
+        if(source_views_[entry.first]==view)continue;
         auto value=std::make_shared<SourceRequestStatus>(*state_.sources.at(entry.first));
-        value->actions=actions_.View(entry.second);state_.sources[entry.first]=std::move(value);
+        value->actions=*view;state_.sources[entry.first]=std::move(value);source_views_[entry.first]=view;
     }
-    for(const auto& entry:character_sources_)
+    for(const auto& entry:character_sources_) {
+        const auto view=actions_.Snapshot(entry.second.roots);
+        const auto previous=state_.characters.find(entry.first);
+        if(character_views_[entry.first]==view && previous!=state_.characters.end() &&
+            previous->second->revision==entry.second.revision)continue;
         state_.characters[entry.first]=std::make_shared<const CharacterActionCatalog>(CharacterActionCatalog{
-            entry.second.revision,actions_.View(entry.second.roots)});
+            entry.second.revision,*view});
+        character_views_[entry.first]=view;
+    }
     snapshot_=std::make_shared<const CatalogSnapshot>(state_);
 }
 void CatalogBrowser::RequestActions() {
@@ -89,6 +93,7 @@ void CatalogBrowser::AdvanceSource() {
 }
 bool CatalogBrowser::AdvanceOne() {
         if(table_pending_) {
+            ++work_.source_steps;
             table_pending_=false;state_.attempted=true;
             api::CharacterCatalog rows;state_.table_error.clear();
             try {rows=readers_.characters();}
@@ -102,25 +107,38 @@ bool CatalogBrowser::AdvanceOne() {
             publication_dirty_=true;
             return true;
         }
-        const bool action_pending=actions_.ReadingAbilities() || (actions_started_ && !actions_.Status().finished);
+        const bool action_pending=actions_.ReadingAbilities() || (actions_started_ && !actions_.Finished());
         if(preparation_ && !pending_sources_.empty() && (source_turn_ || !action_pending)) {
+            ++work_.source_steps;
             AdvanceSource();source_turn_=false;return true;
         }
-        if(action_pending) {actions_.Advance();source_turn_=true;return true;}
+        if(action_pending) {++work_.action_steps;actions_.Advance();source_turn_=true;return true;}
         return false;
 }
 void CatalogBrowser::Advance(std::uint32_t budget_microseconds) {
     if(sources_dirty_ && !source_batch_)RequestActions();
     const auto started=std::chrono::steady_clock::now();const auto revision=actions_.Revision();
+    bool advanced=false;
     try {
         do {
             if(!AdvanceOne())break;
+            advanced=true;
         }while(std::chrono::steady_clock::now()-started<std::chrono::microseconds(budget_microseconds));
     }catch(const std::exception& error){state_.error=error.what();publication_dirty_=true;}
     catch(...){state_.error="unknown catalog query failure";publication_dirty_=true;}
     // Publish one immutable projection per slice, not once per cheap cached
     // request. Individual engine calls remain non-preemptible.
-    if(publication_dirty_ || actions_.Revision()!=revision)Publish();
+    const bool changed=publication_dirty_ || actions_.Revision()!=revision;
+    if(changed)Publish();
+    if(advanced || changed) {
+        const auto elapsed=std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now()-started).count();
+        ++work_.slices;work_.total_us+=elapsed;work_.max_us=std::max(work_.max_us,static_cast<std::uint64_t>(elapsed));
+    }
+    if(work_.slices && !table_pending_ && pending_sources_.empty() && !sources_dirty_ &&
+        !actions_.ReadingAbilities() && (!actions_started_ || actions_.Finished())) {
+        if(report_)try{report_(work_);}catch(...) {} // diagnostics do not own catalog progress
+        work_={};
+    }
 }
 std::uint64_t CatalogBrowser::RetrySource(std::uint64_t request) {
     const auto found=state_.sources.find(request);
@@ -137,7 +155,7 @@ std::uint64_t CatalogBrowser::RetrySource(std::uint64_t request) {
 void CatalogBrowser::ReleaseSource(std::uint64_t request) {
     if(!state_.sources.erase(request))return; // repeated release is harmless
     pending_sources_.erase(std::remove(pending_sources_.begin(),pending_sources_.end(),request),pending_sources_.end());
-    source_roots_.erase(request);RequestActions();Publish();
+    source_roots_.erase(request);source_views_.erase(request);RequestActions();Publish();
 }
 void CatalogBrowser::RefreshDocument(const ActionSourceKey& source) {
     // Only catalogs referencing this document can have their row identities
@@ -169,7 +187,7 @@ PlacedAction CatalogBrowser::ResolveAction(std::uint64_t character,const Catalog
     return ResolveCatalogAction(*found->second,selection);
 }
 void CatalogBrowser::ForgetCharacter(std::uint64_t id) {
-    character_sources_.erase(id);state_.characters.erase(id);Publish();
+    character_sources_.erase(id);character_views_.erase(id);state_.characters.erase(id);RequestActions();Publish();
 }
 CharacterPlan CatalogBrowser::Plan(std::uint64_t request,std::shared_ptr<const ModelAssetInput> payload,std::string look) const {
     const auto found=state_.sources.find(request);

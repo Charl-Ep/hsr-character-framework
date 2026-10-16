@@ -40,6 +40,8 @@ struct AbilityDocumentStatus {
 };
 struct ActionCatalogStatus {
     bool finished=false;
+    std::set<ActionDomain> pending_domains;
+    bool Ready(ActionDomain domain) const {return !pending_domains.count(domain);}
     std::vector<ActionDocumentStatus> documents;
     std::vector<ActionProposal> proposals;
     std::vector<AbilityDocumentStatus> abilities;

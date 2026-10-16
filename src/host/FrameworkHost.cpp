@@ -8,7 +8,7 @@
 
 namespace hksr::framework {
 namespace {
-class TimedAbilityRead final : public api::AbilitySourceRead {
+class TimedAbilityRead final : public api::ProgressiveAbilitySourceRead {
     std::unique_ptr<api::AbilitySourceRead> read_;
     std::function<void(const std::string&)> trace_;
     std::size_t roots_,slices_=0;
@@ -30,6 +30,10 @@ public:
     void Cancel() override {cancelled_=true;read_->Cancel();}
     bool Done() const override {return read_->Done();}
     api::AbilitySources Take() override {return read_->Take();}
+    api::CompletedAbilitySources DrainCompleted() override {
+        if(auto* progressive=dynamic_cast<api::ProgressiveAbilitySourceRead*>(read_.get()))return progressive->DrainCompleted();
+        return {};
+    }
 };
 }
 void FrameworkHost::Assemble(api::ManagedObjects& objects,std::unique_ptr<RuntimeServices> services,api::RuntimeCapabilities capabilities) {
@@ -81,7 +85,11 @@ void FrameworkHost::Prepare(api::RuntimeMetadata& metadata,api::RuntimeCapabilit
         [this]{return Measure("catalog.ready-defaults",[&]{return official_catalog_->ReadReadyAnimationDefaults();});},
         [this,&metadata](const auto& names)->std::unique_ptr<api::AbilitySourceRead>{
             return std::make_unique<TimedAbilityRead>(official_catalog_->BeginAbilitySources(names,metadata),names.size(),
-                [this](const auto& message){Trace(message);});}});
+                [this](const auto& message){Trace(message);});}},[this](const CatalogWork& work){
+            Trace("catalog completed slices="+std::to_string(work.slices)+" total_us="+std::to_string(work.total_us)+
+                " max_us="+std::to_string(work.max_us)+" source_steps="+std::to_string(work.source_steps)+
+                " action_steps="+std::to_string(work.action_steps));
+        });
     PrepareApplication(std::move(browser));
     ApplicationSnapshot snapshot;snapshot.prepared=true;snapshot.binding_errors=binding_errors_;application_.Publish(std::move(snapshot));
 }

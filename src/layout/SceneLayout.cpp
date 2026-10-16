@@ -50,10 +50,12 @@ std::optional<PlacedAction> RestoreLayoutAction(const std::optional<SavedAction>
             // selectable config catalogue. Recheck membership at playback on
             // the newly loaded Animator; never persist numeric runtime hashes.
             if(value.controller_observed)return {value.domain,FreeStyleState{value.state,0,0,{},true}};
+            if(!catalog.Ready(value.domain))throw std::runtime_error("action data is still being read");
             for(const auto& candidate:catalog.proposals)
                 if(candidate.domain==value.domain && candidate.state==value.state)return {candidate.domain,candidate.Request()};
             throw std::runtime_error("saved configured action is absent: "+value.state);
         } else {
+            if(!catalog.Ready(ActionDomain::Alternate))throw std::runtime_error("action data is still being read");
             std::optional<ReadyState> found;
             for(const auto& set:catalog.ready_actions)if(set->source==value.source)
                 for(std::size_t i=0;i<set->poses.size();++i) {

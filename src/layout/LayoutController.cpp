@@ -16,7 +16,7 @@ LayoutController::LayoutController(SceneCharacters& characters,CatalogBrowser& c
     :characters_(characters),catalog_(catalog),io_(std::move(io)),removed_(std::move(removed)),private_models_(private_models) {}
 void LayoutController::Release(Map& map) {
     catalog_.BatchSources([&]{for(auto id:map.sources)catalog_.ReleaseSource(id);});
-    map.sources.clear();map.plans.clear();map.actions.clear();
+    map.sources.clear();map.plans.clear();map.actions.clear();map.plan_ready.clear();map.action_views.clear();
 }
 void LayoutController::Fail(Map& map,std::string error) {
     Release(map);map.phase=Phase::Failed;map.status.phase="failed";map.status.busy=false;map.status.error=std::move(error);
@@ -25,9 +25,10 @@ void LayoutController::Begin(Map& map,SceneLayout layout) {
     ValidateSceneLayout(layout);Release(map);map.incoming=std::move(layout);
     map.phase=Phase::Preparing;map.status.phase="preparing";map.status.busy=true;map.status.error.clear();
     catalog_.BatchSources([&]{for(const auto& row:map.incoming->characters)map.sources.push_back(catalog_.Prepare(row.source));});
+    const auto count=map.sources.size();map.plans.resize(count);map.actions.resize(count);
+    map.plan_ready.resize(count,false);map.action_views.resize(count);
 }
 void LayoutController::Prepare(Map& map) {
-    std::vector<CharacterPlan> plans;std::vector<std::optional<PlacedAction>> actions;
     const auto snapshot=catalog_.Snapshot();bool pending=false;
     for(std::size_t i=0;i<map.sources.size();++i) {
         const auto* source=snapshot->Source(map.sources[i]);
@@ -38,36 +39,26 @@ void LayoutController::Prepare(Map& map) {
             for(const auto& note:source->result.errors)error+=" "+note;
             throw std::runtime_error(error);
         }
-        auto plan=catalog_.Plan(source->id);
-        plan.presentation_phase=map.incoming->characters[i].presentation_phase;
-        if((plan.package.appearance || plan.payload) && !private_models_)
-            throw std::runtime_error("private model restoration requires the model release observer");
+        if(!map.plan_ready[i]) {
+            auto plan=catalog_.Plan(source->id);
+            plan.presentation_phase=map.incoming->characters[i].presentation_phase;
+            if((plan.package.appearance || plan.payload) && !private_models_)
+                throw std::runtime_error("private model restoration requires the model release observer");
+            map.plans[i]=std::move(plan);map.plan_ready[i]=true;
+        }
+        const auto source_view=snapshot->sources.at(source->id);
+        if(map.action_views[i]==source_view)continue;
         const auto& saved=map.incoming->characters[i].action;
-        std::optional<PlacedAction> action;
         const auto* configured=saved?std::get_if<SavedConfiguredAction>(&*saved):nullptr;
-        const bool initial_battle=configured && configured->domain==ActionDomain::Alternate && plan.alternate &&
-            plan.alternate->initial_state.available && plan.alternate->initial_state.value==configured->state;
-        std::optional<ActionCatalogStatus> domain_actions;
-        if(saved && !initial_battle && !std::holds_alternative<NpcMotion>(*saved))
-            domain_actions=catalog_.DomainActions(source->id,configured?configured->domain:ActionDomain::Alternate);
-        const auto& available=domain_actions?*domain_actions:source->actions;
+        const auto& available=source->actions;
         // Even a proposal seen early can gain exit tasks during discovery. A
         // configured/ready request waits for its required domain's complete
         // projection, not the other domain's unrelated ability graph.
-        if(saved && !initial_battle && !std::holds_alternative<NpcMotion>(*saved) && !available.finished){pending=true;continue;}
-        try {
-            if(initial_battle && !available.finished)action=PlacedAction{ActionDomain::Alternate,FreeStyleState{configured->state}};
-            else action=RestoreLayoutAction(saved,available);
-        }
-        catch(const std::exception&) {
-            if(!configured || configured->domain!=ActionDomain::Alternate || !plan.alternate ||
-                !plan.alternate->initial_state.available || plan.alternate->initial_state.value!=configured->state)throw;
-            action=PlacedAction{ActionDomain::Alternate,FreeStyleState{configured->state}};
-        }
-        plans.push_back(std::move(plan));actions.push_back(std::move(action));
+        if(saved && !std::holds_alternative<NpcMotion>(*saved) && !(configured && configured->controller_observed) &&
+            !available.Ready(configured?configured->domain:ActionDomain::Alternate)){pending=true;continue;}
+        map.actions[i]=RestoreLayoutAction(saved,available);map.action_views[i]=source_view;
     }
     if(pending)return;
-    map.plans=std::move(plans);map.actions=std::move(actions);
     map.old.clear();map.added.clear();
     for(auto id:characters_.Ids())if(characters_.Status(id).scene==map.incoming->scene)map.old.push_back(id);
     // All file/source/action preparation completed before touching old actors.

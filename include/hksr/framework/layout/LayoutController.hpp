@@ -28,6 +28,8 @@ private:
         std::vector<std::uint64_t> sources,old,added;
         std::vector<CharacterPlan> plans;
         std::vector<std::optional<PlacedAction>> actions;
+        std::vector<bool> plan_ready;
+        std::vector<std::shared_ptr<const SourceRequestStatus>> action_views;
     };
     void Begin(Map&,SceneLayout);
     void Prepare(Map&);

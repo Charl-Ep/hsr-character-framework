@@ -154,10 +154,13 @@ void TestCatalogBrowser() {
     multiple.abilities=[&](const auto& names) {
         ++shared_abilities;Check(names==std::vector<std::string>{"SharedAbility"});return api::AbilitySources{};
     };
-    CatalogBrowser actors(multiple);
+    std::vector<CatalogWork> work_reports;
+    CatalogBrowser actors(multiple,[&](const auto& work){work_reports.push_back(work);});
     const std::vector<ActionSourceRoot> first{{ActionDomain::Alternate,{api::ActionConfigKind::Battle,"ActorA"}}};
     const std::vector<ActionSourceRoot> second{{ActionDomain::Exploration,{api::ActionConfigKind::Adventure,"ActorB"}}};
     actors.InspectActions(1,first);actors.InspectActions(2,second);Finish(actors);
+    Check(work_reports.size()==1 && work_reports[0].source_steps==0 && work_reports[0].action_steps==4 &&
+        work_reports[0].slices>0 && work_reports[0].max_us<=work_reports[0].total_us);
     auto both=actors.Snapshot();const auto rev_a=both->Actions(1)->revision,rev_b=both->Actions(2)->revision;
     Check(!both->requested && both->sources.empty() && shared_reads["SharedEvent"]==1 && shared_abilities==1);
     Check(both->Actions(1)->actions.proposals.size()==2 && both->Actions(2)->actions.proposals.size()==2);
@@ -168,10 +171,12 @@ void TestCatalogBrowser() {
     bool foreign=false;try{actors.ResolveAction(1,{rev_a,ConfiguredActionKey{ActionDomain::Exploration,"ActorB"}});}catch(const std::runtime_error&){foreign=true;}Check(foreign);
     actors.InspectActions(1,first);Check(actors.Snapshot()->Actions(1)->revision==rev_a && shared_reads["ActorA"]==1);
     actors.RefreshDocument({api::ActionConfigKind::Battle,"ActorA"});
+    Check(actors.Snapshot()->characters.at(2)==both->characters.at(2));
     Check(actors.Snapshot()->Actions(2)->revision==rev_b && actors.Snapshot()->Actions(2)->actions.finished);
     Check(std::get<AnimatorState>(actors.ResolveAction(2,b).request).name=="ActorB");
     bool old=false;try{actors.ResolveAction(1,a);}catch(const std::runtime_error&){old=true;}Check(old);
     Finish(actors);Check(shared_reads["ActorA"]==2 && shared_reads["ActorB"]==1 && shared_reads["SharedEvent"]==1);
+    Check(actors.Snapshot()->characters.at(2)==both->characters.at(2));
     Check(both->Actions(1)->revision==rev_a && both->Actions(1)->actions.finished); // old snapshot stays immutable
     const auto after_refresh=actors.Snapshot()->Actions(1)->revision;
     actors.RefreshAbility("SharedAbility");Finish(actors);
@@ -182,6 +187,9 @@ void TestCatalogBrowser() {
     const auto rejected=actors.Prepare(BrowseNpc{404});Finish(actors);
     Check(!actors.Snapshot()->Source(rejected)->error.empty() && actors.Snapshot()->Actions(1)->actions.finished && actors.Snapshot()->Actions(2)->actions.finished);
     Check(shared_reads["ActorB"]==1); // failing creation preview does not discard actor catalogs
+    actors.InspectActions(99,{{ActionDomain::Alternate,{api::ActionConfigKind::Battle,"Abandoned"}}});
+    actors.ForgetCharacter(99);Finish(actors);
+    Check(!shared_reads.count("Abandoned") && !actors.Snapshot()->Actions(99));
     // Independent creation requests use one table/config cache, not one
     // mutable selection or a complete reader/cache per caller.
     int concurrent_tables=0;std::map<std::string,int> identities;
