@@ -17,6 +17,7 @@ class VisualEffectContext {
 public:
     explicit VisualEffectContext(std::shared_ptr<const api::PresentationEffects>);
     VisualEffectId Start(const std::string& key,void* entity,void* rooted_path);
+    VisualEffectId StartEntity(const std::string& key,void* caster,void* target,void* rooted_path,const api::EntityEffectOptions&);
     // Caller has attributed this submission to this context. Keeps official
     // callbacks; no re-creation or resource-name lookup. A late receipt while
     // Closing is retained for cancellation, not adopted by a newer action.

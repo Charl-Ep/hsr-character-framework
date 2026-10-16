@@ -56,7 +56,11 @@ std::shared_ptr<const PresentationEffects> Services() {
     controls.progress=[](EffectReference ref,float,float){controlled.push_back(ref.parameters);const auto* p=static_cast<Params*>(ref.parameters);
         return EffectControlResult{p->state==3?EffectControlState::Applied:EffectControlState::NotLoaded,{true,0},true,{}};};
     controls.animator=[progress=controls.progress](EffectReference ref,int,float duration,bool){return progress(ref,0,duration);};
-    return std::make_shared<PresentationEffects>(std::move(requests),std::move(controls));
+    return std::make_shared<PresentationEffects>(std::move(requests),std::move(controls),
+        [](void* raw,void* caster,void* target,void* callback,const EntityEffectOptions&) {
+            Check(caster==&entity && target==&other_entity);auto* p=static_cast<Params*>(raw);
+            p->target=target;p->callback=callback;return EffectInputResult{{true,0},{true,0}};
+        });
 }
 }
 void TestVisualEffectContext() {
@@ -180,5 +184,12 @@ void TestVisualEffectContext() {
     for(auto rule_id:rule_ids)routes.Unbind(rule_id);
     begin.execution.serial=103;routes.Observe(begin);submission.sequence=begin.execution;Check(!routes.Submitted(submission));
     gift->Service();Check(gift->Drained() && a.removes==1 && b.removes==1 && c.removes==1 && roots.empty());
-    routes.Clear();delegates.clear();
+    routes.Clear();
+    a={};allocating=&a;VisualEffectContext targeted(services);
+    on_submit=[&]{targeted.End(false);targeted.Service();};
+    EntityEffectOptions options;options.unique_name="explicit-target";
+    const auto target_id=targeted.StartEntity("target-scene",&entity,&other_entity,&path,options);on_submit={};
+    Check(a.target==&other_entity && targeted.Status(target_id)->cancelled && a.removes==0);
+    targeted.Service();Check(targeted.Drained() && a.removes==1 && roots.empty());
+    delegates.clear();
 }

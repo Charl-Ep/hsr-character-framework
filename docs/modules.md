@@ -30,6 +30,8 @@ Player selections create an independent story actor from the selected prefab/con
 
 `VisualEffectContext` owns explicitly submitted or adopted effect requests. It can persist across body actions. `End` requests cancellation; `Service` drains asynchronous results. Progress and Animator controls address retained requests, not global names.
 
+`StartEntity` supplies separate caster/target references and typed visual options. Its logical key belongs to the context, independently of the optional engine name. Requests enter the context before submission, so a synchronous callback can cancel them without transferring them to the next action.
+
 `VisualEffectBindings` maps an SDK sequence execution to a selected context. Feed execution notifications to `Observe` and matching official effect submissions to `Track`. Sequence completion releases the binding without ending the context. The program owner controls the context's lifetime and keeps it alive through cleanup.
 
 These are composition primitives; `FrameworkHost` does not install sequence observers or choose program bindings automatically.
