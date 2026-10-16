@@ -84,6 +84,7 @@ void TestApplicationCoordinator();
 void TestApplicationEvents();
 void TestActionPlayback();
 void TestPresentationProfiles();
+void TestVisualEffectContext();
 void TestVisualPlayback();
 void TestReadyPlayback();
 void TestSourceCatalog();
@@ -106,6 +107,7 @@ int main(int argc,char** argv) try {
     TestSourceCatalog();
     TestActionPlayback();
     TestPresentationProfiles();
+    TestVisualEffectContext();
     TestVisualPlayback();
     TestReadyPlayback();
     TestModelProfileInputs();
