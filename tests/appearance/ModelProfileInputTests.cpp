@@ -124,10 +124,17 @@ bool changing=false,animator_present=true,animator_ready=true,can_change=true;
 bool begin_fault=false,cancel_fault=false,event_noop=false;
 bool resolved_alias=false,submit_wrong=false;
 bool dispose_on_begin=false;
+bool async_requested=false,async_pending=false,pending_fault=false;
+void* async_path=nullptr;
 Value alias_path;
 void __fastcall Begin(void* op,void* owner,api::ModelInputs inputs,bool asynchronous,void* callback,void*) {
     Check(!controller_installed);
-    Check(op==&operation && owner==entity_ptr && Rooted(op) && Rooted(owner) && !asynchronous && !callback);
+    Check(op==&operation && owner==entity_ptr && Rooted(op) && Rooted(owner) && asynchronous==async_requested && !callback);
+    if(asynchronous){
+        ++begins;async_pending=true;async_path=inputs.model_path;
+        if(begin_fault)RaiseException(0xE06C0010,0,0,nullptr);
+        return;
+    }
     ++begins; current_path=submit_wrong?static_cast<void*>(&baseline_path):(resolved_alias?&alias_path:inputs.model_path);
     current_config=nullptr;
     if(dispose_on_begin) api::TrackedEntities().Disposed(api::TrackedEntities().Current(entity_ptr));
@@ -138,6 +145,12 @@ void __fastcall Begin(void* op,void* owner,api::ModelInputs inputs,bool asynchro
 void __fastcall Cancel(void* op,void*) {
     Check(op==&operation); ++cancels;
     if(cancel_fault) RaiseException(0xE06C0011,0,0,nullptr);
+    async_pending=false;async_path=nullptr;
+}
+bool __fastcall Pending(void* op,void*) {
+    Check(op==&operation && Rooted(op));
+    if(pending_fault)RaiseException(0xE06C0012,0,0,nullptr);
+    return async_pending;
 }
 bool __fastcall CanChange(void* m,void* path,void** resolved,void*) {
     Check(m==&model); *resolved=resolved_alias?&alias_path:path; return can_change;
@@ -460,6 +473,52 @@ void TestModelProfileInputs() {
         Check(request->Close(foreign).complete && roots.empty() && cancels==before);
     }
     api::TrackedEntities().Forget(next_token);
+    {
+        const auto async_owner=api::TrackedEntities().Track(entity_ptr);
+        const auto original_profile=services.profile;
+        services.profile=api::ModelProfile(profile_methods,M(Pending));async_requested=true;
+        {
+            auto request=make();const auto before_events=event_sets;
+            request->Submit(frame,model_ptr,Destination::Alternate);
+            Check(request->Status().phase==Phase::AwaitingModel && current_path==&baseline_path && async_pending);
+            request->Observe(frame,model_ptr,true);Check(request->Status().phase==Phase::AwaitingModel && event_sets==before_events);
+            current_path=async_path;current_config=nullptr;async_pending=false;
+            load_state=4;request->Observe(frame,model_ptr,true);Check(request->Status().phase==Phase::AwaitingModel);
+            load_state=5;request->Observe(frame,model_ptr,true);Check(request->Status().phase==Phase::ModelReady);
+            request->BindEvents(frame,model_ptr,event_object,fields);Check(request->Status().phase==Phase::EventsReady);
+            Check(request->Close(frame).complete && roots.empty());
+        }
+        {
+            auto request=make();request->Submit(frame,model_ptr,Destination::Alternate);
+            const auto before=cancels;
+            request->Submit(frame,model_ptr,Destination::Baseline);
+            Check(cancels==before+1 && !async_pending && !async_path && current_path==&baseline_path);
+            request->Observe(frame,model_ptr,false);Check(request->Status().phase==Phase::ModelReady);
+            Check(request->Close(frame).complete && roots.empty());
+        }
+        {
+            auto request=make();request->Submit(frame,model_ptr,Destination::Alternate);
+            async_pending=false; // Official failure completed without replacing the old model.
+            request->Observe(frame,model_ptr,true);Check(request->Status().phase==Phase::Failed);
+            Check(request->Close(frame).complete && roots.empty());
+        }
+        {
+            auto request=make();begin_fault=true;request->Submit(frame,model_ptr,Destination::Alternate);begin_fault=false;
+            Check(request->Status().phase==Phase::Failed && async_pending);
+            Check(request->Close(frame).complete && !async_pending && roots.empty());
+        }
+        {
+            auto request=make();request->Submit(frame,model_ptr,Destination::Alternate);pending_fault=true;
+            request->Observe(frame,model_ptr,true);Check(request->Status().phase==Phase::Failed);
+            pending_fault=false;Check(request->Close(frame).complete && !async_pending && roots.empty());
+        }
+        {
+            auto request=make();request->Submit(frame,model_ptr,Destination::Alternate);
+            api::TrackedEntities().Disposed(async_owner);const auto before=cancels;
+            Check(request->Close(foreign).complete && cancels==before+1 && !async_pending && roots.empty());
+        }
+        api::TrackedEntities().Forget(async_owner);async_requested=false;services.profile=original_profile;
+    }
     std::cout<<"Official model request tests passed: actual DLL calls, pending loading, cancel vs restoration, empty/same-path event adoption, faults and owner-end closure; no game acceptance.\n";
 
     // Full coordinator uses the actual CharacterInstance, request, controller
