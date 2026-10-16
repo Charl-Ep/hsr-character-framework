@@ -1,5 +1,7 @@
 #include <hksr/framework/presentation/VisualEffectContext.hpp>
 #include <hksr/framework/presentation/VisualEffectBindings.hpp>
+#include <hksr/framework/presentation/VisualEventRoutes.hpp>
+#include <hksr/framework/presentation/PresentationProfileFiles.hpp>
 #include <array>
 #include <cstring>
 #include <functional>
@@ -135,5 +137,48 @@ void TestVisualEffectContext() {
     bool duplicate=false;try{bindings.Bind(execution,program);}catch(const std::logic_error&){duplicate=true;}Check(duplicate);
     done.execution=execution;done.continues=false;done.original_returned=false;bindings.Observe(done);Check(bindings.Size()==0);
     bindings.Bind(execution,replacement);replacement.reset();bindings.Collect();Check(bindings.Size()==0);
-    delegates.clear();
+    // The shipped Sparxie selectors join actual final task-list identities to
+    // two distinct sequence executions sharing the same Gift-scene context.
+    const auto profiles=ReadPresentationProfiles(HKSR_PROFILE_DATA_DIR);
+    const auto& recipe=profiles.sources.at("Config/ConfigCharacter/Avatar/Avatar_Sparxie_00_Config.json")->native_events;
+    Check(recipe.size()==3 && recipe[0].scope==recipe[1].scope && recipe[1].scope==recipe[2].scope);
+    auto gift=std::make_shared<VisualEffectContext>(services);
+    int receiver=0,collection1=0,collection2=0,sequence2=0,unrelated=0,reads=0,tracks=0;
+    AnimationEventSource source;source.serial=100;source.origin=execution.origin;source.receiver=&receiver;
+    AnimationEventDefinitions definitions;
+    definitions.rows={{AnimationEventPart::TimePoint,38,{"Skill02_Gift"},{},&collection1},
+        {AnimationEventPart::TimePoint,33,{"Skill02"},{},&collection2}};
+    VisualEventRoutes routes([&](const auto&){++reads;return definitions;},
+        [&](const auto&,const auto&){++tracks;return AnimationSequenceTracking::Tracked;});
+    std::vector<VisualEventRoutes::RuleId> rule_ids;
+    for(const auto& rule:recipe)rule_ids.push_back(routes.Bind(source.origin,&receiver,rule,gift));
+    auto other_source=source;++other_source.origin.token.generation;
+    routes.Before(other_source,recipe[0].file);routes.Before(source,"unrelated/file");Check(reads==0);
+    routes.Before(source,recipe[0].file);Check(reads==1);
+    AnimationTaskConstruction built{10,nullptr,&collection1,&sequence,&unrelated,true};routes.Built(source,built);
+    built={11,nullptr,&collection2,&sequence2,&unrelated,true};routes.Built(source,built);
+    routes.After(source);Check(tracks==2);
+    execution.construction=100;execution.definition=10;execution.serial=101;execution.sequence=&sequence;
+    AnimationSequenceObservation begin;begin.execution=execution;begin.operation=AnimationSequenceOperation::Begin;begin.entering=true;
+    routes.Observe(begin);a={};a.state=3;a.callback=&official_callback;
+    submission.sequence=execution;submission.origin=execution.origin;submission.request={0,0,&a};
+    Check(routes.Submitted(submission).has_value());
+    done.execution=execution;routes.Observe(done);Check(!gift->Closing() && gift->PendingRequests()==1);
+    begin.execution.definition=11;begin.execution.serial=102;begin.execution.sequence=&sequence2;routes.Observe(begin);
+    submission.sequence=begin.execution;b={};b.state=3;b.callback=&official_callback;submission.request={0,0,&b};
+    Check(routes.Submitted(submission).has_value() && gift->PendingRequests()==2 && a.removes==0);
+    // An unrelated child collection cannot be mapped by config/output index.
+    source.serial=200;routes.Before(source,recipe[0].file);built.serial=12;built.configurations=&unrelated;
+    routes.Built(source,built);routes.After(source);Check(tracks==2);
+    // A shared collection with an unselected event is genuinely ambiguous.
+    definitions.rows.push_back({AnimationEventPart::TimePoint,99,{"Other"},{},&collection1});
+    source.serial=201;routes.Before(source,recipe[0].file);built.configurations=&collection1;
+    routes.Built(source,built);routes.After(source);Check(tracks==2);
+    // Retire only the program. In-flight submissions retain their old scope;
+    // a new Begin after it ended cannot prolong or reassign that scope.
+    gift->End(false);c={};c.state=3;submission.request={0,0,&c};Check(routes.Submitted(submission).has_value());
+    for(auto rule_id:rule_ids)routes.Unbind(rule_id);
+    begin.execution.serial=103;routes.Observe(begin);submission.sequence=begin.execution;Check(!routes.Submitted(submission));
+    gift->Service();Check(gift->Drained() && a.removes==1 && b.removes==1 && c.removes==1 && roots.empty());
+    routes.Clear();delegates.clear();
 }

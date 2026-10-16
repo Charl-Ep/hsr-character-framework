@@ -27,7 +27,7 @@ float Time(const Json& value) {
 }
 }
 PresentationProfile ParsePresentationProfile(const std::string& text) {
-    const auto json=Json::parse(text);Fields(json,{"format","id","source","initial_phase","reset_on_domain_exit","phases","actions"});
+    const auto json=Json::parse(text);Fields(json,{"format","id","source","initial_phase","reset_on_domain_exit","phases","actions","native_events"});
     Need(json.at("format")=="hksr.presentation-profile","unsupported presentation profile format");
     PresentationProfile out;out.id=Name(json.at("id"));out.source=Name(json.at("source"));
     out.initial_phase=Name(json.at("initial_phase"));out.reset_on_domain_exit=json.value("reset_on_domain_exit",true);
@@ -58,6 +58,31 @@ PresentationProfile ParsePresentationProfile(const std::string& text) {
             }
         }
         out.actions.emplace(Name(it.key()),std::move(action));
+    }
+    if(json.contains("native_events")) {
+        Need(json.at("native_events").is_array(),"native_events must be an array");
+        for(const auto& row:json.at("native_events")) {
+            Fields(row,{"file","part","states","behavior","key","scope"});
+            VisualEventRule rule;rule.file=Name(row.at("file"));rule.key=Name(row.at("key"));rule.scope=Name(row.at("scope"));
+            const auto part=Name(row.at("part"));
+            if(part=="time_point")rule.part=api::AnimationEventPart::TimePoint;
+            else if(part=="group_enter")rule.part=api::AnimationEventPart::GroupEnter;
+            else if(part=="group_exit")rule.part=api::AnimationEventPart::GroupExit;
+            else if(part=="behavior")rule.part=api::AnimationEventPart::Behavior;
+            else throw std::invalid_argument("unknown native event part: "+part);
+            if(rule.part==api::AnimationEventPart::Behavior) {
+                rule.behavior=Name(row.at("behavior"));Need(!row.contains("states"),"behavior rule uses a key, not state membership");
+            } else {
+                Need(!row.contains("behavior") && row.at("states").is_array() && !row.at("states").empty(),"state rule requires complete nonempty membership");
+                for(const auto& state:row.at("states"))rule.states.push_back(Name(state));
+                std::sort(rule.states.begin(),rule.states.end());
+                Need(std::adjacent_find(rule.states.begin(),rule.states.end())==rule.states.end(),"duplicate native event state");
+            }
+            for(const auto& prior:out.native_events)
+                Need(prior.file!=rule.file || prior.part!=rule.part || prior.states!=rule.states || prior.behavior!=rule.behavior,
+                    "native event selector belongs to multiple scopes/keys");
+            out.native_events.push_back(std::move(rule));
+        }
     }
     return out;
 }

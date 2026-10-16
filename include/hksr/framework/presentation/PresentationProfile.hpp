@@ -4,6 +4,7 @@
 #include <optional>
 #include <string>
 #include <vector>
+#include "VisualEventRule.hpp"
 
 namespace hksr::framework {
 struct PresentationPhase {std::string idle;};
@@ -22,6 +23,7 @@ struct PresentationProfile {
     bool reset_on_domain_exit=true;
     std::map<std::string,PresentationPhase> phases;
     std::map<std::string,PresentationAction> actions;
+    std::vector<VisualEventRule> native_events;
 };
 PresentationProfile ParsePresentationProfile(const std::string& json);
 struct PresentationProfiles {

@@ -50,4 +50,14 @@ void TestPresentationProfiles() {
     loaded=ReadPresentationProfiles(directory);Check(loaded.sources.empty() && loaded.errors.size()==2);
     const auto shipped=ReadPresentationProfiles(HKSR_PROFILE_DATA_DIR);
     Check(shipped.errors.empty() && !shipped.sources.empty());
+    const auto sparxie=shipped.sources.at("Config/ConfigCharacter/Avatar/Avatar_Sparxie_00_Config.json");
+    Check(sparxie->native_events.size()==3 && sparxie->native_events[0].scope=="gift-scene");
+    auto native=nlohmann::json::parse(fixture);
+    native["native_events"]={{{"file","test.json"},{"part","time_point"},{"states",{"A","B"}},{"scope","scene"},{"key","event"}}};
+    Check(ParsePresentationProfile(native.dump()).native_events[0].states==std::vector<std::string>{"A","B"});
+    auto duplicate=native;duplicate["native_events"].push_back(native["native_events"][0]);Reject([&]{ParsePresentationProfile(duplicate.dump());});
+    auto invalid=native;invalid["native_events"][0]["states"]={"A","A"};Reject([&]{ParsePresentationProfile(invalid.dump());});
+    invalid=native;invalid["native_events"][0]["part"]="guess";Reject([&]{ParsePresentationProfile(invalid.dump());});
+    native["native_events"][0].erase("states");native["native_events"][0]["part"]="behavior";native["native_events"][0]["behavior"]="key";
+    Check(ParsePresentationProfile(native.dump()).native_events[0].behavior=="key");
 }

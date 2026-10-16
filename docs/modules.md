@@ -34,6 +34,8 @@ Player selections create an independent story actor from the selected prefab/con
 
 These are composition primitives; `FrameworkHost` does not install sequence observers or choose program bindings automatically.
 
+`VisualEventRoutes` links final event definitions to those executions using the task collection actually passed to the engine factory. Authored rules select a file and complete state membership or behavior key. A shared collection with conflicting rules remains unattributed. Receiver and entity generation belong to the binding; the current menu selection does not.
+
 ## Data and builds
 
 File codecs return `CharacterPackage`, `AssetManifest`, `SceneLayout` and typed presentation profiles. HTTP and development transports encode/decode at their boundaries. Runtime state uses structures, enums and variants.

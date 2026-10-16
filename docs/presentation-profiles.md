@@ -51,6 +51,18 @@
 
 错误文件记录原因，不阻断其它配置；同一source出现多个文件时，该来源不应用额外规则。
 
+## 原生事件归属
+
+可选的`native_events`供`VisualEventRoutes`关联官方事件产生的特效。每项指定`file`、`part`、`scope`、`key`；状态事件另有`states`，行为事件另有`behavior`。
+
+- `part`：`time_point`、`group_enter`、`group_exit`或`behavior`。
+- `states`：完整状态成员集合，不能只匹配多状态组中的一个名字。
+- `scope`：编排拥有的持续效果上下文；`key`：该上下文内部的请求分组。
+
+调用方提供实体代次、事件接收者和上下文，将构造、序列和效果观察回执交给`VisualEventRoutes`。它以实际任务列表引用关联定义，保留原效果提交及回调。序列结束只结束关联；上下文由调用方执行`End`、持续`Service`至`Drained`。当前宿主不自动激活这些规则。
+
 ## 随附配置
 
 `SilverWolf999.json` 定义normal／ultra阶段，待机分别为StandBy／StandBy_Transfer。Skill03在进度0.806进入ultra，进度1返回阶段待机；道具动作使用hold，退出动作完成后返回normal。
+
+`Sparxie.json`将Skill02_Gift、Skill02和Skill02_V1的原生时间点特效关联到`gift-scene`。它只定义原生事件归属，不包含能力模板、Timeline或完整技能调度。

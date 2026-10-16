@@ -1,0 +1,25 @@
+{
+  "format": "hksr.presentation-profile",
+  "id": "sparxie",
+  "source": "Config/ConfigCharacter/Avatar/Avatar_Sparxie_00_Config.json",
+  "initial_phase": "normal",
+  "phases": {"normal": {"idle": "StandBy"}},
+  "actions": {},
+  "native_events": [
+    {
+      "file": "Config/ConfigAnimEvents/Avatar/Effect/Avatar_Sparxie_00_Effect_AnimEvent.json",
+      "part": "time_point", "states": ["Skill02_Gift"],
+      "scope": "gift-scene", "key": "native.gift"
+    },
+    {
+      "file": "Config/ConfigAnimEvents/Avatar/Effect/Avatar_Sparxie_00_Effect_AnimEvent.json",
+      "part": "time_point", "states": ["Skill02"],
+      "scope": "gift-scene", "key": "native.resolution"
+    },
+    {
+      "file": "Config/ConfigAnimEvents/Avatar/Effect/Avatar_Sparxie_00_Effect_AnimEvent.json",
+      "part": "time_point", "states": ["Skill02_V1"],
+      "scope": "gift-scene", "key": "native.resolution"
+    }
+  ]
+}
