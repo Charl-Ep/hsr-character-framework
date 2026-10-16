@@ -81,6 +81,7 @@ private:
     mutable ActionCatalogStatus status_;
     mutable std::uint64_t status_revision_=0;
     mutable std::map<ViewKey,CachedView> views_;
+    std::map<std::tuple<ActionDomain,api::ActionConfigKind,std::string>,Projection> discovery_;
     bool finished_=false;
     bool advancing_=false;
     std::uint64_t revision_=0;

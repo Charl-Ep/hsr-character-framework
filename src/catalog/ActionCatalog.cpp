@@ -21,18 +21,28 @@ void ActionCatalog::Request(std::vector<ActionSourceRoot> roots) {
         if(std::any_of(it->first.begin(),it->first.end(),[&](const auto& root){return !active.count(root);}))it=views_.erase(it);
         else ++it;
     }
+    for(auto it=discovery_.begin();it!=discovery_.end();) {
+        if(!active.count(it->first))it=discovery_.erase(it);else ++it;
+    }
     Rebuild();
 }
 const api::ActionConfigInput* ActionCatalog::Document(const ActionSourceKey& source) const {
     const auto found=documents_.find(source); return found==documents_.end()?nullptr:&found->second;
 }
 void ActionCatalog::InvalidateDocument(const ActionSourceKey& source) {
+    for(auto it=discovery_.begin();it!=discovery_.end();) {
+        if(it->second.used_documents.count(source) || it->second.used_visuals.count(source.path))it=discovery_.erase(it);
+        else ++it;
+    }
     for(auto it=views_.begin();it!=views_.end();) {
         if(it->second.documents.count(source) || it->second.visuals.count(source.path))it=views_.erase(it);
         else ++it;
     }
 }
 void ActionCatalog::InvalidateAbility(const std::string& ability) {
+    for(auto it=discovery_.begin();it!=discovery_.end();) {
+        if(it->second.used_abilities.count(ability))it=discovery_.erase(it);else ++it;
+    }
     for(auto it=views_.begin();it!=views_.end();) {
         if(it->second.abilities.count(ability))it=views_.erase(it);
         else ++it;
@@ -104,6 +114,9 @@ void ActionCatalog::Advance() {
         for(auto it=views_.begin();it!=views_.end();) {
             if(it->second.ready)it=views_.erase(it);else ++it;
         }
+        for(auto it=discovery_.begin();it!=discovery_.end();) {
+            if(it->second.uses_ready)it=discovery_.erase(it);else ++it;
+        }
         advancing_=false;Rebuild();return;
     }
     if(!pending_visuals_.empty()) {
@@ -154,11 +167,22 @@ void ActionCatalog::Advance() {
 }
 void ActionCatalog::Rebuild() {
     ++revision_;
-    auto view=Project(requested_,false);
-    pending_=std::move(view.documents);
-    pending_abilities_=std::move(view.abilities);pending_visuals_=std::move(view.visuals);
-    pending_ready_=view.ready;
-    finished_=view.status.finished && !ability_read_;
+    pending_.clear();pending_abilities_.clear();pending_visuals_.clear();pending_ready_=false;
+    std::set<ActionSourceKey> documents;
+    std::set<std::string> abilities,visuals;
+    // A newly read input only invalidates the root closures that depend on it.
+    // Scheduling must not walk every other character's cached graph again.
+    for(const auto& root:requested_) {
+        const auto key=std::make_tuple(root.domain,root.source.kind,root.source.path);
+        auto found=discovery_.find(key);
+        if(found==discovery_.end())found=discovery_.emplace(key,Project({root},false)).first;
+        const auto& view=found->second;
+        for(const auto& source:view.documents)if(documents.insert(source).second)pending_.push_back(source);
+        for(const auto& source:view.abilities)if(abilities.insert(source).second)pending_abilities_.push_back(source);
+        for(const auto& source:view.visuals)if(visuals.insert(source).second)pending_visuals_.push_back(source);
+        pending_ready_|=view.ready;
+    }
+    finished_=pending_.empty() && pending_abilities_.empty() && pending_visuals_.empty() && !pending_ready_ && !ability_read_;
 }
 const ActionCatalogStatus& ActionCatalog::Status() const {
     if(status_revision_!=revision_) {
@@ -201,9 +225,9 @@ ActionCatalog::Projection ActionCatalog::Project(const std::vector<ActionSourceR
     for(std::size_t i=0;i<queue.size();++i) {
         const auto input=queue[i]; // reference traversal may reallocate the queue
         if(!visited.emplace(input.domain,input.source.kind,input.source.path).second) continue;
-        if(values)result.used_documents.insert(input.source);
+        result.used_documents.insert(input.source);
         if(input.source.kind==api::ActionConfigKind::Battle && read_visual_ && seen_visuals.insert(input.source.path).second) {
-            if(values)result.used_visuals.insert(input.source.path);
+            result.used_visuals.insert(input.source.path);
             const auto found=visual_sources_.find(input.source.path);
             if(found==visual_sources_.end())pending_visuals.push_back(input.source.path);
             else if(values) {
@@ -246,7 +270,7 @@ ActionCatalog::Projection ActionCatalog::Project(const std::vector<ActionSourceR
         if(values){document.attempted=true;document.loaded=value->loaded;document.issues=value->issues;}
         if(value->kind==api::ActionConfigKind::Battle && input.domain==ActionDomain::Alternate) {
             if(read_ready_ && !ready_defaults_){pending_ready=true;status.pending_domains.insert(input.domain);}
-            if(values && read_ready_)result.uses_ready=true;
+            if(read_ready_)result.uses_ready=true;
             ReadyActions ready;
             if(values){ready=BuildReadyActions(*value,ready_defaults_.value_or(api::ReadyAnimationDefaults{}));
                 ResolveReadyPreparations(ready,value->abilities,ability_sources_);}
@@ -277,7 +301,7 @@ ActionCatalog::Projection ActionCatalog::Project(const std::vector<ActionSourceR
             std::vector<std::string> chain{ability.value};std::set<std::string> chain_seen{ability.value};
             for(std::size_t ai=0;ai<chain.size();++ai) {
             const auto name=chain[ai];
-            if(values)result.used_abilities.insert(name);
+            result.used_abilities.insert(name);
             const auto cached=ability_sources_.find(name);
             if(seen_abilities.emplace(input.domain,name).second) {
                 AbilityDocumentStatus task;if(values){task.domain=input.domain;task.ability=name;}
