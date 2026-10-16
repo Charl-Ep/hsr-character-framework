@@ -38,6 +38,7 @@ public:
     PlacedAction ResolveAction(std::uint64_t character,const CatalogActionSelection& selection) const;
     CharacterPlan Plan(std::uint64_t request,std::shared_ptr<const ModelAssetInput> payload={},std::string look={}) const;
     std::shared_ptr<const CatalogSnapshot> Snapshot() const { return snapshot_; }
+    ActionCatalogStatus DomainActions(std::uint64_t source,ActionDomain domain) const;
     api::NpcMotionSources NpcMotions(void* owned_component) const;
 private:
     void BeginSource(const BrowseSource& input);

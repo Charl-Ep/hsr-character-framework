@@ -47,13 +47,17 @@ void LayoutController::Prepare(Map& map) {
         const auto* configured=saved?std::get_if<SavedConfiguredAction>(&*saved):nullptr;
         const bool initial_battle=configured && configured->domain==ActionDomain::Alternate && plan.alternate &&
             plan.alternate->initial_state.available && plan.alternate->initial_state.value==configured->state;
+        std::optional<ActionCatalogStatus> domain_actions;
+        if(saved && !initial_battle && !std::holds_alternative<NpcMotion>(*saved))
+            domain_actions=catalog_.DomainActions(source->id,configured?configured->domain:ActionDomain::Alternate);
+        const auto& available=domain_actions?*domain_actions:source->actions;
         // Even a proposal seen early can gain exit tasks during discovery. A
-        // configured/ready request waits for its source's complete projection,
-        // not unrelated sources in the shared catalog.
-        if(saved && !initial_battle && !std::holds_alternative<NpcMotion>(*saved) && !source->actions.finished){pending=true;continue;}
+        // configured/ready request waits for its required domain's complete
+        // projection, not the other domain's unrelated ability graph.
+        if(saved && !initial_battle && !std::holds_alternative<NpcMotion>(*saved) && !available.finished){pending=true;continue;}
         try {
-            if(initial_battle && !source->actions.finished)action=PlacedAction{ActionDomain::Alternate,FreeStyleState{configured->state}};
-            else action=RestoreLayoutAction(saved,source->actions);
+            if(initial_battle && !available.finished)action=PlacedAction{ActionDomain::Alternate,FreeStyleState{configured->state}};
+            else action=RestoreLayoutAction(saved,available);
         }
         catch(const std::exception&) {
             if(!configured || configured->domain!=ActionDomain::Alternate || !plan.alternate ||

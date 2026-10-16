@@ -155,4 +155,27 @@ void TestLayoutController() {
     queue->Submit({LayoutIoKind::WriteCurrent,"mapA",{},one,false,3});queue->Pump();
     const auto results=queue->Take();Check(results.size()==3 && results[0].request.revision==2,"write ordering broken");
     Check(store.Named("mapA","captured").characters[0].placement.position.x==1,"snapshot did not retain accepted values");
+    {
+        // An exploration action must not wait for a battle ability batch,
+        // including a batch shared with other characters in the layout.
+        abilities_ready=false;
+        auto exploration=saved;exploration.scene="exploration-only";exploration.characters={b};
+        exploration.characters[0].look={};
+        exploration.characters[0].action=SavedConfiguredAction{ActionDomain::Exploration,"IdleShow"};
+        store.SaveCurrent(exploration);
+        auto isolated_io=std::make_shared<LayoutIo>(folder);
+        CatalogBrowser isolated_catalog(readers);
+        SceneCharacters isolated_registry(runtime.Sessions(false),SceneCharacters::Create{});
+        LayoutController isolated(isolated_registry,isolated_catalog,isolated_io);
+        const SceneAddress address{exploration.scene,7};
+        for(unsigned i=0;i<32;++i) {
+            isolated_io->Pump();isolated.Advance(address);isolated_catalog.Advance(0);
+            isolated_registry.Service({},address,runtime.Appearance(),{});
+        }
+        Check(!abilities_ready && isolated_registry.Ids().size()==1,"exploration restore waited for battle discovery");
+        const auto& restored=isolated_registry.DesiredAction(isolated_registry.Ids()[0]);
+        Check(restored && restored->domain==ActionDomain::Exploration &&
+            std::get<AnimatorState>(restored->request).name=="IdleShow","exploration action was replaced to bypass discovery");
+        isolated.Close();isolated_registry.Shutdown();
+    }
 }

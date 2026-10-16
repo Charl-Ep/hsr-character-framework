@@ -5,6 +5,11 @@
 #include <chrono>
 
 namespace hksr::framework {
+ActionCatalogStatus CatalogBrowser::DomainActions(std::uint64_t source,ActionDomain domain) const {
+    std::vector<ActionSourceRoot> roots;
+    for(const auto& root:source_roots_.at(source))if(root.domain==domain)roots.push_back(root);
+    return actions_.View(roots);
+}
 CatalogBrowser::CatalogBrowser(CatalogReaders readers)
     :readers_(std::move(readers)),actions_(readers_.document,readers_.abilities,readers_.visuals,readers_.ready_defaults,readers_.begin_abilities) {Publish();}
 void CatalogBrowser::Publish() {

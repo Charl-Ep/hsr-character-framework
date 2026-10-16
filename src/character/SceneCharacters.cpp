@@ -224,7 +224,9 @@ void SceneCharacters::Service(const api::WorldFrame& frame,const std::optional<S
                 const bool ready=handoff && handoff->Status().phase==HandoffPhase::Ready && !pending_action;
                 entry.active->controls->Service(frame,appearance,target,ready);
                 const auto& live=entry.active->controls->Status();
-                if(live.live.ready && !live.placement_pending){entry.placement.position=live.live.position;entry.placement.rotation=live.live.rotation;}
+                if(ready && live.live.ready && !live.placement_pending && live.placement_phase!=api::PlacementPhase::Failed){
+                    entry.placement.position=live.live.position;entry.placement.rotation=live.live.rotation;
+                }
             }
         }
         if(entry.active || !can_create || !entry.status.enabled || !here || closing_) continue;
