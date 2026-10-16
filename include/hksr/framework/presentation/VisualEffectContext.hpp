@@ -12,11 +12,15 @@ struct VisualEffectResult {VisualEffectId id;api::EffectControlResult result;};
 // One explicitly entered visual context. It may outlive several body actions;
 // its owner decides when to End, then keeps servicing it until Drained.
 // Keys are local program names, not global engine names or resource-path scans.
-// Does not adopt official animation-event effects without a separate receipt.
+// Official animation-event effects require a separately attributed receipt.
 class VisualEffectContext {
 public:
     explicit VisualEffectContext(std::shared_ptr<const api::PresentationEffects>);
     VisualEffectId Start(const std::string& key,void* entity,void* rooted_path);
+    // Caller has attributed this submission to this context. Keeps official
+    // callbacks; no re-creation or resource-name lookup. A late receipt while
+    // Closing is retained for cancellation, not adopted by a newer action.
+    VisualEffectId Track(const std::string& key,void* retained_manager,api::EffectReference);
     // Fade is a request, not completed destruction. Matching requests remain
     // addressable for progress/state changes until the engine releases them.
     void Remove(const std::string& key,bool fade=true);
@@ -31,12 +35,12 @@ public:
     bool Drained() const {return closing_ && requests_.empty();}
     std::size_t PendingRequests() const {return requests_.size();}
 private:
-    struct Entry {std::string key;std::unique_ptr<api::OwnedEffectRequest> request;};
+    struct Entry {std::string key;std::unique_ptr<api::OwnedEffectRequest> request;bool retained=true;void* manager=nullptr;};
     std::vector<VisualEffectId> Matching(const std::string&) const;
     std::shared_ptr<const api::PresentationEffects> services_;
     std::map<VisualEffectId,Entry> requests_;
     VisualEffectId next_=0;
-    bool closing_=false,servicing_=false;
+    bool closing_=false,servicing_=false,end_fade_=true;
     unsigned operations_=0;
 };
 }

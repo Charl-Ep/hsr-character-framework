@@ -90,5 +90,19 @@ void TestVisualEffectContext() {
     Check(both.size()==2 && both[0].id!=both[1].id);
     Check(controlled[controlled.size()-2]==&a && controlled.back()==&b);
     repeated.End();repeated.Service();Check(repeated.Drained() && roots.empty());
+    a={};b={};a.state=1;b.state=3;
+    int official_callback=1; a.callback=&official_callback;b.callback=&official_callback;
+    const auto previous_delegates=delegates.size();VisualEffectContext observed(services);
+    const auto receipt=observed.Track("event scene",&manager,{0,0,&a});
+    Check(observed.Track("event scene",&manager,{0,0,&a})==receipt && observed.PendingRequests()==1);
+    bool conflict=false;try{observed.Track("unrelated",&manager,{0,0,&a});}catch(const std::logic_error&){conflict=true;}Check(conflict);
+    conflict=false;try{observed.Track("event scene",&other_entity,{0,0,&a});}catch(const std::logic_error&){conflict=true;}Check(conflict);
+    Check(delegates.size()==previous_delegates && a.callback==&official_callback);
+    release_on_remove=false;observed.End(false);observed.Service();Check(a.removes==1);
+    const auto late=observed.Track("late event",&manager,{0,0,&b});
+    Check(observed.Status(late)->cancelled && b.removes==0 && observed.SetProgress("late event",1).empty());
+    a.state=3;release_on_remove=true;observed.Service();
+    Check(observed.Drained() && a.removes==2 && b.removes==1 && roots.empty());
+    Check(a.callback==&official_callback && b.callback==&official_callback && delegates.size()==previous_delegates);
     delegates.clear();
 }

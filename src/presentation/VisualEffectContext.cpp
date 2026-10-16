@@ -24,8 +24,29 @@ VisualEffectId VisualEffectContext::Start(const std::string& key,void* entity,vo
 void VisualEffectContext::Remove(const std::string& key,bool fade) {
     for(auto& item:requests_)if(item.second.key==key)item.second.request->Cancel(fade);
 }
+VisualEffectId VisualEffectContext::Track(const std::string& key,void* manager,api::EffectReference reference) {
+    if(key.empty() || !manager || !reference.parameters)throw std::invalid_argument("visual effect receipt absent");
+    for(const auto& item:requests_) {
+        const auto& current=item.second.request->Status().reference;
+        if(current.parameters!=reference.parameters || current.id!=reference.id)continue;
+        if(!item.second.retained)throw std::runtime_error("visual effect receipt retention incomplete");
+        if(item.second.manager && item.second.manager!=manager)throw std::logic_error("visual effect receipt has conflicting managers");
+        if(item.second.key!=key)throw std::logic_error("visual effect receipt already has a different key");
+        return item.first; // e.g. async entry forwarding to the synchronous entry
+    }
+    Operation operation(operations_);
+    const auto id=++next_;
+    auto request=services_->CreateRequest("visual effect receipt="+std::to_string(id)+" key="+key+" ");
+    auto* live=request.get();requests_.emplace(id,Entry{key,std::move(request),false,manager});
+    if(closing_)live->Cancel(end_fade_);
+    if(!live->TrackSubmitted(manager,reference)) {
+        throw std::runtime_error("visual effect receipt not retained; caller must preserve ownership");
+    }
+    requests_.at(id).retained=true;
+    return id;
+}
 void VisualEffectContext::End(bool fade) {
-    closing_=true;
+    closing_=true;end_fade_=fade;
     for(auto& item:requests_)item.second.request->Cancel(fade);
 }
 void VisualEffectContext::Service() {
@@ -45,7 +66,7 @@ std::vector<VisualEffectId> VisualEffectContext::Matching(const std::string& key
     std::vector<VisualEffectId> out;if(closing_)return out;
     for(const auto& item:requests_) {
         const auto& status=item.second.request->Status();
-        if(item.second.key==key && status.submitted && !status.request_ended && !status.closed)out.push_back(item.first);
+        if(item.second.retained && item.second.key==key && status.submitted && !status.request_ended && !status.closed)out.push_back(item.first);
     }
     return out;
 }
