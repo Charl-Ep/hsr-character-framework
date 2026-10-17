@@ -91,7 +91,9 @@ A named context has `enter` and `exit` instruction arrays. `context_enter` creat
 }
 ```
 
-Use `{"op":"context_enter","name":"aura","source":"phase.enter"}` or `context_exit` in action instructions. An effect instruction in an action may select `"context":"aura"`. Context entry, exit and signals use their own effect keys, variables, choices and captured inputs. These sequences support effect operations and assignment; nested context changes and Timelines are not supported. Timelines remain action-owned.
+Use `{"op":"context_enter","name":"aura","source":"phase.enter"}` or `context_exit` in action instructions. Effect and Timeline instructions in an action may select `"context":"aura"`. Context entry, exit and signals use their own effect keys, Timeline keys, variables, choices and captured inputs. Nested context changes are not supported.
+
+Timelines in named contexts survive body action replacement and completion. Context exit cancels its remaining Timelines; whole-scene exit cancels all scopes. Re-entering a context creates a new token, so an old cancellation cannot stop a new playback with the same key. Keep servicing cancelled requests until their actual registry records retire.
 
 An optional `event_scope` selects that context's `PresentationProfile.native_events` rules. Declare these rules before model construction. Context exit stops new associations; already-running native sequences retain the old context for late submissions and cleanup.
 
@@ -137,7 +139,7 @@ Action playback uses the selected standby for idle requests and resolves visual-
 
 `VisualProgramServices::create` resolves inputs and calls `VisualEffectContext::StartEntity` or `StartSpatial`. Trigger and removal operations use the SDK effect services unless overridden. Removal forwards fade and immediate-fade flags and waits for a manager receipt, not the end of the fade. Timeline playback uses a supplied service with cancellation and drain observations.
 
-`ConnectVisualTimelines` connects a `VisualTimelines` scene to these callbacks. Its factory creates SDK `OwnedTimeline` requests bound to the actor. The adapter supports Common Timelines without task-level volume release. Replaying a key retains the cancelled prior borrow until cleanup completes.
+`ConnectVisualTimelines` connects a `VisualTimelines` scene to these callbacks. Its factory creates SDK `OwnedTimeline` requests bound to the actor. The adapter supports Common Timelines without task-level volume release. Replaying a key in the same scope retains the cancelled prior borrow until cleanup completes. Custom `timeline(scope, instruction)` and `cancel_timelines(scope)` callbacks use scope zero for the default action and the context token for a named lifetime; `timelines_drained()` services all scopes.
 
 `VisualEntityMotion` is shared by all host scenes. Each target can belong to one motion binding at a time. Repeating the same binding does not reset its accumulated movement; changing targets requires releasing the previous binding. Existing official attached motion cannot be adopted by inspecting its flag.
 

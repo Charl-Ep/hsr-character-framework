@@ -84,6 +84,8 @@ void VisualProgramPlayer::DriveContext(std::shared_ptr<Lifetime> lifetime) {
         if(!Instructions(definition.exit,lifetime->exit,execution))return;
         try {if(services_.context_stopped)services_.context_stopped(lifetime->name);}
         catch(const std::exception& e){status_.issues.push_back(e.what());}
+        try {if(services_.cancel_timelines)services_.cancel_timelines(lifetime->token);}
+        catch(const std::exception& e){status_.issues.push_back(e.what());}
         lifetime->effects->End(lifetime->fade);
         retired_contexts_.push_back(lifetime->effects);
         contexts_.erase(lifetime->name);
@@ -109,6 +111,8 @@ void VisualProgramPlayer::EndContexts(bool fade) {
     // need a living model or loaded asset and must not delay disposal.
     for(const auto& [name,lifetime]:contexts_) {
         try {if(services_.context_stopped)services_.context_stopped(name);}
+        catch(const std::exception& e){status_.issues.push_back(e.what());}
+        try {if(services_.cancel_timelines)services_.cancel_timelines(lifetime->token);}
         catch(const std::exception& e){status_.issues.push_back(e.what());}
         lifetime->effects->End(fade);retired_contexts_.push_back(lifetime->effects);
     }

@@ -7,11 +7,12 @@ namespace hksr::framework {
 VisualTimelines::VisualTimelines(Factory factory,Trace trace):factory_(std::move(factory)),trace_(std::move(trace)) {
     if(!factory_)throw std::invalid_argument("Timeline factory missing");
 }
-VisualStepResult VisualTimelines::Execute(const VisualTimeline& input) {
+VisualStepResult VisualTimelines::Execute(std::uint64_t scope,const VisualTimeline& input) {
     const auto op=input;
     if(op.key.empty())return {VisualStepState::Failed,"Timeline key missing"};
     if(op.type!=0 || op.release_volume)return {VisualStepState::Failed,"only Common Timeline without task-level volume release is supported"};
-    const auto previous=current_.find(op.key);
+    const Key key{scope,op.key};
+    const auto previous=current_.find(key);
     if(!op.play) {
         if(previous==current_.end())return {VisualStepState::Failed,"no scene Timeline receipt: "+op.key};
         const auto request=previous->second;request->Cancel();request->Service();
@@ -26,15 +27,17 @@ VisualStepResult VisualTimelines::Execute(const VisualTimeline& input) {
     }
     auto request=std::shared_ptr<api::OwnedTimeline>(factory_());
     if(!request)return {VisualStepState::Failed,"Timeline factory returned no request"};
-    current_[op.key]=request; // publish before native start can reenter cancellation
+    current_[key]=request; // publish before native start can reenter cancellation
     request->Start(op.path,op.wrap_mode);request->Service();
-    Report(op.key,*request);
+    Report(std::to_string(scope)+":"+op.key,*request);
     if(!request->Status().accepted)return {VisualStepState::Failed,request->Status().detail};
     return {VisualStepState::Done,{}};
 }
-void VisualTimelines::Cancel() {
-    for(auto& [key,request]:current_){(void)key;request->Cancel();}
-    for(auto& request:retired_)request->Cancel();
+void VisualTimelines::Cancel(std::uint64_t scope) {
+    for(auto it=current_.begin();it!=current_.end();) {
+        if(it->first.first!=scope){++it;continue;}
+        it->second->Cancel();retired_.push_back(it->second);it=current_.erase(it);
+    }
 }
 void VisualTimelines::Service() {
     // Keep receipts stable through native callback reentry.
@@ -44,7 +47,7 @@ void VisualTimelines::Service() {
         request->Service();const auto& detail=request->Status().detail;
         if(!detail.empty() && std::find(issues_.begin(),issues_.end(),detail)==issues_.end())issues_.push_back(detail);
     }
-    for(const auto& [key,request]:current_)Report(key,*request);
+    for(const auto& [key,request]:current_)Report(std::to_string(key.first)+":"+key.second,*request);
     for(const auto& request:retired_)Report("retired",*request);
     retired_.erase(std::remove_if(retired_.begin(),retired_.end(),[this](const auto& r){
         if(!r->Status().drained)return false;
@@ -71,8 +74,8 @@ bool VisualTimelines::Drained() const {
 }
 void ConnectVisualTimelines(VisualProgramServices& services,std::shared_ptr<VisualTimelines> timelines) {
     if(!timelines)throw std::invalid_argument("Timeline scene missing");
-    services.timeline=[timelines](const VisualTimeline& op){return timelines->Execute(op);};
-    services.cancel_timelines=[timelines]{timelines->Cancel();};
+    services.timeline=[timelines](std::uint64_t scope,const VisualTimeline& op){return timelines->Execute(scope,op);};
+    services.cancel_timelines=[timelines](std::uint64_t scope){timelines->Cancel(scope);};
     services.timelines_drained=[timelines]{timelines->Service();return timelines->Drained();};
 }
 }

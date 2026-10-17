@@ -483,8 +483,8 @@ void TestVisualProgram(const char* file) {
         if(failed_submit && input.target!="Caster")allocating->released=true;
         return context.StartEntity(key,&entity,&other_entity,&path,input.options);
     };
-    callbacks.attach=[&](auto){++attaches;};callbacks.detach=[&]{++detaches;};callbacks.cancel_timelines=[&]{++cancellations;};
-    callbacks.timeline=[&](const VisualTimeline& input){timeline.push_back(input.key);return VisualStepResult{VisualStepState::Done,{}};};
+    callbacks.attach=[&](auto){++attaches;};callbacks.detach=[&]{++detaches;};callbacks.cancel_timelines=[&](auto){++cancellations;};
+    callbacks.timeline=[&](auto,const VisualTimeline& input){timeline.push_back(input.key);return VisualStepResult{VisualStepState::Done,{}};};
     callbacks.timelines_drained=[]{return true;};
     callbacks.remove=[&](VisualEffectContext& context,const VisualRemove& input){for(const auto& key:input.effects)context.Remove(key,input.fade);return VisualStepResult{VisualStepState::Done,{}};};
     callbacks.trigger=[&](VisualEffectContext&,VisualEffectId,const VisualTrigger& input){triggered.push_back(input.trigger);return VisualStepResult{VisualStepState::Done,{}};};
@@ -640,7 +640,7 @@ void TestVisualProgram(const char* file) {
           {"op":"create","source":"hit","effects":["hit"]}]}}
     })"));
     unsigned stop_calls=0;
-    callbacks.timeline=[&](const auto& op){Check(!op.play);++stop_calls;return VisualStepResult{VisualStepState::Done,{}};};
+    callbacks.timeline=[&](auto,const auto& op){Check(!op.play);++stop_calls;return VisualStepResult{VisualStepState::Done,{}};};
     VisualProgramPlayer natural(tail_program,callbacks);
     intent=natural.Select("resolve");natural.Service();Check(natural.Played(intent,400,6));
     natural.Observe(400,6,"Resolve",1);natural.Service();Check(natural.Status().finished);

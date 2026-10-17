@@ -78,8 +78,8 @@ std::vector<VisualInstruction> Instructions(const Json& rows,const VisualProgram
             instruction.operation=std::move(timeline);
         } else throw std::invalid_argument("unknown visual operation: "+op);
         if(!instruction.context.empty())Need(!std::holds_alternative<VisualContextOperation>(instruction.operation) &&
-            !std::holds_alternative<VisualAssign>(instruction.operation) && !std::holds_alternative<VisualTimeline>(instruction.operation),
-            "context selection applies to effect operations");
+            !std::holds_alternative<VisualAssign>(instruction.operation),
+            "context selection applies to effect and Timeline operations");
         out.push_back(std::move(instruction));
     }
     return out;
@@ -88,7 +88,6 @@ void ContextInstructions(const std::vector<VisualInstruction>& steps) {
     for(const auto& step:steps) {
         Need(step.context.empty(),"context instructions operate on their own lifetime");
         Need(!std::holds_alternative<VisualContextOperation>(step.operation),"nested context lifecycle is unsupported");
-        Need(!std::holds_alternative<VisualTimeline>(step.operation),"named contexts do not own Timeline services");
     }
 }
 }

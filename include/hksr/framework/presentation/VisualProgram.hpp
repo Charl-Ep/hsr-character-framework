@@ -70,10 +70,11 @@ struct VisualProgramServices {
     std::function<VisualStepResult(VisualEffectContext&,VisualEffectId,const VisualFollow&)> follow;
     std::function<VisualStepResult(VisualEffectContext&,VisualEffectId,const VisualEffectState&)> effect_state;
     std::function<VisualStepResult(VisualEffectContext&,const VisualRemove&)> remove;
-    std::function<VisualStepResult(const VisualTimeline&)> timeline;
+    // Scope zero belongs to the action; named lifetimes use their context token.
+    std::function<VisualStepResult(std::uint64_t,const VisualTimeline&)> timeline;
     std::function<void(std::shared_ptr<VisualEffectContext>)> attach;
     std::function<void()> detach;
-    std::function<void()> cancel_timelines;
+    std::function<void(std::uint64_t)> cancel_timelines;
     std::function<bool()> timelines_drained;
     std::function<bool(std::shared_ptr<VisualEffectContext>,const std::string&,api::EffectRemovalOptions)> remove_in_flight;
     std::map<std::string,std::string> choices;

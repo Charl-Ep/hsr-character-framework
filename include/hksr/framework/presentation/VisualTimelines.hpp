@@ -10,8 +10,8 @@ public:
     using Factory=std::function<std::unique_ptr<api::OwnedTimeline>()>;
     using Trace=std::function<void(const std::string&)>;
     explicit VisualTimelines(Factory,Trace={});
-    VisualStepResult Execute(const VisualTimeline&);
-    void Cancel();
+    VisualStepResult Execute(std::uint64_t scope,const VisualTimeline&);
+    void Cancel(std::uint64_t scope);
     void Service();
     bool Drained() const;
     const std::vector<std::string>& Issues() const{return issues_;}
@@ -20,7 +20,8 @@ private:
     Trace trace_;
     std::map<const api::OwnedTimeline*,std::string> last_trace_;
     void Report(const std::string& key,const api::OwnedTimeline&);
-    std::map<std::string,std::shared_ptr<api::OwnedTimeline>> current_;
+    using Key=std::pair<std::uint64_t,std::string>;
+    std::map<Key,std::shared_ptr<api::OwnedTimeline>> current_;
     std::vector<std::shared_ptr<api::OwnedTimeline>> retired_;
     std::vector<std::string> issues_;
 };

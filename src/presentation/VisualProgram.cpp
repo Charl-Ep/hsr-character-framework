@@ -36,7 +36,7 @@ void VisualProgramPlayer::Retire(bool fade) {
     // An interruption also cancels tails retained by earlier natural finishes.
     for(auto& context:retired_)if(!context->Closing())context->End(fade);
     try {if(services_.detach)services_.detach();}catch(const std::exception& e){status_.issues.push_back(e.what());}
-    try {if(services_.cancel_timelines)services_.cancel_timelines();}catch(const std::exception& e){status_.issues.push_back(e.what());}
+    try {if(services_.cancel_timelines)services_.cancel_timelines(0);}catch(const std::exception& e){status_.issues.push_back(e.what());}
     variables_.clear();
 }
 void VisualProgramPlayer::Finish() {
@@ -78,8 +78,13 @@ VisualStepResult VisualProgramPlayer::Execute(const VisualInstruction& input,Cur
         } else if constexpr(std::is_same_v<T,VisualAssign>) {
             variables[op.variable]=op.value;return {VisualStepState::Done,{}};
         } else if constexpr(std::is_same_v<T,VisualTimeline>) {
+            auto scope=execution.lifetime?execution.lifetime->token:std::uint64_t{0};
+            if(!input.context.empty()) {
+                scope=ContextToken(input.context);
+                if(!scope)return {VisualStepState::Failed,"Timeline context is absent: "+input.context};
+            }
             if(services_.timeline && op.play)timelines_pending_=true;
-            return services_.timeline?services_.timeline(op):VisualStepResult{VisualStepState::Failed,"Timeline service unavailable"};
+            return services_.timeline?services_.timeline(scope,op):VisualStepResult{VisualStepState::Failed,"Timeline service unavailable"};
         } else {
         if(!cursor.context)cursor.context=ExecutionContext(input,execution);
         auto& context=cursor.context;

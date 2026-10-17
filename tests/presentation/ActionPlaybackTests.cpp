@@ -230,9 +230,9 @@ void TestActionPlayback() {
     bool scene_ready=false,scene_alive=false;unsigned stopped_after_plays=0;
     framework::VisualProgramServices services;services.effects=std::make_shared<api::PresentationEffects>(effects);
     services.create=[](auto&,const auto&,const auto&)->framework::VisualEffectId{throw std::logic_error("no effect creation expected");};
-    services.timeline=[&](const auto& op){scene_alive=op.play;if(!op.play)stopped_after_plays=state_plays;
+    services.timeline=[&](auto,const auto& op){scene_alive=op.play;if(!op.play)stopped_after_plays=state_plays;
         return framework::VisualStepResult{scene_ready?framework::VisualStepState::Done:framework::VisualStepState::Pending,{}};};
-    services.cancel_timelines=[&]{if(scene_alive)stopped_after_plays=state_plays;scene_alive=false;};
+    services.cancel_timelines=[&](auto){if(scene_alive)stopped_after_plays=state_plays;scene_alive=false;};
     services.timelines_drained=[&]{return !scene_alive;};
     auto phase_data=std::make_shared<api::PhaseVisualConfigSources>();phase_data->visuals.context_available=true;
     phase_data->standby={true,"attack_loop",{}};

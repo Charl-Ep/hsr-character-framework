@@ -691,8 +691,8 @@ void TestModelProfileInputs() {
             framework::VisualProgramServices callbacks;
             callbacks.effects=std::make_shared<api::PresentationEffects>(api::EffectRequestServices{{},api::EffectAccess({}),{},{},{}});
             callbacks.create=[](auto&,const auto&,const auto&)->framework::VisualEffectId{throw std::logic_error("unexpected effect");};
-            callbacks.timeline=[&](const auto&){scene_alive=true;return framework::VisualStepResult{framework::VisualStepState::Done,{}};};
-            callbacks.cancel_timelines=[&]{scene_alive=false;};callbacks.timelines_drained=[&]{return !scene_alive;};
+            callbacks.timeline=[&](auto,const auto&){scene_alive=true;return framework::VisualStepResult{framework::VisualStepState::Done,{}};};
+            callbacks.cancel_timelines=[&](auto){scene_alive=false;};callbacks.timelines_drained=[&]{return !scene_alive;};
             player=std::make_shared<framework::VisualProgramPlayer>(value.program,std::move(callbacks));return player;
         };
         framework::CharacterSession session(world_ptr,std::move(plan),configured);
