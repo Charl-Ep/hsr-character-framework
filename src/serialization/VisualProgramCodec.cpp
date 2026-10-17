@@ -35,12 +35,19 @@ std::vector<std::string> Names(const Json& value) {
 std::vector<VisualInstruction> Instructions(const Json& rows,const VisualProgram& program) {
     Need(rows.is_array(),"visual instructions must be an array");std::vector<VisualInstruction> out;
     for(const auto& row:rows) {
-        Fields(row,{"op","source","when","effects","variable","value","effect","seconds","fade","immediate","trigger","reset","key","path","type","wrap_mode","release_volume","optional","targets","state","transition","restart"});
+        Fields(row,{"op","source","when","effects","variable","value","effect","seconds","fade","immediate","trigger","reset","key","path","type","wrap_mode","release_volume","optional","targets","state","transition","restart","context","name"});
         VisualInstruction instruction;instruction.source=Name(row.at("source"));
+        if(row.contains("context")) {
+            instruction.context=Name(row.at("context"));
+            Need(program.contexts.count(instruction.context)!=0,"unknown visual context: "+instruction.context);
+        }
         if(row.contains("when")){const auto& when=row.at("when");Fields(when,{"choice","is"});instruction.choice=Name(when.at("choice"));instruction.value=Name(when.at("is"));}
         const auto op=Name(row.at("op"));
         Need(op=="remove" || !row.contains("optional"),"optional effect keys require remove");
-        if(op=="create") {
+        if(op=="context_enter" || op=="context_exit") {
+            const auto name=Name(row.at("name"));Need(program.contexts.count(name)!=0,"unknown visual context: "+name);
+            instruction.operation=VisualContextOperation{name,op=="context_enter",row.value("fade",true)};
+        } else if(op=="create") {
             auto names=Names(row.at("effects"));for(const auto& key:names)Need(program.effects.count(key)!=0,"unknown effect input: "+key);
             instruction.operation=VisualCreate{std::move(names)};
         } else if(op=="assign")instruction.operation=VisualAssign{Name(row.at("variable")),Number(row.at("value"))};
@@ -70,32 +77,58 @@ std::vector<VisualInstruction> Instructions(const Json& rows,const VisualProgram
             timeline.type=row.value("type",0);timeline.wrap_mode=row.value("wrap_mode",0);timeline.release_volume=row.value("release_volume",false);
             instruction.operation=std::move(timeline);
         } else throw std::invalid_argument("unknown visual operation: "+op);
+        if(!instruction.context.empty())Need(!std::holds_alternative<VisualContextOperation>(instruction.operation) &&
+            !std::holds_alternative<VisualAssign>(instruction.operation) && !std::holds_alternative<VisualTimeline>(instruction.operation),
+            "context selection applies to effect operations");
         out.push_back(std::move(instruction));
     }
     return out;
 }
+void ContextInstructions(const std::vector<VisualInstruction>& steps) {
+    for(const auto& step:steps) {
+        Need(step.context.empty(),"context instructions operate on their own lifetime");
+        Need(!std::holds_alternative<VisualContextOperation>(step.operation),"nested context lifecycle is unsupported");
+        Need(!std::holds_alternative<VisualTimeline>(step.operation),"named contexts do not own Timeline services");
+    }
+}
 }
 VisualProgram ParseVisualProgram(const std::string& text) {
-    const auto json=Json::parse(text);Fields(json,{"format","id","source","scope","effects","actions","signals"});
+    const auto json=Json::parse(text);Fields(json,{"format","id","source","scope","effects","actions","signals","contexts"});
     Need(json.at("format")=="hksr.visual-program","unsupported visual program format");
     VisualProgram out;out.id=Name(json.at("id"));out.source=Name(json.at("source"));out.scope=Name(json.at("scope"));
     Need(json.at("effects").is_object(),"visual effects must be an object");
     for(auto it=json.at("effects").begin();it!=json.at("effects").end();++it) {
-        const auto& row=it.value();Fields(row,{"path","target","anchor","position_offset","rotation_offset","scale","attach_to_target","fade_in","simulate_immediately","unique_name"});
+        const auto& row=it.value();Fields(row,{"path","target","anchor","position_offset","rotation_offset","scale","attach_to_target","attach_point","fade_in","simulate_immediately","unique_name"});
         VisualEffectInput input;input.path=Name(row.at("path"));
         Need(row.contains("target")!=row.contains("anchor"),"effect needs exactly one target or world anchor");
         if(row.contains("anchor")) {
             input.anchor=Name(row.at("anchor"));
-            Need(!row.contains("position_offset") && !row.contains("rotation_offset") && !row.contains("attach_to_target"),
+            Need(!row.contains("position_offset") && !row.contains("rotation_offset") && !row.contains("attach_to_target") && !row.contains("attach_point"),
                 "world-anchored effect cannot use entity-relative inputs");
         }else input.target=Name(row.at("target"));
         if(row.contains("position_offset"))input.options.position_offset=Vector(row.at("position_offset"));
         if(row.contains("rotation_offset"))input.options.rotation_offset=Vector(row.at("rotation_offset"));
         if(row.contains("scale"))input.options.scale=Vector(row.at("scale"));
         if(row.contains("unique_name"))input.options.unique_name=Name(row.at("unique_name"));
+        if(row.contains("attach_point"))input.options.attach_point=Name(row.at("attach_point"));
         input.options.attach_to_target=row.value("attach_to_target",false);input.options.fade_in=row.value("fade_in",true);
         input.options.simulate_immediately=row.value("simulate_immediately",false);
         out.effects.emplace(Name(it.key()),std::move(input));
+    }
+    if(json.contains("contexts")) {
+        Need(json.at("contexts").is_object(),"visual contexts must be an object");
+        std::set<std::string> event_scopes{out.scope};
+        for(auto it=json.at("contexts").begin();it!=json.at("contexts").end();++it)out.contexts.emplace(Name(it.key()),VisualProgramContext{});
+        for(auto it=json.at("contexts").begin();it!=json.at("contexts").end();++it) {
+            const auto& row=it.value();Fields(row,{"enter","exit","event_scope"});auto& context=out.contexts.at(it.key());
+            if(row.contains("event_scope")) {
+                context.event_scope=Name(row.at("event_scope"));
+                Need(event_scopes.insert(context.event_scope).second,"event scope has multiple context owners: "+context.event_scope);
+            }
+            context.enter=Instructions(row.value("enter",Json::array()),out);
+            context.exit=Instructions(row.value("exit",Json::array()),out);
+            ContextInstructions(context.enter);ContextInstructions(context.exit);
+        }
     }
     Need(json.at("actions").is_object() && !json.at("actions").empty(),"visual actions must be nonempty object");
     std::set<std::string> states;
@@ -127,8 +160,16 @@ VisualProgram ParseVisualProgram(const std::string& text) {
     }
     if(json.contains("signals")) {
         Need(json.at("signals").is_object(),"visual signals must be an object");
-        for(auto it=json.at("signals").begin();it!=json.at("signals").end();++it)
-            out.signals.emplace(Name(it.key()),Instructions(it.value(),out));
+        for(auto it=json.at("signals").begin();it!=json.at("signals").end();++it) {
+            VisualProgramSignalDefinition signal;
+            if(it.value().is_array())signal.instructions=Instructions(it.value(),out);
+            else {
+                Fields(it.value(),{"context","instructions"});signal.context=Name(it.value().at("context"));
+                Need(out.contexts.count(signal.context)!=0,"unknown signal context: "+signal.context);
+                signal.instructions=Instructions(it.value().at("instructions"),out);ContextInstructions(signal.instructions);
+            }
+            out.signals.emplace(Name(it.key()),std::move(signal));
+        }
     }
     return out;
 }

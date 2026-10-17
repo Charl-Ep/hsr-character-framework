@@ -305,6 +305,112 @@ void TestVisualEffectContext() {
     delegates.clear();
 }
 
+namespace {
+void TestVisualLifetimes() {
+    auto program=std::make_shared<VisualProgram>(ParseVisualProgram(R"({
+      "format":"hksr.visual-program","id":"lifetimes","source":"config","scope":"scene",
+      "effects":{"ground":{"path":"ground.prefab","target":"Caster"}},
+      "contexts":{
+        "aura":{"enter":[{"op":"create","effects":["ground"],"source":"aura.create"}]},
+        "visual_manager":{},
+        "skill":{"event_scope":"skill-events","enter":[{"op":"create","effects":["ground"],"source":"skill.create"}],
+          "exit":[{"op":"effect_state","effect":"ground","state":"Idle","source":"skill.exit"}]}
+      },
+      "actions":{
+        "ultra":{"state":"Skill03","restart":true,"enter":[{"op":"context_enter","name":"aura","source":"ultra"}],
+          "lanes":[[{"at":0.806,"instructions":[{"op":"context_enter","name":"visual_manager","source":"visual"}]}]],
+          "completion_state":"StandBy_Transfer"},
+        "skill":{"state":"Skill11_Start","restart":true,"enter":[{"op":"context_enter","name":"skill","source":"skill"}],
+          "completion_state":"StandBy_Transfer"},
+        "skill_end":{"state":"Skill11_End","restart":true,"enter":[{"op":"context_exit","name":"skill","source":"release"}]},
+        "ultra_end":{"state":"StandBy01toStandBy","restart":true,
+          "enter":[{"op":"context_exit","name":"aura","source":"ultra.exit"}],
+          "lanes":[[{"at":0.25,"instructions":[{"op":"context_exit","name":"visual_manager","source":"visual.exit"}]}]],
+          "completion_state":"StandBy"}
+      },
+      "signals":{
+        "enter_view":{"context":"skill","instructions":[
+          {"op":"effect_state","effect":"ground","state":"Idle","source":"view.idle"},
+          {"op":"follow","effect":"ground","targets":[],"source":"view.clear"}]},
+        "exit_view":{"context":"skill","instructions":[
+          {"op":"effect_state","effect":"ground","state":"Move","source":"view.move"},
+          {"op":"follow","effect":"ground","targets":["Target"],"source":"view.bind"}]},
+        "pulse":{"context":"aura","instructions":[{"op":"effect_state","effect":"ground","state":"Move","source":"aura.pulse"}]}
+      }
+    })"));
+    auto services=Services();std::vector<std::unique_ptr<Params>> requests;
+    std::vector<std::string> order;
+    std::map<std::string,std::weak_ptr<VisualEffectContext>> contexts;
+    std::vector<std::string> detached;
+    VisualProgramServices callbacks;callbacks.effects=services;
+    callbacks.context_started=[&](const std::string& name,auto context){contexts[name]=context;};
+    callbacks.context_stopped=[&](const std::string& name){detached.push_back(name);};
+    callbacks.create=[&](auto& context,const auto& key,const auto&) {
+        auto p=std::make_unique<Params>();p->id=unsigned(100+requests.size());allocating=p.get();requests.push_back(std::move(p));
+        return context.StartEntity(key,&entity,&other_entity,&path,{});
+    };
+    callbacks.effect_state=[&](auto& context,auto id,const VisualEffectState& op) {
+        const auto result=context.SetAnimatorState(id,op.state,op.transition,op.restart);
+        if(result.state==EffectControlState::Applied)order.push_back(op.state);
+        return VisualStepResult{result.state==EffectControlState::Applied?VisualStepState::Done:
+            result.state==EffectControlState::NotLoaded?VisualStepState::Pending:VisualStepState::Failed,result.detail};
+    };
+    callbacks.follow=[&](auto&,auto,const auto& op) {order.push_back(op.targets.empty()?"clear":"bind");return VisualStepResult{VisualStepState::Done,{}};};
+    release_on_remove=true;VisualProgramPlayer player(program,callbacks);
+    auto intent=player.Select("ultra");player.Service();Check(player.Status().prepared && requests.size()==1);
+    const auto aura=player.ContextToken("aura");Check(aura && !player.ContextToken("visual_manager"));
+    Check(player.Played(intent,800,1));player.Observe(800,1,"Skill03",0.8f);player.Service();Check(!player.ContextToken("visual_manager"));
+    player.Observe(800,1,"Skill03",0.81f);player.Service();const auto visual=player.ContextToken("visual_manager");Check(visual);
+    Check(player.SuccessorPlayed(intent,801,1));player.Observe(801,1,"StandBy_Transfer",0);player.Service();
+    Check(player.Status().completed && player.ContextToken("aura")==aura && player.ContextToken("visual_manager")==visual);
+    Check(player.Signal(aura,"pulse")); // no active body cursor is required
+    // A new body scene neither recreates nor cancels independently owned effects.
+    intent=player.Select("skill");player.Service();const auto skill=player.ContextToken("skill");
+    Check(player.Status().prepared && requests.size()==2 && skill && requests[0]->removes==0);
+    Check(program->contexts.at("skill").event_scope=="skill-events");
+    int sequence=0,world=0;VisualEffectBindings native;
+    AnimationSequenceExecution execution;
+    execution.construction=1;execution.definition=2;execution.serial=3;execution.sequence=&sequence;
+    execution.origin={{reinterpret_cast<GameEntity*>(&entity),4},reinterpret_cast<GameWorld*>(&world)};
+    native.Bind(execution,contexts.at("skill").lock());
+    Complete(*requests[1]);player.Service();
+    Check(player.Signal(aura,"pulse") && player.Signal(skill,"enter_view") && player.Signal(skill,"exit_view"));
+    player.Service();Check(order==std::vector<std::string>({"Idle","clear","Move","bind"}));
+    // Aura is still loading; it does not block signals in the other lifetime.
+    Complete(*requests[0]);player.Service();Check(order.back()=="Move");
+    player.InterruptAction();player.Service();Check(player.ContextToken("skill")==skill && requests[0]->removes==0 && requests[1]->removes==0);
+    Check(player.Signal(skill,"enter_view"));player.Service();Check(order.back()=="clear");
+    player.Select("skill");player.Service();Check(requests.size()==2 && player.ContextToken("skill")==skill); // idempotent entry
+    player.Select("skill_end");player.Service();player.Service();
+    Check(!player.ContextToken("skill") && requests[1]->removes==1 && requests[0]->removes==0);
+    Check(detached==std::vector<std::string>{"skill"});
+    Params native_late;native_late.id=500;native_late.state=3;
+    EffectSubmission late;late.sequence=execution;late.origin=execution.origin;late.trigger.serial=8;
+    late.manager=&manager;late.request={native_late.id,0,&native_late};
+    Check(native.Track("late-native",late).has_value());player.Service();Check(native_late.removes==1);
+    Check(!player.Signal(skill,"exit_view"));
+    player.Select("skill");player.Service();const auto next_skill=player.ContextToken("skill");Check(next_skill!=skill && requests.size()==3);
+    Check(!player.Signal(skill,"enter_view"));
+    // A pending scoped signal survives an unrelated body selection, but not
+    // context exit/re-entry; its receipt must never bind the new request.
+    Check(player.Signal(next_skill,"enter_view"));player.Service();
+    intent=player.Select("ultra_end");player.Service();Check(player.Status().prepared && !player.ContextToken("aura"));
+    Check(player.ContextToken("visual_manager")==visual && player.ContextToken("skill")==next_skill);
+    Check(player.Played(intent,802,1));player.Observe(802,1,"StandBy01toStandBy",0.2f);player.Service();Check(player.ContextToken("visual_manager"));
+    player.Observe(802,1,"StandBy01toStandBy",0.26f);player.Service();Check(!player.ContextToken("visual_manager"));
+    // Whole-owner exit does not wait for an unloaded effect's authored exit.
+    player.Select("skill_end");player.Service();Check(!player.Status().prepared);
+    const auto controls=order.size();player.End();player.Service();Check(player.ActiveContexts().empty() && requests[2]->removes==1);
+    Complete(*requests[2]);player.Service();Check(!player.Drained() && roots.empty() && order.size()==controls);
+    native.Clear();player.Service();Check(player.Drained());
+    // Lifetime entry is retained before synchronous callbacks. Reentrant End
+    // cancels it even though neither the body nor the entry cursor completed.
+    requests.clear();VisualProgramPlayer reentrant(program,callbacks);
+    on_submit=[&]{reentrant.End();reentrant.Service();};reentrant.Select("ultra");reentrant.Service();on_submit={};
+    Check(requests.size()==1);reentrant.Service();Check(reentrant.Drained() && roots.empty());
+    requests.clear();allocating=&a;release_on_remove=false;delegates.clear();
+}
+}
 void TestVisualProgram(const char* file) {
     std::shared_ptr<const VisualProgram> program;
     if(file) {
@@ -640,4 +746,5 @@ void TestVisualProgram(const char* file) {
     Check(views.Signal(views.Status().intent,"enter_view"));views.Leave();views.Service();
     Check(bound.empty() && order.size()==7);views.End();views.Service();Check(views.Drained() && roots.empty());
     lifecycle.Forget(caster.token);lifecycle.Forget(recipient.token);delegates.clear();
+    TestVisualLifetimes();
 }

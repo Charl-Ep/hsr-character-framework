@@ -21,10 +21,17 @@ struct VisualProgramRuntime::Scene {
     VisualProgramInput input;
     std::map<std::string,std::uint64_t> selected_targets;
     VisualSpatialAnchors selected_anchors;
-    std::vector<VisualEventRoutes::RuleId> rules;
+    struct Inputs {
+        std::weak_ptr<VisualEffectContext> context;
+        std::map<std::string,std::uint64_t> targets;
+        VisualSpatialAnchors anchors;
+        std::map<std::string,api::EntityOrigin> resolved;
+    };
+    std::map<VisualEffectContext*,Inputs> context_inputs;
+    struct Channel {std::vector<VisualEventRoutes::RuleId> rules;api::ManagedRootId receiver=0;};
+    std::map<std::string,Channel> channels;
     std::shared_ptr<VisualProgramPlayer> player;
     std::unique_ptr<api::ManagedRoots> roots;
-    api::ManagedRootId receiver=0;
     std::vector<api::ManagedRootId> releasing;
     std::string last_trace;
     api::ManagedRootId Keep(void* object) {
@@ -81,6 +88,11 @@ std::shared_ptr<VisualProgramPlayer> VisualProgramRuntime::Create(api::EntityOri
         value->selected_targets=std::move(targets);value->selected_anchors=std::move(anchors);return choices;
     };
     services.create=[this,current](auto& context,const auto& key,const auto& value){return CreateEffect(*current(),context,key,value);};
+    services.context_started=[this,current](const std::string& name,auto context) {
+        auto scene=current();scene->context_inputs[context.get()]={context,scene->selected_targets,scene->selected_anchors,{}};
+        Attach(*scene,context,name);
+    };
+    services.context_stopped=[this,current](const std::string& name){Detach(*current(),name);};
     services.effect_state=[this,current](auto& context,auto id,const VisualEffectState& op) {
         const auto scene=current();
         if(!Alive(scene->owner))return VisualStepResult{VisualStepState::Failed,"visual owner ended"};
@@ -90,7 +102,7 @@ std::shared_ptr<VisualProgramPlayer> VisualProgramRuntime::Create(api::EntityOri
     };
     services.follow=[this,current](auto& context,auto id,const VisualFollow& op) {
         const auto scene=current();std::vector<api::EntityOrigin> targets;
-        for(const auto& name:op.targets)targets.push_back(ResolveTarget(*scene,name));
+        for(const auto& name:op.targets)targets.push_back(ResolveTarget(*scene,context,name));
         context.UseEntityMotion(Motion(),scene->owner);
         const auto result=context.BindTargets(id,targets);
         return VisualStepResult{result.state==api::EffectControlState::Applied?VisualStepState::Done:
@@ -104,32 +116,43 @@ std::shared_ptr<VisualProgramPlayer> VisualProgramRuntime::Create(api::EntityOri
         [trace,owner](const auto& text){if(trace){std::ostringstream out;out<<"visual owner="<<owner.token.entity<<" generation="<<owner.token.generation<<" "<<text;trace(out.str());}}));
     scene->player=std::make_shared<VisualProgramPlayer>(input.program,std::move(services));
     try {
-        if(profile && profile->source==input.program->source)for(const auto& rule:profile->native_events)
-            if(rule.scope==input.program->scope)scene->rules.push_back(routes_.Declare(owner,rule));
+        if(profile && profile->source==input.program->source)for(const auto& rule:profile->native_events) {
+            if(rule.scope==input.program->scope)scene->channels[""].rules.push_back(routes_.Declare(owner,rule));
+            else for(const auto& [name,context]:input.program->contexts)if(!context.event_scope.empty() && rule.scope==context.event_scope)
+                scene->channels[name].rules.push_back(routes_.Declare(owner,rule));
+        }
     }catch(...) {scene->player->End();throw;}
     return scene->player;
 }
-void VisualProgramRuntime::Attach(Scene& scene,std::shared_ptr<VisualEffectContext> context) {
-    Detach(scene);
-    if(scene.rules.empty())return;
+void VisualProgramRuntime::Attach(Scene& scene,std::shared_ptr<VisualEffectContext> context,const std::string& name) {
+    Detach(scene,name);
+    auto& channel=scene.channels[name];
+    if(channel.rules.empty())return;
     auto* receiver=api_.ReadEventReceiver(scene.owner.token,scene.owner.world);
     if(!receiver)throw std::runtime_error("current model event receiver unavailable");
-    scene.receiver=scene.Keep(receiver);
-    try {for(auto rule:scene.rules)routes_.Attach(rule,receiver,context);}
-    catch(...){Detach(scene);throw;}
+    channel.receiver=scene.Keep(receiver);
+    try {for(auto rule:channel.rules)routes_.Attach(rule,receiver,context);}
+    catch(...){Detach(scene,name);throw;}
 }
-void VisualProgramRuntime::Detach(Scene& scene) {
-    for(auto rule:scene.rules)routes_.Detach(rule);
-    if(scene.receiver){scene.releasing.push_back(scene.receiver);scene.receiver=0;}
+void VisualProgramRuntime::Detach(Scene& scene,const std::string& name) {
+    const auto found=scene.channels.find(name);if(found==scene.channels.end())return;
+    auto& channel=found->second;
+    for(auto rule:channel.rules)routes_.Detach(rule);
+    if(channel.receiver){scene.releasing.push_back(channel.receiver);channel.receiver=0;}
 }
-api::EntityOrigin VisualProgramRuntime::ResolveTarget(Scene& scene,const std::string& name) {
+api::EntityOrigin VisualProgramRuntime::ResolveTarget(Scene& scene,VisualEffectContext& context,const std::string& name) {
+    const auto snapshot=scene.context_inputs.find(&context);
+    auto* inputs=snapshot==scene.context_inputs.end()?nullptr:&snapshot->second;
     api::EntityOrigin target=scene.owner;
     if(name!="Caster") {
+        const auto resolved=inputs?inputs->resolved.find(name):std::map<std::string,api::EntityOrigin>::iterator{};
         const auto found=scene.input.targets.find(name);
-        if(found!=scene.input.targets.end())target=found->second;
+        if(inputs && resolved!=inputs->resolved.end())target=resolved->second;
+        else if(found!=scene.input.targets.end())target=found->second;
         else {
-            const auto character=scene.selected_targets.find(name);
-            if(character==scene.selected_targets.end() || !scene.input.resolve_character)
+            const auto& targets=inputs?inputs->targets:scene.selected_targets;
+            const auto character=targets.find(name);
+            if(character==targets.end() || !scene.input.resolve_character)
                 throw std::runtime_error("explicit visual target missing: "+name);
             target=scene.input.resolve_character(character->second);
         }
@@ -140,6 +163,7 @@ api::EntityOrigin VisualProgramRuntime::ResolveTarget(Scene& scene,const std::st
     const auto state=entities->Entities().Read(target.token.entity);
     if(!Alive(scene.owner) || !Alive(target) || !state.owner_world.read.returned || state.owner_world.value!=target.world ||
         !state.loaded.read.returned || !state.loaded.value)throw std::runtime_error("visual target not loaded in its owner world");
+    if(inputs)inputs->resolved.emplace(name,target);
     return target;
 }
 std::shared_ptr<VisualEntityMotion> VisualProgramRuntime::Motion() {
@@ -164,12 +188,14 @@ VisualEffectId VisualProgramRuntime::CreateEffect(Scene& scene,VisualEffectConte
     api::EntityOrigin target;std::optional<api::SpatialEffectOptions> spatial;
     if(!input.anchor.empty()) {
         if(!input.target.empty())throw std::invalid_argument("effect has both entity and spatial targets");
-        const auto found=scene.selected_anchors.find(input.anchor);
-        if(found==scene.selected_anchors.end())throw std::runtime_error("explicit visual anchor missing: "+input.anchor);
+        const auto snapshot=scene.context_inputs.find(&context);
+        const auto& anchors=snapshot==scene.context_inputs.end()?scene.selected_anchors:snapshot->second.anchors;
+        const auto found=anchors.find(input.anchor);
+        if(found==anchors.end())throw std::runtime_error("explicit visual anchor missing: "+input.anchor);
         const auto& pose=found->second;
         spatial=api::SpatialEffectOptions{pose.position,pose.rotation,input.options.unique_name,input.options.scale,
             input.options.fade_in,input.options.simulate_immediately};
-    }else target=ResolveTarget(scene,input.target);
+    }else target=ResolveTarget(scene,context,input.target);
     const auto path=objects_.NewStringUtf8(input.path.c_str());
     if(!path.call.returned || !path.object)throw std::runtime_error("visual effect path allocation failed");
     const auto pin=scene.Keep(path.object);scene.releasing.push_back(pin);
@@ -200,7 +226,7 @@ void VisualProgramRuntime::Collect() {
                 if(!Alive(scene.owner) || signal.generation!=scene.owner.token.generation)
                     throw std::runtime_error("visual signal targets an ended creation");
                 receipt=scene.player->Signal(signal.intent,signal.name);
-                if(!receipt)error="visual signal targets an inactive action";
+                if(!receipt)error="visual signal token is no longer active";
             }catch(const std::exception& e){error=e.what();}
             if(trace_) {
                 std::ostringstream out;out<<"visual-signal character="<<scene.input.character
@@ -212,6 +238,9 @@ void VisualProgramRuntime::Collect() {
         if(scene.player && (closing_ || !Alive(scene.owner)) && !scene.player->Status().closing)scene.player->End();
         if(scene.player && scene.player->Status().closing)scene.player->Service();
         scene.ReleasePending();
+        for(auto input=scene.context_inputs.begin();input!=scene.context_inputs.end();) {
+            if(input->second.context.expired())input=scene.context_inputs.erase(input);else ++input;
+        }
         if(trace_ && scene.player) {
             const auto& status=scene.player->Status();std::ostringstream out;
             out<<"visual-program owner="<<scene.owner.token.entity<<" generation="<<scene.owner.token.generation
@@ -220,6 +249,7 @@ void VisualProgramRuntime::Collect() {
                 <<" finished="<<status.finished<<" completing="<<status.completing<<" completed="<<status.completed
                 <<" closing="<<status.closing<<" drained="<<scene.player->Drained();
             out<<" signal="<<status.signal<<" signal_submitted="<<status.last_signal<<" signal_completed="<<status.completed_signal;
+            for(const auto& [name,token]:scene.player->ActiveContexts())out<<" context=["<<name<<":"<<token<<"]";
             for(const auto& value:status.waiting)out<<" waiting=["<<value<<"]";
             for(const auto& value:status.issues)out<<" issue=["<<value<<"]";
             for(const auto& value:status.notes)out<<" note=["<<value<<"]";
@@ -227,9 +257,10 @@ void VisualProgramRuntime::Collect() {
             if(text!=scene.last_trace){trace_(text);scene.last_trace=text;}
         }
         if(!scene.player || scene.player->Drained()) {
-            Detach(scene);scene.ReleasePending();
+            for(const auto& [name,channel]:scene.channels)Detach(scene,name);
+            scene.ReleasePending();
             if(scene.releasing.empty()) {
-                for(auto rule:scene.rules)routes_.Unbind(rule);
+                for(const auto& [name,channel]:scene.channels)for(auto rule:channel.rules)routes_.Unbind(rule);
                 it=scenes_.erase(it);continue;
             }
         }

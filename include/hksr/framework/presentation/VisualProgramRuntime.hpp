@@ -49,10 +49,10 @@ public:
     bool Close(); // after sessions close; no early detachment of producers
 private:
     struct Scene;
-    void Attach(Scene&,std::shared_ptr<VisualEffectContext>);
-    void Detach(Scene&);
+    void Attach(Scene&,std::shared_ptr<VisualEffectContext>,const std::string& context={});
+    void Detach(Scene&,const std::string& context={});
     VisualEffectId CreateEffect(Scene&,VisualEffectContext&,const std::string&,const VisualEffectInput&);
-    api::EntityOrigin ResolveTarget(Scene&,const std::string&);
+    api::EntityOrigin ResolveTarget(Scene&,VisualEffectContext&,const std::string&);
     std::shared_ptr<VisualEntityMotion> Motion();
     api::PresentationContext& api_;
     api::ManagedObjects& objects_;

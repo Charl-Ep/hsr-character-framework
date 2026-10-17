@@ -18,7 +18,10 @@ bool ActionPlayback::PrepareProgram(ActionReceipt& receipt) {
     if(receipt.serial==program_return_)return true; // successor is observed before tail instructions
     const auto* style=std::get_if<FreeStyleState>(&receipt.request);
     const auto key=(direct || style)?program_->ActionForState(direct?direct->name:style->name):std::nullopt;
-    if(!key){LeaveProgram();program_->Service();return true;}
+    if(!key) {
+        program_playback_.reset();program_preparing_=program_intent_=program_return_=0;
+        program_->InterruptAction();program_->Service();return true;
+    }
     if(program_preparing_!=receipt.serial) {
         program_preparing_=receipt.serial;program_playback_.reset();
         program_intent_=program_->Select(*key);

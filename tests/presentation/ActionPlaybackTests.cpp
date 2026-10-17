@@ -219,8 +219,10 @@ void TestActionPlayback() {
     token=api::TrackedEntities().Track(own);cancel_during_exit=false;
     auto program_data=std::make_shared<framework::VisualProgram>(framework::ParseVisualProgram(R"({
       "format":"hksr.visual-program","id":"test","source":"source","scope":"scene","effects":{},
+      "contexts":{"phase":{}},
       "actions":{"attack":{"state":"attack_loop","restart":true,"complete_at":0.7,"completion_state":"待机",
-        "enter":[{"op":"timeline_play","source":"scene","key":"scene","path":"scene.playable"}],
+        "enter":[{"op":"context_enter","name":"phase","source":"phase"},
+                 {"op":"timeline_play","source":"scene","key":"scene","path":"scene.playable"}],
         "after_completion":[{"op":"timeline_stop","source":"tail","key":"scene"}],
         "lanes":[[{"at":0.5,"instructions":[{"op":"assign","source":"phase","variable":"value","value":1}]}]]}}
     })"));
@@ -249,6 +251,9 @@ void TestActionPlayback() {
     Check(scene_alive && !player->Status().completed); // successful call is not observed state entry
     current_hash=71;current_time=0;++active_frame.sequence;integrated.Service(active_frame,true,objects);
     Check(stopped_after_plays==state_plays && !scene_alive && player->Status().completed);
+    const auto phase=player->ContextToken("phase");Check(phase);
+    integrated.Queue(framework::FreeStyleState{"待机"});integrated.Service(active_frame,true,objects);
+    Check(player->ContextToken("phase")==phase && !scene_alive); // unlisted body state is not phase exit
     // The controller may enter the declared successor itself. Observe it;
     // do not replay StandBy or cancel its tail merely because the source ended.
     auto& attack=program_data->actions.at("attack");attack.complete_at=2;
@@ -267,7 +272,7 @@ void TestActionPlayback() {
     count=state_plays;
     integrated.Queue(configured);current_time=0.1f;integrated.Service(active_frame,true,objects);
     Check(state_plays==count+1 && scene_alive); // same model can enter again
-    integrated.SetPresentationDomain(false);integrated.Service(active_frame,true,objects);Check(!scene_alive);
+    integrated.SetPresentationDomain(false);integrated.Service(active_frame,true,objects);Check(!scene_alive && player->ActiveContexts().empty());
     Check(integrated.Close(active_frame) && player->Drained() && roots.empty());api::TrackedEntities().Forget(token);
     std::cout<<"Action playback passed: owned lookup, queued replacement, readiness, three official paths, current state membership, no replay after faults, disposal isolation; local only.\n";
 }

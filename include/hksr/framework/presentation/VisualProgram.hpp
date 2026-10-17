@@ -25,13 +25,17 @@ struct VisualRemove {
 struct VisualTrigger {std::vector<std::string> effects;std::string trigger;bool reset=false;};
 struct VisualFollow {std::string effect;std::vector<std::string> targets;}; // empty releases this binding
 struct VisualEffectState {std::string effect,state;float transition=0;bool restart=false;};
+struct VisualContextOperation {std::string name;bool enter=true;bool fade=true;};
 struct VisualTimeline {std::string key,path;bool play=true;int type=0,wrap_mode=0;bool release_volume=false;};
-using VisualOperation=std::variant<VisualCreate,VisualAssign,VisualProgress,VisualRemove,VisualTrigger,VisualTimeline,VisualFollow,VisualEffectState>;
+using VisualOperation=std::variant<VisualCreate,VisualAssign,VisualProgress,VisualRemove,VisualTrigger,VisualTimeline,VisualFollow,VisualEffectState,VisualContextOperation>;
 struct VisualInstruction {
     VisualOperation operation;
     std::string source; // original configuration node, for diagnostics
     std::string choice,value; // optional explicit preview input, not a gameplay flag
+    std::string context; // empty uses the current execution's effect owner
 };
+struct VisualProgramContext {std::vector<VisualInstruction> enter,exit;std::string event_scope;};
+struct VisualProgramSignalDefinition {std::string context;std::vector<VisualInstruction> instructions;};
 struct VisualCue {float at=0;std::vector<VisualInstruction> instructions;};
 struct VisualProgramAction {
     std::string state;
@@ -49,7 +53,8 @@ struct VisualProgram {
     std::string id,source,scope;
     std::map<std::string,VisualEffectInput> effects;
     std::map<std::string,VisualProgramAction> actions;
-    std::map<std::string,std::vector<VisualInstruction>> signals;
+    std::map<std::string,VisualProgramSignalDefinition> signals;
+    std::map<std::string,VisualProgramContext> contexts;
 };
 VisualProgram ParseVisualProgram(const std::string& json);
 
@@ -74,6 +79,10 @@ struct VisualProgramServices {
     // Called once when an action selection is consumed, before any instruction.
     // Returns current defaults; explicit Select choices take precedence.
     std::function<std::map<std::string,std::string>()> select_inputs;
+    // Capture resolved input values for a named lifetime before it can submit.
+    // Does not attach native animation-event producers.
+    std::function<void(const std::string&,std::shared_ptr<VisualEffectContext>)> context_started;
+    std::function<void(const std::string&)> context_stopped;
 };
 struct VisualProgramStatus {
     std::uint64_t intent=0,playback=0,model=0;
@@ -92,20 +101,23 @@ class VisualProgramPlayer {
 public:
     VisualProgramPlayer(std::shared_ptr<const VisualProgram>,VisualProgramServices);
     std::uint64_t Select(const std::string& action,std::map<std::string,std::string> choices={});
-    // Enqueues a named event for this prepared action, without playing a body
-    // state. Returns zero for a stale/inactive intent; unknown names throw.
-    // Selection/exit discards pending events, not already applied operations.
+    // The token is the current action intent for action signals, or the named
+    // ContextToken for context signals. Unknown names throw; stale tokens
+    // return zero. Signals never play a body state.
     std::uint64_t Signal(std::uint64_t intent,const std::string& name);
     void Service(bool advance=true); // false collects lifetimes without advancing instructions
     bool Played(std::uint64_t intent,std::uint64_t playback,std::uint64_t model);
     bool SuccessorPlayed(std::uint64_t intent,std::uint64_t playback,std::uint64_t model);
     void Observe(std::uint64_t playback,std::uint64_t model,const std::string& state,float progress);
     void Leave(bool fade=true); // end this scene; a later restart action may enter again
+    void InterruptAction(bool fade=true); // keep explicitly entered contexts
     void End(bool fade=true); // no engine calls; Service drains on owner thread
     std::optional<std::string> ActionForState(const std::string&) const;
     const VisualProgramAction* CurrentAction() const {return action_;}
     const VisualProgramStatus& Status() const {return status_;}
     std::shared_ptr<VisualEffectContext> Context() const {return context_;}
+    std::uint64_t ContextToken(const std::string&) const;
+    std::map<std::string,std::uint64_t> ActiveContexts() const;
     bool Drained() const;
 private:
     struct Cursor {
@@ -113,12 +125,33 @@ private:
         std::set<VisualEffectId> completed;
         std::optional<std::vector<VisualEffectId>> receipts;
         std::size_t created=0;
-        void Next(){++instruction;completed.clear();receipts.reset();created=0;}
+        std::shared_ptr<VisualEffectContext> context;
+        void Next(){++instruction;completed.clear();receipts.reset();created=0;context.reset();}
     };
+    enum class ContextPhase { Entering,Active,Exiting };
+    struct Lifetime {
+        std::uint64_t token=0;
+        std::string name;
+        std::shared_ptr<VisualEffectContext> effects;
+        ContextPhase phase=ContextPhase::Entering;
+        Cursor enter,exit;
+        std::map<std::string,float> variables;
+        std::map<std::string,std::string> choices;
+        bool fade=true;
+    };
+    struct Execution {std::uint64_t intent=0;std::shared_ptr<Lifetime> lifetime;};
     struct Selection {std::uint64_t intent;std::string action;std::map<std::string,std::string> choices;};
-    struct SignalExecution {std::uint64_t serial,intent;std::string name;Cursor cursor;};
-    bool Instructions(const std::vector<VisualInstruction>&,Cursor&,std::uint64_t);
-    VisualStepResult Execute(const VisualInstruction&,Cursor&,std::uint64_t);
+    struct SignalExecution {std::uint64_t serial;Execution execution;std::string name;Cursor cursor;};
+    bool Current(const Execution&) const;
+    bool Instructions(const std::vector<VisualInstruction>&,Cursor&,const Execution&);
+    VisualStepResult Execute(const VisualInstruction&,Cursor&,const Execution&);
+    std::shared_ptr<VisualEffectContext> ExecutionContext(const VisualInstruction&,const Execution&) const;
+    VisualStepResult ChangeContext(const VisualContextOperation&);
+    void ServiceContexts(bool advance);
+    void DriveContext(std::shared_ptr<Lifetime>);
+    void EndContexts(bool fade);
+    void DiscardActionSignals();
+    void ServiceSignals();
     void Issue(const VisualInstruction&,const std::string&);
     void Retire(bool fade);
     void Finish();
@@ -126,6 +159,8 @@ private:
     VisualProgramServices services_;
     std::shared_ptr<VisualEffectContext> context_;
     std::vector<std::shared_ptr<VisualEffectContext>> retired_;
+    std::map<std::string,std::shared_ptr<Lifetime>> contexts_;
+    std::vector<std::shared_ptr<VisualEffectContext>> retired_contexts_;
     std::map<std::string,float> variables_;
     std::map<std::string,std::string> choices_;
     std::optional<Selection> pending_;
@@ -136,7 +171,8 @@ private:
     std::vector<Cursor> lanes_;
     std::uint64_t next_=0;
     std::uint64_t next_signal_=0;
+    std::uint64_t next_context_=0;
     std::optional<float> progress_;
-    bool servicing_=false,end_pending_=false,end_fade_=true,timelines_pending_=false;
+    bool servicing_=false,end_pending_=false,end_fade_=true,timelines_pending_=false,interrupt_pending_=false;
 };
 }

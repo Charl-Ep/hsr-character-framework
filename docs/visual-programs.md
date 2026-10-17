@@ -42,8 +42,9 @@ The development command channel accepts `visual_inputs` to replace one instance'
 | `effects` | Local keys mapped to resource paths, explicit entity targets or world anchors, and visual options |
 | `actions` | Body state, entry instructions, progress lanes and completion destination |
 | `signals` | Named instruction sequences submitted independently of body progress |
+| `contexts` | Independent effect lifetimes with entry and exit instructions |
 
-Each instruction has an `op` and a `source` identifying its configuration node. Operations are `create`, `assign`, `progress`, `remove`, `trigger`, `follow`, `effect_state`, `timeline_play` and `timeline_stop`. An optional `when` selects an input by `choice` and `is`.
+Each instruction has an `op` and a `source` identifying its configuration node. Operations are `create`, `assign`, `progress`, `remove`, `trigger`, `follow`, `effect_state`, `context_enter`, `context_exit`, `timeline_play` and `timeline_stop`. An optional `when` selects an input by `choice` and `is`.
 
 Each effect specifies either `target` or `anchor`. An anchor resolves through `VisualProgramInput::anchors` or parameter overrides; it contains world `position` and an optional `[x,y,z,w]` quaternion `rotation` (identity by default). Anchored effects accept `scale`, `unique_name`, `fade_in` and `simulate_immediately`, but not entity-relative offsets or attachment options. No target entity is created or substituted. The initial pose is fixed at submission; the effect's own animation can move it.
 
@@ -51,7 +52,7 @@ Each effect specifies either `target` or `anchor`. An anchor resolves through `V
 {"op":"visual_inputs","character":7,"anchors":{"center":{"position":[6,0,58],"rotation":[0,1,0,0]}}}
 ```
 
-The corresponding effect definition is `{"path":"effect.prefab","anchor":"center"}`. Startup manifest entries also accept `anchors`.
+The corresponding effect definition is `{"path":"effect.prefab","anchor":"center"}`. Startup manifest entries also accept `anchors`. Entity-targeted effects may specify `attach_point` for initial attachment independently of `attach_to_target` for continued parenting.
 
 `effect_state` sets the named effect's first Animator on layer zero. `transition` is normalized transition duration (default 0); `restart` defaults to false. The SDK resolves the state name through Unity's `Animator.StringToHash` and caches the result. This does not select the character's body state.
 
@@ -69,11 +70,44 @@ The corresponding effect definition is `{"path":"effect.prefab","anchor":"center
 
 `progress.value` is a number or `{"variable":"name"}`. Each lane contains ordered cues with `at` and `instructions`. Cue times use normalized body progress; effect transition durations use seconds. Lanes advance independently.
 
-An action with `restart: true` creates a new scene. Other actions retain its effects and variables. Local keys do not set the engine's `UniqueEffectName`; `unique_name` is an explicit option.
+An action with `restart: true` replaces the default action context. Other actions retain its effects and variables. Named contexts are independent of this replacement. Local keys do not set the engine's `UniqueEffectName`; `unique_name` is an explicit option.
 
 `completion_state` requests a successor after `complete_at` and all lanes finish. `after_completion` runs when that successor is observed at `completion_at` (normalized progress, default 0). A successful play call alone does not run these instructions. If the controller enters the declared successor itself, the player observes it without replaying it. Without `completion_state`, the scene remains available for another action.
 
 ## Services and ownership
+
+### Independent contexts
+
+A named context has `enter` and `exit` instruction arrays. `context_enter` creates it once; repeated entry keeps the same effects and token. `context_exit` runs its exit instructions, detaches future native producers and cancels remaining receipts. Re-entry creates a new token. Action completion, restart and unlisted body states do not exit named contexts.
+
+```json
+{
+  "contexts": {
+    "aura": {
+      "enter": [{"op":"create","effects":["ground"],"source":"aura.create"}],
+      "exit": []
+    }
+  }
+}
+```
+
+Use `{"op":"context_enter","name":"aura","source":"phase.enter"}` or `context_exit` in action instructions. An effect instruction in an action may select `"context":"aura"`. Context entry, exit and signals use their own effect keys, variables, choices and captured inputs. These sequences support effect operations and assignment; nested context changes and Timelines are not supported. Timelines remain action-owned.
+
+An optional `event_scope` selects that context's `PresentationProfile.native_events` rules. Declare these rules before model construction. Context exit stops new associations; already-running native sequences retain the old context for late submissions and cleanup.
+
+Scoped signals use an object instead of the action-scoped instruction array:
+
+```json
+{"signals":{"enter_view":{"context":"aura","instructions":[
+  {"op":"effect_state","effect":"ground","state":"Idle","source":"view.enter"}
+]}}}
+```
+
+For this signal, pass `ContextToken("aura")` to `Signal`, or its diagnostic `context=[aura:token]` value as the development command's `intent`. It remains valid across body selections until that context exits. Signals run in order within each context; a pending context does not block another. Named contexts retain their entry inputs and the first resolved target generation; they do not adopt a rebuilt target automatically.
+
+`InterruptAction` cancels only the default action context and its queued signals. `Leave` and `End` cancel all contexts directly, without waiting for authored exit instructions that may require a live model or loaded effect. Keep servicing until every receipt and native producer drains. The host uses whole-scene exit for domain changes, model retirement and deletion.
+
+### Effect services
 
 `VisualProgramServices::create` resolves inputs and calls `VisualEffectContext::StartEntity` or `StartSpatial`. Trigger and removal operations use the SDK effect services unless overridden. Removal forwards fade and immediate-fade flags and waits for a manager receipt, not the end of the fade. Timeline playback uses a supplied service with cancellation and drain observations.
 
@@ -85,7 +119,7 @@ An action with `restart: true` creates a new scene. Other actions retain its eff
 
 `Select` queues intent, merging supplied choices over the service defaults. `Service` prepares the scene and collects independent input errors. The body starts after preparation succeeds; `Played` and `Observe` identify its actual playback and model. Pending controls retry only unresolved receipts, without restarting accepted transitions.
 
-`Signal(intent, name)` queues a configured signal for the prepared action and returns a receipt, or zero for a stale/inactive action. Unknown names throw. Signals run in submission order, retain their instruction cursors across pending loads, and do not wait for a body clock. An unrelated body lane can continue while a signal waits. New action selection, scene exit and natural scene completion discard queued signals; effects already applied remain owned by the scene. Custom hosts can supply `take_signals(character)` to marshal value-only messages to the runtime's owner frame.
+For action-scoped signals, `Signal(intent, name)` requires the prepared action's token. Unknown names throw; stale tokens return zero. Signals retain their cursors across pending loads and do not wait for a body clock. New action selection or completion discards queued action signals, but not context-scoped signals. Custom hosts can supply `take_signals(character)` to marshal value-only messages to the runtime's owner frame.
 
 Runtime diagnostics report selection, waiting instructions, native event attribution and effect targets. Timeline records include the registry borrow, observed phase and cleanup status; unchanged records are suppressed.
 
