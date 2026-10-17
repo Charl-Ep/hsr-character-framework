@@ -87,6 +87,16 @@ std::vector<VisualEffectResult> VisualEffectContext::SetProgress(const std::stri
     return out;
 }
 std::vector<VisualEffectId> VisualEffectContext::Requests(const std::string& key) const {return Matching(key);}
+void VisualEffectContext::Remove(VisualEffectId id,api::EffectRemovalOptions options) {
+    const auto found=requests_.find(id);
+    if(found!=requests_.end() && found->second.retained)found->second.request->Cancel(options);
+}
+api::EffectControlResult VisualEffectContext::SetAnimatorTrigger(VisualEffectId id,const std::string& name,bool reset) {
+    Operation operation(operations_);const auto found=requests_.find(id);
+    if(closing_ || found==requests_.end() || !found->second.retained || found->second.request->Status().closed ||
+        found->second.request->Status().request_ended)return {api::EffectControlState::Ended,{},true,"visual receipt ended"};
+    return services_->SetAnimatorTrigger(found->second.request->Status().reference,name,reset);
+}
 api::EffectControlResult VisualEffectContext::SetProgress(VisualEffectId id,float value,float duration) {
     Operation operation(operations_);
     const auto found=requests_.find(id);

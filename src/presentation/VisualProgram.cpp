@@ -84,7 +84,12 @@ VisualStepResult VisualProgramPlayer::Execute(const VisualInstruction& input,Cur
                     const auto control=context_->SetProgress(id,number,op.seconds);
                     result={control.state==api::EffectControlState::Applied?VisualStepState::Done:
                         control.state==api::EffectControlState::NotLoaded?VisualStepState::Pending:VisualStepState::Failed,control.detail};
-                } else result=services_.trigger?services_.trigger(*context_,id,op):VisualStepResult{VisualStepState::Failed,"effect trigger service unavailable"};
+                } else if(services_.trigger)result=services_.trigger(*context_,id,op);
+                else {
+                    const auto control=context_->SetAnimatorTrigger(id,op.trigger,op.reset);
+                    result={control.state==api::EffectControlState::Applied?VisualStepState::Done:
+                        control.state==api::EffectControlState::NotLoaded?VisualStepState::Pending:VisualStepState::Failed,control.detail};
+                }
                 if(next_!=intent)return {VisualStepState::Pending,{}};
                 if(result.state==VisualStepState::Pending)pending=true;
                 else {
@@ -94,11 +99,27 @@ VisualStepResult VisualProgramPlayer::Execute(const VisualInstruction& input,Cur
             }
             return {pending?VisualStepState::Pending:VisualStepState::Done,{}};
         } else if constexpr(std::is_same_v<T,VisualRemove>) {
-            // ForceImmediateFadeOut is not silently replaced with the simple
-            // Cancel(fade) operation. Its backend must implement that contract.
             if(services_.remove)return services_.remove(*context_,op);
-            if(op.immediate)return {VisualStepState::Failed,"immediate effect fade service unavailable"};
-            for(const auto& key:op.effects)context_->Remove(key,op.fade);
+            if(!cursor.receipts) {
+                cursor.receipts.emplace();
+                for(const auto& key:op.effects) {
+                    const auto rows=context_->Requests(key);
+                    cursor.receipts->insert(cursor.receipts->end(),rows.begin(),rows.end());
+                    if(rows.empty())Issue(input,"no owned effect receipt for removal: "+key);
+                    for(const auto id:rows)context_->Remove(id,{op.fade,op.immediate,false});
+                }
+                // Service at the next engine boundary; retain every receipt
+                // until the manager confirms cancellation or releases it.
+                return {VisualStepState::Pending,{}};
+            }
+            for(const auto id:*cursor.receipts)if(!cursor.completed.count(id)) {
+                const auto* status=context_->Status(id);
+                if(status && !status->request_ended && !status->closed) {
+                    if(!status->removal_attempts)return {VisualStepState::Pending,{}};
+                    if(!status->removal.read.returned || !status->removal.value)Issue(input,"receipt="+std::to_string(id)+" "+status->detail);
+                }
+                cursor.completed.insert(id);
+            }
             return {VisualStepState::Done,{}};
         } else {
             if(services_.timeline && op.play)timelines_pending_=true;

@@ -20,7 +20,7 @@ An action with `restart: true` creates a new scene. Other actions retain its eff
 
 ## Services and ownership
 
-`VisualProgramServices::create` resolves targets, retains inputs and calls `VisualEffectContext::StartEntity`. Trigger, immediate-fade and Timeline operations use supplied services. Timeline submission requires cancellation and drain observations.
+`VisualProgramServices::create` resolves targets, retains inputs and calls `VisualEffectContext::StartEntity`. Trigger and removal operations use the SDK effect services unless overridden. Removal forwards fade and immediate-fade flags and waits for a manager receipt, not the end of the fade. Timeline playback uses a supplied service with cancellation and drain observations.
 
 `Select` queues intent. `Service` prepares the scene and collects independent input errors. The body starts after preparation succeeds; `Played` and `Observe` identify its actual playback and model. Pending controls retry only unresolved receipts, without restarting accepted transitions.
 

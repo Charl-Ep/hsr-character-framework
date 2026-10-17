@@ -14,7 +14,7 @@ namespace {
 using namespace hksr::api;
 using namespace hksr::framework;
 int info,entity,other_entity,path,manager,effect,root_id=0;
-struct Params {unsigned id=0;bool released=false;int state=0;void* callback=nullptr;void* target=nullptr;int removes=0;};
+struct Params {unsigned id=1;bool released=false;int state=0;void* callback=nullptr;void* target=nullptr;int removes=0;};
 Params a,b,c;Params* allocating=&a;
 std::map<int,void*> roots;
 std::vector<std::unique_ptr<std::array<unsigned char,128>>> delegates;
@@ -22,6 +22,8 @@ EffectCompletionLayout layout{24,40,64};
 std::vector<void*> controlled;
 std::function<void()> on_submit;
 bool release_on_remove=false;
+std::vector<EffectRemovalOptions> explicit_removals;
+int default_triggers=0;
 void CheckAt(bool ok,int line){if(!ok)throw std::runtime_error("visual effect context test failed at "+std::to_string(line));}
 #define Check(value) CheckAt((value),__LINE__)
 template<class T>Method M(T entry){return {reinterpret_cast<void*>(entry),&info};}
@@ -59,11 +61,21 @@ std::shared_ptr<const PresentationEffects> Services() {
     controls.progress=[](EffectReference ref,float,float){controlled.push_back(ref.parameters);const auto* p=static_cast<Params*>(ref.parameters);
         return EffectControlResult{p->state==3?EffectControlState::Applied:EffectControlState::NotLoaded,{true,0},true,{}};};
     controls.animator=[progress=controls.progress](EffectReference ref,int,float duration,bool){return progress(ref,0,duration);};
+    EffectActionServices actions;
+    actions.trigger=[](EffectReference ref,const std::string& name,bool reset){
+        Check(name=="Fire" && !reset);const auto* p=static_cast<Params*>(ref.parameters);
+        if(p->state!=3)return EffectControlResult{EffectControlState::NotLoaded,{},true,{}};
+        ++default_triggers;return EffectControlResult{EffectControlState::Applied,{true,0},true,{}};
+    };
+    actions.remove=[](void* service,EffectReference ref,const EffectRemovalOptions& options){
+        explicit_removals.push_back(options);EffectRemovalResult result;
+        result.removal.value=Remove(service,ref,options.fade,nullptr);result.removal.read={true,0};result.input_release={true,0};return result;
+    };
     return std::make_shared<PresentationEffects>(std::move(requests),std::move(controls),
         [](void* raw,void* caster,void* target,void* callback,const EntityEffectOptions&) {
             Check(caster==&entity && target==&other_entity);auto* p=static_cast<Params*>(raw);
             p->target=target;p->callback=callback;return EffectInputResult{{true,0},{true,0}};
-        });
+        },std::move(actions));
 }
 }
 void TestVisualEffectContext() {
@@ -103,13 +115,13 @@ void TestVisualEffectContext() {
     a={};b={};a.state=1;b.state=3;
     int official_callback=1; a.callback=&official_callback;b.callback=&official_callback;
     const auto previous_delegates=delegates.size();VisualEffectContext observed(services);
-    const auto receipt=observed.Track("event scene",&manager,{0,0,&a});
-    Check(observed.Track("event scene",&manager,{0,0,&a})==receipt && observed.PendingRequests()==1);
-    bool conflict=false;try{observed.Track("unrelated",&manager,{0,0,&a});}catch(const std::logic_error&){conflict=true;}Check(conflict);
-    conflict=false;try{observed.Track("event scene",&other_entity,{0,0,&a});}catch(const std::logic_error&){conflict=true;}Check(conflict);
+    const auto receipt=observed.Track("event scene",&manager,{a.id,0,&a});
+    Check(observed.Track("event scene",&manager,{a.id,0,&a})==receipt && observed.PendingRequests()==1);
+    bool conflict=false;try{observed.Track("unrelated",&manager,{a.id,0,&a});}catch(const std::logic_error&){conflict=true;}Check(conflict);
+    conflict=false;try{observed.Track("event scene",&other_entity,{a.id,0,&a});}catch(const std::logic_error&){conflict=true;}Check(conflict);
     Check(delegates.size()==previous_delegates && a.callback==&official_callback);
     release_on_remove=false;observed.End(false);observed.Service();Check(a.removes==1);
-    const auto late=observed.Track("late event",&manager,{0,0,&b});
+    const auto late=observed.Track("late event",&manager,{b.id,0,&b});
     Check(observed.Status(late)->cancelled && b.removes==0 && observed.SetProgress("late event",1).empty());
     a.state=3;release_on_remove=true;observed.Service();
     Check(observed.Drained() && a.removes==2 && b.removes==1 && roots.empty());
@@ -123,7 +135,7 @@ void TestVisualEffectContext() {
     execution.origin={{reinterpret_cast<GameEntity*>(&entity),4},reinterpret_cast<GameWorld*>(&world)};
     bindings.Bind(execution,program);a={};a.state=1;a.callback=&official_callback;
     EffectSubmission submission;submission.sequence=execution;submission.origin=execution.origin;
-    submission.trigger.serial=8;submission.manager=&manager;submission.request={0,0,&a};
+    submission.trigger.serial=8;submission.manager=&manager;submission.request={a.id,0,&a};
     Check(bindings.Track("original-event",submission).has_value() && a.removes==0);
     AnimationSequenceObservation done;done.execution=execution;done.original_returned=true;done.state_read=true;
     bindings.Observe(done);
@@ -135,10 +147,10 @@ void TestVisualEffectContext() {
     submission.trigger.serial=0;Check(!bindings.Track("direct",submission));submission.trigger.serial=9;
     ++submission.sequence.definition;Check(!bindings.Track("wrong-definition",submission));--submission.sequence.definition;
     done.execution=execution;done.continues=true;bindings.Observe(done);Check(bindings.Size()==1);
-    program->End(false);b={};b.state=3;submission.request={0,0,&b};
+    program->End(false);b={};b.state=3;submission.request={b.id,0,&b};
     Check(bindings.Track("late-event",submission).has_value() && b.removes==0);
     program->Service();Check(!program->Drained() && a.removes==1 && b.removes==1 && roots.empty());
-    c={};c.state=3;submission.request={0,0,&c};Check(bindings.Track("after-empty",submission).has_value());
+    c={};c.state=3;submission.request={c.id,0,&c};Check(bindings.Track("after-empty",submission).has_value());
     program->Service();Check(c.removes==1 && !program->Drained() && roots.empty());
     // A new playback cannot take effects still attributed to the old one.
     auto replacement=std::make_shared<VisualEffectContext>(services);execution.serial=5;bindings.Bind(execution,replacement);
@@ -172,11 +184,11 @@ void TestVisualEffectContext() {
     execution.construction=100;execution.definition=10;execution.serial=101;execution.sequence=&sequence;
     AnimationSequenceObservation begin;begin.execution=execution;begin.operation=AnimationSequenceOperation::Begin;begin.entering=true;
     routes.Observe(begin);a={};a.state=3;a.callback=&official_callback;
-    submission.sequence=execution;submission.origin=execution.origin;submission.request={0,0,&a};
+    submission.sequence=execution;submission.origin=execution.origin;submission.request={a.id,0,&a};
     Check(routes.Submitted(submission).has_value());
     done.execution=execution;routes.Observe(done);Check(!gift->Closing() && gift->PendingRequests()==1);
     begin.execution.definition=11;begin.execution.serial=102;begin.execution.sequence=&sequence2;routes.Observe(begin);
-    submission.sequence=begin.execution;b={};b.state=3;b.callback=&official_callback;submission.request={0,0,&b};
+    submission.sequence=begin.execution;b={};b.state=3;b.callback=&official_callback;submission.request={b.id,0,&b};
     Check(routes.Submitted(submission).has_value() && gift->PendingRequests()==2 && a.removes==0);
     // An unrelated child collection cannot be mapped by config/output index.
     source.serial=200;routes.Before(source,recipe[0].file);built.serial=12;built.configurations=&unrelated;
@@ -187,7 +199,7 @@ void TestVisualEffectContext() {
     routes.Built(source,built);routes.After(source);Check(tracks==2);
     // Retire only the program. In-flight submissions retain their old scope;
     // a new Begin after it ended cannot prolong or reassign that scope.
-    gift->End(false);c={};c.state=3;submission.request={0,0,&c};Check(routes.Submitted(submission).has_value());
+    gift->End(false);c={};c.state=3;submission.request={c.id,0,&c};Check(routes.Submitted(submission).has_value());
     for(auto rule_id:rule_ids)routes.Unbind(rule_id);
     begin.execution.serial=103;routes.Observe(begin);submission.sequence=begin.execution;Check(!routes.Submitted(submission));
     gift->Service();Check(gift->Drained() && a.removes==1 && b.removes==1 && c.removes==1 && roots.empty());
@@ -201,9 +213,9 @@ void TestVisualEffectContext() {
     auto later=std::make_shared<VisualEffectContext>(services);
     routes.Attach(declared,&receiver,later);
     begin.execution.construction=300;begin.execution.definition=30;begin.execution.sequence=&sequence;begin.execution.serial=301;
-    routes.Observe(begin);a={};a.state=3;submission.sequence=begin.execution;submission.request={0,0,&a};
+    routes.Observe(begin);a={};a.state=3;submission.sequence=begin.execution;submission.request={a.id,0,&a};
     Check(routes.Submitted(submission).has_value());
-    routes.Detach(declared);b={};b.state=3;submission.request={0,0,&b};
+    routes.Detach(declared);b={};b.state=3;submission.request={b.id,0,&b};
     Check(routes.Submitted(submission).has_value()); // already in-flight
     done.execution=begin.execution;routes.Observe(done);
     begin.execution.serial=302;routes.Observe(begin);submission.sequence=begin.execution;Check(!routes.Submitted(submission));
@@ -211,7 +223,7 @@ void TestVisualEffectContext() {
     routes.Attach(declared,&unrelated,next_context);begin.execution.serial=303;routes.Observe(begin);submission.sequence=begin.execution;
     Check(!routes.Submitted(submission)); // other model receiver, same entity
     routes.Attach(declared,&receiver,next_context);begin.execution.serial=304;routes.Observe(begin);submission.sequence=begin.execution;
-    c={};c.state=3;submission.request={0,0,&c};Check(routes.Submitted(submission).has_value());
+    c={};c.state=3;submission.request={c.id,0,&c};Check(routes.Submitted(submission).has_value());
     Check(later->PendingRequests()==2 && next_context->PendingRequests()==1);
     later->End(false);next_context->End(false);later->Service();next_context->Service();routes.Unbind(declared);routes.Clear();
     Check(roots.empty());
@@ -315,5 +327,18 @@ void TestVisualProgram(const char* file) {
     reentrant.Service();Check(created.size()==3);
     reentrant.Service();Check(requests[0]->released);
     for(std::size_t i=1;i<requests.size();++i)Complete(*requests[i]);reentrant.Service();Check(reentrant.Status().prepared);
-    reentrant.End();reentrant.Service();Check(reentrant.Drained() && roots.empty());delegates.clear();
+    reentrant.End();reentrant.Service();Check(reentrant.Drained() && roots.empty());
+    // The default consumer uses the SDK bundle, not only the test overrides.
+    // Removal waits for a manager receipt; it does not wait for a fade to end.
+    requests.clear();created.clear();callbacks.trigger={};callbacks.remove={};
+    auto integrated=std::make_shared<VisualProgram>(*program);
+    integrated->actions.at("resolve").enter.push_back({VisualRemove{{"recipient"},true,true},"explicit removal",{}, {}});
+    VisualProgramPlayer native_services(integrated,callbacks);intent=native_services.Select("gift");native_services.Service();
+    for(auto& p:requests)Complete(*p);native_services.Service();Check(native_services.Played(intent,300,5));
+    native_services.Observe(300,5,"Gift",0.7f);native_services.Service();Check(default_triggers==1);
+    release_on_remove=false;native_services.Select("resolve");native_services.Service();Check(!native_services.Status().prepared);
+    native_services.Service();Check(native_services.Status().prepared && native_services.Status().issues.empty());
+    Check(explicit_removals.size()==1 && explicit_removals.back().fade && explicit_removals.back().immediate_fade && !explicit_removals.back().unbind);
+    Check(!requests[1]->released);requests[1]->released=true;
+    native_services.End();release_on_remove=true;native_services.Service();Check(native_services.Drained() && roots.empty());delegates.clear();
 }

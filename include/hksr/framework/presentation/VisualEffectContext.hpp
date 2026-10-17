@@ -36,6 +36,8 @@ public:
     std::vector<VisualEffectId> Requests(const std::string& key) const;
     api::EffectControlResult SetProgress(VisualEffectId,float progress,float transition_seconds=0);
     api::EffectControlResult SetAnimatorState(VisualEffectId,int hash,float transition=0,bool restart=true);
+    api::EffectControlResult SetAnimatorTrigger(VisualEffectId,const std::string& name,bool reset=false);
+    void Remove(VisualEffectId,api::EffectRemovalOptions);
     const api::EffectRequestStatus* Status(VisualEffectId) const; // borrowed until Service
     bool Closing() const {return closing_;}
     bool Drained() const {return closing_ && requests_.empty() && producers_==0;}

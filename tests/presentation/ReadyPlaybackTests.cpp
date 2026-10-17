@@ -84,7 +84,7 @@ int effect_manager,effect_instance,effect_submits=0,effect_removes=0;
 void* __fastcall MapEffect(void* target,void* name,void*){Check(target==owner);return name;}
 bool __fastcall EmptyEffectPath(void*,void*){return false;}
 api::EffectReference __fastcall AcquireEffect(void*,void*) {
-    auto p=std::make_unique<EffectParam>();p->id=static_cast<unsigned>(effect_params.size());
+    auto p=std::make_unique<EffectParam>();p->id=static_cast<unsigned>(effect_params.size()+1);
     const api::EffectReference ref{p->id,0,p.get()};effect_params.push_back(std::move(p));return ref;
 }
 unsigned __fastcall EffectId(EffectParam* p,void*){return p->id;}
