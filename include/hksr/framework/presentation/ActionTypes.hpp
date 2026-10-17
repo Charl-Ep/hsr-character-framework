@@ -3,6 +3,7 @@
 #include "ActionRetirement.hpp"
 #include <variant>
 #include <optional>
+#include <map>
 
 namespace hksr::framework {
 enum class ActionDomain { Exploration, Alternate };
@@ -15,6 +16,12 @@ struct FreeStyleState {
     std::vector<ActionRetirement> retirements;
     bool controller_observed=false; // named successor read from the actual Animator
 };
+// Authored presentation identity. Its body state is resolved from the bound
+// program, never inferred from an Animator state name.
+struct ProgramAction {
+    std::string program,action;
+    std::map<std::string,std::string> choices;
+};
 // Explicit visual-row identity, NOT a mapping inferred from body state names.
 // This player controls body phases and the named expression only; gameplay
 // flags, material/speed/floating effects are deliberately not applied.
@@ -25,7 +32,7 @@ struct VisualState {
     int blink_source=-1;
 };
 std::optional<VisualState> ResolveVisualState(const api::VisualConfigSources&,std::int32_t flag,bool recover=false);
-using ActionRequest=std::variant<NpcMotion,AnimatorState,FreeStyleState,VisualState,ReadyState>;
+using ActionRequest=std::variant<NpcMotion,AnimatorState,FreeStyleState,VisualState,ReadyState,ProgramAction>;
 enum class ActionOutcome { Waiting, Returned, StateAbsent, Unavailable, CallFailed, OwnerEnded, Cancelled };
 struct ActionReceipt {
     std::uint64_t serial=0;

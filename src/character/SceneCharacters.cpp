@@ -68,6 +68,11 @@ std::uint64_t SceneCharacters::Add(std::string scene,CharacterPlan plan,std::opt
 }
 std::uint64_t SceneCharacters::Select(std::uint64_t id,PlacedAction action) {
     auto& entry=Edit(id);
+    if(const auto* selected=std::get_if<ProgramAction>(&action.request)) {
+        const auto input=entry.plan.visual_program;
+        if(action.domain!=ActionDomain::Alternate || !input || !input->program || input->program->id!=selected->program ||
+            !input->program->actions.count(selected->action))throw std::invalid_argument("visual program action absent from this character");
+    }
     entry.action=std::move(action);entry.action_intent=++entry.next_action;
     entry.action_error.clear();SubmitAction(entry);
     return entry.action_intent;
@@ -339,6 +344,10 @@ SceneCharacterStatus SceneCharacters::Status(std::uint64_t id) const {
     out.revision=entry.revision;
     if(entry.failed_revision==entry.revision)out.creation_error=entry.creation_error;
     out.package=entry.plan.package;out.placement=entry.placement;out.look=entry.look;
+    if(const auto input=entry.plan.visual_program;input && input->program) {
+        out.visual_program=input->program->id;
+        for(const auto& [key,action]:input->program->actions)out.program_actions.emplace(key,action.state);
+    }
     if(entry.plan.alternate && entry.plan.alternate->initial_state.available)
         out.battle_idle_state=entry.plan.alternate->initial_state.value;
     PresentationState presentation;presentation.Configure(entry.plan.presentation_profile,entry.plan.presentation_phase);

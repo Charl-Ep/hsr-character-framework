@@ -2,6 +2,7 @@
 #include <hksr/presentation/PresentationBindings.hpp>
 #include <hksr/framework/character/SceneCharacters.hpp>
 #include <hksr/framework/host/RuntimeServices.hpp>
+#include <hksr/framework/presentation/VisualProgramRuntime.hpp>
 #include <Windows.h>
 #include <fstream>
 #include <limits>
@@ -65,6 +66,14 @@ void TestSceneLayout() {
     Check(SameLayout(observed,observed_read));
     restored=RestoreLayoutAction(observed_read.characters[0].action,catalog);
     Check(std::get<FreeStyleState>(restored->request).controller_observed && std::get<FreeStyleState>(restored->request).name=="Base.OtherPhaseIdle");
+    auto authored=data;authored.characters[0].action=ProgramAction{"fixture","second",{{"branch","b"}}};
+    const auto authored_read=DecodeSceneLayout(EncodeSceneLayout(authored));Check(SameLayout(authored,authored_read));
+    ActionCatalogStatus pending_catalog;pending_catalog.pending_domains.insert(ActionDomain::Alternate);
+    restored=RestoreLayoutAction(authored_read.characters[0].action,pending_catalog);
+    Check(restored->domain==ActionDomain::Alternate && std::get<ProgramAction>(restored->request).action=="second");
+    Check(std::get<ProgramAction>(restored->request).choices.at("branch")=="b");
+    auto another=authored;std::get<ProgramAction>(*another.characters[0].action).action="first";Check(!SameLayout(authored,another));
+    another=authored;std::get<ProgramAction>(*another.characters[0].action).choices["branch"]="a";Check(!SameLayout(authored,another));
 
     NoObjects objects;hksr::api::PresentationBindings bindings;int info=0;
     const auto retain=+[](void*,int,void*)->int{throw std::runtime_error("unexpected game retain");};
@@ -79,6 +88,17 @@ void TestSceneLayout() {
     Check(CaptureSceneLayout(scene,data.scene).characters.size()==1);
     scene.Select(id,{ActionDomain::Exploration,AnimatorState{"IdleShow",0,0}});
     Check(std::get<SavedConfiguredAction>(*CaptureSceneLayout(scene,data.scene).characters[0].action).state=="IdleShow");
+    auto program=std::make_shared<VisualProgram>();program->id="fixture";
+    program->actions["first"].state=program->actions["second"].state="SameBody";
+    auto input=std::make_shared<VisualProgramInput>();input->program=program;plan.visual_program=input;
+    scene.ReplacePlan(id,plan);
+    scene.Select(id,*restored);
+    Check(scene.Status(id).program_actions.size()==2 && scene.Status(id).visual_program=="fixture");
+    Check(std::get<ProgramAction>(*CaptureSceneLayout(scene,data.scene).characters[0].action).action=="second");
+    Reject([&]{scene.Select(id,{ActionDomain::Alternate,ProgramAction{"foreign","first"}});});
+    Reject([&]{scene.Select(id,{ActionDomain::Alternate,ProgramAction{"fixture","absent"}});});
+    Reject([&]{scene.Select(id,{ActionDomain::Exploration,ProgramAction{"fixture","first"}});});
+    Check(std::get<ProgramAction>(scene.DesiredAction(id)->request).action=="second");
     scene.SetEnabled(id,false);Check(!CaptureSceneLayout(scene,data.scene).characters[0].enabled);
     scene.Delete(id);Check(CaptureSceneLayout(scene,data.scene).characters.empty());
     scene.Shutdown();

@@ -92,6 +92,7 @@ void FrameworkHost::Publish(const std::optional<SceneAddress>& scene) {
                 if constexpr(std::is_same_v<T,NpcMotion>) line<<" motion_id="<<request.id;
                 else if constexpr(std::is_same_v<T,VisualState>)line<<" visual_source="<<request.source<<" flag="<<request.value.flag.value<<" recovery="<<request.recover;
                 else if constexpr(std::is_same_v<T,ReadyState>)line<<" ready_source="<<(request.actions?request.actions->source:"")<<" ready_pose="<<request.pose;
+                else if constexpr(std::is_same_v<T,ProgramAction>)line<<" program="<<request.program<<" program_action="<<request.action;
                 else line<<" state="<<request.name;
             },r.request);
         }

@@ -225,12 +225,14 @@ void TestActionPlayback() {
         "enter":[{"op":"context_enter","name":"phase","source":"phase"},
                  {"op":"timeline_play","source":"scene","key":"scene","path":"scene.playable"}],
         "after_completion":[{"op":"timeline_stop","source":"tail","key":"scene"}],
-        "lanes":[[{"at":0.5,"instructions":[{"op":"assign","source":"phase","variable":"value","value":1}]}]]}}
+        "lanes":[[{"at":0.5,"instructions":[{"op":"assign","source":"phase","variable":"value","value":1}]}]]},
+        "alternative":{"state":"attack_loop","restart":true,"enter":[
+          {"op":"timeline_play","source":"alternative","key":"other","path":"other.playable","when":{"choice":"variant","is":"selected"}}]}}
     })"));
-    bool scene_ready=false,scene_alive=false;unsigned stopped_after_plays=0;
+    bool scene_ready=false,scene_alive=false;unsigned stopped_after_plays=0;std::string timeline_path;
     framework::VisualProgramServices services;services.effects=std::make_shared<api::PresentationEffects>(effects);
     services.create=[](auto&,const auto&,const auto&)->framework::VisualEffectId{throw std::logic_error("no effect creation expected");};
-    services.timeline=[&](auto,const auto& op){scene_alive=op.play;if(!op.play)stopped_after_plays=state_plays;
+    services.timeline=[&](auto,const auto& op){scene_alive=op.play;timeline_path=op.path;if(!op.play)stopped_after_plays=state_plays;
         return framework::VisualStepResult{scene_ready?framework::VisualStepState::Done:framework::VisualStepState::Pending,{}};};
     services.cancel_timelines=[&](auto){if(scene_alive)stopped_after_plays=state_plays;scene_alive=false;};
     services.timelines_drained=[&]{return !scene_alive;};
@@ -247,13 +249,19 @@ void TestActionPlayback() {
     services.read_phase=[&](const auto&){return phase_data;};
     auto player=std::make_shared<framework::VisualProgramPlayer>(program_data,std::move(services));
     framework::ActionPlayback integrated(token,owner_world,animations(token),std::make_shared<api::PresentationEffects>(effects));
+    auto conflicting=std::make_shared<framework::PresentationProfile>(*config);
+    conflicting->actions["attack_loop"].enter_phase="b";
+    integrated.ConfigurePresentation(conflicting);
     integrated.ConfigureVisualProgram(player);integrated.SetPresentationDomain(true);integrated.SetCompletionState("待机");active=&integrated;
+    const framework::ProgramAction selected_program{"test","attack"};
     count=state_plays;const auto exits_before=exit_preparations;
-    integrated.Queue(configured);integrated.Service(active_frame,true,objects);
+    integrated.Queue(selected_program);integrated.Service(active_frame,true,objects);
     Check(integrated.Status().pending && state_plays==count && exit_preparations==exits_before);
     scene_ready=true;integrated.Service(active_frame,true,objects);
     Check(state_plays==count+1 && !integrated.Status().pending && !integrated.Status().completion_pending);
     Check(exit_preparations==exits_before); // program owns its cross-action exits
+    Check(std::get<framework::ProgramAction>(integrated.Status().last->request).action=="attack");
+    Check(integrated.Status().presentation_phase=="a"); // no body-name profile rule is inferred for a program action
     current_hash=93;current_time=0.8f;current_full_hash=0;
     integrated.Service(active_frame,true,objects);Check(state_plays==count+1);
     ++active_frame.sequence;integrated.Service(active_frame,true,objects);
@@ -274,7 +282,7 @@ void TestActionPlayback() {
     // The controller may enter the declared successor itself. Observe it;
     // do not replay StandBy or cancel its tail merely because the source ended.
     auto& attack=program_data->actions.at("attack");attack.complete_at=2;
-    integrated.Queue(configured);current_hash=93;current_time=0.6f;integrated.Service(active_frame,true,objects);
+    integrated.Queue(selected_program);current_hash=93;current_time=0.6f;integrated.Service(active_frame,true,objects);
     ++active_frame.sequence;integrated.Service(active_frame,true,objects);Check(player->Status().finished);
     const auto before_official=state_plays;
     current_hash=71;current_time=0;++active_frame.sequence;integrated.Service(active_frame,true,objects);
@@ -282,13 +290,25 @@ void TestActionPlayback() {
     attack.complete_at=0.7f;
     // A failed explicit successor must close, rather than leave an untracked
     // old scene alive indefinitely.
-    integrated.Queue(configured);current_hash=93;current_time=0.1f;integrated.Service(active_frame,true,objects);
+    integrated.Queue(selected_program);current_hash=93;current_time=0.1f;integrated.Service(active_frame,true,objects);
     exists=false;current_time=0.8f;++active_frame.sequence;integrated.Service(active_frame,true,objects);exists=true;
     Check(integrated.Status().last->outcome==framework::ActionOutcome::StateAbsent);
     ++active_frame.sequence;integrated.Service(active_frame,true,objects);Check(!scene_alive);
     count=state_plays;
-    integrated.Queue(configured);current_time=0.1f;integrated.Service(active_frame,true,objects);
+    integrated.Queue(selected_program);current_time=0.1f;integrated.Service(active_frame,true,objects);
     Check(state_plays==count+1 && scene_alive); // same model can enter again
+    integrated.Queue(framework::ProgramAction{"test","alternative",{{"variant","selected"}}});integrated.Service(active_frame,true,objects);
+    Check(player->Status().action=="alternative" && timeline_path=="other.playable" && scene_alive);
+    Check(std::get<framework::ProgramAction>(integrated.Status().last->request).choices.at("variant")=="selected");
+    const auto alternative_intent=player->Status().intent;count=state_plays;
+    integrated.Queue(framework::ProgramAction{"test","absent"});integrated.Service(active_frame,true,objects);
+    Check(integrated.Status().last->outcome==framework::ActionOutcome::Unavailable && state_plays==count && scene_alive);
+    integrated.Queue(framework::ProgramAction{"foreign","attack"});integrated.Service(active_frame,true,objects);
+    Check(integrated.Status().last->outcome==framework::ActionOutcome::Unavailable && player->Status().intent==alternative_intent && scene_alive);
+    // Direct playback of a matching body state does not select either program.
+    integrated.Queue(framework::FreeStyleState{"attack_loop"});integrated.Service(active_frame,true,objects);
+    Check(!scene_alive && !player->Status().playing && state_plays==count+1);
+    integrated.Queue(selected_program);integrated.Service(active_frame,true,objects);Check(scene_alive);
     integrated.SetPresentationDomain(false);integrated.Service(active_frame,true,objects);Check(!scene_alive && player->ActiveContexts().empty());
     Check(integrated.CurrentIdle()=="待机");
     Check(integrated.Close(active_frame) && player->Drained() && roots.empty());api::TrackedEntities().Forget(token);

@@ -16,15 +16,14 @@ bool ActionPlayback::PrepareProgram(ActionReceipt& receipt) {
     const auto* direct=std::get_if<AnimatorState>(&receipt.request);
     if(direct && direct->layer!=0)return true;
     if(receipt.serial==program_return_)return true; // successor is observed before tail instructions
-    const auto* style=std::get_if<FreeStyleState>(&receipt.request);
-    const auto key=(direct || style)?program_->ActionForState(direct?direct->name:style->name):std::nullopt;
-    if(!key) {
+    const auto* selected=std::get_if<ProgramAction>(&receipt.request);
+    if(!selected) {
         program_playback_.reset();program_preparing_=program_intent_=program_return_=0;
         program_->InterruptAction();program_->Service();return true;
     }
     if(program_preparing_!=receipt.serial) {
         program_preparing_=receipt.serial;program_playback_.reset();
-        program_intent_=program_->Select(*key);
+        program_intent_=program_->Select(selected->action,selected->choices);
     }
     program_->Service();
     const auto& state=program_->Status();

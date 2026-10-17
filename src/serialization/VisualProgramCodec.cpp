@@ -160,11 +160,9 @@ VisualProgram ParseVisualProgram(const std::string& text) {
         }
     }
     Need(json.at("actions").is_object() && !json.at("actions").empty(),"visual actions must be nonempty object");
-    std::set<std::string> states;
     for(auto it=json.at("actions").begin();it!=json.at("actions").end();++it) {
         const auto& row=it.value();Fields(row,{"state","restart","enter","lanes","completion_state","complete_at","completion_at","after_completion"});
         VisualProgramAction action;action.state=Name(row.at("state"));action.restart=row.value("restart",false);
-        Need(states.insert(action.state).second,"multiple program actions bind the same body state: "+action.state);
         action.complete_at=Number(row.value("complete_at",Json(1)),true);
         if(row.contains("completion_state"))action.completion_state=Name(row.at("completion_state"));
         Need(!action.completion_state.empty() || (!row.contains("completion_at") && !row.contains("after_completion")),

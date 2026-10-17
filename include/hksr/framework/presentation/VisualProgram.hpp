@@ -115,7 +115,7 @@ public:
     void Leave(bool fade=true); // end this scene; a later restart action may enter again
     void InterruptAction(bool fade=true); // keep explicitly entered contexts
     void End(bool fade=true); // no engine calls; Service drains on owner thread
-    std::optional<std::string> ActionForState(const std::string&) const;
+    const VisualProgramAction& ResolveAction(const std::string& program,const std::string& action) const;
     const VisualProgramAction* CurrentAction() const {return action_;}
     const VisualProgramStatus& Status() const {return status_;}
     std::shared_ptr<VisualEffectContext> Context() const {return context_;}

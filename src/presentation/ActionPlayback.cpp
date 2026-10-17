@@ -176,6 +176,12 @@ void ActionPlayback::Service(const api::WorldFrame& frame,bool ready,api::Manage
             const auto* npc=std::get_if<NpcMotion>(&receipt.request);
             const auto* state=std::get_if<AnimatorState>(&receipt.request);
             const auto* free_state=std::get_if<FreeStyleState>(&receipt.request);
+            std::optional<FreeStyleState> program_body;
+            if(const auto* selected=std::get_if<ProgramAction>(&receipt.request)) {
+                if(!program_ || !presentation_enabled_)throw std::runtime_error("visual program unavailable in this action domain");
+                program_body=FreeStyleState{program_->ResolveAction(selected->program,selected->action).state};
+                free_state=&*program_body;
+            }
             const auto* visual=std::get_if<VisualState>(&receipt.request);
             const auto* ready_state=std::get_if<ReadyState>(&receipt.request);
             if(!npc || visual_ || ready_) {
@@ -236,7 +242,8 @@ void ActionPlayback::Service(const api::WorldFrame& frame,bool ready,api::Manage
                             }
                         }
                         if(receipt.call.returned && presentation_enabled_ && !npc && !visual && (!state || state->layer==0) && revision==intent_revision_ && !Ended()) {
-                            if(ready_state && ready_state->actions && ready_state->pose<ready_state->actions->poses.size())
+                            if(std::holds_alternative<ProgramAction>(receipt.request))presentation_.Interrupt();
+                            else if(ready_state && ready_state->actions && ready_state->pose<ready_state->actions->poses.size())
                                 presentation_.Begin(ready_state->actions->poses[ready_state->pose].state);
                             else if(state || free_state)presentation_.Begin(state?state->name:free_state->name);
                             SyncPresentation();

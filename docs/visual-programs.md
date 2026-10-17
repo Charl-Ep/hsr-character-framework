@@ -14,6 +14,10 @@ The host prepares `VisualProgramRuntime` and activates its construction, sequenc
 
 For custom assembly, use `CharacterPlan::visual_program` with `CharacterSessionServices::visual_program`, or configure `ActionPlayback` directly. Keep providers alive until sessions and program cleanup have closed.
 
+Select an authored action with `ProgramAction{program_id, action_key, choices}` in the alternate domain. The request and playback receipt retain this identity; the player resolves its body state from the bound definition. Multiple actions may use the same body state. Direct Animator and FreeStyle requests play animation only and do not select a program by name.
+
+Menus and HTTP action listings expose each bound program action separately. Layouts save the program ID, action key and explicit choice overrides, not effects or in-flight cursors. Independent entry actions restart from the beginning. Continuations requiring an existing scene or named context cannot be resumed from a layout yet.
+
 Development builds optionally read `VISUAL_PROGRAMS.json` beside the DLL at startup. Each entry specifies a definition file (relative to the manifest), target instance IDs and choices. IDs refer to the current loaded layout, not permanent character identities. No file means no programs. The file does not create targets or start actions.
 
 ```json
@@ -24,6 +28,12 @@ The development command channel accepts `visual_inputs` to replace one instance'
 
 ```json
 {"op":"visual_inputs","character":7,"targets":{"Target":2},"choices":{"variant":"b"}}
+```
+
+Start a program action through the development channel:
+
+```json
+{"op":"program_action","character":7,"program":"scene","action":"enter","choices":{"variant":"b"}}
 ```
 
 `visual_signal` queues a named event for a specific creation and program action. Read `generation` and `intent` from that instance's `visual-program` diagnostic. `visual_signal_queued` confirms mailbox storage; `visual-signal` reports engine-thread acceptance. Stale generations or action intents are not dispatched.

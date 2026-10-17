@@ -682,27 +682,31 @@ void TestModelProfileInputs() {
         input->program=std::make_shared<framework::VisualProgram>(framework::ParseVisualProgram(R"({
             "format":"hksr.visual-program","id":"session","source":"battle","scope":"scene","effects":{},
             "actions":{"play":{"state":"SomeState","restart":true,"enter":[
-              {"op":"timeline_play","source":"scene","key":"scene","path":"scene.playable"}]}}})"));
+              {"op":"timeline_play","source":"scene","key":"scene","path":"scene.playable"}]},
+              "other":{"state":"SomeState","restart":true,"enter":[
+              {"op":"timeline_play","source":"other","key":"scene","path":"other.playable"}]}}})"));
         plan.visual_program=input;
         auto configured=session_services;std::shared_ptr<framework::VisualProgramPlayer> player;
-        const auto begins_before=begins;int preparations=0;bool scene_alive=false;
+        const auto begins_before=begins;int preparations=0;bool scene_alive=false;std::string scene_path;
         configured.visual_program=[&](api::EntityOrigin owner,const framework::VisualProgramInput& value,const auto&) {
             Check(owner.token.entity==entity_ptr && owner.world==world_ptr && begins==begins_before);++preparations;
             framework::VisualProgramServices callbacks;
             callbacks.effects=std::make_shared<api::PresentationEffects>(api::EffectRequestServices{{},api::EffectAccess({}),{},{},{}});
             callbacks.create=[](auto&,const auto&,const auto&)->framework::VisualEffectId{throw std::logic_error("unexpected effect");};
-            callbacks.timeline=[&](auto,const auto&){scene_alive=true;return framework::VisualStepResult{framework::VisualStepState::Done,{}};};
+            callbacks.timeline=[&](auto,const auto& op){scene_alive=true;scene_path=op.path;return framework::VisualStepResult{framework::VisualStepState::Done,{}};};
             callbacks.cancel_timelines=[&](auto){scene_alive=false;};callbacks.timelines_drained=[&]{return !scene_alive;};
             player=std::make_shared<framework::VisualProgramPlayer>(value.program,std::move(callbacks));return player;
         };
         framework::CharacterSession session(world_ptr,std::move(plan),configured);
-        session.Create(create);session.Queue(Domain::Alternate,framework::FreeStyleState{"SomeState"});
+        session.Create(create);session.Queue(Domain::Alternate,framework::ProgramAction{"session","play"});
         session.Service(frame,appearance,types);
-        Check(preparations==1 && player && player->Status().playing && scene_alive);
+        Check(preparations==1 && player && player->Status().playing && scene_alive && scene_path=="scene.playable");
+        Check(std::get<framework::ProgramAction>(session.Handoff()->Status().output->request).action=="play");
         session.Queue(Domain::Exploration,framework::NpcMotion{18});session.Service(frame,appearance,types);
         Check(!scene_alive && preparations==1);
-        session.Queue(Domain::Alternate,framework::FreeStyleState{"SomeState"});session.Service(frame,appearance,types);
-        Check(scene_alive && preparations==1); // retained player, new model/play receipt
+        session.Queue(Domain::Alternate,framework::ProgramAction{"session","other"});session.Service(frame,appearance,types);
+        Check(scene_alive && preparations==1 && scene_path=="other.playable"); // retained player, distinct presentation on the same body
+        Check(std::get<framework::ProgramAction>(session.Handoff()->Status().output->request).action=="other");
         session.Remove();session.Service(frame,appearance,types);Check(session.Status().closed && player->Drained() && roots.empty());
     }
     {

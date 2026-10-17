@@ -54,7 +54,7 @@ void LayoutController::Prepare(Map& map) {
         // Even a proposal seen early can gain exit tasks during discovery. A
         // configured/ready request waits for its required domain's complete
         // projection, not the other domain's unrelated ability graph.
-        if(saved && !std::holds_alternative<NpcMotion>(*saved) && !(configured && configured->controller_observed) &&
+        if(saved && !std::holds_alternative<NpcMotion>(*saved) && !std::holds_alternative<ProgramAction>(*saved) && !(configured && configured->controller_observed) &&
             !available.Ready(configured?configured->domain:ActionDomain::Alternate)){pending=true;continue;}
         map.actions[i]=RestoreLayoutAction(saved,available);map.action_views[i]=source_view;
     }

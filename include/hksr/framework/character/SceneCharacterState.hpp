@@ -32,6 +32,8 @@ struct SceneCharacterStatus {
     std::string scene,error;
     std::string battle_idle_state;
     std::string presentation_phase;
+    std::string visual_program;
+    std::map<std::string,std::string> program_actions; // action key -> body state
     std::optional<CharacterSessionStatus> session;
     CharacterPackage package;
     CharacterPlacement placement;

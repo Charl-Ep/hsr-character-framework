@@ -58,6 +58,10 @@ void TestApplicationEvents() {
     change([&]{actor.pending_inputs=1;});
     change([&]{actor.deleting=true;});
     change([&]{actor.battle_idle_state="Idle";});
+    actor.visual_program="fixture";actor.program_actions={{"first","SharedBody"},{"second","SharedBody"}};
+    service.Publish(state);update=service.ReadUpdates(cursor);cursor=update.changes.cursor;
+    Check(update.changes.events.size()==1 && update.changes.events[0].inspection);
+    service.Publish(state);Check(service.ReadUpdates(cursor).changes.events.empty());
     change([&]{actor.playback->successor=AutomaticSuccessor{1,2,"Idle",false};});
     change([&]{actor.playback->successor->returned=true;});
     change([&]{actor.package.display_name="new display";});

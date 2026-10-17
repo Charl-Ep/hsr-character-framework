@@ -202,6 +202,8 @@ CharacterCommand ParseDevelopmentCommand(const Json& input) {
     if(op=="idle")return IdleCharacter{id};
     if(op=="rebuild")return RebuildCharacter{id};
     if(op=="npc_motion")return SelectCharacterAction{id,{ActionDomain::Exploration,NpcMotion{U32(input.at("motion_id"))}}};
+    if(op=="program_action")return SelectCharacterAction{id,{ActionDomain::Alternate,ProgramAction{
+        input.at("program").get<std::string>(),input.at("action").get<std::string>(),input.value("choices",std::map<std::string,std::string>{})}}};
     if(op=="configured_state" || op=="ready_pose") {
         CatalogActionSelection selection;selection.revision=Unsigned(input.at("revision"));
         if(op=="ready_pose")selection.key=ReadyActionKey{input.at("source").get<std::string>(),

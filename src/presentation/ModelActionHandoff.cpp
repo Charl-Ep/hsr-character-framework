@@ -13,6 +13,8 @@ ModelActionHandoff::ModelActionHandoff(CharacterInstance& character,api::EntityT
 }
 std::uint64_t ModelActionHandoff::Queue(ActionDomain domain,ActionRequest action) {
     if(removing_ || status_.closed) throw std::logic_error("handoff closing");
+    if(std::holds_alternative<ProgramAction>(action) && domain!=ActionDomain::Alternate)
+        throw std::invalid_argument("visual program requires its battle model domain");
     if(domain==ActionDomain::Alternate && !transition_->RequestStatus())
         throw std::logic_error("alternate source unavailable; exploration remains usable");
     desired_=Intent{++status_.requested,domain,std::move(action)};

@@ -24,6 +24,7 @@ SceneLayout CaptureSceneLayout(const SceneCharacters& registry,const std::string
         row.presentation_phase=status.presentation_phase;
         if(const auto& action=registry.DesiredAction(id)) {
             if(const auto* npc=std::get_if<NpcMotion>(&action->request))row.action=*npc;
+            else if(const auto* program=std::get_if<ProgramAction>(&action->request))row.action=*program;
             else if(const auto* configured=std::get_if<FreeStyleState>(&action->request))
                 row.action=SavedConfiguredAction{action->domain,configured->name,configured->controller_observed};
             else if(const auto* animator=std::get_if<AnimatorState>(&action->request)) {
@@ -45,6 +46,7 @@ std::optional<PlacedAction> RestoreLayoutAction(const std::optional<SavedAction>
     return std::visit([&](const auto& value)->PlacedAction {
         using T=std::decay_t<decltype(value)>;
         if constexpr(std::is_same_v<T,NpcMotion>)return {ActionDomain::Exploration,value};
+        else if constexpr(std::is_same_v<T,ProgramAction>)return {ActionDomain::Alternate,value};
         else if constexpr(std::is_same_v<T,SavedConfiguredAction>) {
             // This identity came from an observed official successor, not the
             // selectable config catalogue. Recheck membership at playback on
@@ -88,6 +90,11 @@ void ValidateSceneLayout(const SceneLayout& layout) {
         if(row.action)std::visit([](const auto& action){
             using T=std::decay_t<decltype(action)>;
             if constexpr(std::is_same_v<T,NpcMotion>)Need(action.id!=0,"NPC motion ID must be nonzero");
+            else if constexpr(std::is_same_v<T,ProgramAction>) {
+                auto name=[](const auto& value){return !value.empty() && value.find('\0')==std::string::npos;};
+                Need(name(action.program) && name(action.action),"invalid saved program action identity");
+                for(const auto& [key,value]:action.choices)Need(name(key) && name(value),"invalid saved program choice");
+            }
             else {
                 Need(!action.state.empty() && action.state.find('\0')==std::string::npos,"saved action state is empty or invalid");
                 if constexpr(std::is_same_v<T,SavedReadyAction>)
@@ -119,6 +126,7 @@ bool SameLayout(const SceneLayout& a,const SceneLayout& b) {
                 using T=std::decay_t<decltype(left)>;const auto& right=std::get<T>(*y.action);
                 if constexpr(std::is_same_v<T,NpcMotion>)return left.id==right.id;
                 else if constexpr(std::is_same_v<T,SavedConfiguredAction>)return left.domain==right.domain && left.state==right.state && left.controller_observed==right.controller_observed;
+                else if constexpr(std::is_same_v<T,ProgramAction>)return std::tie(left.program,left.action,left.choices)==std::tie(right.program,right.action,right.choices);
                 else return std::tie(left.source,left.state,left.skill,left.variant)==std::tie(right.source,right.state,right.skill,right.variant);
             },*x.action);
             if(!same)return false;

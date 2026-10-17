@@ -60,9 +60,11 @@ void VisualProgramPlayer::InterruptAction(bool fade) {
     ++next_;pending_.reset();DiscardActionSignals();status_.prepared=false;status_.playing=false;status_.completing=false;
     interrupt_pending_=true;end_fade_=fade;
 }
-std::optional<std::string> VisualProgramPlayer::ActionForState(const std::string& state) const {
-    for(const auto& [key,action]:program_->actions)if(action.state==state)return key;
-    return {};
+const VisualProgramAction& VisualProgramPlayer::ResolveAction(const std::string& program,const std::string& action) const {
+    if(program!=program_->id)throw std::invalid_argument("visual program does not belong to this actor: "+program);
+    const auto found=program_->actions.find(action);
+    if(found==program_->actions.end())throw std::invalid_argument("unknown visual program action: "+action);
+    return found->second;
 }
 bool VisualProgramPlayer::Drained() const {return status_.closing && !end_pending_ && !context_ && retired_.empty() &&
     contexts_.empty() && retired_contexts_.empty() && !timelines_pending_;}

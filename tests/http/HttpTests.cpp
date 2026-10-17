@@ -50,6 +50,11 @@ void Protocol() {
     auto ready=http::Command({{"op","action"},{"character","5"},{"revision","9"},
         {"action",{{"kind","ready"},{"source","config"},{"pose","2"}}}});
     Check(std::get<ReadyActionKey>(std::get<SelectCatalogAction>(ready).action.key).pose==2,"ready selection");
+    const auto program=http::Command({{"op","action"},{"character","5"},
+        {"action",{{"kind","program"},{"program","fixture"},{"action","alternative"},{"choices",{{"branch","b"}}}}}});
+    const auto& program_request=std::get<ProgramAction>(std::get<SelectCharacterAction>(program).action.request);
+    Check(program_request.program=="fixture" && program_request.action=="alternative" && program_request.choices.at("branch")=="b","explicit program identity");
+    Reject([]{http::Command({{"op","action"},{"character",5},{"action",{{"kind","program"},{"program","fixture"},{"action",""}}}});});
     auto look=http::Command({{"op","look"},{"character",1},{"mode","point"},{"point",{{"x",1},{"y",2},{"z",3}}}});
     Check(std::get<LookCharacter>(look).intent.point.z==3,"point gaze");
     for(const auto* name:{"rebuild","browse_actions","browse_npc_actions","delete","idle"})http::Command({{"op",name},{"character",1}});
@@ -84,6 +89,11 @@ void Protocol() {
     actions->actions.ready_actions.push_back(set);catalog->characters[3]=actions;state.catalog=catalog;state.characters.resize(1);state.characters[0].id=3;
     const auto list=http::Actions(state,3);Check(list["revision"]=="4" && list["ready"].size()==1 && list["configured"].size()==1,"per-character action view");
     Check(list["domain_ready"]["exploration"]==true && list["domain_ready"]["battle"]==true,"settled action domains");
+    state.characters[0].visual_program="fixture";state.characters[0].program_actions={{"first","SameBody"},{"second","SameBody"}};
+    const auto program_list=http::Actions(state,3).at("program");
+    Check(program_list.size()==2 && program_list[0]["action"]["action"]=="first" && program_list[1]["action"]["action"]=="second","shared body retains both program entries");
+    const auto selection=http::Command({{"op","action"},{"character",3},{"action",program_list[1]["action"]}});
+    Check(std::get<ProgramAction>(std::get<SelectCharacterAction>(selection).action.request).action=="second","published selection round trip");
     actions->actions.finished=false;actions->actions.pending_domains.insert(ActionDomain::Alternate);
     const auto partial_list=http::Actions(state,3);
     Check(partial_list["domain_ready"]["exploration"]==true && partial_list["domain_ready"]["battle"]==false,"independent domain readiness");

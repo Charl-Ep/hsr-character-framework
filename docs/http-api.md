@@ -74,6 +74,8 @@ Configured actions use `{"kind":"configured","domain":"battle","state":"Skill01"
 
 NPC motions use `{"kind":"npc","id":"123"}` without a revision. Action completion is separate from the initial returned playback call.
 
+Authored program actions use `{"kind":"program","program":"scene","action":"enter","choices":{"variant":"b"}}` without a catalog revision. Use an entry from the action response's `program` array; `choices` is optional. The bound definition supplies the body state. A different program ID or unknown action key is rejected by the character service.
+
 ## Map layouts
 
 The working layout is saved in `Layouts/map-<escaped-key>/current.json`; named snapshots use `snapshots/layout-<name>.json`. Layouts retain official sources, placement, enable state, gaze, selected actions and presentation phases. Restored actions start from the beginning.

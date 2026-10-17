@@ -60,6 +60,7 @@ std::string EncodeSceneLayout(const SceneLayout& layout) {
             if constexpr(std::is_same_v<T,NpcMotion>)return {{"kind","npc"},{"id",action.id}};
             else if constexpr(std::is_same_v<T,SavedConfiguredAction>)
                 return {{"kind","configured"},{"domain",Domain(action.domain)},{"state",action.state},{"controller_observed",action.controller_observed}};
+            else if constexpr(std::is_same_v<T,ProgramAction>)return {{"kind","program"},{"program",action.program},{"action",action.action},{"choices",action.choices}};
             else return {{"kind","ready"},{"source",action.source},{"state",action.state},{"skill",action.skill},{"variant",action.variant}};
         },*row.action);
         out["characters"].push_back(std::move(value));
@@ -89,6 +90,8 @@ SceneLayout DecodeSceneLayout(const std::string& text) {
         if(item.contains("action")) {
             const auto& a=item.at("action");
             if(a.at("kind")=="npc")row.action=NpcMotion{number(a.at("id"))};
+            else if(a.at("kind")=="program")row.action=ProgramAction{a.at("program").get<std::string>(),a.at("action").get<std::string>(),
+                a.value("choices",std::map<std::string,std::string>{})};
             else if(a.at("kind")=="configured")row.action=SavedConfiguredAction{Domain(a.at("domain").get<std::string>()),a.at("state").get<std::string>(),a.value("controller_observed",false)};
             else {
                 Need(a.at("kind")=="ready","unsupported saved action");

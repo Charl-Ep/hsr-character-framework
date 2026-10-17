@@ -199,6 +199,12 @@ CharacterCommand Command(const Json& v) {
         Fields(v,{"op","character","revision","action"});const auto id=Id(v.at("character"));
         const auto& a=v.at("action");const auto kind=Text(a.at("kind"));
         if(kind=="npc") {Fields(a,{"kind","id"});return SelectCharacterAction{id,{ActionDomain::Exploration,NpcMotion{U32(a.at("id"))}}};}
+        if(kind=="program") {
+            Fields(a,{"kind","program","action","choices"});
+            ProgramAction selection{Text(a.at("program")),Text(a.at("action")),a.value("choices",std::map<std::string,std::string>{})};
+            for(const auto& [key,value]:selection.choices){Text(key);Text(value);}
+            return SelectCharacterAction{id,{ActionDomain::Alternate,std::move(selection)}};
+        }
         const auto revision=Id(v.at("revision"));
         if(kind=="configured") {
             Fields(a,{"kind","domain","state"});return SelectCatalogAction{id,{revision,ConfiguredActionKey{Domain(a.at("domain")),Text(a.at("state"))}}};
@@ -238,8 +244,10 @@ Json Catalog(const ApplicationSnapshot& s) {
 Json Actions(const ApplicationSnapshot& s,std::uint64_t character) {
     const SceneCharacterStatus* actor=nullptr;for(const auto& c:s.characters)if(c.id==character){actor=&c;break;}
     if(!actor)throw std::out_of_range("character not found");
-    Json out={{"character",std::to_string(character)},{"available",false},{"revision","0"},{"finished",false},
-        {"configured",Json::array()},{"ready",Json::array()},{"npc",Json::array()}};
+    Json out={{"character",std::to_string(character)},{"available",!actor->program_actions.empty()},{"revision","0"},{"finished",false},
+        {"configured",Json::array()},{"ready",Json::array()},{"npc",Json::array()},{"program",Json::array()}};
+    for(const auto& [key,state]:actor->program_actions)out["program"].push_back({
+        {"action",{{"kind","program"},{"program",actor->visual_program},{"action",key}}},{"state",state}});
     if(const auto* c=s.catalog?s.catalog->Actions(character):nullptr) {
         out["available"]=true;out["revision"]=std::to_string(c->revision);out["finished"]=c->actions.finished;
         out["domain_ready"]={{"exploration",c->actions.Ready(ActionDomain::Exploration)},

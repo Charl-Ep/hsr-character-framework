@@ -32,7 +32,7 @@ bool Equal(const CharacterPackage& a,const CharacterPackage& b) {
         });
 }
 bool Equal(const SceneCharacterStatus& a,const SceneCharacterStatus& b) {
-    if(a.presentation_phase!=b.presentation_phase)return false;
+    if(a.presentation_phase!=b.presentation_phase || a.visual_program!=b.visual_program || a.program_actions!=b.program_actions)return false;
     if(std::tie(a.id,a.creations,a.revision,a.active_revision,a.creation_ready,a.creation_error,a.enabled,a.active,a.deleting,
         a.retiring,a.pending_inputs,a.scene,a.error,a.look_support,a.battle_idle_state)!=
         std::tie(b.id,b.creations,b.revision,b.active_revision,b.creation_ready,b.creation_error,b.enabled,b.active,b.deleting,
@@ -103,6 +103,12 @@ bool ApplicationEvents::Publish(const ApplicationSnapshot& previous,const Applic
     for(const auto& actor:previous.characters)a.emplace(actor.id,&actor);
     for(const auto& actor:next.characters)b.emplace(actor.id,&actor);
     change.characters=Changed(a,b,[](auto x,auto y){return Equal(*x,*y);});
+    for(const auto id:change.characters) {
+        const auto old=a.find(id),current=b.find(id);
+        if(old==a.end() || current==b.end())continue;
+        if(old->second->visual_program!=current->second->visual_program || old->second->program_actions!=current->second->program_actions)
+            change.inspection=true;
+    }
     change.operations=Changed(previous.operations.entries,next.operations.entries,[](const auto& x,const auto& y){return Equal(x,y);});
     if(change.Empty())return false;
     change.sequence=sequence_+1;events_.push_back(std::move(change));++sequence_;

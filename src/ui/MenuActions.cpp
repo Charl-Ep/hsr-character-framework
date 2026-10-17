@@ -74,6 +74,8 @@ void Menu::Actions(ApplicationService& host,const ApplicationSnapshot& snapshot,
         }
     }
     if(show_configured) {
+        if(!npc && domain==ActionDomain::Alternate)for(const auto& [key,state]:selected.program_actions)
+            row(key,state,SelectCharacterAction{actor_,{ActionDomain::Alternate,ProgramAction{selected.visual_program,key}}});
         if(npc) {
             const auto found=snapshot.npc_actions.find(actor_);
             if(found!=snapshot.npc_actions.end() && found->second->creation==selected.creations)
