@@ -64,6 +64,9 @@ std::shared_ptr<const PresentationEffects> Services() {
     controls.progress=[](EffectReference ref,float,float){controlled.push_back(ref.parameters);const auto* p=static_cast<Params*>(ref.parameters);
         return EffectControlResult{p->state==3?EffectControlState::Applied:EffectControlState::NotLoaded,{true,0},true,{}};};
     controls.animator=[progress=controls.progress](EffectReference ref,int,float duration,bool){return progress(ref,0,duration);};
+    controls.named_animator=[animator=controls.animator](EffectReference ref,const std::string& name,float duration,bool restart) {
+        Check(name=="Move" || name=="Idle");return animator(ref,name=="Move"?11:12,duration,restart);
+    };
     EffectActionServices actions;
     actions.trigger=[](EffectReference ref,const std::string& name,bool reset){
         Check(name=="Fire" && !reset);const auto* p=static_cast<Params*>(ref.parameters);
@@ -540,5 +543,61 @@ void TestVisualProgram(const char* file) {
     on_remove=[&]{Check(bound.empty() && clears==2);};
     cancelled.End();Check(clears==1);cancelled.Service();
     Check(cancelled.Drained() && motion->Empty() && roots.empty());on_remove={};
+
+    // Actual entry/view event ordering. Events have no body-progress trigger,
+    // preserve FIFO through loading, and do not replay completed instructions.
+    auto view_program=std::make_shared<VisualProgram>(ParseVisualProgram(R"({
+      "format":"hksr.visual-program","id":"views","source":"config","scope":"scene",
+      "effects":{"ground":{"path":"ground","target":"Target"}},
+      "actions":{"start":{"state":"Start","restart":true,"enter":[
+        {"op":"create","effects":["ground"],"source":"start[16]"},
+        {"op":"follow","effect":"ground","targets":["Target"],"source":"start[17]"},
+        {"op":"effect_state","effect":"ground","state":"Move","source":"start[18]"}],
+        "lanes":[[{"at":0.2,"instructions":[{"op":"assign","variable":"body","value":1,"source":"body"}]}]]},
+        "next":{"state":"Next"}},
+      "signals":{
+        "enter_view":[{"op":"effect_state","effect":"ground","state":"Idle","source":"view enter[0]"},
+                      {"op":"follow","effect":"ground","targets":[],"source":"view enter[1]"}],
+        "exit_view":[{"op":"effect_state","effect":"ground","state":"Move","source":"view exit[0]"},
+                     {"op":"follow","effect":"ground","targets":["Target"],"source":"view exit[1]"}]}
+    })"));
+    const auto& effect_state=std::get<VisualEffectState>(view_program->actions.at("start").enter.at(2).operation);
+    Check(effect_state.state=="Move" && !effect_state.restart && effect_state.transition==0);
+    motion_params={};std::vector<std::string> order;bool state_loaded=true;std::function<void()> during_state;
+    auto view_callbacks=motion_callbacks;
+    view_callbacks.follow=[&](auto& context,auto id,const auto& op) {
+        const auto result=motion_callbacks.follow(context,id,op);
+        if(result.state==VisualStepState::Done)order.push_back(op.targets.empty()?"clear":"bind");
+        return result;
+    };
+    view_callbacks.effect_state=[&](auto& context,auto id,const VisualEffectState& op) {
+        if(!state_loaded)return VisualStepResult{VisualStepState::Pending,{}};
+        const auto result=context.SetAnimatorState(id,op.state,op.transition,op.restart);
+        if(result.state!=EffectControlState::Applied)return VisualStepResult{VisualStepState::Pending,{}};
+        order.push_back(op.state);if(during_state)during_state();
+        return VisualStepResult{VisualStepState::Done,{}};
+    };
+    VisualProgramPlayer views(view_program,view_callbacks);auto view_intent=views.Select("start");views.Service();
+    Check(order==std::vector<std::string>{"bind"} && !views.Status().prepared);
+    Check(!views.Signal(view_intent,"enter_view"));Complete(motion_params);views.Service();
+    Check(order==std::vector<std::string>({"bind","Move"}) && views.Played(view_intent,700,1));
+    const auto enter_signal=views.Signal(view_intent,"enter_view");
+    const auto exit_signal=views.Signal(view_intent,"exit_view");Check(enter_signal && exit_signal>enter_signal);
+    state_loaded=false;views.Observe(700,1,"Start",0.3f);views.Service();
+    Check(views.Status().finished && !views.Status().completed_signal && order.size()==2 && !bound.empty());
+    state_loaded=true;views.Service(false);Check(order.size()==2);
+    views.Service();Check(order==std::vector<std::string>({"bind","Move","Idle","clear","Move","bind"}));
+    Check(views.Status().completed_signal==exit_signal && views.Status().issues.empty());
+    views.Service();Check(order.size()==6);
+    Check(views.Signal(view_intent,"enter_view"));view_intent=views.Select("next");views.Service();
+    Check(order.size()==6 && !views.Signal(view_intent-1,"enter_view"));
+    Check(views.Played(view_intent,701,2));
+    Check(views.Signal(view_intent,"enter_view"));
+    during_state=[&]{during_state={};views.Select("next");views.Service();};
+    views.Service();Check(order.back()=="Idle" && !bound.empty()); // no stale clear after replacement
+    views.Service();Check(views.Status().prepared && order.size()==7);
+    bool unknown=false;try{views.Signal(views.Status().intent,"unknown");}catch(const std::invalid_argument&){unknown=true;}Check(unknown);
+    Check(views.Signal(views.Status().intent,"enter_view"));views.Leave();views.Service();
+    Check(bound.empty() && order.size()==7);views.End();views.Service();Check(views.Drained() && roots.empty());
     lifecycle.Forget(caster.token);lifecycle.Forget(recipient.token);delegates.clear();
 }

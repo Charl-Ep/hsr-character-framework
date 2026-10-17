@@ -134,10 +134,12 @@ void TestDevelopmentControl() {
         temporary.Submit(request.dump());}
     late({1,7,true,"",0});
     std::map<std::uint64_t,VisualProgramParameters> overrides;
+    std::vector<std::pair<std::uint64_t,VisualProgramSignal>> signals;
     DevelopmentControl preview(42,{
         [&](auto command,auto reply){pending.push_back({std::move(command),std::move(reply)});return 99;},
         [&]{return snapshot;},
-        [&](auto character,auto inputs){overrides[character]=std::move(inputs);}});
+        [&](auto character,auto inputs){overrides[character]=std::move(inputs);},
+        [&](auto character,auto signal){signals.emplace_back(character,std::move(signal));}});
     const auto queued_before=pending.size();
     request["request_id"]="visual-values";
     request["commands"]=Json::array({
@@ -155,4 +157,13 @@ void TestDevelopmentControl() {
     Check(results.size()==3 && Json::parse(results[0])["event"]=="command_error" &&
         Json::parse(results[1])["event"]=="command_error" && Json::parse(results[2])["applies"]=="next_program_action");
     Check(overrides[7].choices.at("prize")=="grand" && overrides[8].choices.empty());
+    request["request_id"]="view-events";
+    request["commands"]=Json::array({
+        {{"op","visual_signal"},{"character",7},{"generation",11},{"intent",3},{"name","enter_view"}},
+        {{"op","visual_signal"},{"character",7},{"generation",0},{"intent",3},{"name","exit_view"}},
+        {{"op","visual_signal"},{"character",7},{"generation",11},{"intent",3},{"name","exit_view"}}});
+    preview.Submit(request.dump());const auto signal_results=preview.Drain();
+    Check(signal_results.size()==3 && signals.size()==2 && pending.size()==queued_before);
+    Check(signals[0].first==7 && signals[0].second.generation==11 && signals[0].second.intent==3 && signals[0].second.name=="enter_view");
+    Check(Json::parse(signal_results[0])["event"]=="visual_signal_queued" && Json::parse(signal_results[1])["event"]=="command_error");
 }

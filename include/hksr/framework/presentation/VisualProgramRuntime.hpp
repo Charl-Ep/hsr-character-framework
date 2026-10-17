@@ -12,6 +12,10 @@ struct VisualProgramParameters {
     std::map<std::string,std::uint64_t> targets;
     std::map<std::string,std::string> choices;
 };
+struct VisualProgramSignal {
+    std::uint64_t generation=0,intent=0;
+    std::string name;
+};
 // Per-creation inputs. Targets are explicit entity generations, never a
 // gameplay target selector or a fallback to the caster. Not layout data.
 struct VisualProgramInput {
@@ -26,6 +30,9 @@ struct VisualProgramInput {
     // overlay the startup defaults. Existing requests retain their old owners.
     std::uint64_t character=0;
     std::function<VisualProgramParameters(std::uint64_t)> read_parameters;
+    // Data-only mailbox. Consumed on the engine thread; stale creation/action
+    // receipts are reported without dispatching into a replacement scene.
+    std::function<std::vector<VisualProgramSignal>(std::uint64_t)> take_signals;
 };
 // Prepared with the host, activated before model construction. Owns observers
 // and keeps retiring players until their effects and Timelines drain.

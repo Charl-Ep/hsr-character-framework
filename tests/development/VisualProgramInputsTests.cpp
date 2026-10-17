@@ -33,6 +33,11 @@ void TestVisualProgramInputs() {
     overrides->Set(7,{{{"Target",10}},{{"prize","minor"}}});
     Check(snapshot.targets.at("Target")==9 && read(7).targets.at("Target")==10);
     overrides->Set(7,{});Check(read(7).targets.empty() && read(7).choices.empty());
+    overrides->Push(7,{11,3,"enter_view"});overrides->Push(7,{11,3,"exit_view"});
+    Check(bound.at("character")->take_signals(8).empty());
+    const auto signals=bound.at("character")->take_signals(7);
+    Check(signals.size()==2 && signals[0].generation==11 && signals[0].intent==3 &&
+        signals[0].name=="enter_view" && signals[1].name=="exit_view" && bound.at("character")->take_signals(7).empty());
     Check(input.target_characters.at("Target")==2 && input.choices.at("prize")=="minor" && !input.read_parameters);
     for(const auto* text:{
         R"({"programs":[{"file":"scene.json","targets":{"Target":-1}}]})",

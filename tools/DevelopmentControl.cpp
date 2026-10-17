@@ -288,6 +288,19 @@ void DevelopmentControl::Submit(const std::string& text) {
                     emit({{"request_id",id},{"index",i},{"event","visual_inputs_set"},{"character",character},
                         {"applies","next_program_action"}});continue;
                 }
+                if(commands[i].at("op")=="visual_signal") {
+                    const auto& command=commands[i];
+                    for(auto it=command.begin();it!=command.end();++it)
+                        if(it.key()!="op" && it.key()!="character" && it.key()!="generation" && it.key()!="intent" && it.key()!="name")
+                            throw std::invalid_argument("unknown visual signal field: "+it.key());
+                    const auto character=Unsigned(command.at("character"));
+                    VisualProgramSignal signal{Unsigned(command.at("generation")),Unsigned(command.at("intent")),command.at("name").get<std::string>()};
+                    if(!character || !signal.generation || !signal.intent || signal.name.empty() || signal.name.find('\0')!=std::string::npos)
+                        throw std::invalid_argument("visual signal requires instance, generation, intent and name");
+                    if(!services_.visual_signal)throw std::logic_error("visual signal control unavailable");
+                    services_.visual_signal(character,std::move(signal));
+                    emit({{"request_id",id},{"index",i},{"event","visual_signal_queued"},{"character",character}});continue;
+                }
                 auto queue=replies_;
                 auto command=ParseDevelopmentCommand(commands[i]);
                 const auto serial=services_.post(std::move(command),[queue,id,i](const CommandReply& reply){

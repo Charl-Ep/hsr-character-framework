@@ -35,7 +35,7 @@ std::vector<std::string> Names(const Json& value) {
 std::vector<VisualInstruction> Instructions(const Json& rows,const VisualProgram& program) {
     Need(rows.is_array(),"visual instructions must be an array");std::vector<VisualInstruction> out;
     for(const auto& row:rows) {
-        Fields(row,{"op","source","when","effects","variable","value","effect","seconds","fade","immediate","trigger","reset","key","path","type","wrap_mode","release_volume","optional","targets"});
+        Fields(row,{"op","source","when","effects","variable","value","effect","seconds","fade","immediate","trigger","reset","key","path","type","wrap_mode","release_volume","optional","targets","state","transition","restart"});
         VisualInstruction instruction;instruction.source=Name(row.at("source"));
         if(row.contains("when")){const auto& when=row.at("when");Fields(when,{"choice","is"});instruction.choice=Name(when.at("choice"));instruction.value=Name(when.at("is"));}
         const auto op=Name(row.at("op"));
@@ -62,6 +62,8 @@ std::vector<VisualInstruction> Instructions(const Json& rows,const VisualProgram
             const auto& targets=row.at("targets");Need(targets.is_array(),"follow targets must be an array");
             instruction.operation=VisualFollow{Name(row.at("effect")),targets.empty()?std::vector<std::string>{}:Names(targets)};
         }
+        else if(op=="effect_state")instruction.operation=VisualEffectState{Name(row.at("effect")),Name(row.at("state")),
+            Number(row.value("transition",Json(0)),true),row.value("restart",false)};
         else if(op=="timeline_play" || op=="timeline_stop") {
             VisualTimeline timeline;timeline.key=Name(row.at("key"));timeline.play=op=="timeline_play";
             if(timeline.play)timeline.path=Name(row.at("path"));
@@ -74,7 +76,7 @@ std::vector<VisualInstruction> Instructions(const Json& rows,const VisualProgram
 }
 }
 VisualProgram ParseVisualProgram(const std::string& text) {
-    const auto json=Json::parse(text);Fields(json,{"format","id","source","scope","effects","actions"});
+    const auto json=Json::parse(text);Fields(json,{"format","id","source","scope","effects","actions","signals"});
     Need(json.at("format")=="hksr.visual-program","unsupported visual program format");
     VisualProgram out;out.id=Name(json.at("id"));out.source=Name(json.at("source"));out.scope=Name(json.at("scope"));
     Need(json.at("effects").is_object(),"visual effects must be an object");
@@ -116,6 +118,11 @@ VisualProgram ParseVisualProgram(const std::string& text) {
             }
         }
         out.actions.emplace(Name(it.key()),std::move(action));
+    }
+    if(json.contains("signals")) {
+        Need(json.at("signals").is_object(),"visual signals must be an object");
+        for(auto it=json.at("signals").begin();it!=json.at("signals").end();++it)
+            out.signals.emplace(Name(it.key()),Instructions(it.value(),out));
     }
     return out;
 }

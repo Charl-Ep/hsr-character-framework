@@ -14,7 +14,15 @@ VisualProgramPlayer::VisualProgramPlayer(std::shared_ptr<const VisualProgram> pr
 std::uint64_t VisualProgramPlayer::Select(const std::string& action,std::map<std::string,std::string> choices) {
     if(status_.closing)throw std::logic_error("visual program closing");
     if(!program_->actions.count(action))throw std::invalid_argument("unknown visual program action: "+action);
-    pending_=Selection{++next_,action,std::move(choices)};return next_;
+    signals_.clear();pending_=Selection{++next_,action,std::move(choices)};return next_;
+}
+std::uint64_t VisualProgramPlayer::Signal(std::uint64_t intent,const std::string& name) {
+    if(!program_->signals.count(name))throw std::invalid_argument("unknown visual signal: "+name);
+    if(!intent || intent!=next_ || intent!=status_.intent || pending_ || !context_ ||
+        !status_.prepared || status_.completed || status_.closing || end_pending_)return 0;
+    const auto serial=++next_signal_;
+    signals_.push_back(std::make_shared<SignalExecution>(SignalExecution{serial,intent,name,{}}));
+    status_.last_signal=serial;status_.signal=name;return serial;
 }
 void VisualProgramPlayer::Retire(bool fade) {
     if(context_){context_->End(fade);retired_.push_back(std::move(context_));}
@@ -25,6 +33,7 @@ void VisualProgramPlayer::Retire(bool fade) {
     variables_.clear();
 }
 void VisualProgramPlayer::Finish() {
+    signals_.clear();
     if(context_){context_->Finish();retired_.push_back(std::move(context_));}
     try {if(services_.detach)services_.detach();}catch(const std::exception& e){status_.issues.push_back(e.what());}
     status_.playing=false;status_.completing=false;status_.completed=true;
@@ -36,7 +45,7 @@ void VisualProgramPlayer::End(bool fade) {
 }
 void VisualProgramPlayer::Leave(bool fade) {
     if(status_.closing)return;
-    ++next_;pending_.reset();status_.prepared=false;status_.playing=false;status_.completing=false;
+    ++next_;pending_.reset();signals_.clear();status_.prepared=false;status_.playing=false;status_.completing=false;
     end_pending_=true;end_fade_=fade;
 }
 std::optional<std::string> VisualProgramPlayer::ActionForState(const std::string& state) const {
@@ -68,7 +77,7 @@ VisualStepResult VisualProgramPlayer::Execute(const VisualInstruction& input,Cur
                 if(next_!=intent)return {VisualStepState::Pending,{}};
             }
             return {VisualStepState::Done,{}};
-        } else if constexpr(std::is_same_v<T,VisualProgress> || std::is_same_v<T,VisualTrigger> || std::is_same_v<T,VisualFollow>) {
+        } else if constexpr(std::is_same_v<T,VisualProgress> || std::is_same_v<T,VisualTrigger> || std::is_same_v<T,VisualFollow> || std::is_same_v<T,VisualEffectState>) {
             float number=0;
             if constexpr(std::is_same_v<T,VisualProgress>) {
                 if(const auto* literal=std::get_if<float>(&op.value))number=*literal;
@@ -80,7 +89,7 @@ VisualStepResult VisualProgramPlayer::Execute(const VisualInstruction& input,Cur
             }
             if(!cursor.receipts) {
                 cursor.receipts.emplace();
-                if constexpr(std::is_same_v<T,VisualProgress> || std::is_same_v<T,VisualFollow>)*cursor.receipts=context_->Requests(op.effect);
+                if constexpr(!std::is_same_v<T,VisualTrigger>)*cursor.receipts=context_->Requests(op.effect);
                 else for(const auto& key:op.effects) {
                     const auto rows=context_->Requests(key);cursor.receipts->insert(cursor.receipts->end(),rows.begin(),rows.end());
                     if(rows.empty())Issue(input,"no owned effect receipt: "+key);
@@ -96,6 +105,8 @@ VisualStepResult VisualProgramPlayer::Execute(const VisualInstruction& input,Cur
                         control.state==api::EffectControlState::NotLoaded?VisualStepState::Pending:VisualStepState::Failed,control.detail};
                 } else if constexpr(std::is_same_v<T,VisualFollow>) {
                     result=services_.follow?services_.follow(*context_,id,op):VisualStepResult{VisualStepState::Failed,"entity motion service unavailable"};
+                } else if constexpr(std::is_same_v<T,VisualEffectState>) {
+                    result=services_.effect_state?services_.effect_state(*context_,id,op):VisualStepResult{VisualStepState::Failed,"effect Animator service unavailable"};
                 } else if(services_.trigger)result=services_.trigger(*context_,id,op);
                 else {
                     const auto control=context_->SetAnimatorTrigger(id,op.trigger,op.reset);
@@ -214,6 +225,19 @@ void VisualProgramPlayer::Service(bool advance) {
         status_.prepared=status_.issues.empty();
         if(!status_.prepared)return;
     }
+    // Events have their own entry point and cursor, not an invented body cue.
+    // Keep FIFO ordering across async loads. Reentrant submissions wait until
+    // the next Service; Select/Leave may clear the queue during a native call.
+    const auto last_signal=next_signal_;
+    while(!signals_.empty() && signals_.front()->serial<=last_signal) {
+        auto signal=signals_.front();
+        if(signal->intent!=intent){signals_.pop_front();continue;}
+        if(!Instructions(program_->signals.at(signal->name),signal->cursor,intent))break;
+        if(next_!=intent || status_.closing)return;
+        status_.completed_signal=signal->serial;
+        signals_.pop_front();
+    }
+    if(next_!=intent || status_.closing)return;
     if(!status_.playing || !progress_)return;
     if(status_.completing) {
         if(*progress_>=action_->completion_at && Instructions(action_->after_completion,completion_,intent))Finish();

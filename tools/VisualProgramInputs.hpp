@@ -14,9 +14,12 @@ class VisualProgramOverrides {
 public:
     void Set(std::uint64_t character,framework::VisualProgramParameters value);
     framework::VisualProgramParameters Read(std::uint64_t character) const;
+    void Push(std::uint64_t character,framework::VisualProgramSignal);
+    std::vector<framework::VisualProgramSignal> Take(std::uint64_t character);
 private:
     mutable std::mutex mutex_;
     std::map<std::uint64_t,framework::VisualProgramParameters> values_;
+    std::map<std::uint64_t,std::vector<framework::VisualProgramSignal>> signals_;
 };
 VisualProgramInputs BindVisualProgramOverrides(VisualProgramInputs,
     std::shared_ptr<VisualProgramOverrides>);

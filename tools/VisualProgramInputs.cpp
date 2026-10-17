@@ -59,8 +59,19 @@ VisualProgramInputs BindVisualProgramOverrides(VisualProgramInputs inputs,std::s
     for(auto& [source,original]:inputs) {
         (void)source;auto input=std::make_shared<framework::VisualProgramInput>(*original);
         input->read_parameters=[overrides](std::uint64_t character){return overrides->Read(character);};
+        input->take_signals=[overrides](std::uint64_t character){return overrides->Take(character);};
         original=std::move(input);
     }
     return inputs;
+}
+void VisualProgramOverrides::Push(std::uint64_t character,framework::VisualProgramSignal signal) {
+    if(!character || !signal.generation || !signal.intent || signal.name.empty() || signal.name.find('\0')!=std::string::npos)
+        throw std::invalid_argument("visual signal requires instance, generation, intent and name");
+    std::lock_guard<std::mutex> lock(mutex_);signals_[character].push_back(std::move(signal));
+}
+std::vector<framework::VisualProgramSignal> VisualProgramOverrides::Take(std::uint64_t character) {
+    std::lock_guard<std::mutex> lock(mutex_);const auto found=signals_.find(character);
+    if(found==signals_.end())return {};
+    auto result=std::move(found->second);signals_.erase(found);return result;
 }
 }

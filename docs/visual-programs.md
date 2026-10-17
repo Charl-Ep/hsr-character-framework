@@ -26,6 +26,12 @@ The development command channel accepts `visual_inputs` to replace one instance'
 {"op":"visual_inputs","character":7,"targets":{"Target":2},"choices":{"variant":"b"}}
 ```
 
+`visual_signal` queues a named event for a specific creation and program action. Read `generation` and `intent` from that instance's `visual-program` diagnostic. `visual_signal_queued` confirms mailbox storage; `visual-signal` reports engine-thread acceptance. Stale generations or action intents are not dispatched.
+
+```json
+{"op":"visual_signal","character":7,"generation":11,"intent":3,"name":"enter_view"}
+```
+
 ## Data
 
 `ParseVisualProgram` reads the `hksr.visual-program` format.
@@ -35,8 +41,15 @@ The development command channel accepts `visual_inputs` to replace one instance'
 | `id`, `source`, `scope` | Program identity, character configuration and scene name |
 | `effects` | Local keys mapped to resource paths, explicit targets and entity-effect options |
 | `actions` | Body state, entry instructions, progress lanes and completion destination |
+| `signals` | Named instruction sequences submitted independently of body progress |
 
-Each instruction has an `op` and a `source` identifying its configuration node. Operations are `create`, `assign`, `progress`, `remove`, `trigger`, `follow`, `timeline_play` and `timeline_stop`. An optional `when` selects an input by `choice` and `is`.
+Each instruction has an `op` and a `source` identifying its configuration node. Operations are `create`, `assign`, `progress`, `remove`, `trigger`, `follow`, `effect_state`, `timeline_play` and `timeline_stop`. An optional `when` selects an input by `choice` and `is`.
+
+`effect_state` sets the named effect's first Animator on layer zero. `transition` is normalized transition duration (default 0); `restart` defaults to false. The SDK resolves the state name through Unity's `Animator.StringToHash` and caches the result. This does not select the character's body state.
+
+```json
+{"op":"effect_state","effect":"ground","state":"Idle","transition":0,"restart":false,"source":"view.enter[0]"}
+```
 
 `follow` binds the named effect's entity-follow plugin to explicit target names. An empty `targets` array releases that binding. Targets must be loaded entities owned by this host in the same world. The instruction does not change the effect's Animator state.
 
@@ -63,6 +76,8 @@ An action with `restart: true` creates a new scene. Other actions retain its eff
 `VisualEffectContext` releases bindings before servicing explicit effect cancellation and records natural request completion without reading pooled request objects. Caster or target disposal also releases the binding before components are destroyed. Failed detachment is logged; it does not prevent official entity disposal or request cancellation. Custom assemblies provide `follow`, call `UseEntityMotion`, and retain the motion service and effect requests through cleanup.
 
 `Select` queues intent, merging supplied choices over the service defaults. `Service` prepares the scene and collects independent input errors. The body starts after preparation succeeds; `Played` and `Observe` identify its actual playback and model. Pending controls retry only unresolved receipts, without restarting accepted transitions.
+
+`Signal(intent, name)` queues a configured signal for the prepared action and returns a receipt, or zero for a stale/inactive action. Unknown names throw. Signals run in submission order, retain their instruction cursors across pending loads, and do not wait for a body clock. An unrelated body lane can continue while a signal waits. New action selection, scene exit and natural scene completion discard queued signals; effects already applied remain owned by the scene. Custom hosts can supply `take_signals(character)` to marshal value-only messages to the runtime's owner frame.
 
 Runtime diagnostics report selection, waiting instructions, native event attribution and effect targets. Timeline records include the registry borrow, observed phase and cleanup status; unchanged records are suppressed.
 

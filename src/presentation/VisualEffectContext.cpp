@@ -142,4 +142,10 @@ std::vector<VisualEffectResult> VisualEffectContext::SetAnimatorState(const std:
     }
     return out;
 }
+api::EffectControlResult VisualEffectContext::SetAnimatorState(VisualEffectId id,const std::string& name,float duration,bool restart) {
+    Operation operation(operations_);const auto found=requests_.find(id);
+    if(closing_ || found==requests_.end() || !found->second.retained || found->second.request->Status().closed ||
+        found->second.request->Status().request_ended)return {api::EffectControlState::Ended,{},true,"visual receipt ended"};
+    return services_->SetAnimatorState(found->second.request->Status().reference,name,duration,restart);
+}
 }

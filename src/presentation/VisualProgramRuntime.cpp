@@ -77,6 +77,13 @@ std::shared_ptr<VisualProgramPlayer> VisualProgramRuntime::Create(api::EntityOri
         value->selected_targets=std::move(targets);return choices;
     };
     services.create=[this,current](auto& context,const auto& key,const auto& value){return CreateEffect(*current(),context,key,value);};
+    services.effect_state=[this,current](auto& context,auto id,const VisualEffectState& op) {
+        const auto scene=current();
+        if(!Alive(scene->owner))return VisualStepResult{VisualStepState::Failed,"visual owner ended"};
+        const auto result=context.SetAnimatorState(id,op.state,op.transition,op.restart);
+        return VisualStepResult{result.state==api::EffectControlState::Applied?VisualStepState::Done:
+            result.state==api::EffectControlState::NotLoaded?VisualStepState::Pending:VisualStepState::Failed,result.detail};
+    };
     services.follow=[this,current](auto& context,auto id,const VisualFollow& op) {
         const auto scene=current();std::vector<api::EntityOrigin> targets;
         for(const auto& name:op.targets)targets.push_back(ResolveTarget(*scene,name));
@@ -165,8 +172,27 @@ VisualEffectId VisualProgramRuntime::CreateEffect(Scene& scene,VisualEffectConte
 }
 void VisualProgramRuntime::Collect() {
     sequences_->Collect();routes_.Collect();
+    std::map<std::uint64_t,Scene*> readers;
+    for(const auto& scene:scenes_)if(scene->input.take_signals)readers[scene->input.character]=scene.get();
     for(auto it=scenes_.begin();it!=scenes_.end();) {
         auto& scene=**it;
+        // A retiring scene must not consume a newer creation's mailbox.
+        if(scene.player && scene.input.take_signals && readers.at(scene.input.character)==&scene)
+        for(const auto& signal:scene.input.take_signals(scene.input.character)) {
+            std::uint64_t receipt=0;std::string error;
+            try {
+                if(!Alive(scene.owner) || signal.generation!=scene.owner.token.generation)
+                    throw std::runtime_error("visual signal targets an ended creation");
+                receipt=scene.player->Signal(signal.intent,signal.name);
+                if(!receipt)error="visual signal targets an inactive action";
+            }catch(const std::exception& e){error=e.what();}
+            if(trace_) {
+                std::ostringstream out;out<<"visual-signal character="<<scene.input.character
+                    <<" generation="<<signal.generation<<" intent="<<signal.intent<<" name="<<signal.name<<" receipt="<<receipt;
+                if(!error.empty())out<<" error=["<<error<<"]";
+                trace_(out.str());
+            }
+        }
         if(scene.player && (closing_ || !Alive(scene.owner)) && !scene.player->Status().closing)scene.player->End();
         if(scene.player && scene.player->Status().closing)scene.player->Service();
         scene.ReleasePending();
@@ -177,6 +203,7 @@ void VisualProgramRuntime::Collect() {
                 <<" action="<<status.action<<" state="<<status.state<<" prepared="<<status.prepared<<" playing="<<status.playing
                 <<" finished="<<status.finished<<" completing="<<status.completing<<" completed="<<status.completed
                 <<" closing="<<status.closing<<" drained="<<scene.player->Drained();
+            out<<" signal="<<status.signal<<" signal_submitted="<<status.last_signal<<" signal_completed="<<status.completed_signal;
             for(const auto& value:status.waiting)out<<" waiting=["<<value<<"]";
             for(const auto& value:status.issues)out<<" issue=["<<value<<"]";
             for(const auto& value:status.notes)out<<" note=["<<value<<"]";

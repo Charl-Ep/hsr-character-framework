@@ -12,6 +12,7 @@ public:
         std::function<std::uint64_t(framework::CharacterCommand,framework::ApplicationService::ReplySink)> post;
         std::function<framework::ApplicationSnapshot()> snapshot;
         std::function<void(std::uint64_t,framework::VisualProgramParameters)> visual_inputs;
+        std::function<void(std::uint64_t,framework::VisualProgramSignal)> visual_signal;
     };
     explicit DevelopmentControl(unsigned process,Services services);
     void Submit(const std::string& text); // worker; parses each request id once

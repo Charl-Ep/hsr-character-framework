@@ -68,7 +68,8 @@ struct Extension {
             hksr::research::DevelopmentControl::Services{
                 [this](auto command,auto reply){return framework->Application().Post(std::move(command),std::move(reply));},
                 [this]{return framework->Application().Snapshot();},
-                [this](auto character,auto inputs){visual_inputs->Set(character,std::move(inputs));}});
+                [this](auto character,auto inputs){visual_inputs->Set(character,std::move(inputs));},
+                [this](auto character,auto signal){visual_inputs->Push(character,std::move(signal));}});
         std::error_code error;const auto modified=std::filesystem::last_write_time(control_requests,error);
         if(!error && modified!=control_modified) {
             std::ifstream input(control_requests,std::ios::binary);
