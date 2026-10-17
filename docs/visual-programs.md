@@ -16,7 +16,7 @@ For custom assembly, use `CharacterPlan::visual_program` with `CharacterSessionS
 
 Select an authored action with `ProgramAction{program_id, action_key, choices}` in the alternate domain. The request and playback receipt retain this identity; the player resolves its body state from the bound definition. Multiple actions may use the same body state. Direct Animator and FreeStyle requests play animation only and do not select a program by name.
 
-Menus and HTTP action listings expose each bound program action separately. Layouts save the program ID, action key and explicit choice overrides, not effects or in-flight cursors. Independent entry actions restart from the beginning. Continuations requiring an existing scene or named context cannot be resumed from a layout yet.
+Menus and HTTP action listings expose each bound program action separately. Layouts save the program ID, action key, explicit choice overrides and reconstructible contexts. Resources are rebuilt from authored restore instructions before the selected action restarts. Layouts do not save native objects or instruction cursors.
 
 Development builds optionally read `VISUAL_PROGRAMS.json` beside the DLL at startup. Each entry specifies a definition file (relative to the manifest), target instance IDs and choices. IDs refer to the current loaded layout, not permanent character identities. No file means no programs. The file does not create targets or start actions.
 
@@ -52,7 +52,8 @@ Start a program action through the development channel:
 | `effects` | Local keys mapped to resource paths, explicit entity targets or world anchors, and visual options |
 | `actions` | Body state, entry instructions, progress lanes and completion destination |
 | `signals` | Named instruction sequences submitted independently of body progress |
-| `contexts` | Independent effect lifetimes with entry and exit instructions |
+| `contexts` | Independent effect lifetimes with entry, exit and optional restore instructions |
+| `restore` | Optional reconstruction instructions for the default scene |
 
 Each instruction has an `op` and a `source` identifying its configuration node. Operations are `create`, `assign`, `progress`, `remove`, `trigger`, `follow`, `effect_state`, `context_enter`, `context_exit`, `timeline_play` and `timeline_stop`. An optional `when` selects an input by `choice` and `is`.
 
@@ -143,7 +144,26 @@ Root kinds are `ability`, `global_modifier` and `global_template`. The path sele
 
 The most recently entered phase context takes precedence. Exiting it restores an earlier live phase context, or the actor's base idle when none remains. Action changes retain these contexts; domain changes and deletion clear them. Programs declaring phases use this lifetime policy instead of `PresentationProfile` idle cues.
 
-Action playback uses the selected standby for idle requests and resolves visual-state selections by their official flag against the active phase. Expressions retain their global-table source. Literal animation names remain literal; phase data does not rewrite arbitrary state requests or create gameplay status effects. Phase contexts are not persisted in layouts.
+`BattleIdle` resolves standby from the active phase after model and context restoration. The menu, HTTP idle command and automatic completion use this destination. Layouts retain the idle intent rather than a stale animation name. Visual-state selections resolve by their official flag against the active phase; expressions retain their global-table source. Literal animation requests remain literal.
+
+### Layout reconstruction
+
+Each persistent context supplies a `restore` array using the same operations as `enter`. It rebuilds resources from saved choices, variables, target instance IDs and anchors. An empty array explicitly declares that no resource reconstruction is needed, for example for a phase-only context. Restore instructions do not enter or exit other contexts.
+
+```json
+{"contexts":{"aura":{
+  "enter":[{"op":"create","effects":["ground"],"source":"aura.enter"}],
+  "restore":[{"op":"create","effects":["ground"],"source":"aura.restore"}]
+}}}
+```
+
+The top-level `restore` reconstructs the default scene used by continuation actions (`restart: false`). A recipe recreates the required visual state; it does not replay preceding actions. Instruction cursors, native requests, resolved entity generations and asynchronous tails are not persisted. Authors define the reconstruction behavior for their resources.
+
+`Capture()` returns a value-only `VisualProgramSnapshot`. Contexts retain entry order, which also preserves phase precedence. `Restore(snapshot)` queues reconstruction on an unentered player. Custom hosts service it after the destination model and event receiver are ready. Contexts can wait independently for target models and resources; body playback waits for reconstruction to finish. `Leave` and `End` cancel partially restored owners through the usual cleanup path.
+
+Layouts remap target instance IDs before creation. Native-only targets cannot be saved. `prepare_inputs` receives captured values before producer attachment; `capture_inputs` supplies values for storage, and `restore_inputs_ready` reports target availability. The first action after reconstruction uses saved inputs, with explicit action choices taking precedence over them.
+
+Snapshot capture requires stable contexts and a restore recipe for each live scope. Missing recipes, changing contexts and nonpersistent targets report a layout error without overwriting the previous save. Removal and shutdown still clean up the instance. Definitions are checked before a loaded layout replaces current characters. Switching explicitly to exploration ends the visual contexts; returning from a map rebuilds the saved ones.
 
 ### Effect services
 

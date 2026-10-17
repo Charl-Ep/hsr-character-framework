@@ -7,6 +7,16 @@ void ActionPlayback::ConfigureVisualProgram(std::shared_ptr<VisualProgramPlayer>
     if(program_ && program_!=player)throw std::logic_error("close the existing visual program before replacing its services");
     program_=std::move(player);
 }
+std::optional<VisualProgramSnapshot> ActionPlayback::CaptureVisualProgram() const {
+    if(!program_)return {};
+    auto value=program_->Capture();
+    if(!value.scene && value.contexts.empty())return {};
+    return value;
+}
+void ActionPlayback::RestoreVisualProgram(VisualProgramSnapshot value) {
+    if(!program_)throw std::runtime_error("saved visual program is not configured");
+    program_->Restore(std::move(value));
+}
 void ActionPlayback::LeaveProgram() {
     program_playback_.reset();program_preparing_=program_intent_=program_return_=0;
     if(program_)program_->Leave();
@@ -16,6 +26,13 @@ bool ActionPlayback::PrepareProgram(ActionReceipt& receipt) {
     const auto* direct=std::get_if<AnimatorState>(&receipt.request);
     if(direct && direct->layer!=0)return true;
     if(receipt.serial==program_return_)return true; // successor is observed before tail instructions
+    if(program_->Restoring()) {
+        program_->Service();
+        if(!program_->Status().issues.empty())throw std::runtime_error(program_->Status().issues.front());
+        if(program_->Restoring()) {
+            receipt.outcome=ActionOutcome::Waiting;receipt.detail="visual context restoring";return false;
+        }
+    }
     const auto* selected=std::get_if<ProgramAction>(&receipt.request);
     if(!selected) {
         program_playback_.reset();program_preparing_=program_intent_=program_return_=0;

@@ -19,7 +19,7 @@ GUI、HTTP和开发控制器向 `ApplicationService` 提交类型化命令。`Ap
 - `ConfiguredActionKey`：动作域、状态名，包含关联退出任务。
 - `ReadyActionKey`：配置路径、准备态下标。
 
-来源或配置变化后重新读取revision。`SelectCharacterAction` 是原始状态／NPC编号入口，不附加目录条目的伴随任务。
+来源或配置变化后重新读取revision。`SelectCharacterAction` 接受原始状态、NPC编号及显式 `ProgramAction`；原始动画不附加目录条目的伴随任务。`IdleCharacter` 提交 `BattleIdle`，在模型与上下文就绪后解析当前阶段的待机。
 
 ## 操作结果与历史
 
@@ -57,7 +57,7 @@ SDK控制回执只在官方线程读取，Framework将结果复制到快照。�
 
 ## 地图工作布局
 
-工作布局保存官方来源、位置、注视、动作和[表现阶段](presentation-profiles.md)。动作恢复从头播放；自然后继以controller_observed状态保存，恢复时检查HasState。
+工作布局保存官方来源、位置、注视、动作和[表现阶段](presentation-profiles.md)。动作恢复从头播放；回到当前阶段待机后保存 `BattleIdle`，其它观测到的控制器后继按名字保存并在恢复时检查HasState。[视觉上下文](visual-programs.md#layout-reconstruction)保存有类型的值输入，按配置恢复资源后再播放动作。
 
 `LayoutController` 先准备来源和动作，再替换当前地图实例并跟踪回收／创建。`LayoutIo` 后台编码和写盘，相同布局不重写，待写变化可合并。
 

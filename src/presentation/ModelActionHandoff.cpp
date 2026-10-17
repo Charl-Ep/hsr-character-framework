@@ -13,7 +13,7 @@ ModelActionHandoff::ModelActionHandoff(CharacterInstance& character,api::EntityT
 }
 std::uint64_t ModelActionHandoff::Queue(ActionDomain domain,ActionRequest action) {
     if(removing_ || status_.closed) throw std::logic_error("handoff closing");
-    if(std::holds_alternative<ProgramAction>(action) && domain!=ActionDomain::Alternate)
+    if((std::holds_alternative<ProgramAction>(action) || std::holds_alternative<BattleIdle>(action)) && domain!=ActionDomain::Alternate)
         throw std::invalid_argument("visual program requires its battle model domain");
     if(domain==ActionDomain::Alternate && !transition_->RequestStatus())
         throw std::logic_error("alternate source unavailable; exploration remains usable");
@@ -134,6 +134,13 @@ void ModelActionHandoff::Service(const api::WorldFrame& frame,AppearanceServices
         UpdateTransitionStatus();
         if(interrupted())return;
         if(status_.phase==HandoffPhase::Ready) {
+            if(visual_restore_) {
+                // Receivers and model consumers must exist before effects and
+                // phase resources can be reconstructed. Never run this during
+                // baseline capture or the model's initialization request.
+                if(active_->domain==ActionDomain::Alternate)actions_.RestoreVisualProgram(std::move(*visual_restore_));
+                visual_restore_.reset();
+            }
             if(before!=HandoffPhase::Ready){status_.ready_domain=active_->domain;status_.playback_serial=actions_.Queue(active_->action);}
             character_.Service(frame,appearance,types);
             if(interrupted())return;

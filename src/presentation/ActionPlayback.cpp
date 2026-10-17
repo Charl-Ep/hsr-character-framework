@@ -126,6 +126,13 @@ void ActionPlayback::Service(const api::WorldFrame& frame,bool ready,api::Manage
     if(!ready) return;
     servicing_=true;
     struct Exit { bool& flag; ~Exit(){flag=false;} } exit{servicing_};
+    if(program_ && program_->Restoring()) {
+        program_->Service();
+        if(program_->Restoring() && program_->Status().issues.empty()) {
+            if(pending_){pending_->detail="visual context restoring";status_.last=*pending_;}
+            return;
+        }
+    }
     TickProgram(frame,objects);
     if(ready_ && !pending_) {
         try {
@@ -181,6 +188,10 @@ void ActionPlayback::Service(const api::WorldFrame& frame,bool ready,api::Manage
                 if(!program_ || !presentation_enabled_)throw std::runtime_error("visual program unavailable in this action domain");
                 program_body=FreeStyleState{program_->ResolveAction(selected->program,selected->action).state};
                 free_state=&*program_body;
+            }
+            if(std::holds_alternative<BattleIdle>(receipt.request)) {
+                if(!presentation_enabled_)throw std::runtime_error("battle idle requires the battle domain");
+                program_body=FreeStyleState{CurrentIdle()};free_state=&*program_body;
             }
             const auto* visual=std::get_if<VisualState>(&receipt.request);
             const auto* ready_state=std::get_if<ReadyState>(&receipt.request);

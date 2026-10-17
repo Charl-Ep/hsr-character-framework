@@ -42,6 +42,7 @@ void LayoutController::Prepare(Map& map) {
         if(!map.plan_ready[i]) {
             auto plan=catalog_.Plan(source->id);
             plan.presentation_phase=map.incoming->characters[i].presentation_phase;
+            if(const auto& visual=map.incoming->characters[i].visual_state)characters_.CheckVisualRestore(plan,*visual);
             if((plan.package.appearance || plan.payload) && !private_models_)
                 throw std::runtime_error("private model restoration requires the model release observer");
             map.plans[i]=std::move(plan);map.plan_ready[i]=true;
@@ -54,7 +55,7 @@ void LayoutController::Prepare(Map& map) {
         // Even a proposal seen early can gain exit tasks during discovery. A
         // configured/ready request waits for its required domain's complete
         // projection, not the other domain's unrelated ability graph.
-        if(saved && !std::holds_alternative<NpcMotion>(*saved) && !std::holds_alternative<ProgramAction>(*saved) && !(configured && configured->controller_observed) &&
+        if(saved && !std::holds_alternative<NpcMotion>(*saved) && !std::holds_alternative<ProgramAction>(*saved) && !std::holds_alternative<BattleIdle>(*saved) && !(configured && configured->controller_observed) &&
             !available.Ready(configured?configured->domain:ActionDomain::Alternate)){pending=true;continue;}
         map.actions[i]=RestoreLayoutAction(saved,available);map.action_views[i]=source_view;
     }
@@ -77,6 +78,9 @@ void LayoutController::Install(Map& map) {
         catalog_.InspectActions(id,characters_.Plan(id).action_sources);
     }
     for(std::size_t i=0;i<map.added.size();++i) {
+        if(const auto& saved=map.incoming->characters[i].visual_state) {
+            auto state=*saved;RemapVisualTargets(state,keys);characters_.RestoreVisualProgram(map.added[i],std::move(state));
+        }
         auto look=map.incoming->characters[i].look;
         if(look.mode==LookMode::Instance)look.target=keys.at(look.target);
         characters_.Look(map.added[i],look);

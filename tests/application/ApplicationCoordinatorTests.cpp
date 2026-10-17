@@ -89,7 +89,7 @@ void TestApplicationCoordinator() {
     characters.ReplacePlan(id,std::move(battle_plan));
     service.Post(IdleCharacter{id});replies=dispatch();Check(replies[0].accepted);
     Check(characters.DesiredAction(id)->domain==ActionDomain::Alternate &&
-        std::get<FreeStyleState>(characters.DesiredAction(id)->request).name=="OfficialIdle");
+        std::holds_alternative<BattleIdle>(characters.DesiredAction(id)->request));
 
     // Callbacks are outside the command batch and may fail or enqueue work;
     // neither failure nor logging exceptions replay already-applied intent.

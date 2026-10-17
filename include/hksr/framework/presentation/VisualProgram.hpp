@@ -1,5 +1,6 @@
 #pragma once
 #include "VisualEffectContext.hpp"
+#include "VisualProgramState.hpp"
 #include <functional>
 #include <deque>
 #include <optional>
@@ -12,8 +13,6 @@ struct VisualEffectInput {
     api::EntityEffectOptions options;
     std::string anchor; // named world pose, mutually exclusive with target
 };
-struct VisualSpatialAnchor {api::Position3 position;api::Rotation4 rotation;};
-using VisualSpatialAnchors=std::map<std::string,VisualSpatialAnchor>;
 VisualSpatialAnchors ParseVisualSpatialAnchors(const std::string& json);
 struct VisualCreate {std::vector<std::string> effects;};
 struct VisualAssign {std::string variable;float value=0;};
@@ -34,7 +33,11 @@ struct VisualInstruction {
     std::string choice,value; // optional explicit preview input, not a gameplay flag
     std::string context; // empty uses the current execution's effect owner
 };
-struct VisualProgramContext {std::vector<VisualInstruction> enter,exit;std::string event_scope,phase;};
+struct VisualProgramContext {
+    std::vector<VisualInstruction> enter,exit;
+    std::string event_scope,phase;
+    std::optional<std::vector<VisualInstruction>> restore;
+};
 struct VisualProgramSignalDefinition {std::string context;std::vector<VisualInstruction> instructions;};
 struct VisualCue {float at=0;std::vector<VisualInstruction> instructions;};
 struct VisualProgramAction {
@@ -56,8 +59,10 @@ struct VisualProgram {
     std::map<std::string,VisualProgramSignalDefinition> signals;
     std::map<std::string,VisualProgramContext> contexts;
     std::map<std::string,api::PhaseVisualSource> phases;
+    std::optional<std::vector<VisualInstruction>> restore;
 };
 VisualProgram ParseVisualProgram(const std::string& json);
+void ValidateVisualRestore(const VisualProgram&,const VisualProgramSnapshot&);
 
 enum class VisualStepState { Done, Pending, Failed };
 struct VisualStepResult {VisualStepState state=VisualStepState::Failed;std::string detail;};
@@ -80,12 +85,17 @@ struct VisualProgramServices {
     std::map<std::string,std::string> choices;
     // Called once when an action selection is consumed, before any instruction.
     // Returns current defaults; explicit Select choices take precedence.
-    std::function<std::map<std::string,std::string>()> select_inputs;
+    std::function<VisualProgramParameters()> select_inputs;
     // Capture resolved input values for a named lifetime before it can submit.
     // Does not attach native animation-event producers.
     std::function<void(const std::string&,std::shared_ptr<VisualEffectContext>)> context_started;
     std::function<void(const std::string&)> context_stopped;
     std::function<std::shared_ptr<const api::PhaseVisualConfigSources>(const std::string&)> read_phase;
+    // Called before producers attach. The flag distinguishes restored inputs
+    // from live defaults, which may additionally contain native-only targets.
+    std::function<void(std::shared_ptr<VisualEffectContext>,const VisualProgramParameters&,bool)> prepare_inputs;
+    std::function<VisualProgramParameters(const VisualEffectContext&)> capture_inputs;
+    std::function<VisualStepResult(const VisualProgramParameters&)> restore_inputs_ready;
 };
 struct VisualProgramStatus {
     std::uint64_t intent=0,playback=0,model=0;
@@ -124,6 +134,9 @@ public:
     // Last-entered phase owner wins; removing it restores the prior live owner.
     std::shared_ptr<const api::PhaseVisualConfigSources> CurrentPhase() const;
     bool OwnsPhases() const {return !program_->phases.empty();}
+    VisualProgramSnapshot Capture() const;
+    void Restore(VisualProgramSnapshot); // data-only, before scene entry
+    bool Restoring() const {return restore_.has_value();}
     bool Drained() const;
 private:
     struct Cursor {
@@ -144,6 +157,7 @@ private:
         std::map<std::string,float> variables;
         std::map<std::string,std::string> choices;
         bool fade=true;
+        bool restoring=false;
         std::shared_ptr<const api::PhaseVisualConfigSources> phase_data;
     };
     struct Execution {std::uint64_t intent=0;std::shared_ptr<Lifetime> lifetime;};
@@ -154,6 +168,8 @@ private:
     VisualStepResult Execute(const VisualInstruction&,Cursor&,const Execution&);
     std::shared_ptr<VisualEffectContext> ExecutionContext(const VisualInstruction&,const Execution&) const;
     VisualStepResult ChangeContext(const VisualContextOperation&);
+    std::shared_ptr<Lifetime> StartContext(const std::string&,const VisualContextSnapshot* restore=nullptr);
+    bool ServiceRestore();
     void ServiceContexts(bool advance);
     void DriveContext(std::shared_ptr<Lifetime>);
     void EndContexts(bool fade);
@@ -170,7 +186,12 @@ private:
     std::vector<std::shared_ptr<VisualEffectContext>> retired_contexts_;
     std::map<std::string,float> variables_;
     std::map<std::string,std::string> choices_;
+    VisualProgramParameters selected_inputs_;
+    bool selected_inputs_restored_=false;
+    std::optional<VisualProgramParameters> restored_inputs_;
     std::optional<Selection> pending_;
+    struct Restoration {VisualProgramSnapshot value;bool scene_started=false;Cursor scene;};
+    std::optional<Restoration> restore_;
     std::deque<std::shared_ptr<SignalExecution>> signals_;
     const VisualProgramAction* action_=nullptr;
     VisualProgramStatus status_;

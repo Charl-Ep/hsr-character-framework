@@ -53,12 +53,12 @@ void VisualProgramPlayer::End(bool fade) {
 void VisualProgramPlayer::Leave(bool fade) {
     if(status_.closing)return;
     ++next_;pending_.reset();signals_.clear();status_.prepared=false;status_.playing=false;status_.completing=false;
-    end_pending_=true;end_fade_=fade;
+    end_pending_=true;end_fade_=fade;restore_.reset();restored_inputs_.reset();
 }
 void VisualProgramPlayer::InterruptAction(bool fade) {
     if(status_.closing)return;
     ++next_;pending_.reset();DiscardActionSignals();status_.prepared=false;status_.playing=false;status_.completing=false;
-    interrupt_pending_=true;end_fade_=fade;
+    interrupt_pending_=true;end_fade_=fade;restored_inputs_.reset();
 }
 const VisualProgramAction& VisualProgramPlayer::ResolveAction(const std::string& program,const std::string& action) const {
     if(program!=program_->id)throw std::invalid_argument("visual program does not belong to this actor: "+program);
@@ -218,17 +218,22 @@ void VisualProgramPlayer::Service(bool advance) {
     if(status_.closing)return;
     if(!advance){if(context_)context_->Service();return;}
     status_.waiting.clear();
+    if(restore_ && !ServiceRestore())return;
     if(pending_) {
         auto selected=std::move(*pending_);pending_.reset();
         auto inputs=services_.choices;
         try {
-            if(services_.select_inputs)for(auto& [key,value]:services_.select_inputs())inputs[key]=std::move(value);
+            selected_inputs_restored_=restored_inputs_.has_value();
+            if(restored_inputs_){inputs.clear();selected_inputs_=std::move(*restored_inputs_);restored_inputs_.reset();}
+            else selected_inputs_=services_.select_inputs?services_.select_inputs():VisualProgramParameters{};
+            for(const auto& [key,value]:selected_inputs_.choices)inputs[key]=value;
         } catch(const std::exception& e) {
             status_={};status_.intent=selected.intent;status_.action=selected.action;
             status_.issues.push_back(e.what());Retire(true);action_=nullptr;return;
         }
         if(next_!=selected.intent)return;
         for(auto& [key,value]:selected.choices)inputs[key]=std::move(value);
+        selected_inputs_.choices=inputs;
         action_=&program_->actions.at(selected.action);
         if(action_->restart)Retire(true);
         if(next_!=selected.intent)return;
@@ -238,7 +243,10 @@ void VisualProgramPlayer::Service(bool advance) {
                 status_.issues.push_back("scene has not been entered");action_=nullptr;return;
             }
             context_=std::make_shared<VisualEffectContext>(services_.effects);
-            try {if(services_.attach)services_.attach(context_);}
+            try {
+                if(services_.prepare_inputs)services_.prepare_inputs(context_,selected_inputs_,selected_inputs_restored_);
+                if(next_==selected.intent && services_.attach)services_.attach(context_);
+            }
             catch(const std::exception& e) {
                 status_={};status_.intent=selected.intent;status_.action=selected.action;
                 status_.issues.push_back(e.what());Retire(true);action_=nullptr;return;

@@ -38,6 +38,42 @@ LookMode Look(const std::string& text) {
         if(text==Look(mode))return mode;
     throw std::invalid_argument("invalid gaze mode");
 }
+Json Context(const VisualContextSnapshot& value) {
+    Json targets=Json::object(),anchors=Json::object();
+    for(const auto& [name,id]:value.inputs.targets)targets[name]=std::to_string(id);
+    for(const auto& [name,pose]:value.inputs.anchors) {
+        const auto q=pose.rotation;
+        anchors[name]={{"position",Position(pose.position)},{"rotation",{q.x,q.y,q.z,q.w}}};
+    }
+    return {{"name",value.name},{"choices",value.inputs.choices},{"variables",value.variables},
+        {"targets",targets},{"anchors",anchors}};
+}
+VisualContextSnapshot Context(const Json& value) {
+    VisualContextSnapshot out;out.name=value.at("name").get<std::string>();
+    out.inputs.choices=value.at("choices").get<std::map<std::string,std::string>>();
+    out.variables=value.at("variables").get<std::map<std::string,float>>();
+    Need(value.at("targets").is_object() && value.at("anchors").is_object(),"invalid visual inputs");
+    for(auto it=value.at("targets").begin();it!=value.at("targets").end();++it)out.inputs.targets[it.key()]=Id(it.value());
+    for(auto it=value.at("anchors").begin();it!=value.at("anchors").end();++it) {
+        const auto& row=it.value();const auto& q=row.at("rotation");
+        Need(q.is_array() && q.size()==4,"invalid visual anchor rotation");
+        out.inputs.anchors[it.key()]={Position(row.at("position")),{q[0].get<float>(),q[1].get<float>(),q[2].get<float>(),q[3].get<float>()}};
+    }
+    return out;
+}
+Json ProgramSnapshot(const VisualProgramSnapshot& state) {
+    Json out={{"program",state.program},{"contexts",Json::array()}};
+    if(state.scene)out["scene"]=Context(*state.scene);
+    for(const auto& value:state.contexts)out["contexts"].push_back(Context(value));
+    return out;
+}
+VisualProgramSnapshot ProgramSnapshot(const Json& json) {
+    VisualProgramSnapshot out;out.program=json.at("program").get<std::string>();
+    Need(json.at("contexts").is_array(),"visual contexts must retain their entry order");
+    if(json.contains("scene"))out.scene=Context(json.at("scene"));
+    for(const auto& value:json.at("contexts"))out.contexts.push_back(Context(value));
+    return out;
+}
 }
 std::string EncodeSceneLayout(const SceneLayout& layout) {
     ValidateSceneLayout(layout);
@@ -55,9 +91,11 @@ std::string EncodeSceneLayout(const SceneLayout& layout) {
             {"position",Position(row.placement.position)},{"rotation",{{"x",q.x},{"y",q.y},{"z",q.z},{"w",q.w}}},
             {"look",{{"mode",Look(row.look.mode)},{"target",std::to_string(row.look.target)},{"point",Position(row.look.point)},{"max_distance",row.look.max_distance}}}};
         if(row.placement.snap_to_ground)value["snap_to_ground"]=*row.placement.snap_to_ground;
+        if(row.visual_state)value["visual_state"]=ProgramSnapshot(*row.visual_state);
         if(row.action)value["action"]=std::visit([](const auto& action)->Json {
             using T=std::decay_t<decltype(action)>;
             if constexpr(std::is_same_v<T,NpcMotion>)return {{"kind","npc"},{"id",action.id}};
+            else if constexpr(std::is_same_v<T,BattleIdle>)return {{"kind","battle_idle"}};
             else if constexpr(std::is_same_v<T,SavedConfiguredAction>)
                 return {{"kind","configured"},{"domain",Domain(action.domain)},{"state",action.state},{"controller_observed",action.controller_observed}};
             else if constexpr(std::is_same_v<T,ProgramAction>)return {{"kind","program"},{"program",action.program},{"action",action.action},{"choices",action.choices}};
@@ -74,6 +112,7 @@ SceneLayout DecodeSceneLayout(const std::string& text) {
     for(const auto& item:data.at("characters")) {
         SavedCharacter row;row.key=Id(item.at("key"));row.enabled=item.at("enabled").get<bool>();
         row.presentation_phase=item.value("presentation_phase",std::string{});
+        if(item.contains("visual_state"))row.visual_state=ProgramSnapshot(item.at("visual_state"));
         const auto& source=item.at("source");
         auto number=[](const Json& n) {Need(n.is_number_unsigned() && n.get<std::uint64_t>()<=UINT32_MAX,"invalid source/action ID");return n.get<std::uint32_t>();};
         if(source.at("kind")=="npc")row.source=BrowseNpc{number(source.at("npc_id"))};
@@ -90,6 +129,7 @@ SceneLayout DecodeSceneLayout(const std::string& text) {
         if(item.contains("action")) {
             const auto& a=item.at("action");
             if(a.at("kind")=="npc")row.action=NpcMotion{number(a.at("id"))};
+            else if(a.at("kind")=="battle_idle")row.action=BattleIdle{};
             else if(a.at("kind")=="program")row.action=ProgramAction{a.at("program").get<std::string>(),a.at("action").get<std::string>(),
                 a.value("choices",std::map<std::string,std::string>{})};
             else if(a.at("kind")=="configured")row.action=SavedConfiguredAction{Domain(a.at("domain").get<std::string>()),a.at("state").get<std::string>(),a.value("controller_observed",false)};

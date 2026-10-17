@@ -77,6 +77,7 @@ set(HKSR_RUNTIME_SOURCES
     src/presentation/VisualEventRoutes.cpp
     src/presentation/VisualProgram.cpp
     src/presentation/VisualProgramContexts.cpp
+    src/presentation/VisualProgramSnapshot.cpp
     src/presentation/VisualTimelines.cpp
     src/presentation/VisualProgramRuntime.cpp
 

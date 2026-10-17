@@ -50,6 +50,9 @@ public:
     // Borrowed only for this official-thread call; never publish to UI.
     const CharacterSession* Active(std::uint64_t id,const api::WorldFrame& frame) const;
     const CharacterPlan& Plan(std::uint64_t id) const {return entries_.at(id).plan;}
+    std::optional<VisualProgramSnapshot> CaptureVisualProgram(std::uint64_t id) const;
+    void RestoreVisualProgram(std::uint64_t id,VisualProgramSnapshot);
+    void CheckVisualRestore(CharacterPlan,const VisualProgramSnapshot&) const;
     bool Closed() const;
     std::size_t PendingInputReleases() const { return creation_inputs_.size(); }
 private:
@@ -71,6 +74,7 @@ private:
         std::string creation_error;
         std::uint64_t next_action=0,action_intent=0;
         std::string action_error;
+        std::string visual_restore_error;
         api::GameWorld* attempted_world=nullptr;
         std::uint64_t attempted_incarnation=0,attempted_revision=0;
         std::optional<Epoch> active;
@@ -79,6 +83,7 @@ private:
         std::shared_ptr<ControlSubmission> look_submission;
     };
     void Retire(Entry& entry);
+    void SaveVisualState(Entry& entry);
     Entry& Edit(std::uint64_t id);
     static bool LiveEntities(const Epoch& epoch);
     CharacterSessionServices services_;

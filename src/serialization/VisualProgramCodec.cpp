@@ -92,7 +92,7 @@ void ContextInstructions(const std::vector<VisualInstruction>& steps) {
 }
 }
 VisualProgram ParseVisualProgram(const std::string& text) {
-    const auto json=Json::parse(text);Fields(json,{"format","id","source","scope","effects","actions","signals","contexts","phases"});
+    const auto json=Json::parse(text);Fields(json,{"format","id","source","scope","effects","actions","signals","contexts","phases","restore"});
     Need(json.at("format")=="hksr.visual-program","unsupported visual program format");
     VisualProgram out;out.id=Name(json.at("id"));out.source=Name(json.at("source"));out.scope=Name(json.at("scope"));
     Need(json.at("effects").is_object(),"visual effects must be an object");
@@ -146,7 +146,7 @@ VisualProgram ParseVisualProgram(const std::string& text) {
         std::set<std::string> event_scopes{out.scope};
         for(auto it=json.at("contexts").begin();it!=json.at("contexts").end();++it)out.contexts.emplace(Name(it.key()),VisualProgramContext{});
         for(auto it=json.at("contexts").begin();it!=json.at("contexts").end();++it) {
-            const auto& row=it.value();Fields(row,{"enter","exit","event_scope","phase"});auto& context=out.contexts.at(it.key());
+            const auto& row=it.value();Fields(row,{"enter","exit","event_scope","phase","restore"});auto& context=out.contexts.at(it.key());
             if(row.contains("phase")) {
                 context.phase=Name(row.at("phase"));Need(out.phases.count(context.phase)!=0,"unknown phase: "+context.phase);
             }
@@ -157,7 +157,13 @@ VisualProgram ParseVisualProgram(const std::string& text) {
             context.enter=Instructions(row.value("enter",Json::array()),out);
             context.exit=Instructions(row.value("exit",Json::array()),out);
             ContextInstructions(context.enter);ContextInstructions(context.exit);
+            if(row.contains("restore")) {
+                context.restore=Instructions(row.at("restore"),out);ContextInstructions(*context.restore);
+            }
         }
+    }
+    if(json.contains("restore")) {
+        out.restore=Instructions(json.at("restore"),out);ContextInstructions(*out.restore);
     }
     Need(json.at("actions").is_object() && !json.at("actions").empty(),"visual actions must be nonempty object");
     for(auto it=json.at("actions").begin();it!=json.at("actions").end();++it) {

@@ -8,6 +8,7 @@
 namespace hksr::framework {
 enum class ActionDomain { Exploration, Alternate };
 struct NpcMotion { unsigned id=0; };
+struct BattleIdle {}; // resolve against the live phase after model/context restoration
 struct AnimatorState { std::string name; int layer=0; float normalized_time=0; };
 // Official ordinary FreeStyle path forwards normalized transition duration
 // and normalized start offset to MockAnimator.CrossFade (4.6 static chain).
@@ -32,7 +33,7 @@ struct VisualState {
     int blink_source=-1;
 };
 std::optional<VisualState> ResolveVisualState(const api::VisualConfigSources&,std::int32_t flag,bool recover=false);
-using ActionRequest=std::variant<NpcMotion,AnimatorState,FreeStyleState,VisualState,ReadyState,ProgramAction>;
+using ActionRequest=std::variant<NpcMotion,AnimatorState,FreeStyleState,VisualState,ReadyState,ProgramAction,BattleIdle>;
 enum class ActionOutcome { Waiting, Returned, StateAbsent, Unavailable, CallFailed, OwnerEnded, Cancelled };
 struct ActionReceipt {
     std::uint64_t serial=0;

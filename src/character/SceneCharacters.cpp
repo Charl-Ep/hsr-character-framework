@@ -74,7 +74,7 @@ std::uint64_t SceneCharacters::Select(std::uint64_t id,PlacedAction action) {
             !input->program->actions.count(selected->action))throw std::invalid_argument("visual program action absent from this character");
     }
     entry.action=std::move(action);entry.action_intent=++entry.next_action;
-    entry.action_error.clear();SubmitAction(entry);
+    entry.action_error.clear();entry.visual_restore_error.clear();SubmitAction(entry);
     return entry.action_intent;
 }
 void SceneCharacters::SubmitAction(Entry& entry) {
@@ -126,17 +126,20 @@ std::shared_ptr<const ControlSubmission> SceneCharacters::Look(std::uint64_t id,
 void SceneCharacters::SetEnabled(std::uint64_t id,bool enabled) {
     auto& entry=Edit(id);
     if(closing_ && enabled) throw std::logic_error("scene registry closing");
-    if(entry.status.enabled!=enabled) { entry.status.enabled=enabled; ++entry.revision; }
+    if(entry.status.enabled!=enabled) {
+        if(!enabled)SaveVisualState(entry);
+        entry.status.enabled=enabled; ++entry.revision;
+    }
     if(!enabled && entry.look_submission)entry.look_submission->Complete(api::ControlPhase::Cancelled,"instance disabled");
 }
 void SceneCharacters::Rebuild(std::uint64_t id) {
     if(closing_) throw std::logic_error("scene registry closing");
-    auto& entry=Edit(id); entry.status.enabled=true; ++entry.revision;
+    auto& entry=Edit(id);SaveVisualState(entry);entry.status.enabled=true; ++entry.revision;
 }
 void SceneCharacters::ReplacePlan(std::uint64_t id,CharacterPlan plan) {
     if(closing_) throw std::logic_error("scene registry closing");
     auto& entry=Edit(id);
-    entry.plan=std::move(plan);entry.action.reset();entry.action_intent=0;entry.action_error.clear();++entry.revision;
+    entry.plan=std::move(plan);entry.action.reset();entry.action_intent=0;entry.action_error.clear();entry.visual_restore_error.clear();++entry.revision;
     BindProfile(entry.plan,id);
     entry.status.error.clear();
 }
@@ -163,6 +166,7 @@ void SceneCharacters::Shutdown() {
 }
 void SceneCharacters::Retire(Entry& entry) {
     if(!entry.active) return;
+    if(!entry.status.deleting && entry.active->revision==entry.revision)SaveVisualState(entry);
     if(entry.active->controls) {
         // Preserve returned gaze receipts, but keep an unapplied saved target
         // waiting across automatic map retirement rather than cancelling it.
@@ -237,8 +241,11 @@ void SceneCharacters::Service(const api::WorldFrame& frame,const std::optional<S
                     entry.active->session->Status().submitted_action==entry.active->session_action &&
                     handoff->Status().phase==HandoffPhase::Ready &&
                     handoff->Status().servicing==entry.active->session->Status().handoff_request &&
-                    output->predecessor==handoff->Status().playback_serial && handoff->Status().ready_domain)
-                    entry.action=PlacedAction{*handoff->Status().ready_domain,FreeStyleState{output->state,0,0,{},output->controller_state}};
+                    output->predecessor==handoff->Status().playback_serial && handoff->Status().ready_domain && handoff->SuccessorSettled()) {
+                    if(*handoff->Status().ready_domain==ActionDomain::Alternate && output->state==handoff->CurrentIdle())
+                        entry.action=PlacedAction{ActionDomain::Alternate,BattleIdle{}};
+                    else entry.action=PlacedAction{*handoff->Status().ready_domain,FreeStyleState{output->state,0,0,{},output->controller_state}};
+                }
             }
             if(entry.active->session->Status().closed) Retire(entry);
             else if(entry.active->controls) {
@@ -270,7 +277,7 @@ void SceneCharacters::Service(const api::WorldFrame& frame,const std::optional<S
         if(!started_creation){creation_start=std::chrono::steady_clock::now();started_creation=true;}
         entry.attempted_world=frame.world; entry.attempted_incarnation=scene->incarnation; entry.attempted_revision=entry.revision;
         entry.status.error.clear();
-        entry.action_error.clear();
+        entry.action_error=entry.visual_restore_error;
         entry.failed_revision=0;entry.creation_error.clear();
         ++entry.status.creations; // includes constructor failures before an epoch exists
         api::OperationTrace timing("character.create",id,entry.status.creations,frame.sequence,
@@ -281,7 +288,7 @@ void SceneCharacters::Service(const api::WorldFrame& frame,const std::optional<S
                 entry.active.emplace(Epoch{std::make_unique<CharacterSession>(frame.world,entry.plan,services_),frame.world,scene->incarnation,entry.revision});
                 entry.active->creation=entry.status.creations;
             }
-            if(entry.action) {
+            if(entry.action && entry.action_error.empty()) {
                 entry.active->session_action=entry.active->session->Queue(entry.action->domain,entry.action->request);
                 entry.active->action_intent=entry.action_intent;
             }
@@ -375,7 +382,13 @@ SceneCharacterStatus SceneCharacters::Status(std::uint64_t id) const {
         for(const auto& error:entry.active->session->Character().Status().errors) {
             if(!out.error.empty())out.error+="; ";out.error+=error;
         }
-        if(const auto* handoff=entry.active->session->Handoff()) {out.handoff=handoff->Status();out.playback=handoff->Playback();}
+        if(const auto* handoff=entry.active->session->Handoff()) {
+            out.handoff=handoff->Status();out.playback=handoff->Playback();
+            // Use the same live phase owner as automatic completion. The plan
+            // only supplies the fallback before a battle model becomes active.
+            if(out.active_revision==out.revision && out.handoff->ready_domain==ActionDomain::Alternate)
+                out.battle_idle_state=handoff->CurrentIdle();
+        }
         if(out.action && entry.active->action_intent!=entry.action_intent && entry.action_error.empty()) {
             out.action->creation=out.creations;out.action->detail="waiting for official gaze restoration before model handoff";
         }
@@ -410,6 +423,29 @@ SceneCharacterStatus SceneCharacters::Status(std::uint64_t id) const {
         }
     }
     return out;
+}
+std::optional<VisualProgramSnapshot> SceneCharacters::CaptureVisualProgram(std::uint64_t id) const {
+    const auto& entry=entries_.at(id);
+    if(!entry.visual_restore_error.empty())throw std::runtime_error(entry.visual_restore_error);
+    if(entry.active && entry.active->revision==entry.revision)
+        if(const auto* handoff=entry.active->session->Handoff())return handoff->CaptureVisualProgram();
+    return entry.plan.visual_state;
+}
+void SceneCharacters::SaveVisualState(Entry& entry) {
+    // An unavailable reconstruction recipe must never prevent removal. Keep
+    // the error explicit instead of replaying a continuation with empty state.
+    try {entry.plan.visual_state=CaptureVisualProgram(entry.status.id);entry.visual_restore_error.clear();}
+    catch(const std::exception& e){entry.plan.visual_state.reset();entry.visual_restore_error=e.what();}
+}
+void SceneCharacters::RestoreVisualProgram(std::uint64_t id,VisualProgramSnapshot value) {
+    auto& entry=Edit(id);
+    if(entry.active)throw std::logic_error("visual snapshot must be installed before character creation");
+    CheckVisualRestore(entry.plan,value);entry.plan.visual_state=std::move(value);entry.visual_restore_error.clear();
+}
+void SceneCharacters::CheckVisualRestore(CharacterPlan plan,const VisualProgramSnapshot& value) const {
+    BindProfile(plan,0);
+    if(!plan.visual_program || !plan.visual_program->program)throw std::invalid_argument("saved visual program is not configured");
+    ValidateVisualRestore(*plan.visual_program->program,value);
 }
 std::vector<std::uint64_t> SceneCharacters::Ids() const {
     std::vector<std::uint64_t> out; for(const auto& item:entries_) out.push_back(item.first); return out;

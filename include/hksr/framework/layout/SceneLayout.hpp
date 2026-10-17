@@ -1,13 +1,14 @@
 #pragma once
 #include "../presentation/ActionSelection.hpp"
 #include "../catalog/SourceTypes.hpp"
+#include "../presentation/VisualProgramState.hpp"
 #include <filesystem>
 
 namespace hksr::framework {
 class SceneCharacters;
 struct SavedConfiguredAction {ActionDomain domain=ActionDomain::Exploration;std::string state;bool controller_observed=false;};
 struct SavedReadyAction {std::string source,state,skill;int variant=-1;};
-using SavedAction=std::variant<NpcMotion,SavedConfiguredAction,SavedReadyAction,ProgramAction>;
+using SavedAction=std::variant<NpcMotion,SavedConfiguredAction,SavedReadyAction,ProgramAction,BattleIdle>;
 struct SavedCharacter {
     std::uint64_t key=0; // document-local identity; remapped on restoration
     BrowseSource source;
@@ -16,6 +17,7 @@ struct SavedCharacter {
     bool enabled=true;
     std::optional<SavedAction> action;
     std::string presentation_phase;
+    std::optional<VisualProgramSnapshot> visual_state;
 };
 struct SceneLayout {
     std::string scene;

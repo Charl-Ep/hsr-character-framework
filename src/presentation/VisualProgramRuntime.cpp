@@ -19,13 +19,12 @@ bool Alive(api::EntityOrigin origin) {
 struct VisualProgramRuntime::Scene {
     api::EntityOrigin owner;
     VisualProgramInput input;
-    std::map<std::string,std::uint64_t> selected_targets;
-    VisualSpatialAnchors selected_anchors;
     struct Inputs {
         std::weak_ptr<VisualEffectContext> context;
         std::map<std::string,std::uint64_t> targets;
         VisualSpatialAnchors anchors;
         std::map<std::string,api::EntityOrigin> resolved;
+        bool restored=false;
     };
     std::map<VisualEffectContext*,Inputs> context_inputs;
     struct Channel {std::vector<VisualEventRoutes::RuleId> rules;api::ManagedRootId receiver=0;};
@@ -69,8 +68,6 @@ std::shared_ptr<VisualProgramPlayer> VisualProgramRuntime::Create(api::EntityOri
     const std::shared_ptr<const PresentationProfile>& profile) {
     if(closing_ || !Alive(owner) || !input.program)throw std::invalid_argument("visual program requires a live creation and program");
     auto scene=std::make_shared<Scene>();scene->owner=owner;scene->input=input;scene->roots=api_.CreateRoots();
-    scene->selected_targets=input.target_characters;
-    scene->selected_anchors=input.anchors;
     scenes_.push_back(scene); // own partial declaration/setup before any later operation can fail
     VisualProgramServices services;services.effects=api_.EffectServices();services.choices=input.choices;
     std::weak_ptr<Scene> weak=scene;
@@ -101,12 +98,38 @@ std::shared_ptr<VisualProgramPlayer> VisualProgramRuntime::Create(api::EntityOri
             for(auto& [key,choice]:parameters.choices)choices[key]=std::move(choice);
             for(const auto& [key,pose]:parameters.anchors)anchors[key]=pose;
         }
-        value->selected_targets=std::move(targets);value->selected_anchors=std::move(anchors);return choices;
+        return VisualProgramParameters{std::move(targets),std::move(choices),std::move(anchors)};
     };
     services.create=[this,current](auto& context,const auto& key,const auto& value){return CreateEffect(*current(),context,key,value);};
+    services.prepare_inputs=[current](auto context,const VisualProgramParameters& inputs,bool restored) {
+        auto scene=current();
+        scene->context_inputs[context.get()]={context,inputs.targets,inputs.anchors,{},restored};
+    };
+    services.capture_inputs=[current](const auto& context) {
+        const auto scene=current();VisualProgramParameters result;
+        const auto found=scene->context_inputs.find(const_cast<VisualEffectContext*>(&context));
+        if(found==scene->context_inputs.end())throw std::runtime_error("visual context inputs unavailable");
+        const auto& inputs=found->second;
+        for(const auto& [name,target]:inputs.resolved)
+            if(name!="Caster" && !inputs.restored && scene->input.targets.count(name))
+                throw std::runtime_error("visual target has no persistent character identity: "+name);
+        result.targets=inputs.targets;result.anchors=inputs.anchors;return result;
+    };
+    services.restore_inputs_ready=[this,current](const VisualProgramParameters& inputs) {
+        const auto scene=current();
+        for(const auto& [name,id]:inputs.targets) {
+            if(!scene->input.resolve_character)return VisualStepResult{VisualStepState::Failed,"visual target resolver unavailable"};
+            const auto origin=scene->input.resolve_character(id);
+            if(!Alive(origin))return VisualStepResult{VisualStepState::Pending,"waiting for restored target "+name+" character="+std::to_string(id)};
+            if(origin.world!=scene->owner.world)return VisualStepResult{VisualStepState::Failed,"restored visual target belongs to another world: "+name};
+            const auto state=api_.Models()->Entities().Read(origin.token.entity);
+            if(!state.loaded.read.returned || !state.loaded.value)
+                return VisualStepResult{VisualStepState::Pending,"waiting for target model: "+name};
+        }
+        return VisualStepResult{VisualStepState::Done,{}};
+    };
     services.context_started=[this,current](const std::string& name,auto context) {
-        auto scene=current();scene->context_inputs[context.get()]={context,scene->selected_targets,scene->selected_anchors,{}};
-        Attach(*scene,context,name);
+        Attach(*current(),context,name);
     };
     services.context_stopped=[this,current](const std::string& name){Detach(*current(),name);};
     services.effect_state=[this,current](auto& context,auto id,const VisualEffectState& op) {
@@ -164,9 +187,9 @@ api::EntityOrigin VisualProgramRuntime::ResolveTarget(Scene& scene,VisualEffectC
         const auto resolved=inputs?inputs->resolved.find(name):std::map<std::string,api::EntityOrigin>::iterator{};
         const auto found=scene.input.targets.find(name);
         if(inputs && resolved!=inputs->resolved.end())target=resolved->second;
-        else if(found!=scene.input.targets.end())target=found->second;
+        else if(found!=scene.input.targets.end() && (!inputs || !inputs->restored))target=found->second;
         else {
-            const auto& targets=inputs?inputs->targets:scene.selected_targets;
+            const auto& targets=inputs?inputs->targets:scene.input.target_characters;
             const auto character=targets.find(name);
             if(character==targets.end() || !scene.input.resolve_character)
                 throw std::runtime_error("explicit visual target missing: "+name);
@@ -205,7 +228,7 @@ VisualEffectId VisualProgramRuntime::CreateEffect(Scene& scene,VisualEffectConte
     if(!input.anchor.empty()) {
         if(!input.target.empty())throw std::invalid_argument("effect has both entity and spatial targets");
         const auto snapshot=scene.context_inputs.find(&context);
-        const auto& anchors=snapshot==scene.context_inputs.end()?scene.selected_anchors:snapshot->second.anchors;
+        const auto& anchors=snapshot==scene.context_inputs.end()?scene.input.anchors:snapshot->second.anchors;
         const auto found=anchors.find(input.anchor);
         if(found==anchors.end())throw std::runtime_error("explicit visual anchor missing: "+input.anchor);
         const auto& pose=found->second;

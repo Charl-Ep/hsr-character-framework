@@ -2,6 +2,7 @@
 #include <hksr/presentation/PresentationBindings.hpp>
 #include <hksr/framework/character/SceneCharacters.hpp>
 #include <hksr/framework/host/RuntimeServices.hpp>
+#include <hksr/framework/presentation/VisualProgramRuntime.hpp>
 #include "../../src/host/StopDrain.hpp"
 #include <Windows.h>
 #include <fstream>
@@ -54,10 +55,17 @@ void TestLayoutController() {
     SceneLayout saved;saved.scene="mapA";
     SavedCharacter a;a.key=90;a.source=BrowseNpc{77};a.enabled=false;a.placement={{1,2,3},{0,0,0,1}};a.action=NpcMotion{123};
     auto b=a;b.key=91;b.look={LookMode::Instance,90,{}};b.source=BrowsePlayer{{11,0,0},77};
-    b.action=SavedConfiguredAction{ActionDomain::Alternate,"OfficialIdle"};saved.characters={a,b};
+    b.action=SavedConfiguredAction{ActionDomain::Alternate,"OfficialIdle"};
+    VisualContextSnapshot visual;visual.name="phase";visual.inputs.targets["Target"]=90;
+    b.visual_state=VisualProgramSnapshot{"saved-program",{}, {visual}};saved.characters={a,b};
     LayoutStorage store(folder);store.SaveCurrent(saved);store.SaveNamed("first",saved);
     auto io=std::make_shared<LayoutIo>(folder);
     CatalogBrowser catalog(readers);SceneCharacters registry(runtime.Sessions(false),SceneCharacters::Create{});
+    auto visual_input=std::make_shared<VisualProgramInput>();
+    visual_input->program=std::make_shared<VisualProgram>(ParseVisualProgram(R"({
+        "format":"hksr.visual-program","id":"saved-program","source":"battle/config","scope":"scene","effects":{},
+        "contexts":{"phase":{"restore":[]}},"actions":{"idle":{"state":"OfficialIdle","restart":true}}})"));
+    registry.ConfigurePrograms({{"battle/config",visual_input}});
     unsigned removed=0;LayoutController controller(registry,catalog,io,[&](auto){++removed;});
     const SceneAddress mapA{"mapA",1},mapB{"mapB",2};
     auto tick=[&](const SceneAddress& scene) {
@@ -73,6 +81,7 @@ void TestLayoutController() {
     for(unsigned i=0;i<32;++i)tick(mapA);
     auto ids=registry.Ids();Check(ids.size()==2 && ids[0]!=90,"layout identities were not remapped");
     Check(registry.Status(ids[1]).look.target==ids[0],"layout gaze target was not remapped");
+    Check(registry.CaptureVisualProgram(ids[1])->contexts[0].inputs.targets.at("Target")==ids[0],"visual context target was not remapped");
     Check(controller.Snapshot().maps.at("mapA").phase=="ready","disabled layout did not finish");
     Check(std::get<NpcMotion>(registry.DesiredAction(ids[0])->request).id==123,"saved action missing");
     Check(registry.Plan(ids[1]).alternate && registry.Plan(ids[1]).package.appearance &&
@@ -104,6 +113,11 @@ void TestLayoutController() {
     for(unsigned i=0;i<10;++i)tick(mapA);
     Check(registry.Ids()==ids && removed==0,"failed source preparation destroyed old layout");
     Check(!controller.Snapshot().maps.at("mapA").error.empty(),"failed restore has no diagnostic");
+    invalid=saved;invalid.characters[1].visual_state->program="not-configured";store.SaveNamed("invalid-program",invalid);
+    controller.Execute({LayoutOperation::Load,"invalid-program"},"mapA",12);
+    for(unsigned i=0;i<10;++i)tick(mapA);
+    Check(registry.Ids()==ids && removed==0 && !controller.Snapshot().maps.at("mapA").error.empty(),
+        "unavailable visual program destroyed the current layout");
     controller.Execute({LayoutOperation::Load,"first"},"mapA",11);
     io->Pump();controller.Advance(mapB);
     for(unsigned i=0;i<6;++i)tick(mapB);
@@ -163,6 +177,7 @@ void TestLayoutController() {
         abilities_ready=false;
         auto exploration=saved;exploration.scene="exploration-only";exploration.characters={b};
         exploration.characters[0].look={};
+        exploration.characters[0].visual_state.reset();
         exploration.characters[0].action=SavedConfiguredAction{ActionDomain::Exploration,"IdleShow"};
         store.SaveCurrent(exploration);
         auto isolated_io=std::make_shared<LayoutIo>(folder);

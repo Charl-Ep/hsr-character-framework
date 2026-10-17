@@ -37,31 +37,39 @@ void VisualProgramPlayer::DiscardActionSignals() {
         return !signal->execution.lifetime;
     }),signals_.end());
 }
+std::shared_ptr<VisualProgramPlayer::Lifetime> VisualProgramPlayer::StartContext(
+    const std::string& name,const VisualContextSnapshot* restore) {
+    auto lifetime=std::make_shared<Lifetime>();lifetime->name=name;
+    lifetime->token=++next_context_;lifetime->choices=restore?restore->inputs.choices:choices_;
+    if(restore){lifetime->variables=restore->variables;lifetime->restoring=true;}
+    lifetime->effects=std::make_shared<VisualEffectContext>(services_.effects);
+    // Register ownership before any provider may reenter Select/End.
+    const auto found=contexts_.emplace(name,lifetime).first;
+    try {
+        const auto& phase=program_->contexts.at(name).phase;
+        if(!phase.empty()) {
+            if(!services_.read_phase)throw std::runtime_error("phase data reader unavailable");
+            lifetime->phase_data=services_.read_phase(phase);
+            if(!lifetime->phase_data || !lifetime->phase_data->visuals.context_available)
+                throw std::runtime_error("phase configuration unavailable: "+phase);
+        }
+        if(!Current({lifetime->token,lifetime}))return lifetime;
+        if(services_.prepare_inputs)services_.prepare_inputs(lifetime->effects,restore?restore->inputs:selected_inputs_,restore || selected_inputs_restored_);
+        if(!Current({lifetime->token,lifetime}))return lifetime;
+        if(services_.context_started)services_.context_started(name,lifetime->effects);
+    }catch(...) {
+        try {if(services_.context_stopped)services_.context_stopped(name);}
+        catch(const std::exception& e){status_.issues.push_back(name+": detach after failed entry: "+e.what());}
+        lifetime->effects->End();retired_contexts_.push_back(lifetime->effects);
+        contexts_.erase(found);throw;
+    }
+    return lifetime;
+}
 VisualStepResult VisualProgramPlayer::ChangeContext(const VisualContextOperation& operation) {
     auto found=contexts_.find(operation.name);
     if(operation.enter) {
         if(found==contexts_.end()) {
-            auto lifetime=std::make_shared<Lifetime>();lifetime->name=operation.name;
-            lifetime->token=++next_context_;lifetime->choices=choices_;
-            lifetime->effects=std::make_shared<VisualEffectContext>(services_.effects);
-            // Register ownership before any provider may reenter Select/End.
-            found=contexts_.emplace(operation.name,std::move(lifetime)).first;
-            try {
-                const auto& phase=program_->contexts.at(operation.name).phase;
-                if(!phase.empty()) {
-                    if(!services_.read_phase)throw std::runtime_error("phase data reader unavailable");
-                    found->second->phase_data=services_.read_phase(phase);
-                    if(!found->second->phase_data || !found->second->phase_data->visuals.context_available)
-                        throw std::runtime_error("phase configuration unavailable: "+phase);
-                }
-                if(services_.context_started)services_.context_started(operation.name,found->second->effects);
-            }
-            catch(...) {
-                try {if(services_.context_stopped)services_.context_stopped(operation.name);}
-                catch(const std::exception& e){status_.issues.push_back(operation.name+": detach after failed entry: "+e.what());}
-                found->second->effects->End();retired_contexts_.push_back(found->second->effects);
-                contexts_.erase(found);throw;
-            }
+            StartContext(operation.name);found=contexts_.find(operation.name);
         }
         auto lifetime=found->second;
         if(lifetime->phase==ContextPhase::Exiting)return {VisualStepState::Pending,{}};
@@ -79,7 +87,8 @@ void VisualProgramPlayer::DriveContext(std::shared_ptr<Lifetime> lifetime) {
     if(!Current(execution))return;
     const auto& definition=program_->contexts.at(lifetime->name);
     if(lifetime->phase==ContextPhase::Entering) {
-        if(Instructions(definition.enter,lifetime->enter,execution))lifetime->phase=ContextPhase::Active;
+        const auto& steps=lifetime->restoring?*definition.restore:definition.enter;
+        if(Instructions(steps,lifetime->enter,execution))lifetime->phase=ContextPhase::Active;
     } else if(lifetime->phase==ContextPhase::Exiting) {
         if(!Instructions(definition.exit,lifetime->exit,execution))return;
         try {if(services_.context_stopped)services_.context_stopped(lifetime->name);}

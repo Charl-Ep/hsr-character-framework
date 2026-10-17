@@ -306,6 +306,82 @@ void TestVisualEffectContext() {
 }
 
 namespace {
+void TestVisualSnapshots() {
+    auto program=std::make_shared<VisualProgram>(ParseVisualProgram(R"({
+      "format":"hksr.visual-program","id":"restore","source":"config","scope":"scene","effects":{},
+      "restore":[{"op":"timeline_play","source":"restore","key":"root","path":"persistent.playable"}],
+      "phases":{
+        "first":{"root":{"kind":"ability","name":"One"},"path":[{"owner":"Phase","field":"Value"}]},
+        "second":{"root":{"kind":"ability","name":"Two"},"path":[{"owner":"Phase","field":"Value"}]}},
+      "contexts":{
+        "z_first":{"phase":"first","restore":[],"enter":[{"op":"assign","variable":"amount","value":1,"source":"initial"}]},
+        "a_second":{"phase":"second","restore":[]}},
+      "actions":{
+        "enter":{"state":"Start","restart":true,"enter":[
+          {"op":"assign","variable":"root_value","value":3,"source":"initial"},
+          {"op":"context_enter","name":"z_first","source":"first"},
+          {"op":"context_enter","name":"a_second","source":"second"},
+          {"op":"timeline_play","source":"initial","key":"intro","path":"intro.playable"}]},
+        "continue":{"state":"Resolve"}},
+      "signals":{"change":{"context":"z_first","instructions":[{"op":"assign","variable":"amount","value":7,"source":"change"}]}}
+    })"));
+    VisualProgramServices callbacks;callbacks.effects=Services();
+    callbacks.create=[](auto&,const auto&,const auto&)->VisualEffectId{throw std::logic_error("unexpected effect");};
+    auto first=std::make_shared<PhaseVisualConfigSources>(),second=std::make_shared<PhaseVisualConfigSources>();
+    first->visuals.context_available=second->visuals.context_available=true;
+    first->standby={true,"First",{}};second->standby={true,"Second",{}};
+    callbacks.read_phase=[&](const auto& key){return key=="first"?first:second;};
+    VisualProgramParameters defaults;defaults.targets["Target"]=42;defaults.anchors["center"]={{1,2,3},{0,0,0,1}};
+    std::map<const VisualEffectContext*,VisualProgramParameters> captured;
+    callbacks.select_inputs=[&]{return defaults;};
+    callbacks.prepare_inputs=[&](auto context,const auto& inputs,bool){captured[context.get()]=inputs;};
+    callbacks.capture_inputs=[&](const auto& context){return captured.at(&context);};
+    bool loaded=true;std::vector<std::string> submissions;
+    callbacks.timeline=[&](auto,const auto& op){submissions.push_back(op.path);return VisualStepResult{
+        loaded?VisualStepState::Done:VisualStepState::Pending,{}};};
+    callbacks.cancel_timelines=[](auto){};callbacks.timelines_drained=[]{return true;};
+    VisualProgramPlayer original(program,callbacks);original.Select("enter",{{"variant","left"}});original.Service();
+    Check(original.Status().prepared && original.Signal(original.ContextToken("z_first"),"change"));original.Service();
+    const auto saved=original.Capture();Check(saved.scene && saved.scene->variables.at("root_value")==3);
+    Check(saved.contexts.size()==2 && saved.contexts[0].name=="z_first" && saved.contexts[1].name=="a_second");
+    Check(saved.contexts[0].variables.at("amount")==7 && saved.contexts[0].inputs.choices.at("variant")=="left");
+    Check(saved.contexts[0].inputs.targets.at("Target")==42 && saved.scene->inputs.anchors.at("center").position.y==2);
+    original.End();original.Service();Check(original.Drained());
+    defaults.targets["Target"]=999;defaults.choices["variant"]="right";loaded=false;submissions.clear();
+    VisualProgramPlayer restored(program,callbacks);restored.Restore(saved);restored.Select("continue");restored.Service();
+    Check(restored.Restoring() && !restored.Status().prepared && restored.CurrentPhase()==second);
+    Check(restored.Capture().contexts[0].inputs.targets.at("Target")==42);
+    Check(submissions==std::vector<std::string>{"persistent.playable"}); // no replay of intro/body history
+    loaded=true;restored.Service();Check(!restored.Restoring() && restored.Status().prepared && restored.Status().action=="continue");
+    const auto after=restored.Capture();Check(after.contexts[0].variables.at("amount")==7 && after.scene->variables.at("root_value")==3);
+    Check(after.contexts[0].inputs.targets.at("Target")==42 && after.contexts[0].inputs.choices.at("variant")=="left");
+    Check(after.scene->inputs.choices.at("variant")=="left" && after.scene->inputs.targets.at("Target")==42);
+    Check(restored.Played(restored.Status().intent,1,1));restored.End();restored.Service();Check(restored.Drained());
+    bool rejected=false;auto invalid=saved;invalid.contexts.push_back(invalid.contexts.front());
+    VisualProgramPlayer validation(program,callbacks);try{validation.Restore(invalid);}catch(const std::invalid_argument&){rejected=true;}
+    Check(rejected && !validation.Restoring());validation.Restore(saved);validation.End();validation.Service();Check(validation.Drained());
+    auto missing=std::make_shared<VisualProgram>(*program);missing->contexts.at("a_second").restore.reset();
+    VisualProgramPlayer unsupported(missing,callbacks);unsupported.Select("enter");unsupported.Service();rejected=false;
+    try{unsupported.Capture();}catch(const std::runtime_error&){rejected=true;}
+    Check(rejected);unsupported.End();unsupported.Service();Check(unsupported.Drained());
+    // Cancellation during restoration must retain then retire every partial owner.
+    auto cancel_callbacks=callbacks;
+    VisualProgramPlayer* active=nullptr;
+    cancel_callbacks.prepare_inputs=[&](auto,const auto&,bool){active->End();};
+    VisualProgramPlayer reentrant(program,cancel_callbacks);active=&reentrant;reentrant.Restore(saved);reentrant.Service();reentrant.Service();
+    Check(reentrant.Drained() && reentrant.ActiveContexts().empty());
+    // Target readiness is independent of lifetime entry order. A late target
+    // in the first context must not make its phase the newest override.
+    auto targets=saved;targets.contexts[1].inputs.targets.clear();targets.scene.reset();
+    bool target_ready=false;
+    auto deferred_callbacks=callbacks;
+    deferred_callbacks.restore_inputs_ready=[&](const auto& parameters){return VisualStepResult{
+        parameters.targets.empty() || target_ready?VisualStepState::Done:VisualStepState::Pending,"waiting for target"};};
+    VisualProgramPlayer deferred(program,deferred_callbacks);deferred.Restore(targets);deferred.Service();
+    Check(deferred.Restoring() && deferred.CurrentPhase()==second && !deferred.Status().waiting.empty());
+    target_ready=true;deferred.Service();Check(!deferred.Restoring() && deferred.CurrentPhase()==second);
+    deferred.End();deferred.Service();Check(deferred.Drained());
+}
 void TestVisualLifetimes() {
     auto program=std::make_shared<VisualProgram>(ParseVisualProgram(R"({
       "format":"hksr.visual-program","id":"lifetimes","source":"config","scope":"scene",
@@ -549,7 +625,7 @@ void TestVisualProgram(const char* file) {
         "enter":[{"op":"create","source":"enter","effects":["PK"],"when":{"choice":"variant","is":"hot"}}],
         "lanes":[[{"at":0.5,"instructions":[{"op":"create","source":"later","effects":["recipient"],"when":{"choice":"variant","is":"hot"}}]}]]}}})"));
     auto hot_callbacks=callbacks;std::string variant="hot";int input_reads=0;
-    hot_callbacks.select_inputs=[&]{++input_reads;return std::map<std::string,std::string>{{"variant",variant}};};
+    hot_callbacks.select_inputs=[&]{++input_reads;return VisualProgramParameters{{},{{"variant",variant}},{}};};
     VisualProgramPlayer hot(hot_program,hot_callbacks);
     hot.Select("hot",{{"variant","cold"}});intent=hot.Select("hot");hot.Service();
     Check(input_reads==1 && created==std::vector<std::string>{"PK"} && hot.Status().prepared);
@@ -560,7 +636,7 @@ void TestVisualProgram(const char* file) {
     variant="hot";hot.Select("hot",{{"variant","cold"}});hot.Service();
     Check(input_reads==2 && created.size()==2 && hot.Status().prepared);
     hot.End();hot.Service();Check(hot.Drained() && roots.empty());
-    auto invalid_inputs=callbacks;invalid_inputs.select_inputs=[]()->std::map<std::string,std::string>{throw std::runtime_error("input read failed");};
+    auto invalid_inputs=callbacks;invalid_inputs.select_inputs=[]()->VisualProgramParameters{throw std::runtime_error("input read failed");};
     VisualProgramPlayer failed_inputs(hot_program,invalid_inputs);failed_inputs.Select("hot");failed_inputs.Service();failed_inputs.Service();
     Check(!failed_inputs.Status().prepared && failed_inputs.Status().issues.size()==1 && created.size()==2);
     failed_inputs.End();failed_inputs.Service();Check(failed_inputs.Drained());
@@ -787,4 +863,5 @@ void TestVisualProgram(const char* file) {
     Check(bound.empty() && order.size()==7);views.End();views.Service();Check(views.Drained() && roots.empty());
     lifecycle.Forget(caster.token);lifecycle.Forget(recipient.token);delegates.clear();
     TestVisualLifetimes();
+    TestVisualSnapshots();
 }

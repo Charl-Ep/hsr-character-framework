@@ -4,6 +4,7 @@
 #include "../assets/ModelPayload.hpp"
 #include "../appearance/AppearanceTypes.hpp"
 #include "../presentation/PresentationProfile.hpp"
+#include "../presentation/VisualProgramState.hpp"
 
 namespace hksr::framework {
 struct VisualProgramInput;
@@ -24,6 +25,7 @@ struct CharacterPlan {
     std::shared_ptr<const PresentationProfile> presentation_profile;
     std::string presentation_phase;
     std::shared_ptr<const VisualProgramInput> visual_program;
+    std::optional<VisualProgramSnapshot> visual_state;
     static CharacterPlan FromPrepared(const PreparedSource& source,
         std::shared_ptr<const ModelAssetInput> payload={},std::string npc_look_source={});
 };

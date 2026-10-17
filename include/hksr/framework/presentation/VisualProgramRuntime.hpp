@@ -8,11 +8,6 @@
 #include <hksr/managed/ManagedRoots.hpp>
 
 namespace hksr::framework {
-struct VisualProgramParameters {
-    std::map<std::string,std::uint64_t> targets;
-    std::map<std::string,std::string> choices;
-    VisualSpatialAnchors anchors;
-};
 struct VisualProgramSignal {
     std::uint64_t generation=0,intent=0;
     std::string name;

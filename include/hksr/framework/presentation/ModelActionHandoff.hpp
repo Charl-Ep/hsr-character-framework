@@ -27,6 +27,12 @@ public:
     void Service(const api::WorldFrame& frame,AppearanceServices appearance,api::AnimationInputTypes types);
     const HandoffStatus& Status() const { return status_; }
     const ActionPlaybackStatus& Playback() const { return actions_.Status(); }
+    std::string CurrentIdle() const { return actions_.CurrentIdle(); }
+    bool SuccessorSettled() const {return actions_.SuccessorSettled();}
+    std::optional<VisualProgramSnapshot> CaptureVisualProgram() const {
+        return visual_restore_?visual_restore_:actions_.CaptureVisualProgram();
+    }
+    void RestoreVisualProgram(VisualProgramSnapshot value) {visual_restore_=std::move(value);}
     void ConfigurePresentation(std::shared_ptr<const PresentationProfile> profile,const std::string& phase={}) {actions_.ConfigurePresentation(std::move(profile),phase);}
     void ConfigureVisualProgram(std::shared_ptr<VisualProgramPlayer> program){actions_.ConfigureVisualProgram(std::move(program));}
     const api::ModelRequestStatus* ModelRequest() const { return transition_->RequestStatus(); }
@@ -49,5 +55,6 @@ private:
     std::string initial_state_name_;
     bool initial_requested_=false;
     HandoffStatus status_;
+    std::optional<VisualProgramSnapshot> visual_restore_;
 };
 }

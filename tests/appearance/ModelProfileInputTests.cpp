@@ -681,13 +681,19 @@ void TestModelProfileInputs() {
         auto input=std::make_shared<framework::VisualProgramInput>();
         input->program=std::make_shared<framework::VisualProgram>(framework::ParseVisualProgram(R"({
             "format":"hksr.visual-program","id":"session","source":"battle","scope":"scene","effects":{},
+            "restore":[{"op":"timeline_play","source":"restore","key":"scene","path":"scene.playable"}],
+            "phases":{"enhanced":{"root":{"kind":"ability","name":"Phase"},"path":[{"owner":"Config","field":"Value"}]}},
+            "contexts":{"phase":{"phase":"enhanced","restore":[]}},
             "actions":{"play":{"state":"SomeState","restart":true,"enter":[
+              {"op":"context_enter","name":"phase","source":"phase"},
               {"op":"timeline_play","source":"scene","key":"scene","path":"scene.playable"}]},
+              "continue":{"state":"SomeState"},
               "other":{"state":"SomeState","restart":true,"enter":[
               {"op":"timeline_play","source":"other","key":"scene","path":"other.playable"}]}}})"));
         plan.visual_program=input;
+        auto registry_plan=plan;registry_plan.alternate->initial_state={true,"OtherState",{}};
         auto configured=session_services;std::shared_ptr<framework::VisualProgramPlayer> player;
-        const auto begins_before=begins;int preparations=0;bool scene_alive=false;std::string scene_path;
+        auto begins_before=begins;int preparations=0;bool scene_alive=false;std::string scene_path;
         configured.visual_program=[&](api::EntityOrigin owner,const framework::VisualProgramInput& value,const auto&) {
             Check(owner.token.entity==entity_ptr && owner.world==world_ptr && begins==begins_before);++preparations;
             framework::VisualProgramServices callbacks;
@@ -695,19 +701,72 @@ void TestModelProfileInputs() {
             callbacks.create=[](auto&,const auto&,const auto&)->framework::VisualEffectId{throw std::logic_error("unexpected effect");};
             callbacks.timeline=[&](auto,const auto& op){scene_alive=true;scene_path=op.path;return framework::VisualStepResult{framework::VisualStepState::Done,{}};};
             callbacks.cancel_timelines=[&](auto){scene_alive=false;};callbacks.timelines_drained=[&]{return !scene_alive;};
+            callbacks.read_phase=[](const auto&) {
+                auto phase=std::make_shared<api::PhaseVisualConfigSources>();phase->visuals.context_available=true;
+                phase->standby={true,"SomeState",{}};return phase;
+            };
             player=std::make_shared<framework::VisualProgramPlayer>(value.program,std::move(callbacks));return player;
         };
         framework::CharacterSession session(world_ptr,std::move(plan),configured);
         session.Create(create);session.Queue(Domain::Alternate,framework::ProgramAction{"session","play"});
         session.Service(frame,appearance,types);
+        if(!player || !player->Status().playing || !scene_alive || scene_path!="scene.playable") {
+            std::cerr<<"program session phase="<<static_cast<int>(session.Status().phase)<<" preparations="<<preparations;
+            if(session.Handoff())std::cerr<<" handoff="<<static_cast<int>(session.Handoff()->Status().phase)<<" error="<<session.Handoff()->Status().error;
+            if(player)for(const auto& issue:player->Status().issues)std::cerr<<" program_error="<<issue;
+            std::cerr<<'\n';
+        }
         Check(preparations==1 && player && player->Status().playing && scene_alive && scene_path=="scene.playable");
         Check(std::get<framework::ProgramAction>(session.Handoff()->Status().output->request).action=="play");
+        Check(session.Handoff()->CurrentIdle()=="SomeState");
         session.Queue(Domain::Exploration,framework::NpcMotion{18});session.Service(frame,appearance,types);
         Check(!scene_alive && preparations==1);
         session.Queue(Domain::Alternate,framework::ProgramAction{"session","other"});session.Service(frame,appearance,types);
         Check(scene_alive && preparations==1 && scene_path=="other.playable"); // retained player, distinct presentation on the same body
         Check(std::get<framework::ProgramAction>(session.Handoff()->Status().output->request).action=="other");
         session.Remove();session.Service(frame,appearance,types);Check(session.Status().closed && player->Drained() && roots.empty());
+        reset_baseline();begins_before=begins;
+        framework::SceneCharacters registry(configured,[&](auto& value,const auto&,const auto&){value.Create(create);});
+        auto current=frame;current.manager={create.manager,{true,0}};current.battle={false,{true,0}};observed_hash=41;
+        const framework::SceneAddress address{"program-map",1};
+        const auto id=registry.Add(address.key,registry_plan,framework::PlacedAction{Domain::Alternate,framework::ProgramAction{"session","play"}});
+        Check(registry.Status(id).battle_idle_state=="OtherState");
+        registry.Service(current,address,appearance,types);++current.sequence;registry.Service(current,address,appearance,types);
+        Check(registry.Status(id).battle_idle_state=="SomeState");
+        // This is the same selection used by ApplicationCoordinator::IdleCharacter.
+        registry.Select(id,{Domain::Alternate,framework::BattleIdle{}});
+        ++current.sequence;registry.Service(current,address,appearance,types);
+        Check(registry.Status(id).playback->last->hash.value==37 && player->ContextToken("phase"));
+        const auto snapshot=registry.CaptureVisualProgram(id);Check(snapshot && snapshot->contexts.size()==1 && !snapshot->scene);
+        registry.Rebuild(id);begins_before=begins;
+        ++current.sequence;registry.Service(current,address,appearance,types);
+        ++current.sequence;registry.Service(current,address,appearance,types);
+        Check(registry.Status(id).battle_idle_state=="SomeState" && player->ContextToken("phase"));
+        registry.Select(id,{Domain::Alternate,framework::ProgramAction{"session","play"}});
+        ++current.sequence;registry.Service(current,address,appearance,types);
+        registry.Select(id,{Domain::Alternate,framework::ProgramAction{"session","continue"}});
+        ++current.sequence;registry.Service(current,address,appearance,types);Check(scene_alive);
+        ++current.sequence;registry.Service(current,framework::SceneAddress{"away",2},appearance,types);
+        Check(!registry.Status(id).active && !scene_alive && registry.Plan(id).visual_state->scene);
+        begins_before=begins;observed_hash=41;
+        const framework::SceneAddress returned{address.key,3}; // a new map incarnation
+        ++current.sequence;registry.Service(current,returned,appearance,types);
+        Check(!scene_alive); // initialization output has not been observed yet
+        ++current.sequence;registry.Service(current,returned,appearance,types);
+        if(!scene_alive || player->Status().action!="continue" || !player->Status().playing) {
+            const auto state=registry.Status(id);
+            std::cerr<<"restored program: active="<<state.active<<" error="<<state.error<<" creations="<<state.creations;
+            if(state.handoff)std::cerr<<" handoff="<<static_cast<int>(state.handoff->phase)<<" error="<<state.handoff->error;
+            if(state.action)std::cerr<<" action="<<state.action->detail;
+            for(const auto& issue:player->Status().issues)std::cerr<<" program_error="<<issue;
+            std::cerr<<" restoring="<<player->Restoring()<<" prepared="<<player->Status().prepared<<" playing="<<player->Status().playing<<'\n';
+        }
+        Check(scene_alive && scene_path=="scene.playable" && player->Status().action=="continue" && player->Status().playing);
+        Check(registry.Status(id).battle_idle_state=="SomeState");
+        registry.Select(id,{Domain::Exploration,framework::NpcMotion{18}});++current.sequence;registry.Service(current,returned,appearance,types);
+        Check(!registry.CaptureVisualProgram(id));
+        registry.Delete(id);++current.sequence;registry.Service(current,returned,appearance,types);
+        Check(registry.Ids().empty() && roots.empty());
     }
     {
         reset_baseline();framework::CharacterPlan plan;plan.package=package;
@@ -1066,10 +1125,10 @@ void TestModelProfileInputs() {
         Check(registry.Status(id).handoff->phase==Handoff::Ready);
         const auto intent=registry.Status(id).action->id;
         observed_hash=37;observed_time=1.1f;++current.sequence;registry.Service(current,layout_scene,appearance,types);
-        Check(std::get<framework::FreeStyleState>(registry.DesiredAction(id)->request).name=="OtherState");
+        Check(std::holds_alternative<framework::BattleIdle>(registry.DesiredAction(id)->request));
         Check(registry.Status(id).action->id==intent); // historical command identity remains unchanged
         const auto layout=framework::CaptureSceneLayout(registry,layout_scene.key);
-        Check(std::get<framework::SavedConfiguredAction>(*layout.characters.front().action).state=="OtherState");
+        Check(std::holds_alternative<framework::BattleIdle>(*layout.characters.front().action));
         registry.Select(id,{Domain::Alternate,framework::FreeStyleState{"SomeState"}});
         observed_time=0;++current.sequence;registry.Service(current,layout_scene,appearance,types);
         Check(std::get<framework::FreeStyleState>(registry.DesiredAction(id)->request).name=="SomeState");

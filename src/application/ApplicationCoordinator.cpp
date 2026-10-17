@@ -106,7 +106,7 @@ void ApplicationCoordinator::Execute(CharacterCommand command,CommandReply& repl
                 const auto idle=characters_.Status(value.id).battle_idle_state;
                 if(idle.empty())
                     throw std::runtime_error("official battle idle is unavailable for this source");
-                reply.action_intent=characters_.Select(value.id,{ActionDomain::Alternate,FreeStyleState{idle}});
+                reply.action_intent=characters_.Select(value.id,{ActionDomain::Alternate,BattleIdle{}});
             }
             else if constexpr(std::is_same_v<T,DeleteCharacter>) {
                 characters_.Delete(value.id);

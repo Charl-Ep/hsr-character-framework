@@ -29,11 +29,16 @@ public:
     std::uint64_t Queue(ActionRequest request);
     void SetCompletionState(std::string state) { completion_state_=std::move(state); }
     std::string CurrentIdle() const {return CompletionState();}
+    bool SuccessorSettled() const {
+        return !program_playback_ || !program_playback_->returning || (program_ && program_->Status().completed);
+    }
     void ConfigurePresentation(std::shared_ptr<const PresentationProfile> profile,const std::string& phase={}) {
         presentation_.Configure(std::move(profile),phase);SyncPresentation();
     }
     void SetPresentationDomain(bool battle) {presentation_enabled_=battle;if(!battle){presentation_.LeaveDomain();LeaveProgram();}SyncPresentation();}
     void ConfigureVisualProgram(std::shared_ptr<VisualProgramPlayer>);
+    std::optional<VisualProgramSnapshot> CaptureVisualProgram() const;
+    void RestoreVisualProgram(VisualProgramSnapshot);
     void CancelPending(bool interrupt_presentation=true);
     // inputs_ready comes from model/event/appearance handoff, not a UI cache.
     void Service(const api::WorldFrame& frame,bool inputs_ready,api::ManagedObjects& objects);

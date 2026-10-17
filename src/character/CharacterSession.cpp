@@ -74,6 +74,7 @@ void CharacterSession::StartHandoff(std::unique_ptr<api::ModelProfileRequest> re
             status_.errors.push_back(e.what());status_.phase=SessionPhase::Failed;Remove();return;
         }
     }
+    if(plan_.visual_state)handoff_->RestoreVisualProgram(*plan_.visual_state);
     character_.SetExplorationInputsEnabled(true);
     status_.phase=SessionPhase::Active; status_.waiting.clear();
 }
