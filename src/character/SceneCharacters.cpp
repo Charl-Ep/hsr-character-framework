@@ -1,4 +1,5 @@
 #include <hksr/framework/character/SceneCharacters.hpp>
+#include <hksr/framework/presentation/VisualProgramRuntime.hpp>
 #include <stdexcept>
 #include <cmath>
 #include <chrono>
@@ -9,12 +10,29 @@ void SceneCharacters::BindProfile(CharacterPlan& plan) const {
         const auto found=programs_.find(root.source.path);
         if(found!=programs_.end()){plan.visual_program=found->second;break;}
     }
+    if(plan.visual_program && !plan.visual_program->target_characters.empty()) {
+        auto input=std::make_shared<VisualProgramInput>(*plan.visual_program);
+        input->resolve_character=[this](std::uint64_t id){return VisualTarget(id);};
+        plan.visual_program=std::move(input);
+    }
     if(profiles_)for(const auto& root:plan.action_sources)if(root.domain==ActionDomain::Alternate && root.source.kind==api::ActionConfigKind::Battle) {
         const auto found=profiles_->sources.find(root.source.path);
         if(found!=profiles_->sources.end()){plan.presentation_profile=found->second;break;}
     }
     PresentationState state;state.Configure(plan.presentation_profile,plan.presentation_phase);
     plan.presentation_phase=state.Phase();if(!state.Note().empty())plan.source_notes.push_back(state.Note());
+}
+api::EntityOrigin SceneCharacters::VisualTarget(std::uint64_t id) const {
+    const auto found=entries_.find(id);
+    if(closing_ || found==entries_.end())return {};
+    const auto& entry=found->second;
+    if(!entry.status.enabled || entry.status.deleting || !entry.active || entry.active->revision!=entry.revision)return {};
+    const auto& creation=entry.active->session->Character().Creation();
+    if(creation.removal_requested || creation.closed)return {};
+    for(const auto& entity:creation.entities)if(entity.token.entity==creation.factory.entity && !entity.disposed &&
+        !api::TrackedEntities().IsDisposed(entity.token) && api::TrackedEntities().Current(entity.token.entity).generation==entity.token.generation)
+        return {entity.token,entry.active->world};
+    return {};
 }
 SceneCharacters::SceneCharacters(CharacterSessionServices services)
     :services_(std::move(services)) {

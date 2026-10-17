@@ -9,7 +9,7 @@ VisualEffectContext::VisualEffectContext(std::shared_ptr<const api::Presentation
     if(!services_)throw std::invalid_argument("visual effect services required");
 }
 VisualEffectId VisualEffectContext::Start(const std::string& key,void* entity,void* path) {
-    if(closing_)throw std::logic_error("visual context closing");
+    if(finishing_ || closing_)throw std::logic_error("visual context no longer accepts creation");
     if(key.empty() || !entity || !path)throw std::invalid_argument("visual effect input absent");
     Operation operation(operations_);
     const auto id=++next_;
@@ -25,7 +25,7 @@ void VisualEffectContext::Remove(const std::string& key,bool fade) {
     for(auto& item:requests_)if(item.second.key==key)item.second.request->Cancel(fade);
 }
 VisualEffectId VisualEffectContext::StartEntity(const std::string& key,void* caster,void* target,void* path,const api::EntityEffectOptions& options) {
-    if(closing_)throw std::logic_error("visual context closing");
+    if(finishing_ || closing_)throw std::logic_error("visual context no longer accepts creation");
     if(key.empty() || !caster || !target || !path)throw std::invalid_argument("visual entity effect input absent");
     Operation operation(operations_);const auto id=++next_;
     auto request=services_->CreateRequest("visual entity effect request="+std::to_string(id)+" key="+key+" ");
@@ -53,6 +53,7 @@ VisualEffectId VisualEffectContext::Track(const std::string& key,void* manager,a
     requests_.at(id).retained=true;
     return id;
 }
+void VisualEffectContext::Finish() {finishing_=true;}
 void VisualEffectContext::End(bool fade) {
     closing_=true;end_fade_=fade;
     for(auto& item:requests_)item.second.request->Cancel(fade);

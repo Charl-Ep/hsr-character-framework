@@ -120,7 +120,7 @@ private:
     std::vector<std::unique_ptr<api::EventRegistrationLease>> retired_exits_;
     bool retire_action_events_=false;
     std::shared_ptr<VisualProgramPlayer> program_;
-    struct ProgramPlayback {std::uint64_t action=0,intent=0,model=0;void* animator=nullptr;int hash=0;bool observed=false,complete=false;std::uint64_t boundary=0;};
+    struct ProgramPlayback {std::uint64_t action=0,intent=0,model=0;void* animator=nullptr;int hash=0;bool observed=false,complete=false;std::uint64_t boundary=0;bool returning=false;};
     std::optional<ProgramPlayback> program_playback_;
     std::uint64_t program_model_=0,program_preparing_=0,program_intent_=0,program_return_=0;
 };

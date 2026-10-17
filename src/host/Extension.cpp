@@ -9,6 +9,7 @@
 #ifdef HKSR_RESEARCH
 #include "../development/ObservationBridge.hpp"
 #include "../../tools/DevelopmentControl.hpp"
+#include "../../tools/VisualProgramInputs.hpp"
 #endif
 #include <Windows.h>
 #include <atomic>
@@ -127,6 +128,11 @@ void Run() {
                 s.framework->SetPresentationProfiles(std::move(profiles));
                 std::shared_ptr<RuntimeClient> client=s.framework;
 #ifdef HKSR_RESEARCH
+                try {
+                    auto programs=hksr::research::ReadVisualProgramInputs(s.http_settings.parent_path()/L"VISUAL_PROGRAMS.json");
+                    s.Log("visual programs loaded="+std::to_string(programs.size()));
+                    s.framework->SetVisualPrograms(std::move(programs));
+                } catch(const std::exception& e){s.Log(std::string("visual programs unavailable: ")+e.what());}
                 s.framework->SetModelObserver([](auto id,auto generation,auto domain,auto* entity,void* model,void* animator) {
                     hksr::framework::development::ObserveModel(id,generation,static_cast<int>(domain),entity,model,animator);
                     });

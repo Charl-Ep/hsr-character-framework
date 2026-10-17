@@ -13,6 +13,10 @@ struct VisualProgramInput {
     std::shared_ptr<const VisualProgram> program;
     std::map<std::string,api::EntityOrigin> targets;
     std::map<std::string,std::string> choices;
+    // Application instance IDs are resolved on the engine thread at submission,
+    // after restoration/creation. Direct targets take precedence.
+    std::map<std::string,std::uint64_t> target_characters;
+    std::function<api::EntityOrigin(std::uint64_t)> resolve_character;
 };
 // Prepared with the host, activated before model construction. Owns observers
 // and keeps retiring players until their effects and Timelines drain.
@@ -33,6 +37,7 @@ private:
     api::PresentationContext& api_;
     api::ManagedObjects& objects_;
     VisualEventRoutes routes_;
+    VisualEventRoutes::Trace trace_;
     std::unique_ptr<api::AnimationSequenceExecutions> sequences_;
     std::unique_ptr<api::AnimationEventConstruction> constructions_;
     std::unique_ptr<api::EffectSubmissions> effects_;

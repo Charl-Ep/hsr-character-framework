@@ -6,11 +6,17 @@
 
 Call `FrameworkHost::SetVisualPrograms` before preparation with a map from character configuration path to `VisualProgramInput`. The application loads definitions off the engine thread. An empty map leaves program observers uninstalled.
 
-`VisualProgramInput` contains the definition, explicit target entity generations and preview choices. `Caster` resolves to the created actor. Other target names require an entry in `targets`; these live references are per-creation inputs, not saved layout identities.
+`VisualProgramInput` contains the definition, explicit targets and preview choices. `Caster` resolves to the created actor. Other target names use `targets` for live entity generations or `target_characters` for framework instance IDs. `SceneCharacters` resolves instance IDs at submission, after creation or restoration. Missing, retired and cross-world targets do not fall back to the caster. Custom assemblies supplying instance IDs must provide `resolve_character` and keep it alive through cleanup.
 
 The host prepares `VisualProgramRuntime` and activates its construction, sequence and submission observers before servicing characters. A session declares its rules before loading its alternate model. On scene entry, the runtime reads and retains the current event receiver. Native effects and Common Timelines remain owned until their actual cleanup completes.
 
 For custom assembly, use `CharacterPlan::visual_program` with `CharacterSessionServices::visual_program`, or configure `ActionPlayback` directly. Keep providers alive until sessions and program cleanup have closed.
+
+Development builds optionally read `VISUAL_PROGRAMS.json` beside the DLL at startup. Each entry specifies a definition file (relative to the manifest), target instance IDs and choices. IDs refer to the current loaded layout, not permanent character identities. No file means no programs. The file does not create targets or start actions.
+
+```json
+{"programs":[{"file":"VisualPrograms/scene.json","targets":{"Target":2},"choices":{"variant":"a"}}]}
+```
 
 ## Data
 
@@ -26,7 +32,9 @@ Each instruction has an `op` and a `source` identifying its configuration node. 
 
 `progress.value` is a number or `{"variable":"name"}`. Each lane contains ordered cues with `at` and `instructions`. Cue times use normalized body progress; effect transition durations use seconds. Lanes advance independently.
 
-An action with `restart: true` creates a new scene. Other actions retain its effects and variables. `completion_state` requests a successor after `complete_at` and all lanes finish. Without it, the scene remains available for another action. Local keys do not set the engine's `UniqueEffectName`; `unique_name` is an explicit option.
+An action with `restart: true` creates a new scene. Other actions retain its effects and variables. Local keys do not set the engine's `UniqueEffectName`; `unique_name` is an explicit option.
+
+`completion_state` requests a successor after `complete_at` and all lanes finish. `after_completion` runs when that successor is observed at `completion_at` (normalized progress, default 0). A successful play call alone does not run these instructions. If the controller enters the declared successor itself, the player observes it without replaying it. Without `completion_state`, the scene remains available for another action.
 
 ## Services and ownership
 
@@ -36,7 +44,7 @@ An action with `restart: true` creates a new scene. Other actions retain its eff
 
 `Select` queues intent, merging supplied choices over the service defaults. `Service` prepares the scene and collects independent input errors. The body starts after preparation succeeds; `Played` and `Observe` identify its actual playback and model. Pending controls retry only unresolved receipts, without restarting accepted transitions.
 
-`Leave` retires the scene and permits a later restart. `End` closes the player. Continue `Service` until `Drained`, including effects, executing native producers and Timeline cleanup.
+After successor instructions finish, existing effects and executing native producers retain their natural lifetimes. Stop looping Timelines explicitly in the instructions. `Leave` interrupts the scene, including retained tails, and permits a later restart. `End` closes the player. Continue `Service` until `Drained`, including effects, executing native producers and Timeline cleanup. `Service(false)` collects lifetimes without advancing instructions while a body replacement is pending.
 
 For native events, declare `VisualEventRoutes` selectors before model event construction, then attach the current receiver and scene before playback. Definitions are reusable. Detaching prevents new associations; executing sequences keep their original cleanup responsibility until completion, reset or definition retirement.
 

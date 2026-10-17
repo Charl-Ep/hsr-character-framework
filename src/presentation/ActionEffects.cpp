@@ -35,7 +35,10 @@ void ActionPlayback::ServiceEffects(const api::WorldFrame& frame) {
     ServiceRetirements(frame);
     if(program_ && (Ended() || OwnFrame(frame))) {
         if(Ended())program_->End();
-        program_->Service();
+        // A queued body replacement is resolved below. Do not submit old tail
+        // instructions before that replacement has had a chance to retire it.
+        const auto* layer=pending_?std::get_if<AnimatorState>(&pending_->request):nullptr;
+        program_->Service(!pending_ || (layer && layer->layer!=0));
     }
     if(effects_.empty())return;
     if(!frame.world || !frame.disposing.read.returned || frame.disposing.value)return;

@@ -25,6 +25,9 @@ public:
     // Fade is a request, not completed destruction. Matching requests remain
     // addressable for progress/state changes until the engine releases them.
     void Remove(const std::string& key,bool fade=true);
+    // Stop explicit creation without cancelling receipts or existing native
+    // producers. End can still interrupt their remaining natural lifetime.
+    void Finish();
     void End(bool fade=true);
     void Service();
     // One result per matching submitted request. An empty result means no
@@ -40,7 +43,7 @@ public:
     void Remove(VisualEffectId,api::EffectRemovalOptions);
     const api::EffectRequestStatus* Status(VisualEffectId) const; // borrowed until Service
     bool Closing() const {return closing_;}
-    bool Drained() const {return closing_ && requests_.empty() && producers_==0;}
+    bool Drained() const {return (finishing_ || closing_) && requests_.empty() && producers_==0;}
     std::size_t PendingRequests() const {return requests_.size();}
 private:
     friend class VisualEffectBindings;
@@ -50,7 +53,7 @@ private:
     std::shared_ptr<const api::PresentationEffects> services_;
     std::map<VisualEffectId,Entry> requests_;
     VisualEffectId next_=0;
-    bool closing_=false,servicing_=false,end_fade_=true;
+    bool finishing_=false,closing_=false,servicing_=false,end_fade_=true;
     unsigned operations_=0;
 };
 }

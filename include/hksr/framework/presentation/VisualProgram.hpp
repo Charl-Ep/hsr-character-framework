@@ -32,6 +32,8 @@ struct VisualProgramAction {
     std::vector<std::vector<VisualCue>> lanes;
     std::string completion_state;
     float complete_at=1;
+    float completion_at=0; // observed successor normalized progress, not elapsed time
+    std::vector<VisualInstruction> after_completion;
 };
 struct VisualProgram {
     std::string id,source,scope;
@@ -60,8 +62,9 @@ struct VisualProgramServices {
 struct VisualProgramStatus {
     std::uint64_t intent=0,playback=0,model=0;
     std::string action,state;
-    bool prepared=false,playing=false,finished=false,closing=false;
+    bool prepared=false,playing=false,finished=false,closing=false,completing=false,completed=false;
     std::vector<std::string> issues;
+    std::vector<std::string> waiting;
 };
 // Engine-thread, per-actor scene. It owns effects across body actions, but does
 // not call an Animator or infer gameplay choices. The caller waits for Prepared,
@@ -70,8 +73,9 @@ class VisualProgramPlayer {
 public:
     VisualProgramPlayer(std::shared_ptr<const VisualProgram>,VisualProgramServices);
     std::uint64_t Select(const std::string& action,std::map<std::string,std::string> choices={});
-    void Service();
+    void Service(bool advance=true); // false collects lifetimes without advancing instructions
     bool Played(std::uint64_t intent,std::uint64_t playback,std::uint64_t model);
+    bool SuccessorPlayed(std::uint64_t intent,std::uint64_t playback,std::uint64_t model);
     void Observe(std::uint64_t playback,std::uint64_t model,const std::string& state,float progress);
     void Leave(bool fade=true); // end this scene; a later restart action may enter again
     void End(bool fade=true); // no engine calls; Service drains on owner thread
@@ -93,6 +97,7 @@ private:
     VisualStepResult Execute(const VisualInstruction&,Cursor&,std::uint64_t);
     void Issue(const VisualInstruction&,const std::string&);
     void Retire(bool fade);
+    void Finish();
     std::shared_ptr<const VisualProgram> program_;
     VisualProgramServices services_;
     std::shared_ptr<VisualEffectContext> context_;
@@ -102,7 +107,7 @@ private:
     std::optional<Selection> pending_;
     const VisualProgramAction* action_=nullptr;
     VisualProgramStatus status_;
-    Cursor enter_;
+    Cursor enter_,completion_;
     std::vector<Cursor> lanes_;
     std::uint64_t next_=0;
     std::optional<float> progress_;

@@ -15,7 +15,7 @@ bool ActionPlayback::PrepareProgram(ActionReceipt& receipt) {
     if(!program_ || !presentation_enabled_)return true;
     const auto* direct=std::get_if<AnimatorState>(&receipt.request);
     if(direct && direct->layer!=0)return true;
-    if(receipt.serial==program_return_)return true; // StandBy plays before scene teardown
+    if(receipt.serial==program_return_)return true; // successor is observed before tail instructions
     const auto* style=std::get_if<FreeStyleState>(&receipt.request);
     const auto key=(direct || style)?program_->ActionForState(direct?direct->name:style->name):std::nullopt;
     if(!key){LeaveProgram();program_->Service();return true;}
@@ -33,7 +33,12 @@ bool ActionPlayback::PrepareProgram(ActionReceipt& receipt) {
 }
 void ActionPlayback::CommitProgram(const ActionReceipt& receipt,void* animator,std::uint64_t boundary) {
     if(!program_ || !receipt.call.returned)return;
-    if(receipt.serial==program_return_) {LeaveProgram();program_->Service();return;}
+    if(receipt.serial==program_return_) {
+        const auto model=++program_model_;
+        if(!program_->SuccessorPlayed(program_intent_,receipt.serial,model))throw std::runtime_error("visual program successor receipt not accepted");
+        program_playback_=ProgramPlayback{receipt.serial,program_intent_,model,animator,receipt.hash.value,false,false,boundary,true};
+        program_return_=0;return;
+    }
     if(receipt.serial!=program_preparing_)return;
     const auto model=++program_model_;
     if(!program_->Played(program_intent_,receipt.serial,model))throw std::runtime_error("visual program playback receipt not accepted");
@@ -56,7 +61,24 @@ void ActionPlayback::TickProgram(const api::WorldFrame& frame,api::ManagedObject
         if(!live())return;
         if(!state.read.returned)throw std::runtime_error("program animation clock unread");
         if(state.short_name_hash!=tracking.hash && state.full_path_hash!=tracking.hash) {
+            const auto* action=program_->CurrentAction();
+            if(!tracking.returning && tracking.observed && action && !action->completion_state.empty() && program_->Status().finished) {
+                const auto destination=action->completion_state;
+                const auto hash=actions_.StateHash(resources_.Text(destination,objects));
+                if(!live())return;
+                if(!hash.read.returned)throw std::runtime_error("program successor hash unread");
+                if(state.short_name_hash==hash.value || state.full_path_hash==hash.value) {
+                    if(!program_->SuccessorPlayed(tracking.intent,tracking.action,tracking.model))throw std::runtime_error("official program successor not accepted");
+                    program_playback_->returning=true;program_playback_->hash=hash.value;
+                    program_->Observe(tracking.action,tracking.model,destination,state.normalized_time);
+                    program_->Service();if(!live())return;
+                    program_playback_->complete=program_->Status().completed;
+                    status_.successor=AutomaticSuccessor{tracking.action,0,destination,false,true};
+                    return;
+                }
+            }
             if(tracking.observed) {
+                if(tracking.returning){LeaveProgram();status_.effect_note="successor left before visual tail finished";return;}
                 program_playback_->complete=true;
                 status_.effect_note="official successor retained; visual scene awaits explicit continuation or exit";
             }
@@ -66,6 +88,10 @@ void ActionPlayback::TickProgram(const api::WorldFrame& frame,api::ManagedObject
         program_->Observe(tracking.action,tracking.model,program_->Status().state,state.normalized_time);
         program_->Service();if(!live())return;
         for(const auto& issue:program_->Status().issues)status_.effect_note=issue;
+        if(tracking.returning) {
+            program_playback_->complete=program_->Status().completed;
+            return;
+        }
         const auto* action=program_->CurrentAction();
         if(!action || !program_->Status().finished || !std::isfinite(state.normalized_time) || state.normalized_time<action->complete_at)return;
         program_playback_->complete=true;

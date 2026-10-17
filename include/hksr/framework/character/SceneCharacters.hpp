@@ -95,6 +95,7 @@ private:
     std::shared_ptr<const PresentationProfiles> profiles_;
     std::map<std::string,std::shared_ptr<const VisualProgramInput>> programs_;
     void BindProfile(CharacterPlan& plan) const;
+    api::EntityOrigin VisualTarget(std::uint64_t id) const;
     void SubmitAction(Entry&);
 };
 }

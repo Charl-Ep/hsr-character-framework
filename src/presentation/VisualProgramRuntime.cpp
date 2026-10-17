@@ -4,6 +4,7 @@
 #include <hksr/entity/LifecycleHooks.hpp>
 #include <hksr/entity/EntityAccess.hpp>
 #include <stdexcept>
+#include <sstream>
 
 namespace hksr::framework {
 namespace {
@@ -21,6 +22,7 @@ struct VisualProgramRuntime::Scene {
     std::unique_ptr<api::ManagedRoots> roots;
     api::ManagedRootId receiver=0;
     std::vector<api::ManagedRootId> releasing;
+    std::string last_trace;
     api::ManagedRootId Keep(void* object) {
         const auto id=roots->Keep(object);
         if(!roots->Status(id).ready){releasing.push_back(id);throw std::runtime_error("visual input retention failed");}
@@ -35,8 +37,8 @@ struct VisualProgramRuntime::Scene {
 VisualProgramRuntime::VisualProgramRuntime(api::PresentationContext& context,api::ManagedObjects& objects,VisualEventRoutes::Trace trace)
     :api_(context),objects_(objects),routes_(
         [this](const auto& source){return api_.ReadEventDefinitions(source);},
-        [this](const auto& source,const auto& task){return sequences_->Track(source,task);},std::move(trace),
-        [this](const auto& trigger){return api_.ReadEffectTriggerPath(trigger);}) {
+        [this](const auto& source,const auto& task){return sequences_->Track(source,task);},trace,
+        [this](const auto& trigger){return api_.ReadEffectTriggerPath(trigger);}),trace_(std::move(trace)) {
     sequences_=api_.CreateSequenceObserver([this](const auto& value){routes_.Observe(value);});
     constructions_=api_.CreateEventConstructionObserver(
         [this](const auto& source){
@@ -90,8 +92,13 @@ VisualEffectId VisualProgramRuntime::CreateEffect(Scene& scene,VisualEffectConte
     api::EntityOrigin target=scene.owner;
     if(input.target!="Caster") {
         const auto found=scene.input.targets.find(input.target);
-        if(found==scene.input.targets.end())throw std::runtime_error("explicit visual target missing: "+input.target);
-        target=found->second;
+        if(found!=scene.input.targets.end())target=found->second;
+        else {
+            const auto character=scene.input.target_characters.find(input.target);
+            if(character==scene.input.target_characters.end() || !scene.input.resolve_character)
+                throw std::runtime_error("explicit visual target missing: "+input.target);
+            target=scene.input.resolve_character(character->second);
+        }
     }
     if(!Alive(scene.owner) || !Alive(target) || target.world!=scene.owner.world)
         throw std::runtime_error("visual target belongs to an ended generation or another world");
@@ -112,6 +119,18 @@ void VisualProgramRuntime::Collect() {
         if(scene.player && (closing_ || !Alive(scene.owner)) && !scene.player->Status().closing)scene.player->End();
         if(scene.player && scene.player->Status().closing)scene.player->Service();
         scene.ReleasePending();
+        if(trace_ && scene.player) {
+            const auto& status=scene.player->Status();std::ostringstream out;
+            out<<"visual-program owner="<<scene.owner.token.entity<<" generation="<<scene.owner.token.generation
+                <<" program="<<scene.input.program->id<<" intent="<<status.intent<<" playback="<<status.playback<<" model="<<status.model
+                <<" action="<<status.action<<" state="<<status.state<<" prepared="<<status.prepared<<" playing="<<status.playing
+                <<" finished="<<status.finished<<" completing="<<status.completing<<" completed="<<status.completed
+                <<" closing="<<status.closing<<" drained="<<scene.player->Drained();
+            for(const auto& value:status.waiting)out<<" waiting=["<<value<<"]";
+            for(const auto& value:status.issues)out<<" issue=["<<value<<"]";
+            const auto text=out.str();
+            if(text!=scene.last_trace){trace_(text);scene.last_trace=text;}
+        }
         if(!scene.player || scene.player->Drained()) {
             Detach(scene);scene.ReleasePending();
             if(scene.releasing.empty()) {

@@ -19,8 +19,16 @@ std::uint64_t VisualProgramPlayer::Select(const std::string& action,std::map<std
 }
 void VisualProgramPlayer::Retire(bool fade) {
     if(context_){context_->End(fade);retired_.push_back(std::move(context_));}
+    // An interruption also cancels tails retained by earlier natural finishes.
+    for(auto& context:retired_)if(!context->Closing())context->End(fade);
     try {if(services_.detach)services_.detach();}catch(const std::exception& e){status_.issues.push_back(e.what());}
     try {if(services_.cancel_timelines)services_.cancel_timelines();}catch(const std::exception& e){status_.issues.push_back(e.what());}
+    variables_.clear();
+}
+void VisualProgramPlayer::Finish() {
+    if(context_){context_->Finish();retired_.push_back(std::move(context_));}
+    try {if(services_.detach)services_.detach();}catch(const std::exception& e){status_.issues.push_back(e.what());}
+    status_.playing=false;status_.completing=false;status_.completed=true;
     variables_.clear();
 }
 void VisualProgramPlayer::End(bool fade) {
@@ -29,7 +37,7 @@ void VisualProgramPlayer::End(bool fade) {
 }
 void VisualProgramPlayer::Leave(bool fade) {
     if(status_.closing)return;
-    ++next_;pending_.reset();status_.prepared=false;status_.playing=false;
+    ++next_;pending_.reset();status_.prepared=false;status_.playing=false;status_.completing=false;
     end_pending_=true;end_fade_=fade;
 }
 std::optional<std::string> VisualProgramPlayer::ActionForState(const std::string& state) const {
@@ -143,13 +151,13 @@ bool VisualProgramPlayer::Instructions(const std::vector<VisualInstruction>& ste
         try {result=Execute(input,cursor,intent);}
         catch(const std::exception& e){result={VisualStepState::Failed,e.what()};}
         if(next_!=intent || status_.closing)return false;
-        if(result.state==VisualStepState::Pending)return false;
+        if(result.state==VisualStepState::Pending){status_.waiting.push_back(input.source);return false;}
         if(result.state==VisualStepState::Failed)Issue(input,result.detail);
         cursor.Next();
     }
     return true;
 }
-void VisualProgramPlayer::Service() {
+void VisualProgramPlayer::Service(bool advance) {
     if(servicing_)return;
     servicing_=true;struct Exit{bool& flag;~Exit(){flag=false;}} exit{servicing_};
     if(end_pending_){end_pending_=false;Retire(end_fade_);action_=nullptr;}
@@ -162,6 +170,8 @@ void VisualProgramPlayer::Service() {
         catch(const std::exception& e){if(status_.issues.empty() || status_.issues.back()!=e.what())status_.issues.push_back(e.what());}
     }
     if(status_.closing)return;
+    if(!advance){if(context_)context_->Service();return;}
+    status_.waiting.clear();
     if(pending_) {
         auto selected=std::move(*pending_);pending_.reset();
         action_=&program_->actions.at(selected.action);
@@ -181,7 +191,7 @@ void VisualProgramPlayer::Service() {
             if(next_!=selected.intent)return;
         }
         status_={};status_.intent=selected.intent;status_.action=selected.action;status_.state=action_->state;
-        choices_=std::move(selected.choices);enter_={};lanes_.assign(action_->lanes.size(),{});progress_.reset();
+        choices_=std::move(selected.choices);enter_={};completion_={};lanes_.assign(action_->lanes.size(),{});progress_.reset();
     }
     if(context_)context_->Service();
     const auto intent=status_.intent;
@@ -192,6 +202,10 @@ void VisualProgramPlayer::Service() {
         if(!status_.prepared)return;
     }
     if(!status_.playing || !progress_)return;
+    if(status_.completing) {
+        if(*progress_>=action_->completion_at && Instructions(action_->after_completion,completion_,intent))Finish();
+        return;
+    }
     bool done=true;
     for(std::size_t i=0;i<lanes_.size();++i) {
         auto& cursor=lanes_[i];const auto& lane=action_->lanes[i];
@@ -205,8 +219,14 @@ void VisualProgramPlayer::Service() {
     status_.finished=done;
 }
 bool VisualProgramPlayer::Played(std::uint64_t intent,std::uint64_t playback,std::uint64_t model) {
-    if(intent!=next_ || intent!=status_.intent || !status_.prepared || status_.closing || !playback || !model)return false;
+    if(intent!=next_ || intent!=status_.intent || !status_.prepared || status_.playing || status_.completed || status_.closing || !playback || !model)return false;
     status_.playback=playback;status_.model=model;status_.playing=true;return true;
+}
+bool VisualProgramPlayer::SuccessorPlayed(std::uint64_t intent,std::uint64_t playback,std::uint64_t model) {
+    if(intent!=next_ || intent!=status_.intent || !action_ || action_->completion_state.empty() ||
+        !status_.playing || !status_.finished || status_.completing || status_.closing || !playback || !model)return false;
+    status_.playback=playback;status_.model=model;status_.state=action_->completion_state;
+    status_.completing=true;progress_.reset();return true;
 }
 void VisualProgramPlayer::Observe(std::uint64_t playback,std::uint64_t model,const std::string& state,float progress) {
     if(!status_.playing || pending_ || status_.closing || playback!=status_.playback || model!=status_.model ||

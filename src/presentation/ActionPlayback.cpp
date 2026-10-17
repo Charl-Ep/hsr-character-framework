@@ -263,7 +263,7 @@ void ActionPlayback::Service(const api::WorldFrame& frame,bool ready,api::Manage
         if(!status_.closing && revision==intent_revision_) pending_=receipt;
         else receipt.outcome=ActionOutcome::Cancelled;
     }
-    if(program_ && program_preparing_==receipt.serial && receipt.outcome!=ActionOutcome::Waiting && receipt.outcome!=ActionOutcome::Returned)LeaveProgram();
+    if(program_ && (program_preparing_==receipt.serial || program_return_==receipt.serial) && receipt.outcome!=ActionOutcome::Waiting && receipt.outcome!=ActionOutcome::Returned)LeaveProgram();
     if(status_.successor && status_.successor->serial==receipt.serial)
         status_.successor->returned=receipt.outcome==ActionOutcome::Returned;
     status_.last=std::move(receipt); status_.pending=pending_.has_value();

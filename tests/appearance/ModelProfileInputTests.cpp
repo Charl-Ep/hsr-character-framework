@@ -762,6 +762,28 @@ void TestModelProfileInputs() {
     }
     std::cout<<"CharacterSession passed: prepared sources, no battle prerequisite for NPC, baseline capture before handoff, pending load, independent failure, natural disposal and removal; local fixtures only.\n";
     {
+        reset_baseline();framework::CharacterPlan plan;plan.package=package;
+        framework::SceneCharacters registry(session_services,[&](auto& session,const auto&,const auto&){session.Create(create);});
+        const framework::SceneAddress target_scene{"Map/Targets",1};
+        auto current=frame;current.manager={create.manager,{true,0}};current.battle={false,{true,0}};
+        const auto target=registry.Add(target_scene.key,plan);
+        auto input=std::make_shared<framework::VisualProgramInput>();input->target_characters.emplace("Target",target);
+        plan.visual_program=input;
+        const auto visual_source=registry.Add(target_scene.key,plan);registry.SetEnabled(visual_source,false);
+        const auto resolve_target=registry.Plan(visual_source).visual_program->resolve_character;
+        Check(resolve_target && !resolve_target(target).token.entity && !resolve_target(999).token.entity);
+        registry.Service(current,target_scene,appearance,{});
+        const auto first=resolve_target(target);Check(first.token.entity==entity_ptr && first.world==world_ptr);
+        registry.Rebuild(target);Check(!resolve_target(target).token.entity);
+        registry.Service(current,target_scene,appearance,{});
+        const auto second=resolve_target(target);Check(second.token.entity==entity_ptr && second.token.generation!=first.token.generation);
+        registry.SetEnabled(target,false);Check(!resolve_target(target).token.entity);
+        registry.Service(current,target_scene,appearance,{});
+        registry.Delete(target);registry.Delete(visual_source);registry.Service(current,target_scene,appearance,{});
+        Check(!resolve_target(target).token.entity && registry.Ids().empty() && roots.empty());
+        registry.Shutdown();registry.Service(current,target_scene,appearance,{});Check(registry.Closed());
+    }
+    {
         reset_baseline();
         auto scene_frame=frame; scene_frame.manager={create.manager,{true,0}}; scene_frame.battle={false,{true,0}};
         auto away=scene_frame; away.world=foreign.world;

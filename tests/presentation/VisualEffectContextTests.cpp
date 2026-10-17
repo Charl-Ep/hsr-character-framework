@@ -257,8 +257,9 @@ void TestVisualProgram(const char* file) {
     if(file) {
         std::ifstream input(file,std::ios::binary);Check(static_cast<bool>(input));
         program=std::make_shared<VisualProgram>(ParseVisualProgram({std::istreambuf_iterator<char>(input),std::istreambuf_iterator<char>()}));
-        Check(program->effects.size()==18 && program->actions.size()==3);
+        Check(program->effects.size()==19 && program->actions.size()==3);
         Check(program->effects.at("Monster").target=="AbilityTargetAndAdjoinEntity");
+        Check(program->effects.at("Common_Hit01").target=="AbilityTargetEntity");
         Check(program->effects.at("Rabbit").options.unique_name.empty());
     } else program=std::make_shared<VisualProgram>(ParseVisualProgram(R"({
       "format":"hksr.visual-program","id":"test","source":"config","scope":"scene",
@@ -311,12 +312,33 @@ void TestVisualProgram(const char* file) {
     Check(player.Played(intent,101,3));player.Observe(100,3,program->actions.at("gift").state,1);player.Service();
     const auto before_end=controlled.size();
     player.Observe(101,3,program->actions.at("resolve").state,0.25f);player.Service();Check(controlled.size()>before_end);
+    if(file) {
+        player.Observe(101,3,program->actions.at("resolve").state,1);player.Service();Check(player.Status().finished);
+        Check(player.SuccessorPlayed(intent,102,4));player.Observe(102,4,"StandBy",0);player.Service();
+        Check(player.Status().completed && created.back()=="Common_Hit01" && timeline.back()=="timeline2");
+        Check(requests.back()->removes==0); // actual recipe keeps the tail alive
+    }
     for(auto& p:requests)if(p->removes)p->released=true; // engine finishes prior fades
     player.End(false);release_on_remove=true;player.Service();Check(player.Drained() && roots.empty());
     const auto detached_after_close=detaches,cancelled_after_close=cancellations;
     player.End();player.Leave();player.Service();
     Check(player.Drained() && detaches==detached_after_close && cancellations==cancelled_after_close);
-    if(file){delegates.clear();return;}
+    if(file){
+        requests.clear();created.clear();triggered.clear();release_on_remove=false;
+        VisualProgramPlayer alternative(program,callbacks);
+        intent=alternative.Select("gift",{{"fire","no"},{"prize","minor"}});alternative.Service();
+        for(auto& p:requests)Complete(*p);alternative.Service();Check(alternative.Played(intent,110,5));
+        alternative.Observe(110,5,program->actions.at("gift").state,0.7f);alternative.Service();
+        Check(created.size()==17);
+        intent=alternative.Select("resolve_v1");alternative.Service();Check(alternative.Status().prepared);
+        Check(alternative.Played(intent,111,5));alternative.Observe(111,5,program->actions.at("resolve_v1").state,1);alternative.Service();
+        Check(alternative.Status().finished && triggered.size()==5);
+        Check(alternative.SuccessorPlayed(intent,112,6));alternative.Observe(112,6,"StandBy",0);alternative.Service();
+        Check(alternative.Status().completed && created.size()==17 && timeline.back()=="timeline3");
+        for(auto& p:requests)if(p->removes)p->released=true;
+        alternative.End();release_on_remove=true;alternative.Service();Check(alternative.Drained() && roots.empty());
+        delegates.clear();return;
+    }
     // Attachment failure must remain visible, and must not run half a scene
     // or silently succeed on a subsequent Service call.
     auto failed_attachment=callbacks;
@@ -368,5 +390,58 @@ void TestVisualProgram(const char* file) {
     native_services.Service();Check(native_services.Status().prepared && native_services.Status().issues.empty());
     Check(explicit_removals.size()==prior_removals+1 && explicit_removals.back().fade && explicit_removals.back().immediate_fade && !explicit_removals.back().unbind);
     Check(!requests[1]->released);requests[1]->released=true;
-    native_services.End();release_on_remove=true;native_services.Service();Check(native_services.Drained() && roots.empty());delegates.clear();
+    native_services.End();release_on_remove=true;native_services.Service();Check(native_services.Drained() && roots.empty());
+
+    // A successor call does not imply entry. Its tail waits for this exact
+    // receipt/model, runs once, then lives naturally until an explicit exit.
+    requests.clear();created.clear();release_on_remove=false;
+    auto tail_program=std::make_shared<VisualProgram>(ParseVisualProgram(R"({
+      "format":"hksr.visual-program","id":"tail","source":"config","scope":"scene",
+      "effects":{"hit":{"path":"hit","target":"Target"}},
+      "actions":{"resolve":{"state":"Resolve","restart":true,"completion_state":"StandBy","completion_at":0.2,
+        "after_completion":[{"op":"timeline_stop","source":"stop","key":"scene"},
+          {"op":"create","source":"hit","effects":["hit"]}]}}
+    })"));
+    unsigned stop_calls=0;
+    callbacks.timeline=[&](const auto& op){Check(!op.play);++stop_calls;return VisualStepResult{VisualStepState::Done,{}};};
+    VisualProgramPlayer natural(tail_program,callbacks);
+    intent=natural.Select("resolve");natural.Service();Check(natural.Played(intent,400,6));
+    natural.Observe(400,6,"Resolve",1);natural.Service();Check(natural.Status().finished);
+    Check(natural.SuccessorPlayed(intent,401,7));natural.Service();Check(created.empty() && stop_calls==0);
+    natural.Observe(400,7,"StandBy",1);natural.Observe(401,6,"StandBy",1);
+    natural.Observe(401,7,"Resolve",1);natural.Service();Check(created.empty());
+    natural.Observe(401,7,"StandBy",0.1f);natural.Service();Check(created.empty());
+    const auto finished_context=natural.Context();
+    natural.Observe(401,7,"StandBy",0.3f);natural.Service(false);
+    Check(created.empty() && stop_calls==0); // pending body intent pauses commands, not collection
+    natural.Service();
+    Check(natural.Status().completed && !natural.Context() && created.size()==1 && stop_calls==1);
+    Check(!natural.Played(intent,400,6) && !natural.SuccessorPlayed(intent,401,7));
+    natural.Service();Check(requests[0]->removes==0 && !finished_context->Drained());
+    Complete(*requests[0]);natural.Service();Check(requests[0]->removes==0);
+    requests[0]->released=true;natural.Service();Check(finished_context->Drained() && roots.empty());
+    natural.End();natural.Service();Check(natural.Drained());
+
+    // Removal during async loading keeps the exact tail receipt and removes
+    // a late completion; repeated End does not repeat cancellation calls.
+    requests.clear();created.clear();VisualProgramPlayer interrupted(tail_program,callbacks);
+    intent=interrupted.Select("resolve");interrupted.Service();Check(interrupted.Played(intent,500,8));
+    interrupted.Observe(500,8,"Resolve",1);interrupted.Service();Check(interrupted.SuccessorPlayed(intent,501,9));
+    interrupted.Observe(501,9,"StandBy",0.3f);interrupted.Service();Check(created.size()==1);
+    interrupted.Leave();interrupted.Service();Check(requests[0]->removes==1 && !requests[0]->released);
+    Complete(*requests[0]);release_on_remove=true;interrupted.Service();Check(requests[0]->released);
+    interrupted.End();interrupted.Service();Check(interrupted.Drained() && roots.empty());
+
+    // Finishing does not drop already executing native producers. New explicit
+    // creations stop, but a late native receipt can still finish naturally.
+    requests.clear();auto finishing=std::make_shared<VisualEffectContext>(services);
+    auto late=std::make_unique<Params>();late->id=999;late->state=3;auto* late_raw=late.get();requests.push_back(std::move(late));
+    auto owner=TrackedEntities().Track(reinterpret_cast<GameEntity*>(&entity));
+    AnimationSequenceExecution execution{1,1,1,0,{owner,reinterpret_cast<GameWorld*>(&manager)},&effect,nullptr,AnimationSequenceKind::Persistent};
+    VisualEffectBindings producer;producer.Bind(execution,finishing);finishing->Finish();
+    Check(!finishing->Drained());bool refused=false;
+    try{finishing->Start("new",&entity,&path);}catch(const std::logic_error&){refused=true;}Check(refused);
+    finishing->Track("late",&manager,{late_raw->id,0,late_raw});finishing->Service();Check(late_raw->removes==0);
+    producer.Clear();Check(!finishing->Drained());late_raw->released=true;finishing->Service();
+    Check(finishing->Drained() && roots.empty());TrackedEntities().Forget(owner);delegates.clear();
 }
