@@ -26,6 +26,7 @@ public:
     void After(const api::AnimationEventSource&);
     void Observe(const api::AnimationSequenceObservation&);
     std::optional<VisualEffectId> Submitted(const api::EffectSubmission&);
+    void SubmissionReturned(const api::EffectSubmission&,bool original_returned);
     // Retire existing receipts and later submissions of THIS running sequence,
     // not all future executions of the same source/configuration.
     bool RemoveInFlight(std::shared_ptr<VisualEffectContext>,const std::string&,api::EffectRemovalOptions);
@@ -46,6 +47,8 @@ private:
     std::map<std::uint64_t,std::vector<Selection>> constructions_;
     std::map<std::pair<std::uint64_t,std::uint64_t>,Definition> definitions_;
     std::map<std::uint64_t,Execution> executions_;
+    struct Submission {std::weak_ptr<VisualEffectContext> context;VisualEffectId receipt;};
+    std::map<std::uint64_t,Submission> submissions_;
     VisualEffectBindings bindings_;
 };
 }

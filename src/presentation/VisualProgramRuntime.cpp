@@ -5,6 +5,7 @@
 #include <hksr/entity/EntityAccess.hpp>
 #include <stdexcept>
 #include <sstream>
+#include "VisualProgramCallbacks.hpp"
 
 namespace hksr::framework {
 namespace {
@@ -40,16 +41,15 @@ VisualProgramRuntime::VisualProgramRuntime(api::PresentationContext& context,api
         [this](const auto& source){return api_.ReadEventDefinitions(source);},
         [this](const auto& source,const auto& task){return sequences_->Track(source,task);},trace,
         [this](const auto& trigger){return api_.ReadEffectTriggerPath(trigger);}),trace_(std::move(trace)) {
-    sequences_=api_.CreateSequenceObserver([this](const auto& value){routes_.Observe(value);});
-    constructions_=api_.CreateEventConstructionObserver(
-        [this](const auto& source){
-            if(!routes_.Interested(source.origin) || !source.file)return;
-            const auto file=api_.Resources().Components().ReadText(source.file);
-            if(!file.read.returned)throw std::runtime_error("visual event source path unread: "+file.error);
-            routes_.Before(source,file.utf8);
-        },[this](const auto& source,const auto& task){routes_.Built(source,task);},
-        [this](const auto& source,bool){routes_.After(source);});
-    effects_=api_.CreateEffectObserver([this](const auto& value){routes_.Submitted(value);},{});
+    auto callbacks=detail::ConnectVisualProgramCallbacks(routes_,[this](void* text){
+        const auto file=api_.Resources().Components().ReadText(text);
+        if(!file.read.returned)throw std::runtime_error("visual event source path unread: "+file.error);
+        return file.utf8;
+    });
+    sequences_=api_.CreateSequenceObserver(std::move(callbacks.sequence));
+    constructions_=api_.CreateEventConstructionObserver(std::move(callbacks.before_construction),
+        std::move(callbacks.tasks),std::move(callbacks.after_construction));
+    effects_=api_.CreateEffectObserver(std::move(callbacks.before_effect),std::move(callbacks.after_effect));
 }
 VisualProgramRuntime::~VisualProgramRuntime()=default;
 void VisualProgramRuntime::Activate() {

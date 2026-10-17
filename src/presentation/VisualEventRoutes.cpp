@@ -134,12 +134,21 @@ std::optional<VisualEffectId> VisualEventRoutes::Submitted(const api::EffectSubm
     std::optional<api::EffectRemovalOptions> removal;
     if(const auto remove=found->second.removals.find(key);remove!=found->second.removals.end())removal=remove->second;
     const auto id=bindings_.Track(key,value);
+    if(id && context)submissions_[value.serial]={context,*id};
     if(id && removal && context)context->Remove(*id,*removal);
     if(trace_ && id) {
         std::ostringstream out;out<<"visual event submission execution="<<value.sequence.serial<<" key="<<key
             <<" receipt="<<*id<<" context="<<context.get()<<" cancelled="<<static_cast<bool>(removal);trace_(out.str());
     }
     return id;
+}
+void VisualEventRoutes::SubmissionReturned(const api::EffectSubmission& value,bool returned) {
+    const auto found=submissions_.find(value.serial);if(found==submissions_.end())return;
+    const auto pending=found->second;submissions_.erase(found);
+    // Record cancellation only. No engine removal from the producer's stack.
+    if(!returned)if(auto context=pending.context.lock())context->Remove(pending.receipt,{true,true,false});
+    if(trace_)trace_("visual event return submission="+std::to_string(value.serial)+" execution="+
+        std::to_string(value.sequence.serial)+" receipt="+std::to_string(pending.receipt)+" returned="+std::to_string(returned));
 }
 bool VisualEventRoutes::RemoveInFlight(std::shared_ptr<VisualEffectContext> context,const std::string& key,api::EffectRemovalOptions options) {
     if(!context)return false;
@@ -159,5 +168,5 @@ void VisualEventRoutes::Collect() {
     for(auto id:expired)Unbind(id);
     for(auto it=executions_.begin();it!=executions_.end();)if(it->second.context.expired())it=executions_.erase(it);else ++it;
 }
-void VisualEventRoutes::Clear(){rules_.clear();constructions_.clear();definitions_.clear();executions_.clear();bindings_.Clear();}
+void VisualEventRoutes::Clear(){rules_.clear();constructions_.clear();definitions_.clear();executions_.clear();submissions_.clear();bindings_.Clear();}
 }

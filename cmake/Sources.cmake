@@ -140,6 +140,7 @@ set(HKSR_RUNTIME_TEST_SOURCES
     tests/presentation/ActionPlaybackTests.cpp
     tests/presentation/PresentationProfileTests.cpp
     tests/presentation/VisualEffectContextTests.cpp
+    tests/presentation/VisualProgramObserverTests.cpp
     tests/presentation/VisualTimelinesTests.cpp
     tests/presentation/ReadyPlaybackTests.cpp
     tests/presentation/TimelinePolicyTests.cpp

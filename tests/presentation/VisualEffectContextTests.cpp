@@ -193,7 +193,7 @@ void TestVisualEffectContext() {
     AnimationSequenceObservation begin;begin.execution=execution;begin.operation=AnimationSequenceOperation::Begin;begin.entering=true;
     routes.Observe(begin);a={};a.state=3;a.callback=&official_callback;
     submission.sequence=execution;submission.origin=execution.origin;submission.request={a.id,0,&a};
-    Check(routes.Submitted(submission).has_value());
+    Check(routes.Submitted(submission).has_value());routes.SubmissionReturned(submission,true);
     Check(gift->Requests("native.UI_01").size()==1);
     done.execution=execution;routes.Observe(done);Check(!gift->Closing() && gift->PendingRequests()==1);
     begin.execution.definition=11;begin.execution.serial=102;begin.execution.sequence=&sequence2;routes.Observe(begin);
@@ -201,6 +201,9 @@ void TestVisualEffectContext() {
     labels_readable=false;
     Check(routes.Submitted(submission).has_value() && gift->PendingRequests()==2 && a.removes==0);
     Check(label_errors==1 && definition_traces==2 && submission_traces==2 && gift->Requests("native.resolution").size()==1);labels_readable=true;
+    routes.SubmissionReturned(submission,false);
+    Check(a.removes==0 && b.removes==0); // the callback records intent only
+    gift->Service();Check(a.removes==0 && b.removes==1);
     // An unrelated child collection cannot be mapped by config/output index.
     source.serial=200;routes.Before(source,recipe[0].file);built.serial=12;built.configurations=&unrelated;
     routes.Built(source,built);routes.After(source);Check(tracks==2);
