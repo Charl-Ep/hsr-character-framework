@@ -18,6 +18,9 @@ VisualEventRoutes::VisualEventRoutes(Read read,TrackSequence track,Trace trace,R
     :read_(std::move(read)),track_(std::move(track)),trace_(std::move(trace)),path_(std::move(path)) {
     if(!read_ || !track_)throw std::invalid_argument("visual event routes require definition and sequence services");
 }
+bool VisualEventRoutes::Interested(api::EntityOrigin owner) const {
+    return std::any_of(rules_.begin(),rules_.end(),[&](const auto& item){return Same(item.second.owner,owner);});
+}
 VisualEventRoutes::RuleId VisualEventRoutes::Bind(api::EntityOrigin owner,void* receiver,VisualEventRule input,
     std::shared_ptr<VisualEffectContext> context) {
     if(!owner.token.entity || !owner.token.generation || !owner.world || !receiver || !context || input.file.empty() || input.key.empty())
@@ -103,7 +106,8 @@ void VisualEventRoutes::Observe(const api::AnimationSequenceObservation& value) 
     }
     bindings_.Observe(value);
     if(!value.entering && !value.continues)executions_.erase(execution.serial);
-    if(!value.entering && value.operation==api::AnimationSequenceOperation::Dispose)
+    if(!value.entering && (value.operation==api::AnimationSequenceOperation::Dispose ||
+        value.operation==api::AnimationSequenceOperation::DefinitionRetired))
         definitions_.erase({execution.construction,execution.definition});
 }
 std::optional<VisualEffectId> VisualEventRoutes::Submitted(const api::EffectSubmission& value) {

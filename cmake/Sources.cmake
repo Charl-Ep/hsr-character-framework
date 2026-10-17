@@ -76,6 +76,7 @@ set(HKSR_RUNTIME_SOURCES
     src/presentation/VisualEventRoutes.cpp
     src/presentation/VisualProgram.cpp
     src/presentation/VisualTimelines.cpp
+    src/presentation/VisualProgramRuntime.cpp
 
     # src/serialization
     src/serialization/PresentationProfileCodec.cpp

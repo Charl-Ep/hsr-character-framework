@@ -52,8 +52,10 @@ void FrameworkHost::Prepare(api::RuntimeMetadata& metadata,api::RuntimeCapabilit
     try {
         event_policy_=services_->CreateAnimationPolicy(api::AnimationTaskPolicy{});
     }catch(const std::exception& e){Trace(std::string("event configuration policy unavailable: ")+e.what());}
+    if(!programs_.empty())services_->PrepareVisualPrograms([this](const auto& text){Trace(text);});
     characters_=std::make_unique<SceneCharacters>(services_->Sessions(capabilities.event_record_lifetime));
     characters_->ConfigureProfiles(profiles_);
+    characters_->ConfigurePrograms(programs_);
     characters_->ConfigureControls(services_->Controls(),services_->Player());
     characters_->ConfigureTiming([this](const api::OperationTraceReport& report) {
         if(report.rows.size()<2)return; // No operation ran, e.g. a deferred creation.

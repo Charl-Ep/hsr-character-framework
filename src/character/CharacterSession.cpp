@@ -62,6 +62,18 @@ void CharacterSession::StartHandoff(std::unique_ptr<api::ModelProfileRequest> re
     handoff_=std::make_unique<ModelActionHandoff>(character_,owner_,world_,std::move(request),services_.handoff,
         DomainControllers{},plan_.alternate && plan_.alternate->initial_state.available?plan_.alternate->initial_state.value:std::string{});
     handoff_->ConfigurePresentation(plan_.presentation_profile,plan_.presentation_phase);
+    if(plan_.visual_program) {
+        try {
+            if(!services_.visual_program)throw std::logic_error("visual program runtime was not prepared");
+            auto player=services_.visual_program({owner_,world_},*plan_.visual_program,plan_.presentation_profile);
+            if(!player)throw std::runtime_error("visual program factory returned no player");
+            handoff_->ConfigureVisualProgram(std::move(player));
+        }catch(const std::exception& e) {
+            // This is not a baseline failure. Do not reconstruct a second
+            // handoff or silently play without the explicitly requested scene.
+            status_.errors.push_back(e.what());status_.phase=SessionPhase::Failed;Remove();return;
+        }
+    }
     character_.SetExplorationInputsEnabled(true);
     status_.phase=SessionPhase::Active; status_.waiting.clear();
 }

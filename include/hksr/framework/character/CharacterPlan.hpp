@@ -6,6 +6,7 @@
 #include "../presentation/PresentationProfile.hpp"
 
 namespace hksr::framework {
+struct VisualProgramInput;
 // Immutable, copied selection for ONE NPC creation epoch. A missing battle
 // source does not invalidate an exploration source. Payload IO happens before
 // this object reaches the official world thread.
@@ -22,6 +23,7 @@ struct CharacterPlan {
     std::optional<BrowseSource> source_intent;
     std::shared_ptr<const PresentationProfile> presentation_profile;
     std::string presentation_phase;
+    std::shared_ptr<const VisualProgramInput> visual_program;
     static CharacterPlan FromPrepared(const PreparedSource& source,
         std::shared_ptr<const ModelAssetInput> payload={},std::string npc_look_source={});
 };

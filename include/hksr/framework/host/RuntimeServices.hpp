@@ -7,6 +7,7 @@
 #include <hksr/world/WorldPlacement.hpp>
 #include <hksr/presentation/PresentationResources.hpp>
 #include <hksr/runtime/RuntimeHost.hpp>
+#include "../presentation/VisualProgramRuntime.hpp"
 
 namespace hksr::framework {
 // Maps SDK capabilities to Framework session inputs. Resource wrappers remain
@@ -19,6 +20,7 @@ public:
     CharacterSessionServices Sessions(bool event_tracking) const;
     AppearanceServices Appearance() const;
     void ActivateIsolation();
+    void PrepareVisualPrograms(VisualEventRoutes::Trace={});
     void CollectIsolation();
     bool Close();
     std::unique_ptr<api::ManagedRoots> CreateRoots() const {return context_->CreateRoots();}
@@ -39,5 +41,6 @@ private:
     RuntimeServices(api::ManagedObjects&,std::unique_ptr<api::PresentationContext>);
     api::ManagedObjects& objects_;
     std::unique_ptr<api::PresentationContext> context_;
+    std::unique_ptr<VisualProgramRuntime> programs_;
 };
 }

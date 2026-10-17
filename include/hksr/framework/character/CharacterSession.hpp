@@ -11,6 +11,8 @@ struct CharacterSessionServices {
     api::PresentationContext::EntityEventFactory events;
     HandoffServices handoff;
     api::PresentationContext::BaselineFactory baseline;
+    std::function<std::shared_ptr<VisualProgramPlayer>(api::EntityOrigin,const VisualProgramInput&,
+        const std::shared_ptr<const PresentationProfile>&)> visual_program;
 };
 // Actual source -> CharacterInstance -> model/action handoff assembly. No UI,
 // scanning, player borrowing or implicit game launch. Create/Service execute

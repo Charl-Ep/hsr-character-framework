@@ -237,7 +237,11 @@ void TestVisualEffectContext() {
     c={};c.state=3;submission.request={c.id,0,&c};Check(routes.Submitted(submission).has_value());
     Check(!next_context->Status(next_context->Requests("native.UI_01").front())->cancelled);
     Check(later->PendingRequests()==2 && next_context->PendingRequests()==1);
-    later->End(false);next_context->End(false);later->Service();next_context->Service();routes.Unbind(declared);routes.Clear();
+    later->End(false);next_context->End(false);later->Service();next_context->Service();
+    Check(!next_context->Drained());
+    done.execution=begin.execution;done.operation=AnimationSequenceOperation::DefinitionRetired;
+    routes.Observe(done);Check(next_context->Drained());
+    routes.Unbind(declared);routes.Clear();
     Check(roots.empty());
     a={};allocating=&a;VisualEffectContext targeted(services);
     on_submit=[&]{targeted.End(false);targeted.Service();};
@@ -309,7 +313,18 @@ void TestVisualProgram(const char* file) {
     player.Observe(101,3,program->actions.at("resolve").state,0.25f);player.Service();Check(controlled.size()>before_end);
     for(auto& p:requests)if(p->removes)p->released=true; // engine finishes prior fades
     player.End(false);release_on_remove=true;player.Service();Check(player.Drained() && roots.empty());
+    const auto detached_after_close=detaches,cancelled_after_close=cancellations;
+    player.End();player.Leave();player.Service();
+    Check(player.Drained() && detaches==detached_after_close && cancellations==cancelled_after_close);
     if(file){delegates.clear();return;}
+    // Attachment failure must remain visible, and must not run half a scene
+    // or silently succeed on a subsequent Service call.
+    auto failed_attachment=callbacks;
+    failed_attachment.attach=[](auto){throw std::runtime_error("current receiver missing");};
+    const auto before_attachment=created.size();VisualProgramPlayer unattached(program,failed_attachment);
+    unattached.Select("gift");unattached.Service();unattached.Service();
+    Check(!unattached.Status().prepared && unattached.Status().issues.size()==1 && created.size()==before_attachment);
+    unattached.End();unattached.Service();Check(unattached.Drained() && roots.empty());
     // A pending control in one lane must not block another lane, and it must
     // not repeat previously accepted transitions on each frame.
     requests.clear();created.clear();controlled.clear();triggered.clear();

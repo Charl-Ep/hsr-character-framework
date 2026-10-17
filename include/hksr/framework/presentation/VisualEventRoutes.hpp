@@ -20,6 +20,7 @@ public:
     // receiver and context. No character/menu/path-to-entity inference.
     RuleId Bind(api::EntityOrigin,void* receiver,VisualEventRule,std::shared_ptr<VisualEffectContext>);
     void Unbind(RuleId); // existing executions keep their original association
+    bool Interested(api::EntityOrigin) const;
     void Before(const api::AnimationEventSource&,const std::string& file);
     void Built(const api::AnimationEventSource&,const api::AnimationTaskConstruction&);
     void After(const api::AnimationEventSource&);

@@ -678,6 +678,50 @@ void TestModelProfileInputs() {
     {
         reset_baseline(); framework::CharacterPlan plan; plan.package=package;
         plan.alternate=framework::BattlePresentation{{"battle.prefab",{},{}},{}};
+        auto input=std::make_shared<framework::VisualProgramInput>();
+        input->program=std::make_shared<framework::VisualProgram>(framework::ParseVisualProgram(R"({
+            "format":"hksr.visual-program","id":"session","source":"battle","scope":"scene","effects":{},
+            "actions":{"play":{"state":"SomeState","restart":true,"enter":[
+              {"op":"timeline_play","source":"scene","key":"scene","path":"scene.playable"}]}}})"));
+        plan.visual_program=input;
+        auto configured=session_services;std::shared_ptr<framework::VisualProgramPlayer> player;
+        const auto begins_before=begins;int preparations=0;bool scene_alive=false;
+        configured.visual_program=[&](api::EntityOrigin owner,const framework::VisualProgramInput& value,const auto&) {
+            Check(owner.token.entity==entity_ptr && owner.world==world_ptr && begins==begins_before);++preparations;
+            framework::VisualProgramServices callbacks;
+            callbacks.effects=std::make_shared<api::PresentationEffects>(api::EffectRequestServices{{},api::EffectAccess({}),{},{},{}});
+            callbacks.create=[](auto&,const auto&,const auto&)->framework::VisualEffectId{throw std::logic_error("unexpected effect");};
+            callbacks.timeline=[&](const auto&){scene_alive=true;return framework::VisualStepResult{framework::VisualStepState::Done,{}};};
+            callbacks.cancel_timelines=[&]{scene_alive=false;};callbacks.timelines_drained=[&]{return !scene_alive;};
+            player=std::make_shared<framework::VisualProgramPlayer>(value.program,std::move(callbacks));return player;
+        };
+        framework::CharacterSession session(world_ptr,std::move(plan),configured);
+        session.Create(create);session.Queue(Domain::Alternate,framework::FreeStyleState{"SomeState"});
+        session.Service(frame,appearance,types);
+        Check(preparations==1 && player && player->Status().playing && scene_alive);
+        session.Queue(Domain::Exploration,framework::NpcMotion{18});session.Service(frame,appearance,types);
+        Check(!scene_alive && preparations==1);
+        session.Queue(Domain::Alternate,framework::FreeStyleState{"SomeState"});session.Service(frame,appearance,types);
+        Check(scene_alive && preparations==1); // retained player, new model/play receipt
+        session.Remove();session.Service(frame,appearance,types);Check(session.Status().closed && player->Drained() && roots.empty());
+    }
+    {
+        reset_baseline();framework::CharacterPlan plan;plan.package=package;
+        plan.alternate=framework::BattlePresentation{{"battle.prefab",{},{}},{}};
+        plan.visual_program=std::make_shared<framework::VisualProgramInput>();
+        auto configured=session_services;int attempts=0;
+        configured.visual_program=[&](api::EntityOrigin,const auto&,const auto&)->std::shared_ptr<framework::VisualProgramPlayer>{
+            ++attempts;throw std::runtime_error("program assembly failed");
+        };
+        framework::CharacterSession session(world_ptr,std::move(plan),configured);
+        session.Create(create);session.Queue(Domain::Alternate,framework::FreeStyleState{"SomeState"});
+        const auto plays=battle_plays;session.Service(frame,appearance,types);
+        Check(attempts==1 && battle_plays==plays && !session.Status().errors.empty());
+        session.Service(frame,appearance,types);Check(attempts==1 && session.Status().closed && roots.empty());
+    }
+    {
+        reset_baseline(); framework::CharacterPlan plan; plan.package=package;
+        plan.alternate=framework::BattlePresentation{{"battle.prefab",{},{}},{}};
         framework::CharacterSession session(world_ptr,std::move(plan),session_services);
         session.Queue(Domain::Alternate,framework::FreeStyleState{"SomeState"}); session.Create(create);
         const auto count=battle_plays,begin_count=begins;

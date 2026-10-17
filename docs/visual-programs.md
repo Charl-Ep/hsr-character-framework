@@ -1,6 +1,16 @@
 # Visual programs
 
-`VisualProgramPlayer` runs an authored scene across body actions. `ActionPlayback::ConfigureVisualProgram` connects it to the animation player while the battle presentation domain is enabled. The application supplies the definition and engine services; the default host does not load visual programs.
+`VisualProgramPlayer` runs an authored scene across body actions. `ActionPlayback::ConfigureVisualProgram` connects it to the animation player while the battle presentation domain is enabled.
+
+## Host integration
+
+Call `FrameworkHost::SetVisualPrograms` before preparation with a map from character configuration path to `VisualProgramInput`. The application loads definitions off the engine thread. An empty map leaves program observers uninstalled.
+
+`VisualProgramInput` contains the definition, explicit target entity generations and preview choices. `Caster` resolves to the created actor. Other target names require an entry in `targets`; these live references are per-creation inputs, not saved layout identities.
+
+The host prepares `VisualProgramRuntime` and activates its construction, sequence and submission observers before servicing characters. A session declares its rules before loading its alternate model. On scene entry, the runtime reads and retains the current event receiver. Native effects and Common Timelines remain owned until their actual cleanup completes.
+
+For custom assembly, use `CharacterPlan::visual_program` with `CharacterSessionServices::visual_program`, or configure `ActionPlayback` directly. Keep providers alive until sessions and program cleanup have closed.
 
 ## Data
 
@@ -24,10 +34,10 @@ An action with `restart: true` creates a new scene. Other actions retain its eff
 
 `ConnectVisualTimelines` connects a `VisualTimelines` scene to these callbacks. Its factory creates SDK `OwnedTimeline` requests bound to the actor. The adapter supports Common Timelines without task-level volume release. Replaying a key retains the cancelled prior borrow until cleanup completes.
 
-`Select` queues intent. `Service` prepares the scene and collects independent input errors. The body starts after preparation succeeds; `Played` and `Observe` identify its actual playback and model. Pending controls retry only unresolved receipts, without restarting accepted transitions.
+`Select` queues intent, merging supplied choices over the service defaults. `Service` prepares the scene and collects independent input errors. The body starts after preparation succeeds; `Played` and `Observe` identify its actual playback and model. Pending controls retry only unresolved receipts, without restarting accepted transitions.
 
 `Leave` retires the scene and permits a later restart. `End` closes the player. Continue `Service` until `Drained`, including effects, executing native producers and Timeline cleanup.
 
-For native events, declare `VisualEventRoutes` selectors before model event construction, then attach the current receiver and scene before playback. Definitions are reusable. Detaching prevents new associations; executing sequences keep their original cleanup responsibility until completion or reset.
+For native events, declare `VisualEventRoutes` selectors before model event construction, then attach the current receiver and scene before playback. Definitions are reusable. Detaching prevents new associations; executing sequences keep their original cleanup responsibility until completion, reset or definition retirement.
 
 Optional `effect_keys` map exact original `TriggerEffect.EffectPath` values to local keys. Unlisted effects use the rule's default key. Supply a source-path reader when using this mapping. `RemoveInFlight` also cancels later submissions from the currently bound execution; a later execution does not inherit that cancellation.

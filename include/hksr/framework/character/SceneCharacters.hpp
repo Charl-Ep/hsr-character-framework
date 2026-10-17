@@ -37,6 +37,7 @@ public:
         create_controls_=std::move(create);player_=std::move(player);
     }
     void ConfigureProfiles(std::shared_ptr<const PresentationProfiles> profiles) {profiles_=std::move(profiles);}
+    void ConfigurePrograms(std::map<std::string,std::shared_ptr<const VisualProgramInput>> programs) {programs_=std::move(programs);}
     void ConfigureTiming(api::OperationTrace::Sink sink){timing_=std::move(sink);}
     void EnableTiming(bool enabled){timing_enabled_=enabled;}
     std::shared_ptr<const ControlSubmission> Place(std::uint64_t id,CharacterPlacement pose,bool relative);
@@ -92,6 +93,7 @@ private:
     api::PresentationContext::ControlFactory create_controls_;
     api::PresentationContext::PlayerResolver player_;
     std::shared_ptr<const PresentationProfiles> profiles_;
+    std::map<std::string,std::shared_ptr<const VisualProgramInput>> programs_;
     void BindProfile(CharacterPlan& plan) const;
     void SubmitAction(Entry&);
 };

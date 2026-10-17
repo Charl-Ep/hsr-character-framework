@@ -24,6 +24,9 @@ public:
     // the bootstrap worker; the host only exchanges values with it.
     void SetLayoutIo(std::shared_ptr<LayoutIo> io) {layout_io_=std::move(io);}
     void SetPresentationProfiles(std::shared_ptr<const PresentationProfiles> profiles) {profiles_=std::move(profiles);}
+    // Authored inputs, loaded off the engine thread before Prepare. An empty
+    // registry does not install the optional program observation machinery.
+    void SetVisualPrograms(std::map<std::string,std::shared_ptr<const VisualProgramInput>> programs) {programs_=std::move(programs);}
     void SetObservedCharacter(std::uint64_t id) {observed_character_.store(id);}
     // Optional synchronous observer of the already-validated selected model.
     // Borrowed references are valid only during this callback; never queued to UI.
@@ -64,6 +67,7 @@ private:
     ApplicationService application_;
     std::shared_ptr<LayoutIo> layout_io_;
     std::shared_ptr<const PresentationProfiles> profiles_;
+    std::map<std::string,std::shared_ptr<const VisualProgramInput>> programs_;
     std::vector<std::string> binding_errors_;
     bool closing_=false,types_attempted_=false;
     bool effects_closed_=false;

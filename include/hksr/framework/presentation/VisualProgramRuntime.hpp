@@ -1,0 +1,42 @@
+#pragma once
+#include "VisualEventRoutes.hpp"
+#include "VisualTimelines.hpp"
+#include "PresentationProfile.hpp"
+#include <hksr/presentation/PresentationContext.hpp>
+#include <hksr/presentation/events/AnimationEventConstruction.hpp>
+#include <hksr/managed/ManagedRoots.hpp>
+
+namespace hksr::framework {
+// Per-creation inputs. Targets are explicit entity generations, never a
+// gameplay target selector or a fallback to the caster. Not layout data.
+struct VisualProgramInput {
+    std::shared_ptr<const VisualProgram> program;
+    std::map<std::string,api::EntityOrigin> targets;
+    std::map<std::string,std::string> choices;
+};
+// Prepared with the host, activated before model construction. Owns observers
+// and keeps retiring players until their effects and Timelines drain.
+class VisualProgramRuntime {
+public:
+    VisualProgramRuntime(api::PresentationContext&,api::ManagedObjects&,VisualEventRoutes::Trace={});
+    ~VisualProgramRuntime();
+    void Activate();
+    std::shared_ptr<VisualProgramPlayer> Create(api::EntityOrigin,const VisualProgramInput&,
+        const std::shared_ptr<const PresentationProfile>&);
+    void Collect();
+    bool Close(); // after sessions close; no early detachment of producers
+private:
+    struct Scene;
+    void Attach(Scene&,std::shared_ptr<VisualEffectContext>);
+    void Detach(Scene&);
+    VisualEffectId CreateEffect(Scene&,VisualEffectContext&,const std::string&,const VisualEffectInput&);
+    api::PresentationContext& api_;
+    api::ManagedObjects& objects_;
+    VisualEventRoutes routes_;
+    std::unique_ptr<api::AnimationSequenceExecutions> sequences_;
+    std::unique_ptr<api::AnimationEventConstruction> constructions_;
+    std::unique_ptr<api::EffectSubmissions> effects_;
+    std::vector<std::shared_ptr<Scene>> scenes_;
+    bool closing_=false;
+};
+}

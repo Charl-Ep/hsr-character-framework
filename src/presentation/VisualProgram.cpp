@@ -14,7 +14,8 @@ VisualProgramPlayer::VisualProgramPlayer(std::shared_ptr<const VisualProgram> pr
 std::uint64_t VisualProgramPlayer::Select(const std::string& action,std::map<std::string,std::string> choices) {
     if(status_.closing)throw std::logic_error("visual program closing");
     if(!program_->actions.count(action))throw std::invalid_argument("unknown visual program action: "+action);
-    pending_=Selection{++next_,action,std::move(choices)};return next_;
+    auto selected=services_.choices;for(auto& [key,value]:choices)selected[key]=std::move(value);
+    pending_=Selection{++next_,action,std::move(selected)};return next_;
 }
 void VisualProgramPlayer::Retire(bool fade) {
     if(context_){context_->End(fade);retired_.push_back(std::move(context_));}
@@ -23,9 +24,11 @@ void VisualProgramPlayer::Retire(bool fade) {
     variables_.clear();
 }
 void VisualProgramPlayer::End(bool fade) {
+    if(status_.closing)return;
     Leave(fade);status_.closing=true;
 }
 void VisualProgramPlayer::Leave(bool fade) {
+    if(status_.closing)return;
     ++next_;pending_.reset();status_.prepared=false;status_.playing=false;
     end_pending_=true;end_fade_=fade;
 }
@@ -105,7 +108,8 @@ VisualStepResult VisualProgramPlayer::Execute(const VisualInstruction& input,Cur
                 for(const auto& key:op.effects) {
                     const auto rows=context_->Requests(key);
                     cursor.receipts->insert(cursor.receipts->end(),rows.begin(),rows.end());
-                    if(rows.empty())Issue(input,"no owned effect receipt for removal: "+key);
+                    const bool pending=services_.remove_in_flight && services_.remove_in_flight(context_,key,{op.fade,op.immediate,false});
+                    if(rows.empty() && !pending)Issue(input,"no owned effect receipt for removal: "+key);
                     for(const auto id:rows)context_->Remove(id,{op.fade,op.immediate,false});
                 }
                 // Service at the next engine boundary; retain every receipt
@@ -169,7 +173,11 @@ void VisualProgramPlayer::Service() {
                 status_.issues.push_back("scene has not been entered");action_=nullptr;return;
             }
             context_=std::make_shared<VisualEffectContext>(services_.effects);
-            if(services_.attach)services_.attach(context_);
+            try {if(services_.attach)services_.attach(context_);}
+            catch(const std::exception& e) {
+                status_={};status_.intent=selected.intent;status_.action=selected.action;
+                status_.issues.push_back(e.what());Retire(true);action_=nullptr;return;
+            }
             if(next_!=selected.intent)return;
         }
         status_={};status_.intent=selected.intent;status_.action=selected.action;status_.state=action_->state;

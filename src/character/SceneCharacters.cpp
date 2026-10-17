@@ -5,6 +5,10 @@
 
 namespace hksr::framework {
 void SceneCharacters::BindProfile(CharacterPlan& plan) const {
+    if(!plan.visual_program)for(const auto& root:plan.action_sources)if(root.domain==ActionDomain::Alternate && root.source.kind==api::ActionConfigKind::Battle) {
+        const auto found=programs_.find(root.source.path);
+        if(found!=programs_.end()){plan.visual_program=found->second;break;}
+    }
     if(profiles_)for(const auto& root:plan.action_sources)if(root.domain==ActionDomain::Alternate && root.source.kind==api::ActionConfigKind::Battle) {
         const auto found=profiles_->sources.find(root.source.path);
         if(found!=profiles_->sources.end()){plan.presentation_profile=found->second;break;}
