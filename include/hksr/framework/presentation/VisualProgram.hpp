@@ -10,7 +10,11 @@ namespace hksr::framework {
 struct VisualEffectInput {
     std::string path,target;
     api::EntityEffectOptions options;
+    std::string anchor; // named world pose, mutually exclusive with target
 };
+struct VisualSpatialAnchor {api::Position3 position;api::Rotation4 rotation;};
+using VisualSpatialAnchors=std::map<std::string,VisualSpatialAnchor>;
+VisualSpatialAnchors ParseVisualSpatialAnchors(const std::string& json);
 struct VisualCreate {std::vector<std::string> effects;};
 struct VisualAssign {std::string variable;float value=0;};
 struct VisualProgress {std::string effect;std::variant<float,std::string> value;float seconds=0;};

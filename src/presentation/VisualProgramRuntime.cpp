@@ -20,6 +20,7 @@ struct VisualProgramRuntime::Scene {
     api::EntityOrigin owner;
     VisualProgramInput input;
     std::map<std::string,std::uint64_t> selected_targets;
+    VisualSpatialAnchors selected_anchors;
     std::vector<VisualEventRoutes::RuleId> rules;
     std::shared_ptr<VisualProgramPlayer> player;
     std::unique_ptr<api::ManagedRoots> roots;
@@ -62,19 +63,22 @@ std::shared_ptr<VisualProgramPlayer> VisualProgramRuntime::Create(api::EntityOri
     if(closing_ || !Alive(owner) || !input.program)throw std::invalid_argument("visual program requires a live creation and program");
     auto scene=std::make_shared<Scene>();scene->owner=owner;scene->input=input;scene->roots=api_.CreateRoots();
     scene->selected_targets=input.target_characters;
+    scene->selected_anchors=input.anchors;
     scenes_.push_back(scene); // own partial declaration/setup before any later operation can fail
     VisualProgramServices services;services.effects=api_.EffectServices();services.choices=input.choices;
     std::weak_ptr<Scene> weak=scene;
     auto current=[weak]{auto value=weak.lock();if(!value)throw std::logic_error("visual scene ended");return value;};
     services.select_inputs=[current] {
         auto value=current();auto targets=value->input.target_characters;
+        auto anchors=value->input.anchors;
         auto choices=value->input.choices;
         if(value->input.read_parameters) {
             auto parameters=value->input.read_parameters(value->input.character);
             for(auto& [key,id]:parameters.targets)targets[key]=id;
             for(auto& [key,choice]:parameters.choices)choices[key]=std::move(choice);
+            for(const auto& [key,pose]:parameters.anchors)anchors[key]=pose;
         }
-        value->selected_targets=std::move(targets);return choices;
+        value->selected_targets=std::move(targets);value->selected_anchors=std::move(anchors);return choices;
     };
     services.create=[this,current](auto& context,const auto& key,const auto& value){return CreateEffect(*current(),context,key,value);};
     services.effect_state=[this,current](auto& context,auto id,const VisualEffectState& op) {
@@ -157,16 +161,28 @@ std::shared_ptr<VisualEntityMotion> VisualProgramRuntime::Motion() {
     motion_=std::make_shared<VisualEntityMotion>(api::TrackedEntities(),std::move(services));return motion_;
 }
 VisualEffectId VisualProgramRuntime::CreateEffect(Scene& scene,VisualEffectContext& context,const std::string& key,const VisualEffectInput& input) {
-    const auto target=ResolveTarget(scene,input.target);
+    api::EntityOrigin target;std::optional<api::SpatialEffectOptions> spatial;
+    if(!input.anchor.empty()) {
+        if(!input.target.empty())throw std::invalid_argument("effect has both entity and spatial targets");
+        const auto found=scene.selected_anchors.find(input.anchor);
+        if(found==scene.selected_anchors.end())throw std::runtime_error("explicit visual anchor missing: "+input.anchor);
+        const auto& pose=found->second;
+        spatial=api::SpatialEffectOptions{pose.position,pose.rotation,input.options.unique_name,input.options.scale,
+            input.options.fade_in,input.options.simulate_immediately};
+    }else target=ResolveTarget(scene,input.target);
     const auto path=objects_.NewStringUtf8(input.path.c_str());
     if(!path.call.returned || !path.object)throw std::runtime_error("visual effect path allocation failed");
     const auto pin=scene.Keep(path.object);scene.releasing.push_back(pin);
-    if(!Alive(scene.owner) || !Alive(target))throw std::runtime_error("visual owner ended while preparing effect");
-    const auto id=context.StartEntity(key,scene.owner.token.entity,target.token.entity,path.object,input.options);
+    if(!Alive(scene.owner) || (!spatial && !Alive(target)))throw std::runtime_error("visual owner ended while preparing effect");
+    const auto id=spatial?context.StartSpatial(key,scene.owner.token.entity,path.object,*spatial):
+        context.StartEntity(key,scene.owner.token.entity,target.token.entity,path.object,input.options);
     if(trace_) {
         std::ostringstream out;out<<"visual-submit owner="<<scene.owner.token.entity<<" generation="<<scene.owner.token.generation
             <<" target="<<target.token.entity<<" target_generation="<<target.token.generation
-            <<" key="<<key<<" receipt="<<id;trace_(out.str());
+            <<" key="<<key<<" receipt="<<id;
+        if(spatial)out<<" anchor="<<input.anchor<<" position="<<spatial->position.x<<","<<spatial->position.y<<","<<spatial->position.z
+            <<" rotation="<<spatial->rotation.x<<","<<spatial->rotation.y<<","<<spatial->rotation.z<<","<<spatial->rotation.w;
+        trace_(out.str());
     }
     return id;
 }

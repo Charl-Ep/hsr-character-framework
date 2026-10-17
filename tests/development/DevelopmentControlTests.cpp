@@ -143,11 +143,13 @@ void TestDevelopmentControl() {
     const auto queued_before=pending.size();
     request["request_id"]="visual-values";
     request["commands"]=Json::array({
-        {{"op","visual_inputs"},{"character",7},{"targets",{{"Target",9}}},{"choices",{{"prize","grand"}}}},
+        {{"op","visual_inputs"},{"character",7},{"targets",{{"Target",9}}},{"choices",{{"prize","grand"}}},
+            {"anchors",{{"center",{{"position",{6,0,58}}}}}}},
         {{"op","visual_inputs"},{"character",8},{"choices",{{"prize","minor"}}}}});
     preview.Submit(request.dump());
     Check(preview.Drain().size()==2 && pending.size()==queued_before && overrides.size()==2);
     Check(overrides[7].targets.at("Target")==9 && overrides[8].choices.at("prize")=="minor");
+    Check(overrides[7].anchors.at("center").position.z==58 && overrides[7].anchors.at("center").rotation.w==1);
     request["request_id"]="visual-invalid-independent";
     request["commands"]=Json::array({
         {{"op","visual_inputs"},{"character",7},{"targets",{{"Caster",9}}}},

@@ -11,6 +11,7 @@ namespace hksr::framework {
 struct VisualProgramParameters {
     std::map<std::string,std::uint64_t> targets;
     std::map<std::string,std::string> choices;
+    VisualSpatialAnchors anchors;
 };
 struct VisualProgramSignal {
     std::uint64_t generation=0,intent=0;
@@ -33,6 +34,7 @@ struct VisualProgramInput {
     // Data-only mailbox. Consumed on the engine thread; stale creation/action
     // receipts are reported without dispatching into a replacement scene.
     std::function<std::vector<VisualProgramSignal>(std::uint64_t)> take_signals;
+    VisualSpatialAnchors anchors;
 };
 // Prepared with the host, activated before model construction. Owns observers
 // and keeps retiring players until their effects and Timelines drain.

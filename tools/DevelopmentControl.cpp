@@ -269,7 +269,7 @@ void DevelopmentControl::Submit(const std::string& text) {
                 if(commands[i].at("op")=="visual_inputs") {
                     const auto& command=commands[i];
                     for(auto it=command.begin();it!=command.end();++it)
-                        if(it.key()!="op" && it.key()!="character" && it.key()!="targets" && it.key()!="choices")
+                        if(it.key()!="op" && it.key()!="character" && it.key()!="targets" && it.key()!="choices" && it.key()!="anchors")
                             throw std::invalid_argument("unknown visual input field: "+it.key());
                     const auto character=Unsigned(command.at("character"));
                     if(!character)throw std::invalid_argument("visual input requires an instance ID");
@@ -283,6 +283,7 @@ void DevelopmentControl::Submit(const std::string& text) {
                         parameters.targets.emplace(it.key(),target);
                     }
                     parameters.choices=command.value("choices",Json::object()).get<std::map<std::string,std::string>>();
+                    parameters.anchors=ParseVisualSpatialAnchors(command.value("anchors",Json::object()).dump());
                     if(!services_.visual_inputs)throw std::logic_error("visual input control unavailable");
                     services_.visual_inputs(character,std::move(parameters));
                     emit({{"request_id",id},{"index",i},{"event","visual_inputs_set"},{"character",character},

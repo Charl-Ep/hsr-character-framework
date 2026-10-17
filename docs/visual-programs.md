@@ -8,7 +8,7 @@ Call `FrameworkHost::SetVisualPrograms` before preparation with a map from chara
 
 `VisualProgramInput` contains the definition, explicit targets and preview choices. `Caster` resolves to the created actor. Other target names use `targets` for live entity generations or `target_characters` for framework instance IDs. `SceneCharacters` resolves instance IDs at submission, after creation or restoration. Missing, retired and cross-world targets do not fall back to the caster. Custom assemblies supplying instance IDs must provide `resolve_character` and keep it alive through cleanup.
 
-Optional `read_parameters(character)` supplies target IDs and choices when an action selection is consumed. Its values overlay the startup defaults; explicit `Select` choices take precedence. The player keeps that snapshot through the action. Existing effect requests retain their original targets. `SceneCharacters` binds the owning instance ID; custom assemblies provide it explicitly.
+Optional `read_parameters(character)` supplies target IDs, world anchors and choices when an action selection is consumed. Its values overlay the startup defaults; explicit `Select` choices take precedence. The player keeps that snapshot through the action. Existing effect requests retain their original inputs. `SceneCharacters` binds the owning instance ID; custom assemblies provide it explicitly.
 
 The host prepares `VisualProgramRuntime` and activates its construction, sequence and submission observers before servicing characters. A session declares its rules before loading its alternate model. On scene entry, the runtime reads and retains the current event receiver. Native effects and Common Timelines remain owned until their actual cleanup completes.
 
@@ -20,7 +20,7 @@ Development builds optionally read `VISUAL_PROGRAMS.json` beside the DLL at star
 {"programs":[{"file":"VisualPrograms/scene.json","targets":{"Target":2},"choices":{"variant":"a"}}]}
 ```
 
-The development command channel accepts `visual_inputs` to replace one instance's parameter overrides. Omitted maps are empty; omitting both restores startup defaults. Definitions remain fixed until restart. The reply `visual_inputs_set` confirms storage, not playback. The command does not create instances, select an action or change a saved layout.
+The development command channel accepts `visual_inputs` to replace one instance's parameter overrides. Omitted maps are empty; omitting all restores startup defaults. Definitions remain fixed until restart. The reply `visual_inputs_set` confirms storage, not playback. The command does not create instances, select an action or change a saved layout.
 
 ```json
 {"op":"visual_inputs","character":7,"targets":{"Target":2},"choices":{"variant":"b"}}
@@ -39,11 +39,19 @@ The development command channel accepts `visual_inputs` to replace one instance'
 | Field | Content |
 |---|---|
 | `id`, `source`, `scope` | Program identity, character configuration and scene name |
-| `effects` | Local keys mapped to resource paths, explicit targets and entity-effect options |
+| `effects` | Local keys mapped to resource paths, explicit entity targets or world anchors, and visual options |
 | `actions` | Body state, entry instructions, progress lanes and completion destination |
 | `signals` | Named instruction sequences submitted independently of body progress |
 
 Each instruction has an `op` and a `source` identifying its configuration node. Operations are `create`, `assign`, `progress`, `remove`, `trigger`, `follow`, `effect_state`, `timeline_play` and `timeline_stop`. An optional `when` selects an input by `choice` and `is`.
+
+Each effect specifies either `target` or `anchor`. An anchor resolves through `VisualProgramInput::anchors` or parameter overrides; it contains world `position` and an optional `[x,y,z,w]` quaternion `rotation` (identity by default). Anchored effects accept `scale`, `unique_name`, `fade_in` and `simulate_immediately`, but not entity-relative offsets or attachment options. No target entity is created or substituted. The initial pose is fixed at submission; the effect's own animation can move it.
+
+```json
+{"op":"visual_inputs","character":7,"anchors":{"center":{"position":[6,0,58],"rotation":[0,1,0,0]}}}
+```
+
+The corresponding effect definition is `{"path":"effect.prefab","anchor":"center"}`. Startup manifest entries also accept `anchors`.
 
 `effect_state` sets the named effect's first Animator on layer zero. `transition` is normalized transition duration (default 0); `restart` defaults to false. The SDK resolves the state name through Unity's `Animator.StringToHash` and caches the result. This does not select the character's body state.
 
@@ -67,7 +75,7 @@ An action with `restart: true` creates a new scene. Other actions retain its eff
 
 ## Services and ownership
 
-`VisualProgramServices::create` resolves targets, retains inputs and calls `VisualEffectContext::StartEntity`. Trigger and removal operations use the SDK effect services unless overridden. Removal forwards fade and immediate-fade flags and waits for a manager receipt, not the end of the fade. Timeline playback uses a supplied service with cancellation and drain observations.
+`VisualProgramServices::create` resolves inputs and calls `VisualEffectContext::StartEntity` or `StartSpatial`. Trigger and removal operations use the SDK effect services unless overridden. Removal forwards fade and immediate-fade flags and waits for a manager receipt, not the end of the fade. Timeline playback uses a supplied service with cancellation and drain observations.
 
 `ConnectVisualTimelines` connects a `VisualTimelines` scene to these callbacks. Its factory creates SDK `OwnedTimeline` requests bound to the actor. The adapter supports Common Timelines without task-level volume release. Replaying a key retains the cancelled prior borrow until cleanup completes.
 

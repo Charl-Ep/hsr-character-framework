@@ -54,6 +54,14 @@ VisualEffectId VisualEffectContext::Track(const std::string& key,void* manager,a
     requests_.at(id).retained=true;
     return id;
 }
+VisualEffectId VisualEffectContext::StartSpatial(const std::string& key,void* caster,void* path,const api::SpatialEffectOptions& options) {
+    if(finishing_ || closing_)throw std::logic_error("visual context no longer accepts creation");
+    if(key.empty() || !caster || !path)throw std::invalid_argument("visual spatial effect input absent");
+    Operation operation(operations_);const auto id=++next_;
+    auto request=services_->CreateRequest("visual spatial effect request="+std::to_string(id)+" key="+key+" ");
+    auto* live=request.get();requests_.emplace(id,Entry{key,std::move(request)});
+    live->StartSpatial(caster,path,options);return id;
+}
 void VisualEffectContext::Finish() {finishing_=true;}
 void VisualEffectContext::End(bool fade) {
     closing_=true;end_fade_=fade;

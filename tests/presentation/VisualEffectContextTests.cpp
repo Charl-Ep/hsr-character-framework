@@ -61,6 +61,11 @@ std::shared_ptr<const PresentationEffects> Services() {
         []{return ObjectResult{{true,0},&manager};},
         [](void* raw,void* target,void* callback){auto* p=static_cast<Params*>(raw);p->target=target;p->callback=callback;return EffectInputResult{{true,0},{true,0}};}};
     EffectControlServices controls;
+    requests.configure_spatial=[](void* raw,void* caster,void* callback,const SpatialEffectOptions& options) {
+        Check(caster==&entity && options.position.x==6 && options.position.z==58);
+        auto* p=static_cast<Params*>(raw);p->target=nullptr;p->callback=callback;
+        return EffectInputResult{{true,0},{true,0}};
+    };
     controls.progress=[](EffectReference ref,float,float){controlled.push_back(ref.parameters);const auto* p=static_cast<Params*>(ref.parameters);
         return EffectControlResult{p->state==3?EffectControlState::Applied:EffectControlState::NotLoaded,{true,0},true,{}};};
     controls.animator=[progress=controls.progress](EffectReference ref,int,float duration,bool){return progress(ref,0,duration);};
@@ -85,6 +90,41 @@ std::shared_ptr<const PresentationEffects> Services() {
 }
 }
 void TestVisualEffectContext() {
+    {
+        const auto anchors=ParseVisualSpatialAnchors(R"({"center":{"position":[6,0,58],"rotation":[0,1,0,0]}})");
+        auto program=std::make_shared<VisualProgram>(ParseVisualProgram(R"({
+          "format":"hksr.visual-program","id":"spatial","source":"sample","scope":"scene",
+          "effects":{"ground":{"path":"ground.prefab","anchor":"center","unique_name":"ground"}},
+          "actions":{"start":{"state":"Start","restart":true,"enter":[
+            {"op":"create","effects":["ground"],"source":"entry"},
+            {"op":"effect_state","effect":"ground","state":"Move","source":"entry"}]}},
+          "signals":{"enter_view":[{"op":"effect_state","effect":"ground","state":"Idle","source":"view"}]}
+        })"));
+        Check(program->effects.at("ground").target.empty());
+        auto services=Services();VisualProgramServices callbacks;callbacks.effects=services;
+        callbacks.create=[&](auto& context,const auto& key,const auto& input){
+            const auto& anchor=anchors.at(input.anchor);SpatialEffectOptions options;
+            options.position=anchor.position;options.rotation=anchor.rotation;options.unique_name=input.options.unique_name;
+            return context.StartSpatial(key,&entity,&path,options);
+        };
+        callbacks.effect_state=[](auto& context,auto id,const VisualEffectState& op){
+            const auto result=context.SetAnimatorState(id,op.state,op.transition,op.restart);
+            return VisualStepResult{result.state==EffectControlState::Applied?VisualStepState::Done:VisualStepState::Pending,{}};
+        };
+        VisualProgramPlayer player(program,callbacks);const auto intent=player.Select("start");player.Service();
+        Check(!player.Status().prepared && !a.target && a.state==1);
+        Complete(a);player.Service();Check(player.Status().prepared && player.Status().issues.empty());
+        Check(player.Signal(intent,"enter_view")!=0);player.Service();Check(player.Status().completed_signal==1);
+        player.End();release_on_remove=true;player.Service();Check(player.Drained() && roots.empty() && a.removes==1);
+        a={};allocating=&a;release_on_remove=false;
+        // Exit during synchronous submission still retains the spatial receipt.
+        VisualEffectContext context(services);SpatialEffectOptions pose;pose.position={6,0,58};
+        on_submit=[&]{context.End();context.Service();};
+        const auto id=context.StartSpatial("ground",&entity,&path,pose);on_submit={};
+        Check(context.Status(id)->cancelled);Complete(a);release_on_remove=true;context.Service();
+        Check(context.Drained() && roots.empty());
+        a={};allocating=&a;release_on_remove=false;
+    }
     auto services=Services();VisualEffectContext scene(services),aura(services),another_actor(services);
     const auto scene_id=scene.Start("PK",&entity,&path);
     allocating=&b;const auto aura_id=aura.Start("PK",&entity,&path);

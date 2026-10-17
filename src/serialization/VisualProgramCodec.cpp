@@ -81,8 +81,14 @@ VisualProgram ParseVisualProgram(const std::string& text) {
     VisualProgram out;out.id=Name(json.at("id"));out.source=Name(json.at("source"));out.scope=Name(json.at("scope"));
     Need(json.at("effects").is_object(),"visual effects must be an object");
     for(auto it=json.at("effects").begin();it!=json.at("effects").end();++it) {
-        const auto& row=it.value();Fields(row,{"path","target","position_offset","rotation_offset","scale","attach_to_target","fade_in","simulate_immediately","unique_name"});
-        VisualEffectInput input;input.path=Name(row.at("path"));input.target=Name(row.at("target"));
+        const auto& row=it.value();Fields(row,{"path","target","anchor","position_offset","rotation_offset","scale","attach_to_target","fade_in","simulate_immediately","unique_name"});
+        VisualEffectInput input;input.path=Name(row.at("path"));
+        Need(row.contains("target")!=row.contains("anchor"),"effect needs exactly one target or world anchor");
+        if(row.contains("anchor")) {
+            input.anchor=Name(row.at("anchor"));
+            Need(!row.contains("position_offset") && !row.contains("rotation_offset") && !row.contains("attach_to_target"),
+                "world-anchored effect cannot use entity-relative inputs");
+        }else input.target=Name(row.at("target"));
         if(row.contains("position_offset"))input.options.position_offset=Vector(row.at("position_offset"));
         if(row.contains("rotation_offset"))input.options.rotation_offset=Vector(row.at("rotation_offset"));
         if(row.contains("scale"))input.options.scale=Vector(row.at("scale"));
@@ -123,6 +129,22 @@ VisualProgram ParseVisualProgram(const std::string& text) {
         Need(json.at("signals").is_object(),"visual signals must be an object");
         for(auto it=json.at("signals").begin();it!=json.at("signals").end();++it)
             out.signals.emplace(Name(it.key()),Instructions(it.value(),out));
+    }
+    return out;
+}
+VisualSpatialAnchors ParseVisualSpatialAnchors(const std::string& text) {
+    const auto json=Json::parse(text);Need(json.is_object(),"visual anchors must be an object");
+    VisualSpatialAnchors out;
+    for(auto it=json.begin();it!=json.end();++it) {
+        const auto& row=it.value();Fields(row,{"position","rotation"});
+        VisualSpatialAnchor anchor;anchor.position=Vector(row.at("position"));
+        if(row.contains("rotation")) {
+            const auto& r=row.at("rotation");Need(r.is_array() && r.size()==4,"anchor rotation must be a quaternion");
+            anchor.rotation={Number(r[0]),Number(r[1]),Number(r[2]),Number(r[3])};
+            const auto& q=anchor.rotation;
+            Need(double(q.x)*q.x+double(q.y)*q.y+double(q.z)*q.z+double(q.w)*q.w>0,"anchor rotation must be nonzero");
+        }
+        out.emplace(Name(it.key()),anchor);
     }
     return out;
 }

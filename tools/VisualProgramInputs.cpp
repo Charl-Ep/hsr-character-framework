@@ -25,7 +25,7 @@ VisualProgramInputs ReadVisualProgramInputs(const std::filesystem::path& file) {
     if(!json.at("programs").is_array())throw std::invalid_argument("programs must be an array");
     VisualProgramInputs result;
     for(const auto& row:json.at("programs")) {
-        Fields(row,{"file","targets","choices"});
+        Fields(row,{"file","targets","choices","anchors"});
         const auto filename=row.at("file").get<std::string>();
         if(filename.empty() || filename.find('\0')!=std::string::npos)throw std::invalid_argument("visual program filename missing");
         auto input=std::make_shared<framework::VisualProgramInput>();
@@ -39,6 +39,7 @@ VisualProgramInputs ReadVisualProgramInputs(const std::filesystem::path& file) {
             input->target_characters.emplace(it.key(),it.value().get<std::uint64_t>());
         }
         input->choices=row.value("choices",Json::object()).get<std::map<std::string,std::string>>();
+        input->anchors=framework::ParseVisualSpatialAnchors(row.value("anchors",Json::object()).dump());
         if(!result.emplace(input->program->source,input).second)throw std::invalid_argument("duplicate visual program source: "+input->program->source);
     }
     return result;
@@ -46,7 +47,7 @@ VisualProgramInputs ReadVisualProgramInputs(const std::filesystem::path& file) {
 void VisualProgramOverrides::Set(std::uint64_t character,framework::VisualProgramParameters value) {
     if(!character)throw std::invalid_argument("visual input requires an instance ID");
     std::lock_guard<std::mutex> lock(mutex_);
-    if(value.targets.empty() && value.choices.empty())values_.erase(character);
+    if(value.targets.empty() && value.choices.empty() && value.anchors.empty())values_.erase(character);
     else values_[character]=std::move(value);
 }
 framework::VisualProgramParameters VisualProgramOverrides::Read(std::uint64_t character) const {
