@@ -93,7 +93,7 @@ void ContextInstructions(const std::vector<VisualInstruction>& steps) {
 }
 }
 VisualProgram ParseVisualProgram(const std::string& text) {
-    const auto json=Json::parse(text);Fields(json,{"format","id","source","scope","effects","actions","signals","contexts"});
+    const auto json=Json::parse(text);Fields(json,{"format","id","source","scope","effects","actions","signals","contexts","phases"});
     Need(json.at("format")=="hksr.visual-program","unsupported visual program format");
     VisualProgram out;out.id=Name(json.at("id"));out.source=Name(json.at("source"));out.scope=Name(json.at("scope"));
     Need(json.at("effects").is_object(),"visual effects must be an object");
@@ -115,12 +115,36 @@ VisualProgram ParseVisualProgram(const std::string& text) {
         input.options.simulate_immediately=row.value("simulate_immediately",false);
         out.effects.emplace(Name(it.key()),std::move(input));
     }
+    if(json.contains("phases")) {
+        Need(json.at("phases").is_object(),"visual phases must be an object");
+        for(auto it=json.at("phases").begin();it!=json.at("phases").end();++it) {
+            const auto& row=it.value();Fields(row,{"modifier","path"});api::ModifierPhaseSource source;
+            source.modifier=Name(row.at("modifier"));const auto& path=row.at("path");
+            Need(path.is_array() && !path.empty(),"phase field path must be nonempty");
+            for(const auto& edge:path) {
+                Fields(edge,{"owner","field","index","key"});api::ConfigStep step;
+                step.declaring_type=Name(edge.at("owner"));step.field=Name(edge.at("field"));
+                Need(!edge.contains("index") || !edge.contains("key"),"phase edge cannot have both index and key");
+                if(edge.contains("index")) {
+                    Need(edge.at("index").is_number_integer(),"phase index must be an integer");
+                    const auto index=edge.at("index").get<std::int64_t>();
+                    Need(index>=0 && index<=INT32_MAX,"phase index is out of range");
+                    step.selection=api::ConfigSelection::Index;step.index=static_cast<std::int32_t>(index);
+                } else if(edge.contains("key")){step.selection=api::ConfigSelection::StringKey;step.key=Name(edge.at("key"));}
+                source.path.push_back(std::move(step));
+            }
+            out.phases.emplace(Name(it.key()),std::move(source));
+        }
+    }
     if(json.contains("contexts")) {
         Need(json.at("contexts").is_object(),"visual contexts must be an object");
         std::set<std::string> event_scopes{out.scope};
         for(auto it=json.at("contexts").begin();it!=json.at("contexts").end();++it)out.contexts.emplace(Name(it.key()),VisualProgramContext{});
         for(auto it=json.at("contexts").begin();it!=json.at("contexts").end();++it) {
-            const auto& row=it.value();Fields(row,{"enter","exit","event_scope"});auto& context=out.contexts.at(it.key());
+            const auto& row=it.value();Fields(row,{"enter","exit","event_scope","phase"});auto& context=out.contexts.at(it.key());
+            if(row.contains("phase")) {
+                context.phase=Name(row.at("phase"));Need(out.phases.count(context.phase)!=0,"unknown phase: "+context.phase);
+            }
             if(row.contains("event_scope")) {
                 context.event_scope=Name(row.at("event_scope"));
                 Need(event_scopes.insert(context.event_scope).second,"event scope has multiple context owners: "+context.event_scope);

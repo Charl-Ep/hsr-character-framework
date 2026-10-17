@@ -219,7 +219,8 @@ void TestActionPlayback() {
     token=api::TrackedEntities().Track(own);cancel_during_exit=false;
     auto program_data=std::make_shared<framework::VisualProgram>(framework::ParseVisualProgram(R"({
       "format":"hksr.visual-program","id":"test","source":"source","scope":"scene","effects":{},
-      "contexts":{"phase":{}},
+      "phases":{"enhanced":{"modifier":"Modifier","path":[{"owner":"RPG.GameCore.Change","field":"PhaseAnimConfig"}]}},
+      "contexts":{"phase":{"phase":"enhanced"}},
       "actions":{"attack":{"state":"attack_loop","restart":true,"complete_at":0.7,"completion_state":"待机",
         "enter":[{"op":"context_enter","name":"phase","source":"phase"},
                  {"op":"timeline_play","source":"scene","key":"scene","path":"scene.playable"}],
@@ -233,6 +234,17 @@ void TestActionPlayback() {
         return framework::VisualStepResult{scene_ready?framework::VisualStepState::Done:framework::VisualStepState::Pending,{}};};
     services.cancel_timelines=[&]{if(scene_alive)stopped_after_plays=state_plays;scene_alive=false;};
     services.timelines_drained=[&]{return !scene_alive;};
+    auto phase_data=std::make_shared<api::PhaseVisualConfigSources>();phase_data->visuals.context_available=true;
+    phase_data->standby={true,"attack_loop",{}};
+    auto& defaults=phase_data->visuals.defaults;auto& override_rows=phase_data->visuals.character;
+    defaults.loaded=override_rows.loaded=true;defaults.behaviors.enumerated=override_rows.behaviors.enumerated=true;
+    defaults.source="global";override_rows.source="phase";
+    api::VisualBehaviorInput base_row;base_row.flag={true,28,{}};base_row.emotion={true,"",{}};
+    base_row.occur.resolved_state={true,"attack_loop",{}};base_row.loop.resolved_state={true,"",{}};
+    base_row.occur.transition={true,0,{}};defaults.behaviors.rows.push_back(base_row);
+    auto phase_row=base_row;phase_row.occur.resolved_state={true,"待机",{}};phase_row.emotion={true,"not-the-expression-source",{}};
+    override_rows.behaviors.rows.push_back(phase_row);
+    services.read_phase=[&](const auto&){return phase_data;};
     auto player=std::make_shared<framework::VisualProgramPlayer>(program_data,std::move(services));
     framework::ActionPlayback integrated(token,owner_world,animations(token),std::make_shared<api::PresentationEffects>(effects));
     integrated.ConfigureVisualProgram(player);integrated.SetPresentationDomain(true);integrated.SetCompletionState("待机");active=&integrated;
@@ -252,6 +264,11 @@ void TestActionPlayback() {
     current_hash=71;current_time=0;++active_frame.sequence;integrated.Service(active_frame,true,objects);
     Check(stopped_after_plays==state_plays && !scene_alive && player->Status().completed);
     const auto phase=player->ContextToken("phase");Check(phase);
+    Check(integrated.CurrentIdle()=="attack_loop");
+    auto visual=framework::ResolveVisualState(phase_data->visuals,28);Check(visual && visual->source=="phase" && visual->expression.value.empty());
+    visual->value=base_row; // A menu selection prepared before phase entry.
+    integrated.Queue(*visual);integrated.Service(active_frame,true,objects);
+    Check(integrated.Status().last->outcome==framework::ActionOutcome::Returned && integrated.Status().last->hash.value==71);
     integrated.Queue(framework::FreeStyleState{"待机"});integrated.Service(active_frame,true,objects);
     Check(player->ContextToken("phase")==phase && !scene_alive); // unlisted body state is not phase exit
     // The controller may enter the declared successor itself. Observe it;
@@ -273,6 +290,7 @@ void TestActionPlayback() {
     integrated.Queue(configured);current_time=0.1f;integrated.Service(active_frame,true,objects);
     Check(state_plays==count+1 && scene_alive); // same model can enter again
     integrated.SetPresentationDomain(false);integrated.Service(active_frame,true,objects);Check(!scene_alive && player->ActiveContexts().empty());
+    Check(integrated.CurrentIdle()=="待机");
     Check(integrated.Close(active_frame) && player->Drained() && roots.empty());api::TrackedEntities().Forget(token);
     std::cout<<"Action playback passed: owned lookup, queued replacement, readiness, three official paths, current state membership, no replay after faults, disposal isolation; local only.\n";
 }

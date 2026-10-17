@@ -15,9 +15,10 @@ AppearanceServices RuntimeServices::Appearance() const {
     return {{objects_,r.Mesh(),r.Skinning(),r.MeshTemplates(),r.Texture(),r.Material(),r.Shader(),r.Arrays(),r.Hierarchy()},
         r.Scene(),r.Visuals(),r.Config(),r.Components()};
 }
-void RuntimeServices::PrepareVisualPrograms(VisualEventRoutes::Trace trace) {
+void RuntimeServices::PrepareVisualPrograms(VisualEventRoutes::Trace trace,VisualProgramRuntime::PhaseReader phases) {
     if(programs_)throw std::logic_error("visual program runtime already prepared");
     programs_=std::make_unique<VisualProgramRuntime>(*context_,objects_,std::move(trace));
+    programs_->SetPhaseReader(std::move(phases));
 }
 void RuntimeServices::ActivateIsolation(){context_->Activate();if(programs_)programs_->Activate();}
 void RuntimeServices::CollectIsolation(){if(programs_)programs_->Collect();context_->Collect();}

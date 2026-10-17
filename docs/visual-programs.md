@@ -107,6 +107,32 @@ For this signal, pass `ContextToken("aura")` to `Signal`, or its diagnostic `con
 
 `InterruptAction` cancels only the default action context and its queued signals. `Leave` and `End` cancel all contexts directly, without waiting for authored exit instructions that may require a live model or loaded effect. Keep servicing until every receipt and native producer drains. The host uses whole-scene exit for domain changes, model retirement and deletion.
 
+### Phase data
+
+`phases` names official modifier data sources. A context selects one with `phase`:
+
+```json
+{
+  "phases": {
+    "enhanced": {
+      "modifier": "ModifierName",
+      "path": [
+        {"owner":"RPG.GameCore.TurnBasedModifierConfig","field":"_CallbackList","index":1},
+        {"owner":"RPG.GameCore.TurnBasedModifierCallbackConfig","field":"CallbackConfig","index":10},
+        {"owner":"RPG.GameCore.CharacterChangePhase","field":"PhaseAnimConfig"}
+      ]
+    }
+  },
+  "contexts": {"visual_manager":{"phase":"enhanced"}}
+}
+```
+
+The path selects a `CharacterPhaseAnimConfig`; it does not execute the modifier. The host caches the copied data per program and phase. Custom hosts supply `read_phase`.
+
+The most recently entered phase context takes precedence. Exiting it restores an earlier live phase context, or the actor's base idle when none remains. Action changes retain these contexts; domain changes and deletion clear them. Programs declaring phases use this lifetime policy instead of `PresentationProfile` idle cues.
+
+Action playback uses the selected standby for idle requests and resolves visual-state selections by their official flag against the active phase. Expressions retain their global-table source. Literal animation names remain literal; phase data does not rewrite arbitrary state requests or create gameplay status effects. Phase contexts are not persisted in layouts.
+
 ### Effect services
 
 `VisualProgramServices::create` resolves inputs and calls `VisualEffectContext::StartEntity` or `StartSpatial`. Trigger and removal operations use the SDK effect services unless overridden. Removal forwards fade and immediate-fade flags and waits for a manager receipt, not the end of the fade. Timeline playback uses a supplied service with cancellation and drain observations.

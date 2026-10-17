@@ -3,6 +3,23 @@
 #include <stdexcept>
 
 namespace hksr::framework {
+std::optional<VisualState> ResolveVisualState(const api::VisualConfigSources& sources,std::int32_t flag,bool recover) {
+    std::optional<VisualState> result;
+    if(!sources.context_available)return result;
+    for(const auto* config:{&sources.defaults,&sources.character})for(const auto& row:config->behaviors.rows)
+        if(row.flag.available && row.flag.value==flag) {
+            VisualState value;value.source=config->source;value.value=row;value.recover=recover;
+            value.expression_source=sources.defaults.source;value.expression_transition=sources.expression_transition;
+            value.expression={true,"",{}};
+            if(!sources.defaults.loaded || !sources.defaults.behaviors.enumerated)value.expression={false,"","global expression table unread"};
+            else for(const auto& global:sources.defaults.behaviors.rows)
+                if(global.flag.available && global.flag.value==flag)value.expression=global.emotion;
+            if(sources.blink_source.available && sources.blink_suppressed_expression.available && value.expression.available &&
+                value.expression.value==sources.blink_suppressed_expression.value)value.blink_source=sources.blink_source.value;
+            result=std::move(value);
+        }
+    return result;
+}
 namespace {
 bool Matches(const api::AnimatorStateObservation& state,int hash) {
     return state.read.returned && (state.short_name_hash==hash || state.full_path_hash==hash);
@@ -27,8 +44,16 @@ void ActionPlayback::ReleaseVisual(void* animator) {
     if(old.expression && animator==old.animator)try{status_.visual_note=old.expression->Release(live).detail;}
         catch(const std::exception& e){status_.visual_note=e.what();}
 }
-void ActionPlayback::StartVisual(const VisualState& request,void* animator,void* style,
+void ActionPlayback::StartVisual(const VisualState& input,void* animator,void* style,
     const api::WorldFrame& frame,api::ManagedObjects& objects,ActionReceipt& receipt) {
+    VisualState request=input;
+    if(presentation_enabled_ && program_)if(const auto phase=program_->CurrentPhase()) {
+        if(!phase->visuals.character.behaviors.enumerated || !input.value.flag.available)
+            throw std::runtime_error("active phase visual table or requested flag unread");
+        const auto selected=ResolveVisualState(phase->visuals,input.value.flag.value,input.recover);
+        if(!selected)throw std::runtime_error("requested visual flag absent from active phase");
+        request=*selected;
+    }
     const auto revision=intent_revision_;
     auto live=[&]{return !Ended() && !status_.closing && revision==intent_revision_;};
     VisualPlayback next;next.request=request;next.animator=animator;next.phase=request.recover?2:0;next.boundary=frame.sequence;

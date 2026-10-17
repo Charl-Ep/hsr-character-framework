@@ -235,22 +235,10 @@ ActionCatalog::Projection ActionCatalog::Project(const std::vector<ActionSourceR
                 if(sources.context_available) {
                     // Whole rows override by official flag, not by body name.
                     // Preserve source/index for two flags sharing one animation.
-                    std::map<int,VisualState> selected;
+                    std::set<int> selected;
                     for(const auto* config:{&sources.defaults,&sources.character})for(const auto& row:config->behaviors.rows)
-                        if(row.flag.available) {
-                            VisualState request;request.source=config->source;request.value=row;
-                            request.expression_source=sources.defaults.source;
-                            request.expression_transition=sources.expression_transition;
-                            request.expression={true,"",{}};
-                            if(!sources.defaults.loaded || !sources.defaults.behaviors.enumerated)
-                                request.expression={false,"","global expression table unread"};
-                            else for(const auto& global:sources.defaults.behaviors.rows)
-                                if(global.flag.available && global.flag.value==row.flag.value)request.expression=global.emotion;
-                            if(sources.blink_source.available && sources.blink_suppressed_expression.available && request.expression.available &&
-                                request.expression.value==sources.blink_suppressed_expression.value)request.blink_source=sources.blink_source.value;
-                            selected.insert_or_assign(row.flag.value,std::move(request));
-                        }
-                    for(auto& entry:selected)status.visual_states.push_back(std::move(entry.second));
+                        if(row.flag.available)selected.insert(row.flag.value);
+                    for(const auto flag:selected)if(auto value=ResolveVisualState(sources,flag))status.visual_states.push_back(std::move(*value));
                 }
             }
         }

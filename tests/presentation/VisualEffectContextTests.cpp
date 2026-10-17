@@ -310,9 +310,10 @@ void TestVisualLifetimes() {
     auto program=std::make_shared<VisualProgram>(ParseVisualProgram(R"({
       "format":"hksr.visual-program","id":"lifetimes","source":"config","scope":"scene",
       "effects":{"ground":{"path":"ground.prefab","target":"Caster"}},
+      "phases":{"enhanced":{"modifier":"Modifier","path":[{"owner":"RPG.GameCore.Change","field":"PhaseAnimConfig"}]}},
       "contexts":{
         "aura":{"enter":[{"op":"create","effects":["ground"],"source":"aura.create"}]},
-        "visual_manager":{},
+        "visual_manager":{"phase":"enhanced"},
         "skill":{"event_scope":"skill-events","enter":[{"op":"create","effects":["ground"],"source":"skill.create"}],
           "exit":[{"op":"effect_state","effect":"ground","state":"Idle","source":"skill.exit"}]}
       },
@@ -343,6 +344,10 @@ void TestVisualLifetimes() {
     std::map<std::string,std::weak_ptr<VisualEffectContext>> contexts;
     std::vector<std::string> detached;
     VisualProgramServices callbacks;callbacks.effects=services;
+    unsigned phase_reads=0;
+    auto phase_data=std::make_shared<PhaseVisualConfigSources>();phase_data->visuals.context_available=true;
+    phase_data->standby={true,"PhaseIdle",{}};
+    callbacks.read_phase=[&](const std::string& name){Check(name=="enhanced");++phase_reads;return phase_data;};
     callbacks.context_started=[&](const std::string& name,auto context){contexts[name]=context;};
     callbacks.context_stopped=[&](const std::string& name){detached.push_back(name);};
     callbacks.create=[&](auto& context,const auto& key,const auto&) {
@@ -359,10 +364,13 @@ void TestVisualLifetimes() {
     release_on_remove=true;VisualProgramPlayer player(program,callbacks);
     auto intent=player.Select("ultra");player.Service();Check(player.Status().prepared && requests.size()==1);
     const auto aura=player.ContextToken("aura");Check(aura && !player.ContextToken("visual_manager"));
+    Check(!player.CurrentPhase() && !phase_reads && program->phases.at("enhanced").path[0].field=="PhaseAnimConfig");
     Check(player.Played(intent,800,1));player.Observe(800,1,"Skill03",0.8f);player.Service();Check(!player.ContextToken("visual_manager"));
     player.Observe(800,1,"Skill03",0.81f);player.Service();const auto visual=player.ContextToken("visual_manager");Check(visual);
+    Check(player.CurrentPhase()==phase_data && phase_reads==1);
     Check(player.SuccessorPlayed(intent,801,1));player.Observe(801,1,"StandBy_Transfer",0);player.Service();
     Check(player.Status().completed && player.ContextToken("aura")==aura && player.ContextToken("visual_manager")==visual);
+    Check(player.CurrentPhase()==phase_data);
     Check(player.Signal(aura,"pulse")); // no active body cursor is required
     // A new body scene neither recreates nor cancels independently owned effects.
     intent=player.Select("skill");player.Service();const auto skill=player.ContextToken("skill");
@@ -398,6 +406,7 @@ void TestVisualLifetimes() {
     Check(player.ContextToken("visual_manager")==visual && player.ContextToken("skill")==next_skill);
     Check(player.Played(intent,802,1));player.Observe(802,1,"StandBy01toStandBy",0.2f);player.Service();Check(player.ContextToken("visual_manager"));
     player.Observe(802,1,"StandBy01toStandBy",0.26f);player.Service();Check(!player.ContextToken("visual_manager"));
+    Check(!player.CurrentPhase() && phase_reads==1);
     // Whole-owner exit does not wait for an unloaded effect's authored exit.
     player.Select("skill_end");player.Service();Check(!player.Status().prepared);
     const auto controls=order.size();player.End();player.Service();Check(player.ActiveContexts().empty() && requests[2]->removes==1);
@@ -408,6 +417,34 @@ void TestVisualLifetimes() {
     requests.clear();VisualProgramPlayer reentrant(program,callbacks);
     on_submit=[&]{reentrant.End();reentrant.Service();};reentrant.Select("ultra");reentrant.Service();on_submit={};
     Check(requests.size()==1);reentrant.Service();Check(reentrant.Drained() && roots.empty());
+    auto phase_program=std::make_shared<VisualProgram>(ParseVisualProgram(R"({
+      "format":"hksr.visual-program","id":"phase-owners","source":"config","scope":"scene","effects":{},
+      "phases":{
+        "first":{"modifier":"One","path":[{"owner":"RPG.GameCore.Change","field":"PhaseAnimConfig"}]},
+        "second":{"modifier":"Two","path":[{"owner":"RPG.GameCore.Change","field":"PhaseAnimConfig"}]}},
+      "contexts":{"one":{"phase":"first"},"two":{"phase":"second"}},
+      "actions":{
+        "one":{"state":"One","restart":true,"enter":[{"op":"context_enter","name":"one","source":"one"}]},
+        "two":{"state":"Two","restart":true,"enter":[{"op":"context_enter","name":"two","source":"two"}]},
+        "exit":{"state":"Exit","restart":true,"enter":[{"op":"context_exit","name":"two","source":"exit"}]}}
+    })"));
+    auto first_phase=std::make_shared<PhaseVisualConfigSources>(*phase_data),second_phase=std::make_shared<PhaseVisualConfigSources>(*phase_data);
+    first_phase->standby.value="First";second_phase->standby.value="Second";
+    auto phase_callbacks=callbacks;unsigned distinct_reads=0;
+    phase_callbacks.read_phase=[&](const auto& name){++distinct_reads;return name=="first"?first_phase:second_phase;};
+    VisualProgramPlayer layered(phase_program,phase_callbacks),independent(phase_program,phase_callbacks);
+    layered.Select("one");layered.Service();Check(layered.CurrentPhase()==first_phase);
+    layered.Select("two");layered.Service();Check(layered.CurrentPhase()==second_phase && distinct_reads==2);
+    layered.Select("two");layered.Service();Check(distinct_reads==2);
+    independent.Select("two");independent.Service();layered.Select("exit");layered.Service();
+    Check(layered.CurrentPhase()==first_phase && independent.CurrentPhase()==second_phase);
+    layered.InterruptAction();layered.Service();Check(layered.CurrentPhase()==first_phase);
+    layered.Leave();Check(!layered.CurrentPhase());layered.Service();layered.End();layered.Service();
+    independent.End();Check(!independent.CurrentPhase());independent.Service();Check(layered.Drained() && independent.Drained());
+    phase_callbacks.read_phase=[](const auto&)->std::shared_ptr<const PhaseVisualConfigSources>{throw std::runtime_error("source unavailable");};
+    VisualProgramPlayer missing_phase(phase_program,phase_callbacks);missing_phase.Select("one");missing_phase.Service();
+    Check(!missing_phase.Status().prepared && !missing_phase.CurrentPhase() && missing_phase.ActiveContexts().empty());
+    Check(missing_phase.Status().issues.size()==1);missing_phase.End();missing_phase.Service();Check(missing_phase.Drained());
     requests.clear();allocating=&a;release_on_remove=false;delegates.clear();
 }
 }

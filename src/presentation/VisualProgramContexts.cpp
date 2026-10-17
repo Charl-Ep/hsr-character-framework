@@ -18,6 +18,14 @@ std::map<std::string,std::uint64_t> VisualProgramPlayer::ActiveContexts() const 
     for(const auto& [name,context]:contexts_)out.emplace(name,context->token);
     return out;
 }
+std::shared_ptr<const api::PhaseVisualConfigSources> VisualProgramPlayer::CurrentPhase() const {
+    if(status_.closing || end_pending_)return {};
+    std::shared_ptr<const api::PhaseVisualConfigSources> result;std::uint64_t latest=0;
+    for(const auto& [name,lifetime]:contexts_)if(lifetime->phase_data && lifetime->token>latest) {
+        latest=lifetime->token;result=lifetime->phase_data;
+    }
+    return result;
+}
 std::shared_ptr<VisualEffectContext> VisualProgramPlayer::ExecutionContext(
     const VisualInstruction& input,const Execution& execution) const {
     if(input.context.empty())return execution.lifetime?execution.lifetime->effects:context_;
@@ -38,7 +46,16 @@ VisualStepResult VisualProgramPlayer::ChangeContext(const VisualContextOperation
             lifetime->effects=std::make_shared<VisualEffectContext>(services_.effects);
             // Register ownership before any provider may reenter Select/End.
             found=contexts_.emplace(operation.name,std::move(lifetime)).first;
-            try {if(services_.context_started)services_.context_started(operation.name,found->second->effects);}
+            try {
+                const auto& phase=program_->contexts.at(operation.name).phase;
+                if(!phase.empty()) {
+                    if(!services_.read_phase)throw std::runtime_error("phase data reader unavailable");
+                    found->second->phase_data=services_.read_phase(phase);
+                    if(!found->second->phase_data || !found->second->phase_data->visuals.context_available)
+                        throw std::runtime_error("phase configuration unavailable: "+phase);
+                }
+                if(services_.context_started)services_.context_started(operation.name,found->second->effects);
+            }
             catch(...) {
                 try {if(services_.context_stopped)services_.context_stopped(operation.name);}
                 catch(const std::exception& e){status_.issues.push_back(operation.name+": detach after failed entry: "+e.what());}

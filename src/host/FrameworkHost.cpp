@@ -52,7 +52,12 @@ void FrameworkHost::Prepare(api::RuntimeMetadata& metadata,api::RuntimeCapabilit
     try {
         event_policy_=services_->CreateAnimationPolicy(api::AnimationTaskPolicy{});
     }catch(const std::exception& e){Trace(std::string("event configuration policy unavailable: ")+e.what());}
-    if(!programs_.empty())services_->PrepareVisualPrograms([this](const auto& text){Trace(text);});
+    official_catalog_=services_->CreateCatalog();
+    catalog_metadata_=&metadata;
+    if(!programs_.empty())services_->PrepareVisualPrograms([this](const auto& text){Trace(text);},
+        [this,&metadata](const auto& character,const auto& source) {
+            return Measure("catalog.visual-phase",[&]{return official_catalog_->ReadPhaseVisualConfigSources(character,source,metadata);});
+        });
     characters_=std::make_unique<SceneCharacters>(services_->Sessions(capabilities.event_record_lifetime));
     characters_->ConfigureProfiles(profiles_);
     characters_->ConfigurePrograms(programs_);
@@ -72,8 +77,6 @@ void FrameworkHost::Prepare(api::RuntimeMetadata& metadata,api::RuntimeCapabilit
             Trace(text.str());
         }
     });
-    official_catalog_=services_->CreateCatalog();
-    catalog_metadata_=&metadata; // same host lifetime as official_catalog_; reader is created only on explicit request
     try {
         mouse_=services_->CreateMouseMode();
     }catch(const std::exception& e){Trace(std::string("mouse mode unavailable: ")+e.what());}

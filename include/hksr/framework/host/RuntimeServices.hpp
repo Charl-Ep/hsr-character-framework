@@ -20,7 +20,7 @@ public:
     CharacterSessionServices Sessions(bool event_tracking) const;
     AppearanceServices Appearance() const;
     void ActivateIsolation();
-    void PrepareVisualPrograms(VisualEventRoutes::Trace={});
+    void PrepareVisualPrograms(VisualEventRoutes::Trace={},VisualProgramRuntime::PhaseReader={});
     void CollectIsolation();
     bool Close();
     std::unique_ptr<api::ManagedRoots> CreateRoots() const {return context_->CreateRoots();}

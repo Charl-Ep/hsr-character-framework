@@ -83,7 +83,14 @@ private:
     std::string completion_state_;
     PresentationState presentation_;
     bool presentation_enabled_=false;
-    std::string CompletionState() const {return presentation_enabled_?presentation_.Idle(completion_state_):completion_state_;}
+    std::string CompletionState() const {
+        if(presentation_enabled_ && program_ && program_->OwnsPhases()) {
+            if(const auto phase=program_->CurrentPhase())
+                if(phase->standby.available && !phase->standby.value.empty())return phase->standby.value;
+            return completion_state_;
+        }
+        return presentation_enabled_?presentation_.Idle(completion_state_):completion_state_;
+    }
     void SyncPresentation(){status_.presentation_phase=presentation_.Phase();status_.presentation_note=presentation_.Note();}
     struct VisualPlayback {
         VisualState request;

@@ -75,6 +75,22 @@ std::shared_ptr<VisualProgramPlayer> VisualProgramRuntime::Create(api::EntityOri
     VisualProgramServices services;services.effects=api_.EffectServices();services.choices=input.choices;
     std::weak_ptr<Scene> weak=scene;
     auto current=[weak]{auto value=weak.lock();if(!value)throw std::logic_error("visual scene ended");return value;};
+    services.read_phase=[this,current](const std::string& name) {
+        const auto scene=current();const auto& program=scene->input.program;
+        auto& cache=phase_cache_[program.get()];cache.program=program;
+        if(const auto found=cache.values.find(name);found!=cache.values.end())return found->second;
+        if(!phase_reader_)throw std::runtime_error("phase data reader unavailable");
+        auto value=std::make_shared<const api::PhaseVisualConfigSources>(phase_reader_(program->source,program->phases.at(name)));
+        if(!value->visuals.context_available) {
+            std::string why="phase source unread: "+name;
+            for(const auto& issue:value->issues)why+="; "+issue.error;
+            throw std::runtime_error(why);
+        }
+        if(value->visuals.character.phase_present && !value->standby.available)
+            throw std::runtime_error("phase standby unread: "+name+"; "+value->standby.error);
+        if(trace_)for(const auto& issue:value->issues)trace_("visual phase "+name+": "+issue.operation+": "+issue.error);
+        cache.values.emplace(name,value);return value;
+    };
     services.select_inputs=[current] {
         auto value=current();auto targets=value->input.target_characters;
         auto anchors=value->input.anchors;

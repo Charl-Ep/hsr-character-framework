@@ -40,9 +40,11 @@ struct VisualProgramInput {
 // and keeps retiring players until their effects and Timelines drain.
 class VisualProgramRuntime {
 public:
+    using PhaseReader=std::function<api::PhaseVisualConfigSources(const std::string&,const api::ModifierPhaseSource&)>;
     VisualProgramRuntime(api::PresentationContext&,api::ManagedObjects&,VisualEventRoutes::Trace={});
     ~VisualProgramRuntime();
     void Activate();
+    void SetPhaseReader(PhaseReader reader) {phase_reader_=std::move(reader);}
     std::shared_ptr<VisualProgramPlayer> Create(api::EntityOrigin,const VisualProgramInput&,
         const std::shared_ptr<const PresentationProfile>&);
     void Collect();
@@ -64,6 +66,9 @@ private:
     std::unique_ptr<api::EffectEntityFollow> entity_follow_;
     std::shared_ptr<VisualEntityMotion> motion_;
     std::vector<std::shared_ptr<Scene>> scenes_;
+    PhaseReader phase_reader_;
+    struct PhaseCache {std::shared_ptr<const VisualProgram> program;std::map<std::string,std::shared_ptr<const api::PhaseVisualConfigSources>> values;};
+    std::map<const VisualProgram*,PhaseCache> phase_cache_;
     bool closing_=false;
 };
 }

@@ -34,7 +34,7 @@ struct VisualInstruction {
     std::string choice,value; // optional explicit preview input, not a gameplay flag
     std::string context; // empty uses the current execution's effect owner
 };
-struct VisualProgramContext {std::vector<VisualInstruction> enter,exit;std::string event_scope;};
+struct VisualProgramContext {std::vector<VisualInstruction> enter,exit;std::string event_scope,phase;};
 struct VisualProgramSignalDefinition {std::string context;std::vector<VisualInstruction> instructions;};
 struct VisualCue {float at=0;std::vector<VisualInstruction> instructions;};
 struct VisualProgramAction {
@@ -55,6 +55,7 @@ struct VisualProgram {
     std::map<std::string,VisualProgramAction> actions;
     std::map<std::string,VisualProgramSignalDefinition> signals;
     std::map<std::string,VisualProgramContext> contexts;
+    std::map<std::string,api::ModifierPhaseSource> phases;
 };
 VisualProgram ParseVisualProgram(const std::string& json);
 
@@ -83,6 +84,7 @@ struct VisualProgramServices {
     // Does not attach native animation-event producers.
     std::function<void(const std::string&,std::shared_ptr<VisualEffectContext>)> context_started;
     std::function<void(const std::string&)> context_stopped;
+    std::function<std::shared_ptr<const api::PhaseVisualConfigSources>(const std::string&)> read_phase;
 };
 struct VisualProgramStatus {
     std::uint64_t intent=0,playback=0,model=0;
@@ -118,6 +120,9 @@ public:
     std::shared_ptr<VisualEffectContext> Context() const {return context_;}
     std::uint64_t ContextToken(const std::string&) const;
     std::map<std::string,std::uint64_t> ActiveContexts() const;
+    // Last-entered phase owner wins; removing it restores the prior live owner.
+    std::shared_ptr<const api::PhaseVisualConfigSources> CurrentPhase() const;
+    bool OwnsPhases() const {return !program_->phases.empty();}
     bool Drained() const;
 private:
     struct Cursor {
@@ -138,6 +143,7 @@ private:
         std::map<std::string,float> variables;
         std::map<std::string,std::string> choices;
         bool fade=true;
+        std::shared_ptr<const api::PhaseVisualConfigSources> phase_data;
     };
     struct Execution {std::uint64_t intent=0;std::shared_ptr<Lifetime> lifetime;};
     struct Selection {std::uint64_t intent;std::string action;std::map<std::string,std::string> choices;};

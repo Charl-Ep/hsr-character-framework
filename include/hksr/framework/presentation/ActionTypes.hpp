@@ -24,6 +24,7 @@ struct VisualState {
     api::ConfigValue<float> expression_transition;
     int blink_source=-1;
 };
+std::optional<VisualState> ResolveVisualState(const api::VisualConfigSources&,std::int32_t flag,bool recover=false);
 using ActionRequest=std::variant<NpcMotion,AnimatorState,FreeStyleState,VisualState,ReadyState>;
 enum class ActionOutcome { Waiting, Returned, StateAbsent, Unavailable, CallFailed, OwnerEnded, Cancelled };
 struct ActionReceipt {
