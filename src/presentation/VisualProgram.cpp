@@ -1,0 +1,189 @@
+#include <hksr/framework/presentation/VisualProgram.hpp>
+#include <algorithm>
+#include <cmath>
+#include <stdexcept>
+#include <type_traits>
+
+namespace hksr::framework {
+VisualProgramPlayer::VisualProgramPlayer(std::shared_ptr<const VisualProgram> program,VisualProgramServices services)
+    :program_(std::move(program)),services_(std::move(services)) {
+    if(!program_ || !services_.effects || !services_.create)throw std::invalid_argument("visual program inputs missing");
+    if(services_.timeline && (!services_.cancel_timelines || !services_.timelines_drained))
+        throw std::invalid_argument("Timeline submission requires cancellation and drain observations");
+}
+std::uint64_t VisualProgramPlayer::Select(const std::string& action,std::map<std::string,std::string> choices) {
+    if(status_.closing)throw std::logic_error("visual program closing");
+    if(!program_->actions.count(action))throw std::invalid_argument("unknown visual program action: "+action);
+    pending_=Selection{++next_,action,std::move(choices)};return next_;
+}
+void VisualProgramPlayer::Retire(bool fade) {
+    if(context_){context_->End(fade);retired_.push_back(std::move(context_));}
+    try {if(services_.detach)services_.detach();}catch(const std::exception& e){status_.issues.push_back(e.what());}
+    try {if(services_.cancel_timelines)services_.cancel_timelines();}catch(const std::exception& e){status_.issues.push_back(e.what());}
+    variables_.clear();
+}
+void VisualProgramPlayer::End(bool fade) {
+    Leave(fade);status_.closing=true;
+}
+void VisualProgramPlayer::Leave(bool fade) {
+    ++next_;pending_.reset();status_.prepared=false;status_.playing=false;
+    end_pending_=true;end_fade_=fade;
+}
+std::optional<std::string> VisualProgramPlayer::ActionForState(const std::string& state) const {
+    for(const auto& [key,action]:program_->actions)if(action.state==state)return key;
+    return {};
+}
+bool VisualProgramPlayer::Drained() const {return status_.closing && !end_pending_ && !context_ && retired_.empty() && !timelines_pending_;}
+void VisualProgramPlayer::Issue(const VisualInstruction& input,const std::string& detail) {
+    status_.issues.push_back(input.source+": "+detail);
+}
+VisualStepResult VisualProgramPlayer::Execute(const VisualInstruction& input,Cursor& cursor,std::uint64_t intent) {
+    return std::visit([&](const auto& op)->VisualStepResult {
+        using T=std::decay_t<decltype(op)>;
+        if constexpr(std::is_same_v<T,VisualAssign>) {
+            variables_[op.variable]=op.value;return {VisualStepState::Done,{}};
+        } else if constexpr(std::is_same_v<T,VisualCreate>) {
+            // Every independent request is attempted, even if another asset or
+            // target failed. Retain each receipt before a synchronous callback.
+            while(cursor.created<op.effects.size()) {
+                const auto key=op.effects[cursor.created++];
+                try {
+                    const auto id=services_.create(*context_,key,program_->effects.at(key));
+                    if(next_!=intent)return {VisualStepState::Pending,{}};
+                    const auto* submitted=context_->Status(id);
+                    if(!submitted || !submitted->submitted || !submitted->submit.returned || submitted->cancelled)
+                        Issue(input,key+": "+(submitted?submitted->detail:"creation returned no owned receipt"));
+                }
+                catch(const std::exception& e){Issue(input,key+": "+e.what());}
+                if(next_!=intent)return {VisualStepState::Pending,{}};
+            }
+            return {VisualStepState::Done,{}};
+        } else if constexpr(std::is_same_v<T,VisualProgress> || std::is_same_v<T,VisualTrigger>) {
+            float number=0;
+            if constexpr(std::is_same_v<T,VisualProgress>) {
+                if(const auto* literal=std::get_if<float>(&op.value))number=*literal;
+                else {
+                    const auto found=variables_.find(std::get<std::string>(op.value));
+                    if(found==variables_.end())return {VisualStepState::Failed,"unassigned variable: "+std::get<std::string>(op.value)};
+                    number=found->second;
+                }
+            }
+            if(!cursor.receipts) {
+                cursor.receipts.emplace();
+                if constexpr(std::is_same_v<T,VisualProgress>)*cursor.receipts=context_->Requests(op.effect);
+                else for(const auto& key:op.effects) {
+                    const auto rows=context_->Requests(key);cursor.receipts->insert(cursor.receipts->end(),rows.begin(),rows.end());
+                    if(rows.empty())Issue(input,"no owned effect receipt: "+key);
+                }
+                if(cursor.receipts->empty())return {VisualStepState::Failed,"no owned effect receipt"};
+            }
+            bool pending=false;
+            for(const auto id:*cursor.receipts)if(!cursor.completed.count(id)) {
+                VisualStepResult result;
+                if constexpr(std::is_same_v<T,VisualProgress>) {
+                    const auto control=context_->SetProgress(id,number,op.seconds);
+                    result={control.state==api::EffectControlState::Applied?VisualStepState::Done:
+                        control.state==api::EffectControlState::NotLoaded?VisualStepState::Pending:VisualStepState::Failed,control.detail};
+                } else result=services_.trigger?services_.trigger(*context_,id,op):VisualStepResult{VisualStepState::Failed,"effect trigger service unavailable"};
+                if(next_!=intent)return {VisualStepState::Pending,{}};
+                if(result.state==VisualStepState::Pending)pending=true;
+                else {
+                    cursor.completed.insert(id);
+                    if(result.state==VisualStepState::Failed)Issue(input,"receipt="+std::to_string(id)+" "+result.detail);
+                }
+            }
+            return {pending?VisualStepState::Pending:VisualStepState::Done,{}};
+        } else if constexpr(std::is_same_v<T,VisualRemove>) {
+            // ForceImmediateFadeOut is not silently replaced with the simple
+            // Cancel(fade) operation. Its backend must implement that contract.
+            if(services_.remove)return services_.remove(*context_,op);
+            if(op.immediate)return {VisualStepState::Failed,"immediate effect fade service unavailable"};
+            for(const auto& key:op.effects)context_->Remove(key,op.fade);
+            return {VisualStepState::Done,{}};
+        } else {
+            if(services_.timeline && op.play)timelines_pending_=true;
+            return services_.timeline?services_.timeline(op):VisualStepResult{VisualStepState::Failed,"Timeline service unavailable"};
+        }
+    },input.operation);
+}
+bool VisualProgramPlayer::Instructions(const std::vector<VisualInstruction>& steps,Cursor& cursor,std::uint64_t intent) {
+    while(cursor.instruction<steps.size()) {
+        const auto& input=steps[cursor.instruction];
+        if(!input.choice.empty()) {
+            const auto value=choices_.find(input.choice);
+            if(value==choices_.end()){Issue(input,"preview input absent: "+input.choice);cursor.Next();continue;}
+            if(value->second!=input.value){cursor.Next();continue;}
+        }
+        VisualStepResult result;
+        try {result=Execute(input,cursor,intent);}
+        catch(const std::exception& e){result={VisualStepState::Failed,e.what()};}
+        if(next_!=intent || status_.closing)return false;
+        if(result.state==VisualStepState::Pending)return false;
+        if(result.state==VisualStepState::Failed)Issue(input,result.detail);
+        cursor.Next();
+    }
+    return true;
+}
+void VisualProgramPlayer::Service() {
+    if(servicing_)return;
+    servicing_=true;struct Exit{bool& flag;~Exit(){flag=false;}} exit{servicing_};
+    if(end_pending_){end_pending_=false;Retire(end_fade_);action_=nullptr;}
+    // Lifetime cleanup continues even when a resource or a lane is waiting.
+    for(auto it=retired_.begin();it!=retired_.end();) {
+        (*it)->Service();if((*it)->Drained())it=retired_.erase(it);else ++it;
+    }
+    if(timelines_pending_ && services_.timelines_drained) {
+        try {timelines_pending_=!services_.timelines_drained();}
+        catch(const std::exception& e){if(status_.issues.empty() || status_.issues.back()!=e.what())status_.issues.push_back(e.what());}
+    }
+    if(status_.closing)return;
+    if(pending_) {
+        auto selected=std::move(*pending_);pending_.reset();
+        action_=&program_->actions.at(selected.action);
+        if(action_->restart)Retire(true);
+        if(next_!=selected.intent)return;
+        if(!context_) {
+            if(!action_->restart) {
+                status_={};status_.intent=selected.intent;status_.action=selected.action;
+                status_.issues.push_back("scene has not been entered");action_=nullptr;return;
+            }
+            context_=std::make_shared<VisualEffectContext>(services_.effects);
+            if(services_.attach)services_.attach(context_);
+            if(next_!=selected.intent)return;
+        }
+        status_={};status_.intent=selected.intent;status_.action=selected.action;status_.state=action_->state;
+        choices_=std::move(selected.choices);enter_={};lanes_.assign(action_->lanes.size(),{});progress_.reset();
+    }
+    if(context_)context_->Service();
+    const auto intent=status_.intent;
+    if(!action_ || next_!=intent || status_.closing)return;
+    if(!status_.prepared) {
+        if(!Instructions(action_->enter,enter_,intent))return;
+        status_.prepared=status_.issues.empty();
+        if(!status_.prepared)return;
+    }
+    if(!status_.playing || !progress_)return;
+    bool done=true;
+    for(std::size_t i=0;i<lanes_.size();++i) {
+        auto& cursor=lanes_[i];const auto& lane=action_->lanes[i];
+        while(cursor.cue<lane.size() && *progress_>=lane[cursor.cue].at) {
+            if(!Instructions(lane[cursor.cue].instructions,cursor,intent))break;
+            ++cursor.cue;cursor.instruction=0;
+        }
+        if(next_!=intent || status_.closing)return;
+        done=done && cursor.cue==lane.size();
+    }
+    status_.finished=done;
+}
+bool VisualProgramPlayer::Played(std::uint64_t intent,std::uint64_t playback,std::uint64_t model) {
+    if(intent!=next_ || intent!=status_.intent || !status_.prepared || status_.closing || !playback || !model)return false;
+    status_.playback=playback;status_.model=model;status_.playing=true;return true;
+}
+void VisualProgramPlayer::Observe(std::uint64_t playback,std::uint64_t model,const std::string& state,float progress) {
+    if(!status_.playing || pending_ || status_.closing || playback!=status_.playback || model!=status_.model ||
+        state!=status_.state || !std::isfinite(progress) || progress<0)return;
+    // Never use wall time or an old model's normalized clock. Cues run once even
+    // if an official transition briefly reports the previous time again.
+    if(!progress_ || progress>*progress_)progress_=progress;
+}
+}

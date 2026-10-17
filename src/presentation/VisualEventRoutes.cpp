@@ -24,14 +24,26 @@ VisualEventRoutes::RuleId VisualEventRoutes::Bind(api::EntityOrigin owner,void* 
         throw std::invalid_argument("visual event rule requires owner, receiver, file, key and context");
     const auto id=++next_;rules_.emplace(id,Rule{owner,receiver,std::move(input),std::move(context)});return id;
 }
+VisualEventRoutes::RuleId VisualEventRoutes::Declare(api::EntityOrigin owner,VisualEventRule input) {
+    if(!owner.token.entity || !owner.token.generation || !owner.world || input.file.empty() || input.key.empty())
+        throw std::invalid_argument("visual event declaration requires owner, file and key");
+    const auto id=++next_;rules_.emplace(id,Rule{owner,nullptr,std::move(input),{},true});return id;
+}
+void VisualEventRoutes::Attach(RuleId id,void* receiver,std::shared_ptr<VisualEffectContext> context) {
+    if(!receiver || !context || context->Closing())throw std::invalid_argument("visual event attachment requires a live receiver/context");
+    auto& rule=rules_.at(id);rule.receiver=receiver;rule.context=std::move(context);
+}
+void VisualEventRoutes::Detach(RuleId id) {
+    auto& rule=rules_.at(id);rule.receiver=nullptr;rule.context.reset();
+}
 void VisualEventRoutes::Unbind(RuleId id) {
     rules_.erase(id);
     for(auto it=definitions_.begin();it!=definitions_.end();)if(it->second.rule==id)it=definitions_.erase(it);else ++it;
 }
 void VisualEventRoutes::Before(const api::AnimationEventSource& source,const std::string& file) {
     std::vector<RuleId> candidates;
-    for(const auto& [id,rule]:rules_)if(Same(rule.owner,source.origin) && rule.receiver==source.receiver &&
-        rule.input.file==file && !rule.context.expired())candidates.push_back(id);
+    for(const auto& [id,rule]:rules_)if(Same(rule.owner,source.origin) && rule.input.file==file &&
+        (rule.declared || (rule.receiver==source.receiver && !rule.context.expired())))candidates.push_back(id);
     if(candidates.empty())return; // no config traversal for other actors/files
     const auto definitions=read_(source);
     if(trace_)for(const auto& issue:definitions.issues)trace_("visual event source index="+std::to_string(issue.index)+": "+issue.error);
@@ -67,22 +79,23 @@ void VisualEventRoutes::Built(const api::AnimationEventSource& source,const api:
     for(auto it=definitions_.begin();it!=definitions_.end();) {
         if(it->second.sequence==task.parent && Same(it->second.owner,source.origin))it=definitions_.erase(it);else ++it;
     }
-    definitions_[{source.serial,task.serial}]={source.origin,task.parent,selected};
+    definitions_[{source.serial,task.serial}]={source.origin,task.parent,source.receiver,selected};
 }
 void VisualEventRoutes::After(const api::AnimationEventSource& source){constructions_.erase(source.serial);}
 void VisualEventRoutes::Observe(const api::AnimationSequenceObservation& value) {
     const auto& execution=value.execution;
     if(value.entering && value.operation==api::AnimationSequenceOperation::Begin && execution.serial) {
+        for(auto it=executions_.begin();it!=executions_.end();) {
+            if(it->first!=execution.serial && it->second.source.sequence==execution.sequence && Same(it->second.source.origin,execution.origin))
+                it=executions_.erase(it);else ++it;
+        }
         const auto found=definitions_.find({execution.construction,execution.definition});
         if(found!=definitions_.end() && found->second.sequence==execution.sequence && Same(found->second.owner,execution.origin)) {
             const auto rule=rules_.find(found->second.rule);
-            if(rule!=rules_.end())if(auto context=rule->second.context.lock()) {
+            if(rule!=rules_.end() && rule->second.receiver==found->second.receiver)if(auto context=rule->second.context.lock()) {
                 // Closing contexts accept already-attributed in-flight effects,
                 // but no new Begin may extend a program that has ended.
                 if(!context->Closing()) {
-                    for(auto it=executions_.begin();it!=executions_.end();) {
-                        if(it->second.source.sequence==execution.sequence && Same(it->second.source.origin,execution.origin))it=executions_.erase(it);else ++it;
-                    }
                     bindings_.Bind(execution,context);executions_[execution.serial]={execution,rule->second.input.key,context};
                 }
             }
@@ -100,9 +113,8 @@ std::optional<VisualEffectId> VisualEventRoutes::Submitted(const api::EffectSubm
 }
 void VisualEventRoutes::Collect() {
     std::vector<RuleId> expired;
-    for(const auto& [id,rule]:rules_)if(rule.context.expired())expired.push_back(id);
+    for(const auto& [id,rule]:rules_)if(!rule.declared && rule.context.expired())expired.push_back(id);
     for(auto id:expired)Unbind(id);
-    bindings_.Collect();
     for(auto it=executions_.begin();it!=executions_.end();)if(it->second.context.expired())it=executions_.erase(it);else ++it;
 }
 void VisualEventRoutes::Clear(){rules_.clear();constructions_.clear();definitions_.clear();executions_.clear();bindings_.Clear();}

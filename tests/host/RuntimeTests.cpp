@@ -85,6 +85,7 @@ void TestApplicationEvents();
 void TestActionPlayback();
 void TestPresentationProfiles();
 void TestVisualEffectContext();
+void TestVisualProgram(const char* file);
 void TestVisualPlayback();
 void TestReadyPlayback();
 void TestSourceCatalog();
@@ -97,6 +98,7 @@ void TestCharacterControls();
 void TestTimelinePolicy();
 int main(int argc,char** argv) try {
     std::cout<<std::unitbuf;
+    if(argc==3 && std::string(argv[1])=="--visual-program") {TestVisualProgram(argv[2]);return 0;}
     TestTimelinePolicy();
     TestSceneIdentity();
     TestSceneLayout();
@@ -108,6 +110,7 @@ int main(int argc,char** argv) try {
     TestActionPlayback();
     TestPresentationProfiles();
     TestVisualEffectContext();
+    TestVisualProgram(nullptr);
     TestVisualPlayback();
     TestReadyPlayback();
     TestModelProfileInputs();

@@ -135,7 +135,7 @@ install(FILES "${hksr_json_SOURCE_DIR}/LICENSE.MIT" DESTINATION licenses/nlohman
 install(FILES "${hksr_httplib_SOURCE_DIR}/LICENSE" DESTINATION licenses/cpp-httplib)
 install(FILES http-settings.example.cfg DESTINATION .)
 install(DIRECTORY PresentationProfiles/ DESTINATION PresentationProfiles FILES_MATCHING PATTERN "*.json")
-install(FILES docs/http-api.md docs/openapi.json docs/application-services.md docs/source-policy.md docs/presentation-profiles.md DESTINATION docs)
+install(FILES docs/http-api.md docs/openapi.json docs/application-services.md docs/source-policy.md docs/presentation-profiles.md docs/visual-programs.md DESTINATION docs)
 install(FILES distribution/README.zh-CN.md distribution/README.en.md DESTINATION .)
 # The imported SDK supplies its own notices; packaging never reaches into its
 # source checkout or assumes that the Framework's dependencies cover the SDK.

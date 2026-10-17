@@ -31,11 +31,18 @@ public:
     // matching live receipt (or this context is closing), not successful work.
     std::vector<VisualEffectResult> SetProgress(const std::string& key,float progress,float transition_seconds=0);
     std::vector<VisualEffectResult> SetAnimatorState(const std::string& key,int hash,float transition=0,bool restart=true);
+    // Receipt-scoped operations let a sequencer retry only pending members of
+    // a batch, without restarting transitions already accepted by the engine.
+    std::vector<VisualEffectId> Requests(const std::string& key) const;
+    api::EffectControlResult SetProgress(VisualEffectId,float progress,float transition_seconds=0);
+    api::EffectControlResult SetAnimatorState(VisualEffectId,int hash,float transition=0,bool restart=true);
     const api::EffectRequestStatus* Status(VisualEffectId) const; // borrowed until Service
     bool Closing() const {return closing_;}
-    bool Drained() const {return closing_ && requests_.empty();}
+    bool Drained() const {return closing_ && requests_.empty() && producers_==0;}
     std::size_t PendingRequests() const {return requests_.size();}
 private:
+    friend class VisualEffectBindings;
+    std::size_t producers_=0;
     struct Entry {std::string key;std::unique_ptr<api::OwnedEffectRequest> request;bool retained=true;void* manager=nullptr;};
     std::vector<VisualEffectId> Matching(const std::string&) const;
     std::shared_ptr<const api::PresentationEffects> services_;

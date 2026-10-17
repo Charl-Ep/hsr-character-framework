@@ -15,6 +15,7 @@
 #include <hksr/presentation/effects/PresentationEffects.hpp>
 #include "ActionRetirement.hpp"
 #include "PresentationProfile.hpp"
+#include "VisualProgram.hpp"
 #include <variant>
 
 namespace hksr::framework {
@@ -31,7 +32,8 @@ public:
     void ConfigurePresentation(std::shared_ptr<const PresentationProfile> profile,const std::string& phase={}) {
         presentation_.Configure(std::move(profile),phase);SyncPresentation();
     }
-    void SetPresentationDomain(bool battle) {presentation_enabled_=battle;if(!battle)presentation_.LeaveDomain();SyncPresentation();}
+    void SetPresentationDomain(bool battle) {presentation_enabled_=battle;if(!battle){presentation_.LeaveDomain();LeaveProgram();}SyncPresentation();}
+    void ConfigureVisualProgram(std::shared_ptr<VisualProgramPlayer>);
     void CancelPending(bool interrupt_presentation=true);
     // inputs_ready comes from model/event/appearance handoff, not a UI cache.
     void Service(const api::WorldFrame& frame,bool inputs_ready,api::ManagedObjects& objects);
@@ -57,6 +59,10 @@ private:
     void PrepareRetirements(const FreeStyleState&);
     void ServiceRetirements(const api::WorldFrame&);
     void RetireActionEvents();
+    void LeaveProgram();
+    bool PrepareProgram(ActionReceipt&);
+    void CommitProgram(const ActionReceipt&,void* animator,std::uint64_t boundary);
+    void TickProgram(const api::WorldFrame&,api::ManagedObjects&);
     int HashName(const std::string& name,api::ManagedObjects& objects);
     api::AnimationOverrideTarget OverrideTarget() { return {owner_,resources_,models_,actions_}; }
     api::EntityToken owner_;
@@ -113,5 +119,9 @@ private:
     std::unique_ptr<api::EventRegistrationLease> action_exit_;
     std::vector<std::unique_ptr<api::EventRegistrationLease>> retired_exits_;
     bool retire_action_events_=false;
+    std::shared_ptr<VisualProgramPlayer> program_;
+    struct ProgramPlayback {std::uint64_t action=0,intent=0,model=0;void* animator=nullptr;int hash=0;bool observed=false,complete=false;std::uint64_t boundary=0;};
+    std::optional<ProgramPlayback> program_playback_;
+    std::uint64_t program_model_=0,program_preparing_=0,program_intent_=0,program_return_=0;
 };
 }

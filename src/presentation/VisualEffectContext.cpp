@@ -86,6 +86,21 @@ std::vector<VisualEffectResult> VisualEffectContext::SetProgress(const std::stri
     }
     return out;
 }
+std::vector<VisualEffectId> VisualEffectContext::Requests(const std::string& key) const {return Matching(key);}
+api::EffectControlResult VisualEffectContext::SetProgress(VisualEffectId id,float value,float duration) {
+    Operation operation(operations_);
+    const auto found=requests_.find(id);
+    if(closing_ || found==requests_.end() || !found->second.retained || found->second.request->Status().closed ||
+        found->second.request->Status().request_ended)return {api::EffectControlState::Ended,{},true,"visual receipt ended"};
+    return services_->SetProgress(found->second.request->Status().reference,value,duration);
+}
+api::EffectControlResult VisualEffectContext::SetAnimatorState(VisualEffectId id,int hash,float duration,bool restart) {
+    Operation operation(operations_);
+    const auto found=requests_.find(id);
+    if(closing_ || found==requests_.end() || !found->second.retained || found->second.request->Status().closed ||
+        found->second.request->Status().request_ended)return {api::EffectControlState::Ended,{},true,"visual receipt ended"};
+    return services_->SetAnimatorState(found->second.request->Status().reference,hash,duration,restart);
+}
 std::vector<VisualEffectResult> VisualEffectContext::SetAnimatorState(const std::string& key,int hash,float duration,bool restart) {
     Operation operation(operations_);std::vector<VisualEffectResult> out;
     for(const auto id:Matching(key)) {

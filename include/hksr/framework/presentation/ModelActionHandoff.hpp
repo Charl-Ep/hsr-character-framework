@@ -28,6 +28,7 @@ public:
     const HandoffStatus& Status() const { return status_; }
     const ActionPlaybackStatus& Playback() const { return actions_.Status(); }
     void ConfigurePresentation(std::shared_ptr<const PresentationProfile> profile,const std::string& phase={}) {actions_.ConfigurePresentation(std::move(profile),phase);}
+    void ConfigureVisualProgram(std::shared_ptr<VisualProgramPlayer> program){actions_.ConfigureVisualProgram(std::move(program));}
     const api::ModelRequestStatus* ModelRequest() const { return transition_->RequestStatus(); }
 private:
     bool Ended() const;

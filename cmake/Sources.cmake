@@ -65,6 +65,7 @@ set(HKSR_RUNTIME_SOURCES
     # src/presentation
     src/presentation/ActionEffects.cpp
     src/presentation/ActionPlayback.cpp
+    src/presentation/ActionVisualProgram.cpp
     src/presentation/ModelActionHandoff.cpp
     src/presentation/PresentationProfile.cpp
     src/presentation/ReadyActions.cpp
@@ -73,9 +74,11 @@ set(HKSR_RUNTIME_SOURCES
     src/presentation/VisualEffectContext.cpp
     src/presentation/VisualEffectBindings.cpp
     src/presentation/VisualEventRoutes.cpp
+    src/presentation/VisualProgram.cpp
 
     # src/serialization
     src/serialization/PresentationProfileCodec.cpp
+    src/serialization/VisualProgramCodec.cpp
     src/serialization/SceneLayoutCodec.cpp
 )
 

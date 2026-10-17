@@ -29,7 +29,7 @@ std::uint64_t ActionPlayback::Queue(ActionRequest request) {
 }
 void ActionPlayback::CancelPending(bool interrupt_presentation) {
     ++intent_revision_;
-    if(interrupt_presentation){presentation_.Interrupt();SyncPresentation();}
+    if(interrupt_presentation){presentation_.Interrupt();LeaveProgram();SyncPresentation();}
     visual_cancelled_=true;
     ready_cancelled_=true;
     retire_action_events_=true;
@@ -126,6 +126,7 @@ void ActionPlayback::Service(const api::WorldFrame& frame,bool ready,api::Manage
     if(!ready) return;
     servicing_=true;
     struct Exit { bool& flag; ~Exit(){flag=false;} } exit{servicing_};
+    TickProgram(frame,objects);
     if(ready_ && !pending_) {
         try {
             const auto component=resources_.Component(api::AnimationComponent::Model,objects);
@@ -214,12 +215,13 @@ void ActionPlayback::Service(const api::WorldFrame& frame,bool ready,api::Manage
                     else {
                         // Only a body action replaces the lifetime. Selecting a
                         // face layer must not retire body effects.
-                        if(!state || state->layer==0) {
+                        const bool program_ready=PrepareProgram(receipt);
+                        if(program_ready && (!state || state->layer==0)) {
                             RetireActionEvents();
-                            if(free_state && revision==intent_revision_ && !Ended() && !status_.closing)PrepareRetirements(*free_state);
+                            if(free_state && program_preparing_!=receipt.serial && revision==intent_revision_ && !Ended() && !status_.closing)PrepareRetirements(*free_state);
                         }
                         if(Ended() || status_.closing || revision!=intent_revision_)receipt.outcome=ActionOutcome::Cancelled;
-                        else {
+                        else if(program_ready) {
                         if(!ready_state && ready_)ReleaseReady(animator);
                         if(ready_state)StartReady(*ready_state,animator,style,frame,objects,receipt);
                         else if(visual) StartVisual(*visual,animator,style,frame,objects,receipt);
@@ -239,8 +241,9 @@ void ActionPlayback::Service(const api::WorldFrame& frame,bool ready,api::Manage
                             else if(state || free_state)presentation_.Begin(state?state->name:free_state->name);
                             SyncPresentation();
                         }
+                        if(receipt.call.returned && revision==intent_revision_ && !Ended() && !status_.closing)CommitProgram(receipt,animator,frame.sequence);
                         if(receipt.call.returned && !npc && !visual && !ready_state && (!state || state->layer==0) && revision==intent_revision_ && !Ended() && !CompletionState().empty() &&
-                            ((state?state->name:free_state->name)!=CompletionState() || presentation_.PendingCues()) && (!free_state || !free_state->controller_observed)) {
+                            !program_playback_ && ((state?state->name:free_state->name)!=CompletionState() || presentation_.PendingCues()) && (!free_state || !free_state->controller_observed)) {
                             completion_=Completion{animator,receipt.hash.value,state?state->layer:0,frame.sequence,false,receipt.serial};
                             status_.completion_pending=true;
                         }
@@ -260,6 +263,7 @@ void ActionPlayback::Service(const api::WorldFrame& frame,bool ready,api::Manage
         if(!status_.closing && revision==intent_revision_) pending_=receipt;
         else receipt.outcome=ActionOutcome::Cancelled;
     }
+    if(program_ && program_preparing_==receipt.serial && receipt.outcome!=ActionOutcome::Waiting && receipt.outcome!=ActionOutcome::Returned)LeaveProgram();
     if(status_.successor && status_.successor->serial==receipt.serial)
         status_.successor->returned=receipt.outcome==ActionOutcome::Returned;
     status_.last=std::move(receipt); status_.pending=pending_.has_value();
@@ -267,13 +271,14 @@ void ActionPlayback::Service(const api::WorldFrame& frame,bool ready,api::Manage
 }
 bool ActionPlayback::Close(const api::WorldFrame& frame) {
     status_.closing=true; CancelPending();
+    if(program_)program_->End();
     if(servicing_ || (!Ended() && !OwnFrame(frame))) return false;
     CancelReadyEffect();ServiceEffects(frame);
     // Entity retirement already owns Art teardown. Do not call its old Animator.
     visual_.reset();
     ready_.reset();
     const bool inputs_closed=engine_->Close();
-    status_.closed=inputs_closed && effects_.empty() && !action_exit_ && retired_exits_.empty();
+    status_.closed=inputs_closed && effects_.empty() && !action_exit_ && retired_exits_.empty() && (!program_ || program_->Drained());
     return status_.closed;
 }
 }

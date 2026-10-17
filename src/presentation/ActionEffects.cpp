@@ -33,6 +33,10 @@ void ActionPlayback::ReplaceReadyEffect(const ReadyPose& pose,api::ManagedObject
 }
 void ActionPlayback::ServiceEffects(const api::WorldFrame& frame) {
     ServiceRetirements(frame);
+    if(program_ && (Ended() || OwnFrame(frame))) {
+        if(Ended())program_->End();
+        program_->Service();
+    }
     if(effects_.empty())return;
     if(!frame.world || !frame.disposing.read.returned || frame.disposing.value)return;
     const bool other_action=pending_ && !std::holds_alternative<ReadyState>(pending_->request);

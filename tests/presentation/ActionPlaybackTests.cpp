@@ -216,5 +216,36 @@ void TestActionPlayback() {
     cancel_during_exit=true;retirement.Queue(configured);retirement.Service(active_frame,true,objects);
     Check(exit_preparations==2 && state_plays==count+1 && retirement.Status().last->outcome==framework::ActionOutcome::Cancelled);
     Check(retirement.Close(active_frame) && roots.empty());api::TrackedEntities().Forget(token);
+    token=api::TrackedEntities().Track(own);cancel_during_exit=false;
+    auto program_data=std::make_shared<framework::VisualProgram>(framework::ParseVisualProgram(R"({
+      "format":"hksr.visual-program","id":"test","source":"source","scope":"scene","effects":{},
+      "actions":{"attack":{"state":"attack_loop","restart":true,"complete_at":0.7,"completion_state":"待机",
+        "enter":[{"op":"timeline_play","source":"scene","key":"scene","path":"scene.playable"}],
+        "lanes":[[{"at":0.5,"instructions":[{"op":"assign","source":"phase","variable":"value","value":1}]}]]}}
+    })"));
+    bool scene_ready=false,scene_alive=false;unsigned stopped_after_plays=0;
+    framework::VisualProgramServices services;services.effects=std::make_shared<api::PresentationEffects>(effects);
+    services.create=[](auto&,const auto&,const auto&)->framework::VisualEffectId{throw std::logic_error("no effect creation expected");};
+    services.timeline=[&](const auto&){scene_alive=true;return framework::VisualStepResult{scene_ready?framework::VisualStepState::Done:framework::VisualStepState::Pending,{}};};
+    services.cancel_timelines=[&]{if(scene_alive)stopped_after_plays=state_plays;scene_alive=false;};
+    services.timelines_drained=[&]{return !scene_alive;};
+    auto player=std::make_shared<framework::VisualProgramPlayer>(program_data,std::move(services));
+    framework::ActionPlayback integrated(token,owner_world,animations(token),std::make_shared<api::PresentationEffects>(effects));
+    integrated.ConfigureVisualProgram(player);integrated.SetPresentationDomain(true);integrated.SetCompletionState("待机");active=&integrated;
+    count=state_plays;const auto exits_before=exit_preparations;
+    integrated.Queue(configured);integrated.Service(active_frame,true,objects);
+    Check(integrated.Status().pending && state_plays==count && exit_preparations==exits_before);
+    scene_ready=true;integrated.Service(active_frame,true,objects);
+    Check(state_plays==count+1 && !integrated.Status().pending && !integrated.Status().completion_pending);
+    Check(exit_preparations==exits_before); // program owns its cross-action exits
+    current_hash=93;current_time=0.8f;current_full_hash=0;
+    integrated.Service(active_frame,true,objects);Check(state_plays==count+1);
+    ++active_frame.sequence;integrated.Service(active_frame,true,objects);
+    Check(state_plays==count+2 && stopped_after_plays==state_plays && !scene_alive);
+    Check(integrated.Status().successor && integrated.Status().successor->returned);
+    integrated.Queue(configured);current_time=0.1f;integrated.Service(active_frame,true,objects);
+    Check(state_plays==count+3 && scene_alive); // same model can enter again
+    integrated.SetPresentationDomain(false);integrated.Service(active_frame,true,objects);Check(!scene_alive);
+    Check(integrated.Close(active_frame) && player->Drained() && roots.empty());api::TrackedEntities().Forget(token);
     std::cout<<"Action playback passed: owned lookup, queued replacement, readiness, three official paths, current state membership, no replay after faults, disposal isolation; local only.\n";
 }
