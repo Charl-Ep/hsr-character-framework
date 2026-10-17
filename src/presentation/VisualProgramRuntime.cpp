@@ -3,6 +3,7 @@
 #include <hksr/model/ModelServices.hpp>
 #include <hksr/entity/LifecycleHooks.hpp>
 #include <hksr/entity/EntityAccess.hpp>
+#include <hksr/entity/EntityOwner.hpp>
 #include <stdexcept>
 #include <sstream>
 #include "VisualProgramCallbacks.hpp"
@@ -76,6 +77,14 @@ std::shared_ptr<VisualProgramPlayer> VisualProgramRuntime::Create(api::EntityOri
         value->selected_targets=std::move(targets);return choices;
     };
     services.create=[this,current](auto& context,const auto& key,const auto& value){return CreateEffect(*current(),context,key,value);};
+    services.follow=[this,current](auto& context,auto id,const VisualFollow& op) {
+        const auto scene=current();std::vector<api::EntityOrigin> targets;
+        for(const auto& name:op.targets)targets.push_back(ResolveTarget(*scene,name));
+        context.UseEntityMotion(Motion(),scene->owner);
+        const auto result=context.BindTargets(id,targets);
+        return VisualStepResult{result.state==api::EffectControlState::Applied?VisualStepState::Done:
+            result.state==api::EffectControlState::NotLoaded?VisualStepState::Pending:VisualStepState::Failed,result.detail};
+    };
     services.attach=[this,current](auto context){Attach(*current(),std::move(context));};
     services.detach=[this,current]{Detach(*current());};
     services.remove_in_flight=[this](auto context,const auto& key,auto options){return routes_.RemoveInFlight(std::move(context),key,options);};
@@ -102,15 +111,15 @@ void VisualProgramRuntime::Detach(Scene& scene) {
     for(auto rule:scene.rules)routes_.Detach(rule);
     if(scene.receiver){scene.releasing.push_back(scene.receiver);scene.receiver=0;}
 }
-VisualEffectId VisualProgramRuntime::CreateEffect(Scene& scene,VisualEffectContext& context,const std::string& key,const VisualEffectInput& input) {
+api::EntityOrigin VisualProgramRuntime::ResolveTarget(Scene& scene,const std::string& name) {
     api::EntityOrigin target=scene.owner;
-    if(input.target!="Caster") {
-        const auto found=scene.input.targets.find(input.target);
+    if(name!="Caster") {
+        const auto found=scene.input.targets.find(name);
         if(found!=scene.input.targets.end())target=found->second;
         else {
-            const auto character=scene.selected_targets.find(input.target);
+            const auto character=scene.selected_targets.find(name);
             if(character==scene.selected_targets.end() || !scene.input.resolve_character)
-                throw std::runtime_error("explicit visual target missing: "+input.target);
+                throw std::runtime_error("explicit visual target missing: "+name);
             target=scene.input.resolve_character(character->second);
         }
     }
@@ -120,6 +129,28 @@ VisualEffectId VisualProgramRuntime::CreateEffect(Scene& scene,VisualEffectConte
     const auto state=entities->Entities().Read(target.token.entity);
     if(!Alive(scene.owner) || !Alive(target) || !state.owner_world.read.returned || state.owner_world.value!=target.world ||
         !state.loaded.read.returned || !state.loaded.value)throw std::runtime_error("visual target not loaded in its owner world");
+    return target;
+}
+std::shared_ptr<VisualEntityMotion> VisualProgramRuntime::Motion() {
+    if(motion_)return motion_;
+    // Resolve only when a program actually uses entity-follow, not at startup
+    // for every character or on each frame.
+    if(!entity_follow_)entity_follow_=api_.CreateEffectEntityFollow();
+    VisualEntityMotionServices services;
+    services.read=[this](auto ref){return entity_follow_->Read(ref);};
+    services.set=[this](auto ref,const auto& expected,const auto& desired,auto current){return entity_follow_->Set(ref,expected,desired,std::move(current));};
+    services.target=[this](void* entity){return entity_follow_->ReadTarget(entity);};
+    services.eligible=[this](api::EntityOrigin origin) {
+        if(!Alive(origin) || api_.Owner().OwnedToken(origin.token.entity).generation!=origin.token.generation)return false;
+        const auto state=api_.Models()->Entities().Read(origin.token.entity);
+        return Alive(origin) && state.owner_world.read.returned && state.owner_world.value==origin.world &&
+            state.loaded.read.returned && state.loaded.value;
+    };
+    services.trace=trace_;
+    motion_=std::make_shared<VisualEntityMotion>(api::TrackedEntities(),std::move(services));return motion_;
+}
+VisualEffectId VisualProgramRuntime::CreateEffect(Scene& scene,VisualEffectContext& context,const std::string& key,const VisualEffectInput& input) {
+    const auto target=ResolveTarget(scene,input.target);
     const auto path=objects_.NewStringUtf8(input.path.c_str());
     if(!path.call.returned || !path.object)throw std::runtime_error("visual effect path allocation failed");
     const auto pin=scene.Keep(path.object);scene.releasing.push_back(pin);
@@ -166,6 +197,8 @@ bool VisualProgramRuntime::Close() {
     closing_=true;Collect();if(!scenes_.empty())return false;
     constructions_->Stop();effects_->Stop();
     if(!sequences_->Close())return false;
+    if(motion_ && !motion_->Empty())return false;
+    if(entity_follow_ && !entity_follow_->Close())return false;
     routes_.Clear();return true;
 }
 }

@@ -87,6 +87,7 @@ void TestPresentationProfiles();
 void TestVisualEffectContext();
 void TestVisualProgramObservers();
 void TestVisualTimelines();
+void TestVisualEntityMotion();
 void TestVisualProgram(const char* file);
 void TestVisualPlayback();
 void TestReadyPlayback();
@@ -114,6 +115,7 @@ int main(int argc,char** argv) try {
     TestVisualEffectContext();
     TestVisualProgramObservers();
     TestVisualTimelines();
+    TestVisualEntityMotion();
     TestVisualProgram(nullptr);
     TestVisualPlayback();
     TestReadyPlayback();

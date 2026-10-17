@@ -18,8 +18,9 @@ struct VisualRemove {
     std::set<std::string> optional; // absent in some authored branches
 };
 struct VisualTrigger {std::vector<std::string> effects;std::string trigger;bool reset=false;};
+struct VisualFollow {std::string effect;std::vector<std::string> targets;}; // empty releases this binding
 struct VisualTimeline {std::string key,path;bool play=true;int type=0,wrap_mode=0;bool release_volume=false;};
-using VisualOperation=std::variant<VisualCreate,VisualAssign,VisualProgress,VisualRemove,VisualTrigger,VisualTimeline>;
+using VisualOperation=std::variant<VisualCreate,VisualAssign,VisualProgress,VisualRemove,VisualTrigger,VisualTimeline,VisualFollow>;
 struct VisualInstruction {
     VisualOperation operation;
     std::string source; // original configuration node, for diagnostics
@@ -53,6 +54,7 @@ struct VisualProgramServices {
     // through StartEntity. Never substitutes the caster for an absent target.
     std::function<VisualEffectId(VisualEffectContext&,const std::string&,const VisualEffectInput&)> create;
     std::function<VisualStepResult(VisualEffectContext&,VisualEffectId,const VisualTrigger&)> trigger;
+    std::function<VisualStepResult(VisualEffectContext&,VisualEffectId,const VisualFollow&)> follow;
     std::function<VisualStepResult(VisualEffectContext&,const VisualRemove&)> remove;
     std::function<VisualStepResult(const VisualTimeline&)> timeline;
     std::function<void(std::shared_ptr<VisualEffectContext>)> attach;

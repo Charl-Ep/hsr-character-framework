@@ -68,7 +68,7 @@ VisualStepResult VisualProgramPlayer::Execute(const VisualInstruction& input,Cur
                 if(next_!=intent)return {VisualStepState::Pending,{}};
             }
             return {VisualStepState::Done,{}};
-        } else if constexpr(std::is_same_v<T,VisualProgress> || std::is_same_v<T,VisualTrigger>) {
+        } else if constexpr(std::is_same_v<T,VisualProgress> || std::is_same_v<T,VisualTrigger> || std::is_same_v<T,VisualFollow>) {
             float number=0;
             if constexpr(std::is_same_v<T,VisualProgress>) {
                 if(const auto* literal=std::get_if<float>(&op.value))number=*literal;
@@ -80,7 +80,7 @@ VisualStepResult VisualProgramPlayer::Execute(const VisualInstruction& input,Cur
             }
             if(!cursor.receipts) {
                 cursor.receipts.emplace();
-                if constexpr(std::is_same_v<T,VisualProgress>)*cursor.receipts=context_->Requests(op.effect);
+                if constexpr(std::is_same_v<T,VisualProgress> || std::is_same_v<T,VisualFollow>)*cursor.receipts=context_->Requests(op.effect);
                 else for(const auto& key:op.effects) {
                     const auto rows=context_->Requests(key);cursor.receipts->insert(cursor.receipts->end(),rows.begin(),rows.end());
                     if(rows.empty())Issue(input,"no owned effect receipt: "+key);
@@ -94,6 +94,8 @@ VisualStepResult VisualProgramPlayer::Execute(const VisualInstruction& input,Cur
                     const auto control=context_->SetProgress(id,number,op.seconds);
                     result={control.state==api::EffectControlState::Applied?VisualStepState::Done:
                         control.state==api::EffectControlState::NotLoaded?VisualStepState::Pending:VisualStepState::Failed,control.detail};
+                } else if constexpr(std::is_same_v<T,VisualFollow>) {
+                    result=services_.follow?services_.follow(*context_,id,op):VisualStepResult{VisualStepState::Failed,"entity motion service unavailable"};
                 } else if(services_.trigger)result=services_.trigger(*context_,id,op);
                 else {
                     const auto control=context_->SetAnimatorTrigger(id,op.trigger,op.reset);

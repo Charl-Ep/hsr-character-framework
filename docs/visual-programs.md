@@ -36,7 +36,13 @@ The development command channel accepts `visual_inputs` to replace one instance'
 | `effects` | Local keys mapped to resource paths, explicit targets and entity-effect options |
 | `actions` | Body state, entry instructions, progress lanes and completion destination |
 
-Each instruction has an `op` and a `source` identifying its configuration node. Operations are `create`, `assign`, `progress`, `remove`, `trigger`, `timeline_play` and `timeline_stop`. An optional `when` selects an input by `choice` and `is`.
+Each instruction has an `op` and a `source` identifying its configuration node. Operations are `create`, `assign`, `progress`, `remove`, `trigger`, `follow`, `timeline_play` and `timeline_stop`. An optional `when` selects an input by `choice` and `is`.
+
+`follow` binds the named effect's entity-follow plugin to explicit target names. An empty `targets` array releases that binding. Targets must be loaded entities owned by this host in the same world. The instruction does not change the effect's Animator state.
+
+```json
+{"op":"follow","effect":"ground","targets":["Target"],"source":"scene.exit_view.follow"}
+```
 
 `remove.optional` lists keys whose absence is expected in some branches. Missing optional requests produce a note; matching requests are still removed. Other missing keys and failed removal calls remain errors. Optional keys must also appear in that instruction's `effects` list.
 
@@ -51,6 +57,10 @@ An action with `restart: true` creates a new scene. Other actions retain its eff
 `VisualProgramServices::create` resolves targets, retains inputs and calls `VisualEffectContext::StartEntity`. Trigger and removal operations use the SDK effect services unless overridden. Removal forwards fade and immediate-fade flags and waits for a manager receipt, not the end of the fade. Timeline playback uses a supplied service with cancellation and drain observations.
 
 `ConnectVisualTimelines` connects a `VisualTimelines` scene to these callbacks. Its factory creates SDK `OwnedTimeline` requests bound to the actor. The adapter supports Common Timelines without task-level volume release. Replaying a key retains the cancelled prior borrow until cleanup completes.
+
+`VisualEntityMotion` is shared by all host scenes. Each target can belong to one motion binding at a time. Repeating the same binding does not reset its accumulated movement; changing targets requires releasing the previous binding. Existing official attached motion cannot be adopted by inspecting its flag.
+
+`VisualEffectContext` releases bindings before servicing explicit effect cancellation and records natural request completion without reading pooled request objects. Caster or target disposal also releases the binding before components are destroyed. Failed detachment is logged; it does not prevent official entity disposal or request cancellation. Custom assemblies provide `follow`, call `UseEntityMotion`, and retain the motion service and effect requests through cleanup.
 
 `Select` queues intent, merging supplied choices over the service defaults. `Service` prepares the scene and collects independent input errors. The body starts after preparation succeeds; `Played` and `Observe` identify its actual playback and model. Pending controls retry only unresolved receipts, without restarting accepted transitions.
 

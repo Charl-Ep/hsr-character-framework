@@ -1,4 +1,5 @@
 #include <hksr/framework/presentation/VisualEffectContext.hpp>
+#include <hksr/framework/presentation/VisualEntityMotion.hpp>
 #include <stdexcept>
 
 namespace hksr::framework {
@@ -64,9 +65,30 @@ void VisualEffectContext::Service() {
     // New requests created reentrantly are serviced at the next boundary.
     const auto last=next_;
     for(auto it=requests_.begin();it!=requests_.end() && it->first<=last;) {
+        const auto ref=it->second.request->Status().reference;
+        if(motion_ && it->second.request->Status().cancelled)motion_->Release(ref);
+        // Even if explicit detachment failed, preserve official request
+        // cancellation/Dispose. That path also owns plugin cleanup.
         it->second.request->Service();
+        if(motion_ && it->second.request->Status().request_ended)motion_->RequestEnded(ref);
         if(it->second.request->Status().closed)it=requests_.erase(it);else ++it;
     }
+}
+void VisualEffectContext::UseEntityMotion(std::shared_ptr<VisualEntityMotion> motion,api::EntityOrigin owner) {
+    if(!motion || (motion_ && (motion_!=motion || owner_.token.entity!=owner.token.entity ||
+        owner_.token.generation!=owner.token.generation || owner_.world!=owner.world)))
+        throw std::logic_error("visual context motion owner changed");
+    motion_=std::move(motion);owner_=owner;
+}
+api::EffectControlResult VisualEffectContext::BindTargets(VisualEffectId id,const std::vector<api::EntityOrigin>& targets) {
+    Operation operation(operations_);const auto found=requests_.find(id);
+    if(!motion_)return {api::EffectControlState::Unsupported,{},true,"visual entity motion service absent"};
+    if(found==requests_.end() || !found->second.retained || found->second.request->Status().closed ||
+        found->second.request->Status().request_ended)return {api::EffectControlState::Ended,{},true,"visual receipt ended"};
+    const auto& status=found->second.request->Status();
+    if(targets.empty())return motion_->Release(status.reference);
+    if(closing_ || status.cancelled)return {api::EffectControlState::Ended,{},true,"visual receipt closing"};
+    return motion_->Bind(status.reference,owner_,targets);
 }
 const api::EffectRequestStatus* VisualEffectContext::Status(VisualEffectId id) const {
     const auto it=requests_.find(id);return it==requests_.end()?nullptr:&it->second.request->Status();

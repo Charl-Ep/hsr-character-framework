@@ -2,6 +2,7 @@
 #include <hksr/framework/presentation/VisualEffectBindings.hpp>
 #include <hksr/framework/presentation/VisualEventRoutes.hpp>
 #include <hksr/framework/presentation/VisualProgram.hpp>
+#include <hksr/framework/presentation/VisualEntityMotion.hpp>
 #include <hksr/framework/presentation/PresentationProfileFiles.hpp>
 #include <array>
 #include <cstring>
@@ -21,6 +22,7 @@ std::vector<std::unique_ptr<std::array<unsigned char,128>>> delegates;
 EffectCompletionLayout layout{24,40,64};
 std::vector<void*> controlled;
 std::function<void()> on_submit;
+std::function<void()> on_remove;
 bool release_on_remove=false;
 std::vector<EffectRemovalOptions> explicit_removals;
 int default_triggers=0;
@@ -40,6 +42,7 @@ void* __fastcall Instance(Params* p,void*){return p->state==3?&effect:nullptr;}
 void __fastcall Submit(void* service,Params* p,void*){Check(service==&manager);p->state=1;auto callback=on_submit;if(callback)callback();}
 bool __fastcall Remove(void*,EffectReference ref,bool,void*) {
     auto* p=static_cast<Params*>(ref.parameters);Check(p->id==ref.id);++p->removes;
+    if(on_remove)on_remove();
     if(release_on_remove)p->released=true;
     return true;
 }
@@ -492,4 +495,50 @@ void TestVisualProgram(const char* file) {
     finishing->Track("late",&manager,{late_raw->id,0,late_raw});finishing->Service();Check(late_raw->removes==0);
     producer.Clear();Check(!finishing->Drained());late_raw->released=true;finishing->Service();
     Check(finishing->Drained() && roots.empty());TrackedEntities().Forget(owner);delegates.clear();
+
+    // Exercise the real context/player boundaries, not just a standalone lease.
+    EntityLifecycle lifecycle;
+    const EntityOrigin caster{lifecycle.Track(reinterpret_cast<GameEntity*>(&entity)),reinterpret_cast<GameWorld*>(&manager)};
+    const EntityOrigin recipient{lifecycle.Track(reinterpret_cast<GameEntity*>(&other_entity)),caster.world};
+    std::vector<void*> bound;unsigned binds=0,clears=0;bool motion_loaded=false;
+    VisualEntityMotionServices motion_services;
+    motion_services.read=[&](auto){return EffectEntityFollowObservation{{motion_loaded?EffectControlState::Applied:EffectControlState::NotLoaded},bound};};
+    motion_services.target=[&](void* e){return EffectMotionTargetObservation{{EffectControlState::Applied},std::find(bound.begin(),bound.end(),e)!=bound.end()};};
+    motion_services.eligible=[](auto){return true;};
+    motion_services.set=[&](auto,const auto& expected,const auto& desired,auto current){
+        Check(current());
+        Check(bound==expected);bound=desired;if(desired.empty())++clears;else ++binds;
+        return EffectEntityFollowObservation{{EffectControlState::Applied},bound};
+    };
+    auto motion=std::make_shared<VisualEntityMotion>(lifecycle,std::move(motion_services));
+    auto motion_program=std::make_shared<VisualProgram>(ParseVisualProgram(R"({
+      "format":"hksr.visual-program","id":"follow","source":"config","scope":"scene",
+      "effects":{"ground":{"path":"ground","target":"Target"}},
+      "actions":{"enter":{"state":"Enter","restart":true,"enter":[
+        {"op":"create","effects":["ground"],"source":"create"},
+        {"op":"follow","effect":"ground","targets":["Target"],"source":"bind"}],
+        "lanes":[[{"at":0.5,"instructions":[{"op":"follow","effect":"ground","targets":[],"source":"clear"}]}]]}}
+    })"));
+    Params motion_params;allocating=&motion_params;on_submit={};release_on_remove=true;
+    VisualProgramServices motion_callbacks;motion_callbacks.effects=services;
+    motion_callbacks.create=[](auto& context,const auto& key,const auto&){return context.Start(key,&entity,&path);};
+    motion_callbacks.follow=[&](auto& context,auto id,const VisualFollow& follow) {
+        context.UseEntityMotion(motion,caster);
+        const auto result=context.BindTargets(id,follow.targets.empty()?std::vector<EntityOrigin>{}:std::vector<EntityOrigin>{recipient});
+        return VisualStepResult{result.state==EffectControlState::Applied?VisualStepState::Done:
+            result.state==EffectControlState::NotLoaded?VisualStepState::Pending:VisualStepState::Failed,result.detail};
+    };
+    VisualProgramPlayer moving(motion_program,motion_callbacks);
+    const auto moving_intent=moving.Select("enter");moving.Service();
+    Check(!moving.Status().prepared && binds==0);Complete(motion_params);motion_loaded=true;moving.Service();
+    Check(moving.Status().prepared && binds==1 && moving.Played(moving_intent,600,1));
+    moving.Observe(600,1,"Enter",0.6f);moving.Service();Check(clears==1 && motion->Empty());
+    moving.End();moving.Service();Check(moving.Drained());
+    motion_params={};motion_loaded=true;
+    VisualProgramPlayer cancelled(motion_program,motion_callbacks);cancelled.Select("enter");cancelled.Service();
+    Check(binds==2 && !bound.empty());Complete(motion_params);
+    on_remove=[&]{Check(bound.empty() && clears==2);};
+    cancelled.End();Check(clears==1);cancelled.Service();
+    Check(cancelled.Drained() && motion->Empty() && roots.empty());on_remove={};
+    lifecycle.Forget(caster.token);lifecycle.Forget(recipient.token);delegates.clear();
 }

@@ -35,7 +35,7 @@ std::vector<std::string> Names(const Json& value) {
 std::vector<VisualInstruction> Instructions(const Json& rows,const VisualProgram& program) {
     Need(rows.is_array(),"visual instructions must be an array");std::vector<VisualInstruction> out;
     for(const auto& row:rows) {
-        Fields(row,{"op","source","when","effects","variable","value","effect","seconds","fade","immediate","trigger","reset","key","path","type","wrap_mode","release_volume","optional"});
+        Fields(row,{"op","source","when","effects","variable","value","effect","seconds","fade","immediate","trigger","reset","key","path","type","wrap_mode","release_volume","optional","targets"});
         VisualInstruction instruction;instruction.source=Name(row.at("source"));
         if(row.contains("when")){const auto& when=row.at("when");Fields(when,{"choice","is"});instruction.choice=Name(when.at("choice"));instruction.value=Name(when.at("is"));}
         const auto op=Name(row.at("op"));
@@ -58,6 +58,10 @@ std::vector<VisualInstruction> Instructions(const Json& rows,const VisualProgram
             instruction.operation=std::move(remove);
         }
         else if(op=="trigger")instruction.operation=VisualTrigger{Names(row.at("effects")),Name(row.at("trigger")),row.value("reset",false)};
+        else if(op=="follow") {
+            const auto& targets=row.at("targets");Need(targets.is_array(),"follow targets must be an array");
+            instruction.operation=VisualFollow{Name(row.at("effect")),targets.empty()?std::vector<std::string>{}:Names(targets)};
+        }
         else if(op=="timeline_play" || op=="timeline_stop") {
             VisualTimeline timeline;timeline.key=Name(row.at("key"));timeline.play=op=="timeline_play";
             if(timeline.play)timeline.path=Name(row.at("path"));

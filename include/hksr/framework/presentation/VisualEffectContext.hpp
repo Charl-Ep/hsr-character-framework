@@ -7,6 +7,7 @@
 #include <vector>
 
 namespace hksr::framework {
+class VisualEntityMotion;
 using VisualEffectId=std::uint64_t;
 struct VisualEffectResult {VisualEffectId id;api::EffectControlResult result;};
 // One explicitly entered visual context. It may outlive several body actions;
@@ -41,6 +42,8 @@ public:
     api::EffectControlResult SetAnimatorState(VisualEffectId,int hash,float transition=0,bool restart=true);
     api::EffectControlResult SetAnimatorTrigger(VisualEffectId,const std::string& name,bool reset=false);
     void Remove(VisualEffectId,api::EffectRemovalOptions);
+    void UseEntityMotion(std::shared_ptr<VisualEntityMotion>,api::EntityOrigin);
+    api::EffectControlResult BindTargets(VisualEffectId,const std::vector<api::EntityOrigin>&);
     const api::EffectRequestStatus* Status(VisualEffectId) const; // borrowed until Service
     bool Closing() const {return closing_;}
     bool Drained() const {return (finishing_ || closing_) && requests_.empty() && producers_==0;}
@@ -51,6 +54,8 @@ private:
     struct Entry {std::string key;std::unique_ptr<api::OwnedEffectRequest> request;bool retained=true;void* manager=nullptr;};
     std::vector<VisualEffectId> Matching(const std::string&) const;
     std::shared_ptr<const api::PresentationEffects> services_;
+    std::shared_ptr<VisualEntityMotion> motion_;
+    api::EntityOrigin owner_;
     std::map<VisualEffectId,Entry> requests_;
     VisualEffectId next_=0;
     bool finishing_=false,closing_=false,servicing_=false,end_fade_=true;

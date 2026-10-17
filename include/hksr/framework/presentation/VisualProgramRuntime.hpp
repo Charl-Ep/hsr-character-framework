@@ -1,6 +1,7 @@
 #pragma once
 #include "VisualEventRoutes.hpp"
 #include "VisualTimelines.hpp"
+#include "VisualEntityMotion.hpp"
 #include "PresentationProfile.hpp"
 #include <hksr/presentation/PresentationContext.hpp>
 #include <hksr/presentation/events/AnimationEventConstruction.hpp>
@@ -42,6 +43,8 @@ private:
     void Attach(Scene&,std::shared_ptr<VisualEffectContext>);
     void Detach(Scene&);
     VisualEffectId CreateEffect(Scene&,VisualEffectContext&,const std::string&,const VisualEffectInput&);
+    api::EntityOrigin ResolveTarget(Scene&,const std::string&);
+    std::shared_ptr<VisualEntityMotion> Motion();
     api::PresentationContext& api_;
     api::ManagedObjects& objects_;
     VisualEventRoutes routes_;
@@ -49,6 +52,8 @@ private:
     std::unique_ptr<api::AnimationSequenceExecutions> sequences_;
     std::unique_ptr<api::AnimationEventConstruction> constructions_;
     std::unique_ptr<api::EffectSubmissions> effects_;
+    std::unique_ptr<api::EffectEntityFollow> entity_follow_;
+    std::shared_ptr<VisualEntityMotion> motion_;
     std::vector<std::shared_ptr<Scene>> scenes_;
     bool closing_=false;
 };
