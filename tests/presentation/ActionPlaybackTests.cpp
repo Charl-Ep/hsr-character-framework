@@ -219,7 +219,7 @@ void TestActionPlayback() {
     token=api::TrackedEntities().Track(own);cancel_during_exit=false;
     auto program_data=std::make_shared<framework::VisualProgram>(framework::ParseVisualProgram(R"({
       "format":"hksr.visual-program","id":"test","source":"source","scope":"scene","effects":{},
-      "phases":{"enhanced":{"modifier":"Modifier","path":[{"owner":"RPG.GameCore.Change","field":"PhaseAnimConfig"}]}},
+      "phases":{"enhanced":{"root":{"kind":"global_modifier","name":"Modifier"},"path":[{"owner":"RPG.GameCore.Change","field":"PhaseAnimConfig"}]}},
       "contexts":{"phase":{"phase":"enhanced"}},
       "actions":{"attack":{"state":"attack_loop","restart":true,"complete_at":0.7,"completion_state":"待机",
         "enter":[{"op":"context_enter","name":"phase","source":"phase"},

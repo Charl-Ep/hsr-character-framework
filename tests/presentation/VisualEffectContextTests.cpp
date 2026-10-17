@@ -310,7 +310,7 @@ void TestVisualLifetimes() {
     auto program=std::make_shared<VisualProgram>(ParseVisualProgram(R"({
       "format":"hksr.visual-program","id":"lifetimes","source":"config","scope":"scene",
       "effects":{"ground":{"path":"ground.prefab","target":"Caster"}},
-      "phases":{"enhanced":{"modifier":"Modifier","path":[{"owner":"RPG.GameCore.Change","field":"PhaseAnimConfig"}]}},
+      "phases":{"enhanced":{"root":{"kind":"global_modifier","name":"Modifier"},"path":[{"owner":"RPG.GameCore.Change","field":"PhaseAnimConfig"}]}},
       "contexts":{
         "aura":{"enter":[{"op":"create","effects":["ground"],"source":"aura.create"}]},
         "visual_manager":{"phase":"enhanced"},
@@ -420,8 +420,8 @@ void TestVisualLifetimes() {
     auto phase_program=std::make_shared<VisualProgram>(ParseVisualProgram(R"({
       "format":"hksr.visual-program","id":"phase-owners","source":"config","scope":"scene","effects":{},
       "phases":{
-        "first":{"modifier":"One","path":[{"owner":"RPG.GameCore.Change","field":"PhaseAnimConfig"}]},
-        "second":{"modifier":"Two","path":[{"owner":"RPG.GameCore.Change","field":"PhaseAnimConfig"}]}},
+        "first":{"root":{"kind":"ability","name":"One"},"path":[{"owner":"RPG.GameCore.Change","field":"PhaseAnimConfig"}]},
+        "second":{"root":{"kind":"global_template","name":"Two"},"path":[{"owner":"RPG.GameCore.Change","field":"PhaseAnimConfig"}]}},
       "contexts":{"one":{"phase":"first"},"two":{"phase":"second"}},
       "actions":{
         "one":{"state":"One","restart":true,"enter":[{"op":"context_enter","name":"one","source":"one"}]},
@@ -429,6 +429,9 @@ void TestVisualLifetimes() {
         "exit":{"state":"Exit","restart":true,"enter":[{"op":"context_exit","name":"two","source":"exit"}]}}
     })"));
     auto first_phase=std::make_shared<PhaseVisualConfigSources>(*phase_data),second_phase=std::make_shared<PhaseVisualConfigSources>(*phase_data);
+    Check(program->phases.at("enhanced").root==PhaseConfigRoot::GlobalModifier);
+    Check(phase_program->phases.at("first").root==PhaseConfigRoot::Ability && phase_program->phases.at("first").name=="One");
+    Check(phase_program->phases.at("second").root==PhaseConfigRoot::GlobalTemplate && phase_program->phases.at("second").name=="Two");
     first_phase->standby.value="First";second_phase->standby.value="Second";
     auto phase_callbacks=callbacks;unsigned distinct_reads=0;
     phase_callbacks.read_phase=[&](const auto& name){++distinct_reads;return name=="first"?first_phase:second_phase;};

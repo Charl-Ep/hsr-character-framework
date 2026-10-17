@@ -117,8 +117,14 @@ VisualProgram ParseVisualProgram(const std::string& text) {
     if(json.contains("phases")) {
         Need(json.at("phases").is_object(),"visual phases must be an object");
         for(auto it=json.at("phases").begin();it!=json.at("phases").end();++it) {
-            const auto& row=it.value();Fields(row,{"modifier","path"});api::ModifierPhaseSource source;
-            source.modifier=Name(row.at("modifier"));const auto& path=row.at("path");
+            const auto& row=it.value();Fields(row,{"root","path"});api::PhaseVisualSource source;
+            const auto& root=row.at("root");Fields(root,{"kind","name"});
+            const auto kind=Name(root.at("kind"));source.name=Name(root.at("name"));
+            if(kind=="ability")source.root=api::PhaseConfigRoot::Ability;
+            else if(kind=="global_modifier")source.root=api::PhaseConfigRoot::GlobalModifier;
+            else if(kind=="global_template")source.root=api::PhaseConfigRoot::GlobalTemplate;
+            else throw std::invalid_argument("unknown phase root kind: "+kind);
+            const auto& path=row.at("path");
             Need(path.is_array() && !path.empty(),"phase field path must be nonempty");
             for(const auto& edge:path) {
                 Fields(edge,{"owner","field","index","key"});api::ConfigStep step;

@@ -40,7 +40,7 @@ struct VisualProgramInput {
 // and keeps retiring players until their effects and Timelines drain.
 class VisualProgramRuntime {
 public:
-    using PhaseReader=std::function<api::PhaseVisualConfigSources(const std::string&,const api::ModifierPhaseSource&)>;
+    using PhaseReader=std::function<api::PhaseVisualConfigSources(const std::string&,const api::PhaseVisualSource&)>;
     VisualProgramRuntime(api::PresentationContext&,api::ManagedObjects&,VisualEventRoutes::Trace={});
     ~VisualProgramRuntime();
     void Activate();

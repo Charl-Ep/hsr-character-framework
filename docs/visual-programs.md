@@ -111,13 +111,13 @@ For this signal, pass `ContextToken("aura")` to `Signal`, or its diagnostic `con
 
 ### Phase data
 
-`phases` names official modifier data sources. A context selects one with `phase`:
+`phases` names official configuration sources. A context selects one with `phase`:
 
 ```json
 {
   "phases": {
     "enhanced": {
-      "modifier": "ModifierName",
+      "root": {"kind":"global_modifier","name":"ModifierName"},
       "path": [
         {"owner":"RPG.GameCore.TurnBasedModifierConfig","field":"_CallbackList","index":1},
         {"owner":"RPG.GameCore.TurnBasedModifierCallbackConfig","field":"CallbackConfig","index":10},
@@ -129,7 +129,7 @@ For this signal, pass `ContextToken("aura")` to `Signal`, or its diagnostic `con
 }
 ```
 
-The path selects a `CharacterPhaseAnimConfig`; it does not execute the modifier. The host caches the copied data per program and phase. Custom hosts supply `read_phase`.
+Root kinds are `ability`, `global_modifier` and `global_template`. The path selects a `CharacterPhaseAnimConfig` without executing tasks. Reach local modifiers or templates through their declaring ability's fields. The host caches copied data per program and phase. Custom hosts supply `read_phase`.
 
 The most recently entered phase context takes precedence. Exiting it restores an earlier live phase context, or the actor's base idle when none remains. Action changes retain these contexts; domain changes and deletion clear them. Programs declaring phases use this lifetime policy instead of `PresentationProfile` idle cues.
 

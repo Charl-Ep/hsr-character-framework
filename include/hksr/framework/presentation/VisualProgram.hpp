@@ -55,7 +55,7 @@ struct VisualProgram {
     std::map<std::string,VisualProgramAction> actions;
     std::map<std::string,VisualProgramSignalDefinition> signals;
     std::map<std::string,VisualProgramContext> contexts;
-    std::map<std::string,api::ModifierPhaseSource> phases;
+    std::map<std::string,api::PhaseVisualSource> phases;
 };
 VisualProgram ParseVisualProgram(const std::string& json);
 
