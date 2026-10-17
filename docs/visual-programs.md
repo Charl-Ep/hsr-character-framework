@@ -38,6 +38,8 @@ The development command channel accepts `visual_inputs` to replace one instance'
 
 Each instruction has an `op` and a `source` identifying its configuration node. Operations are `create`, `assign`, `progress`, `remove`, `trigger`, `timeline_play` and `timeline_stop`. An optional `when` selects an input by `choice` and `is`.
 
+`remove.optional` lists keys whose absence is expected in some branches. Missing optional requests produce a note; matching requests are still removed. Other missing keys and failed removal calls remain errors. Optional keys must also appear in that instruction's `effects` list.
+
 `progress.value` is a number or `{"variable":"name"}`. Each lane contains ordered cues with `at` and `instructions`. Cue times use normalized body progress; effect transition durations use seconds. Lanes advance independently.
 
 An action with `restart: true` creates a new scene. Other actions retain its effects and variables. Local keys do not set the engine's `UniqueEffectName`; `unique_name` is an explicit option.

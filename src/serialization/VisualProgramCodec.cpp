@@ -1,5 +1,6 @@
 #include <hksr/framework/presentation/VisualProgram.hpp>
 #include <nlohmann/json.hpp>
+#include <algorithm>
 #include <cmath>
 #include <stdexcept>
 
@@ -34,10 +35,11 @@ std::vector<std::string> Names(const Json& value) {
 std::vector<VisualInstruction> Instructions(const Json& rows,const VisualProgram& program) {
     Need(rows.is_array(),"visual instructions must be an array");std::vector<VisualInstruction> out;
     for(const auto& row:rows) {
-        Fields(row,{"op","source","when","effects","variable","value","effect","seconds","fade","immediate","trigger","reset","key","path","type","wrap_mode","release_volume"});
+        Fields(row,{"op","source","when","effects","variable","value","effect","seconds","fade","immediate","trigger","reset","key","path","type","wrap_mode","release_volume","optional"});
         VisualInstruction instruction;instruction.source=Name(row.at("source"));
         if(row.contains("when")){const auto& when=row.at("when");Fields(when,{"choice","is"});instruction.choice=Name(when.at("choice"));instruction.value=Name(when.at("is"));}
         const auto op=Name(row.at("op"));
+        Need(op=="remove" || !row.contains("optional"),"optional effect keys require remove");
         if(op=="create") {
             auto names=Names(row.at("effects"));for(const auto& key:names)Need(program.effects.count(key)!=0,"unknown effect input: "+key);
             instruction.operation=VisualCreate{std::move(names)};
@@ -47,7 +49,14 @@ std::vector<VisualInstruction> Instructions(const Json& rows,const VisualProgram
             if(row.at("value").is_object()) {Fields(row.at("value"),{"variable"});progress.value=Name(row.at("value").at("variable"));}
             else progress.value=Number(row.at("value"));
             instruction.operation=std::move(progress);
-        } else if(op=="remove")instruction.operation=VisualRemove{Names(row.at("effects")),row.value("fade",true),row.value("immediate",false)};
+        } else if(op=="remove") {
+            VisualRemove remove{Names(row.at("effects")),row.value("fade",true),row.value("immediate",false),{}};
+            if(row.contains("optional"))for(const auto& key:Names(row.at("optional"))) {
+                Need(std::find(remove.effects.begin(),remove.effects.end(),key)!=remove.effects.end(),"optional key not in removal: "+key);
+                remove.optional.insert(key);
+            }
+            instruction.operation=std::move(remove);
+        }
         else if(op=="trigger")instruction.operation=VisualTrigger{Names(row.at("effects")),Name(row.at("trigger")),row.value("reset",false)};
         else if(op=="timeline_play" || op=="timeline_stop") {
             VisualTimeline timeline;timeline.key=Name(row.at("key"));timeline.play=op=="timeline_play";

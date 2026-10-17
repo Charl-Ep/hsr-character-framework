@@ -148,6 +148,7 @@ void VisualProgramRuntime::Collect() {
                 <<" closing="<<status.closing<<" drained="<<scene.player->Drained();
             for(const auto& value:status.waiting)out<<" waiting=["<<value<<"]";
             for(const auto& value:status.issues)out<<" issue=["<<value<<"]";
+            for(const auto& value:status.notes)out<<" note=["<<value<<"]";
             const auto text=out.str();
             if(text!=scene.last_trace){trace_(text);scene.last_trace=text;}
         }

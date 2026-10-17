@@ -116,7 +116,10 @@ VisualStepResult VisualProgramPlayer::Execute(const VisualInstruction& input,Cur
                     const auto rows=context_->Requests(key);
                     cursor.receipts->insert(cursor.receipts->end(),rows.begin(),rows.end());
                     const bool pending=services_.remove_in_flight && services_.remove_in_flight(context_,key,{op.fade,op.immediate,false});
-                    if(rows.empty() && !pending)Issue(input,"no owned effect receipt for removal: "+key);
+                    if(rows.empty() && !pending) {
+                        if(op.optional.count(key))status_.notes.push_back(input.source+": optional effect absent: "+key);
+                        else Issue(input,"no owned effect receipt for removal: "+key);
+                    }
                     for(const auto id:rows)context_->Remove(id,{op.fade,op.immediate,false});
                 }
                 // Service at the next engine boundary; retain every receipt

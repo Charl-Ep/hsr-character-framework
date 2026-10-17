@@ -13,7 +13,10 @@ struct VisualEffectInput {
 struct VisualCreate {std::vector<std::string> effects;};
 struct VisualAssign {std::string variable;float value=0;};
 struct VisualProgress {std::string effect;std::variant<float,std::string> value;float seconds=0;};
-struct VisualRemove {std::vector<std::string> effects;bool fade=true,immediate=false;};
+struct VisualRemove {
+    std::vector<std::string> effects;bool fade=true,immediate=false;
+    std::set<std::string> optional; // absent in some authored branches
+};
 struct VisualTrigger {std::vector<std::string> effects;std::string trigger;bool reset=false;};
 struct VisualTimeline {std::string key,path;bool play=true;int type=0,wrap_mode=0;bool release_volume=false;};
 using VisualOperation=std::variant<VisualCreate,VisualAssign,VisualProgress,VisualRemove,VisualTrigger,VisualTimeline>;
@@ -68,6 +71,7 @@ struct VisualProgramStatus {
     bool prepared=false,playing=false,finished=false,closing=false,completing=false,completed=false;
     std::vector<std::string> issues;
     std::vector<std::string> waiting;
+    std::vector<std::string> notes;
 };
 // Engine-thread, per-actor scene. It owns effects across body actions, but does
 // not call an Animator or infer gameplay choices. The caller waits for Prepared,

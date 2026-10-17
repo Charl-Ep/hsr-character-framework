@@ -372,6 +372,21 @@ void TestVisualProgram(const char* file) {
     VisualProgramPlayer failed_inputs(hot_program,invalid_inputs);failed_inputs.Select("hot");failed_inputs.Service();failed_inputs.Service();
     Check(!failed_inputs.Status().prepared && failed_inputs.Status().issues.size()==1 && created.size()==2);
     failed_inputs.End();failed_inputs.Service();Check(failed_inputs.Drained());
+    auto optional_program=std::make_shared<VisualProgram>(ParseVisualProgram(R"({
+      "format":"hksr.visual-program","id":"optional","source":"config","scope":"scene","effects":{},
+      "actions":{"clear":{"state":"Clear","restart":true,"enter":[
+        {"op":"remove","source":"shared cleanup","effects":["branch-effect"],"optional":["branch-effect"]}]}}})"));
+    auto removal_callbacks=callbacks;removal_callbacks.remove={};
+    VisualProgramPlayer optional_cleanup(optional_program,removal_callbacks);
+    optional_cleanup.Select("clear");optional_cleanup.Service();optional_cleanup.Service();
+    Check(optional_cleanup.Status().prepared && optional_cleanup.Status().issues.empty() && optional_cleanup.Status().notes.size()==1);
+    optional_cleanup.End();optional_cleanup.Service();Check(optional_cleanup.Drained());
+    auto required_program=std::make_shared<VisualProgram>(*optional_program);
+    std::get<VisualRemove>(required_program->actions.at("clear").enter[0].operation).optional.clear();
+    VisualProgramPlayer required_cleanup(required_program,removal_callbacks);
+    required_cleanup.Select("clear");required_cleanup.Service();required_cleanup.Service();
+    Check(!required_cleanup.Status().prepared && required_cleanup.Status().issues.size()==1 && required_cleanup.Status().notes.empty());
+    required_cleanup.End();required_cleanup.Service();Check(required_cleanup.Drained());
     // Attachment failure must remain visible, and must not run half a scene
     // or silently succeed on a subsequent Service call.
     auto failed_attachment=callbacks;
