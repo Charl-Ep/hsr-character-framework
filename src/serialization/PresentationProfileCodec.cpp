@@ -62,8 +62,12 @@ PresentationProfile ParsePresentationProfile(const std::string& text) {
     if(json.contains("native_events")) {
         Need(json.at("native_events").is_array(),"native_events must be an array");
         for(const auto& row:json.at("native_events")) {
-            Fields(row,{"file","part","states","behavior","key","scope"});
+            Fields(row,{"file","part","states","behavior","key","scope","effect_keys"});
             VisualEventRule rule;rule.file=Name(row.at("file"));rule.key=Name(row.at("key"));rule.scope=Name(row.at("scope"));
+            if(row.contains("effect_keys")) {
+                Need(row.at("effect_keys").is_object(),"effect_keys must map original paths to local keys");
+                for(auto it=row.at("effect_keys").begin();it!=row.at("effect_keys").end();++it)rule.effect_keys.emplace(Name(it.key()),Name(it.value()));
+            }
             const auto part=Name(row.at("part"));
             if(part=="time_point")rule.part=api::AnimationEventPart::TimePoint;
             else if(part=="group_enter")rule.part=api::AnimationEventPart::GroupEnter;

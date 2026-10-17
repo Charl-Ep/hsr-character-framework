@@ -58,6 +58,7 @@
 - `part`：`time_point`、`group_enter`、`group_exit`或`behavior`。
 - `states`：完整状态成员集合，不能只匹配多状态组中的一个名字。
 - `scope`：编排拥有的持续效果上下文；`key`：该上下文内部的请求分组。
+- `effect_keys`：可选的原始`TriggerEffect.EffectPath`到本地请求键的映射；未列出的效果沿用`key`。
 
 调用方在模型事件构造前用`Declare`登记实体代次和规则，在播放前用`Attach`指定实际事件接收者及上下文。构造、序列和效果观察回执交给`VisualEventRoutes`，以实际任务列表引用关联定义。定义可跨次播放复用，`Detach`只阻止新的关联；已经执行的序列保留原上下文的回收责任。上下文执行`End`后持续`Service`至`Drained`。当前宿主不自动激活这些规则。
 

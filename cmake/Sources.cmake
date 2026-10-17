@@ -75,6 +75,7 @@ set(HKSR_RUNTIME_SOURCES
     src/presentation/VisualEffectBindings.cpp
     src/presentation/VisualEventRoutes.cpp
     src/presentation/VisualProgram.cpp
+    src/presentation/VisualTimelines.cpp
 
     # src/serialization
     src/serialization/PresentationProfileCodec.cpp
@@ -138,6 +139,7 @@ set(HKSR_RUNTIME_TEST_SOURCES
     tests/presentation/ActionPlaybackTests.cpp
     tests/presentation/PresentationProfileTests.cpp
     tests/presentation/VisualEffectContextTests.cpp
+    tests/presentation/VisualTimelinesTests.cpp
     tests/presentation/ReadyPlaybackTests.cpp
     tests/presentation/TimelinePolicyTests.cpp
     tests/presentation/VisualPlaybackTests.cpp

@@ -9,17 +9,31 @@
     {
       "file": "Config/ConfigAnimEvents/Avatar/Effect/Avatar_Sparxie_00_Effect_AnimEvent.json",
       "part": "time_point", "states": ["Skill02_Gift"],
-      "scope": "gift-scene", "key": "native.gift"
+      "scope": "gift-scene", "key": "native.gift",
+      "effect_keys": {
+        "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_UI_01.prefab": "native.UI_01"
+      }
     },
     {
       "file": "Config/ConfigAnimEvents/Avatar/Effect/Avatar_Sparxie_00_Effect_AnimEvent.json",
       "part": "time_point", "states": ["Skill02"],
-      "scope": "gift-scene", "key": "native.resolution"
+      "scope": "gift-scene", "key": "native.resolution",
+      "effect_keys": {
+        "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_scene01.prefab": "native.scene01",
+        "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Boom_01.prefab": "native.Boom_01",
+        "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_StencilMask_01.prefab": "native.StencilMask_01"
+      }
     },
     {
       "file": "Config/ConfigAnimEvents/Avatar/Effect/Avatar_Sparxie_00_Effect_AnimEvent.json",
       "part": "time_point", "states": ["Skill02_V1"],
-      "scope": "gift-scene", "key": "native.resolution"
+      "scope": "gift-scene", "key": "native.resolution",
+      "effect_keys": {
+        "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_scene01.prefab": "native.scene01",
+        "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Boom_01.prefab": "native.Boom_01",
+        "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Boom_V1_01.prefab": "native.Boom_V1_01",
+        "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_StencilMask_01.prefab": "native.StencilMask_01"
+      }
     }
   ]
 }

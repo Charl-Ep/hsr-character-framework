@@ -9,7 +9,8 @@ public:
     using Read=std::function<api::AnimationEventDefinitions(const api::AnimationEventSource&)>;
     using TrackSequence=std::function<api::AnimationSequenceTracking(const api::AnimationEventSource&,const api::AnimationTaskConstruction&)>;
     using Trace=std::function<void(const std::string&)>;
-    VisualEventRoutes(Read,TrackSequence,Trace={});
+    using ReadPath=std::function<api::TextResult(const api::EffectTriggerExecution&)>;
+    VisualEventRoutes(Read,TrackSequence,Trace={},ReadPath={});
     // Declare before the model constructs events. Definitions persist between
     // plays; attaching a context later does not require rebuilding the model.
     RuleId Declare(api::EntityOrigin,VisualEventRule);
@@ -24,14 +25,21 @@ public:
     void After(const api::AnimationEventSource&);
     void Observe(const api::AnimationSequenceObservation&);
     std::optional<VisualEffectId> Submitted(const api::EffectSubmission&);
+    // Retire existing receipts and later submissions of THIS running sequence,
+    // not all future executions of the same source/configuration.
+    bool RemoveInFlight(std::shared_ptr<VisualEffectContext>,const std::string&,api::EffectRemovalOptions);
     void Collect();
     void Clear();
 private:
     struct Rule {api::EntityOrigin owner;void* receiver=nullptr;VisualEventRule input;std::weak_ptr<VisualEffectContext> context;bool declared=false;};
     struct Selection {void* configurations;RuleId rule;};
     struct Definition {api::EntityOrigin owner;void* sequence;void* receiver;RuleId rule;};
-    struct Execution {api::AnimationSequenceExecution source;std::string key;std::weak_ptr<VisualEffectContext> context;};
-    Read read_;TrackSequence track_;Trace trace_;
+    struct Execution {
+        api::AnimationSequenceExecution source;std::string key;std::weak_ptr<VisualEffectContext> context;
+        std::map<std::string,std::string> effect_keys;
+        std::map<std::string,api::EffectRemovalOptions> removals;
+    };
+    Read read_;TrackSequence track_;Trace trace_;ReadPath path_;
     RuleId next_=0;
     std::map<RuleId,Rule> rules_;
     std::map<std::uint64_t,std::vector<Selection>> constructions_;

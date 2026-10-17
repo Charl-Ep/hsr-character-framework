@@ -14,8 +14,8 @@ bool Matches(const VisualEventRule& rule,const api::AnimationEventDefinition& de
         std::set<std::string>(definition.states.begin(),definition.states.end());
 }
 }
-VisualEventRoutes::VisualEventRoutes(Read read,TrackSequence track,Trace trace)
-    :read_(std::move(read)),track_(std::move(track)),trace_(std::move(trace)) {
+VisualEventRoutes::VisualEventRoutes(Read read,TrackSequence track,Trace trace,ReadPath path)
+    :read_(std::move(read)),track_(std::move(track)),trace_(std::move(trace)),path_(std::move(path)) {
     if(!read_ || !track_)throw std::invalid_argument("visual event routes require definition and sequence services");
 }
 VisualEventRoutes::RuleId VisualEventRoutes::Bind(api::EntityOrigin owner,void* receiver,VisualEventRule input,
@@ -96,7 +96,7 @@ void VisualEventRoutes::Observe(const api::AnimationSequenceObservation& value) 
                 // Closing contexts accept already-attributed in-flight effects,
                 // but no new Begin may extend a program that has ended.
                 if(!context->Closing()) {
-                    bindings_.Bind(execution,context);executions_[execution.serial]={execution,rule->second.input.key,context};
+                    bindings_.Bind(execution,context);executions_[execution.serial]={execution,rule->second.input.key,context,rule->second.input.effect_keys,{}};
                 }
             }
         }
@@ -107,9 +107,41 @@ void VisualEventRoutes::Observe(const api::AnimationSequenceObservation& value) 
         definitions_.erase({execution.construction,execution.definition});
 }
 std::optional<VisualEffectId> VisualEventRoutes::Submitted(const api::EffectSubmission& value) {
-    const auto found=executions_.find(value.sequence.serial);
+    auto found=executions_.find(value.sequence.serial);
     if(found==executions_.end())return {};
-    return bindings_.Track(found->second.key,value);
+    const auto selector=found->second;std::string key=selector.key;
+    if(!selector.effect_keys.empty()) {
+        try {
+            if(!path_)throw std::logic_error("effect source path reader missing");
+            const auto source=path_(value.trigger);
+            if(!source.read.returned)throw std::runtime_error(source.error);
+            if(const auto match=selector.effect_keys.find(source.utf8);match!=selector.effect_keys.end())key=match->second;
+        }catch(const std::exception& e) {
+            // Label failure does not discard an already attributed receipt.
+            // Context exit can still cancel it through the default group.
+            if(trace_)trace_(std::string("effect source label unresolved: ")+e.what());
+        }
+    }
+    // Source reading can call managed code; use the current execution again.
+    found=executions_.find(value.sequence.serial);if(found==executions_.end())return {};
+    const auto context=found->second.context.lock();
+    std::optional<api::EffectRemovalOptions> removal;
+    if(const auto remove=found->second.removals.find(key);remove!=found->second.removals.end())removal=remove->second;
+    const auto id=bindings_.Track(key,value);
+    if(id && removal && context)context->Remove(*id,*removal);
+    return id;
+}
+bool VisualEventRoutes::RemoveInFlight(std::shared_ptr<VisualEffectContext> context,const std::string& key,api::EffectRemovalOptions options) {
+    if(!context)return false;
+    const auto receipts=context->Requests(key);bool found=!receipts.empty();
+    for(const auto id:receipts)context->Remove(id,options);
+    for(auto& [serial,execution]:executions_) {
+        (void)serial;if(execution.context.lock()!=context)continue;
+        const bool matches=execution.key==key || std::any_of(execution.effect_keys.begin(),execution.effect_keys.end(),
+            [&](const auto& item){return item.second==key;});
+        if(matches){execution.removals[key]=options;found=true;}
+    }
+    return found;
 }
 void VisualEventRoutes::Collect() {
     std::vector<RuleId> expired;

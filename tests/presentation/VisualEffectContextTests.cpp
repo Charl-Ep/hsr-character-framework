@@ -171,8 +171,12 @@ void TestVisualEffectContext() {
     AnimationEventDefinitions definitions;
     definitions.rows={{AnimationEventPart::TimePoint,38,{"Skill02_Gift"},{},&collection1},
         {AnimationEventPart::TimePoint,33,{"Skill02"},{},&collection2}};
+    bool labels_readable=true;int label_errors=0;
     VisualEventRoutes routes([&](const auto&){++reads;return definitions;},
-        [&](const auto&,const auto&){++tracks;return AnimationSequenceTracking::Tracked;});
+        [&](const auto&,const auto&){++tracks;return AnimationSequenceTracking::Tracked;},
+        [&](const auto&){++label_errors;},
+        [&](const auto&){return labels_readable?TextResult{{true,0},recipe[0].effect_keys.begin()->first,{}}:
+            TextResult{{false,13},{},"path unavailable"};});
     std::vector<VisualEventRoutes::RuleId> rule_ids;
     for(const auto& rule:recipe)rule_ids.push_back(routes.Bind(source.origin,&receiver,rule,gift));
     auto other_source=source;++other_source.origin.token.generation;
@@ -186,10 +190,13 @@ void TestVisualEffectContext() {
     routes.Observe(begin);a={};a.state=3;a.callback=&official_callback;
     submission.sequence=execution;submission.origin=execution.origin;submission.request={a.id,0,&a};
     Check(routes.Submitted(submission).has_value());
+    Check(gift->Requests("native.UI_01").size()==1);
     done.execution=execution;routes.Observe(done);Check(!gift->Closing() && gift->PendingRequests()==1);
     begin.execution.definition=11;begin.execution.serial=102;begin.execution.sequence=&sequence2;routes.Observe(begin);
     submission.sequence=begin.execution;b={};b.state=3;b.callback=&official_callback;submission.request={b.id,0,&b};
+    labels_readable=false;
     Check(routes.Submitted(submission).has_value() && gift->PendingRequests()==2 && a.removes==0);
+    Check(label_errors==1 && gift->Requests("native.resolution").size()==1);labels_readable=true;
     // An unrelated child collection cannot be mapped by config/output index.
     source.serial=200;routes.Before(source,recipe[0].file);built.serial=12;built.configurations=&unrelated;
     routes.Built(source,built);routes.After(source);Check(tracks==2);
@@ -214,7 +221,11 @@ void TestVisualEffectContext() {
     routes.Attach(declared,&receiver,later);
     begin.execution.construction=300;begin.execution.definition=30;begin.execution.sequence=&sequence;begin.execution.serial=301;
     routes.Observe(begin);a={};a.state=3;submission.sequence=begin.execution;submission.request={a.id,0,&a};
+    // Removal before this execution submits the named effect is retained for
+    // that execution only. No native mutation occurs in the observer callback.
+    Check(routes.RemoveInFlight(later,"native.UI_01",{false,true,false}));
     Check(routes.Submitted(submission).has_value());
+    Check(later->Status(later->Requests("native.UI_01").front())->cancelled && a.removes==0);
     routes.Detach(declared);b={};b.state=3;submission.request={b.id,0,&b};
     Check(routes.Submitted(submission).has_value()); // already in-flight
     done.execution=begin.execution;routes.Observe(done);
@@ -224,6 +235,7 @@ void TestVisualEffectContext() {
     Check(!routes.Submitted(submission)); // other model receiver, same entity
     routes.Attach(declared,&receiver,next_context);begin.execution.serial=304;routes.Observe(begin);submission.sequence=begin.execution;
     c={};c.state=3;submission.request={c.id,0,&c};Check(routes.Submitted(submission).has_value());
+    Check(!next_context->Status(next_context->Requests("native.UI_01").front())->cancelled);
     Check(later->PendingRequests()==2 && next_context->PendingRequests()==1);
     later->End(false);next_context->End(false);later->Service();next_context->Service();routes.Unbind(declared);routes.Clear();
     Check(roots.empty());
@@ -331,6 +343,7 @@ void TestVisualProgram(const char* file) {
     // The default consumer uses the SDK bundle, not only the test overrides.
     // Removal waits for a manager receipt; it does not wait for a fade to end.
     requests.clear();created.clear();callbacks.trigger={};callbacks.remove={};
+    const auto prior_removals=explicit_removals.size();
     auto integrated=std::make_shared<VisualProgram>(*program);
     integrated->actions.at("resolve").enter.push_back({VisualRemove{{"recipient"},true,true},"explicit removal",{}, {}});
     VisualProgramPlayer native_services(integrated,callbacks);intent=native_services.Select("gift");native_services.Service();
@@ -338,7 +351,7 @@ void TestVisualProgram(const char* file) {
     native_services.Observe(300,5,"Gift",0.7f);native_services.Service();Check(default_triggers==1);
     release_on_remove=false;native_services.Select("resolve");native_services.Service();Check(!native_services.Status().prepared);
     native_services.Service();Check(native_services.Status().prepared && native_services.Status().issues.empty());
-    Check(explicit_removals.size()==1 && explicit_removals.back().fade && explicit_removals.back().immediate_fade && !explicit_removals.back().unbind);
+    Check(explicit_removals.size()==prior_removals+1 && explicit_removals.back().fade && explicit_removals.back().immediate_fade && !explicit_removals.back().unbind);
     Check(!requests[1]->released);requests[1]->released=true;
     native_services.End();release_on_remove=true;native_services.Service();Check(native_services.Drained() && roots.empty());delegates.clear();
 }
