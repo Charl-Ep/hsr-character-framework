@@ -7,6 +7,10 @@
 #include <hksr/managed/ManagedRoots.hpp>
 
 namespace hksr::framework {
+struct VisualProgramParameters {
+    std::map<std::string,std::uint64_t> targets;
+    std::map<std::string,std::string> choices;
+};
 // Per-creation inputs. Targets are explicit entity generations, never a
 // gameplay target selector or a fallback to the caster. Not layout data.
 struct VisualProgramInput {
@@ -17,6 +21,10 @@ struct VisualProgramInput {
     // after restoration/creation. Direct targets take precedence.
     std::map<std::string,std::uint64_t> target_characters;
     std::function<api::EntityOrigin(std::uint64_t)> resolve_character;
+    // Optional value snapshot, read at action selection, not per frame. Values
+    // overlay the startup defaults. Existing requests retain their old owners.
+    std::uint64_t character=0;
+    std::function<VisualProgramParameters(std::uint64_t)> read_parameters;
 };
 // Prepared with the host, activated before model construction. Owns observers
 // and keeps retiring players until their effects and Timelines drain.

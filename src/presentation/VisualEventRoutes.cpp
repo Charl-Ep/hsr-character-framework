@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <set>
 #include <stdexcept>
+#include <sstream>
 
 namespace hksr::framework {
 namespace {
@@ -83,6 +84,7 @@ void VisualEventRoutes::Built(const api::AnimationEventSource& source,const api:
         if(it->second.sequence==task.parent && Same(it->second.owner,source.origin))it=definitions_.erase(it);else ++it;
     }
     definitions_[{source.serial,task.serial}]={source.origin,task.parent,source.receiver,selected};
+    if(trace_)trace_("visual event tracked construction="+std::to_string(source.serial)+" definition="+std::to_string(task.serial)+" rule="+std::to_string(selected));
 }
 void VisualEventRoutes::After(const api::AnimationEventSource& source){constructions_.erase(source.serial);}
 void VisualEventRoutes::Observe(const api::AnimationSequenceObservation& value) {
@@ -133,6 +135,10 @@ std::optional<VisualEffectId> VisualEventRoutes::Submitted(const api::EffectSubm
     if(const auto remove=found->second.removals.find(key);remove!=found->second.removals.end())removal=remove->second;
     const auto id=bindings_.Track(key,value);
     if(id && removal && context)context->Remove(*id,*removal);
+    if(trace_ && id) {
+        std::ostringstream out;out<<"visual event submission execution="<<value.sequence.serial<<" key="<<key
+            <<" receipt="<<*id<<" context="<<context.get()<<" cancelled="<<static_cast<bool>(removal);trace_(out.str());
+    }
     return id;
 }
 bool VisualEventRoutes::RemoveInFlight(std::shared_ptr<VisualEffectContext> context,const std::string& key,api::EffectRemovalOptions options) {

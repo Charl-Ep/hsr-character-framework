@@ -8,6 +8,7 @@ void TestVisualTimelines() {
     using namespace hksr;
     using namespace hksr::framework;
     int next=0,stops=0;
+    std::vector<std::string> trace;
     std::map<int,api::TimelinePlaybackPhase> phases;
     auto timelines=std::make_shared<VisualTimelines>([&] {
         const int id=++next;api::TimelineRequestServices services;
@@ -20,15 +21,18 @@ void TestVisualTimelines() {
         services.observe=[&](api::TimelineReference ref){return phases.at(ref.playback);};
         services.stop=[&](api::TimelineReference ref){++stops;phases[ref.playback]=api::TimelinePlaybackPhase::Stopped;return api::CallResult{true,0};};
         return std::make_unique<api::OwnedTimeline>(std::move(services));
-    });
+    },[&](const auto& text){trace.push_back(text);});
     VisualProgramServices services;ConnectVisualTimelines(services,timelines);
     Check(services.timeline({"gift","scene"}).state==VisualStepState::Done && !services.timelines_drained());
+    Check(!trace.empty());const auto trace_once=trace.size();
+    services.timelines_drained();Check(trace.size()==trace_once);
     Check(services.timeline({"gift","scene"}).state==VisualStepState::Done);
     Check(!services.timelines_drained() && stops==1); // old receipt retained
     Check(services.timeline({"gift",{},false}).state==VisualStepState::Done && stops==2);
     Check(!services.timelines_drained()); // stopped is not pooled
     phases[1]=api::TimelinePlaybackPhase::Retired;Check(!services.timelines_drained());
     phases[2]=api::TimelinePlaybackPhase::Retired;Check(services.timelines_drained());
+    Check(trace.back().find("drained=1")!=std::string::npos);
     Check(services.timeline({"resolution","scene"}).state==VisualStepState::Done);
     services.cancel_timelines();Check(!services.timelines_drained() && stops==3);
     phases[3]=api::TimelinePlaybackPhase::Retired;Check(services.timelines_drained());

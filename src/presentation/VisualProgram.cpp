@@ -14,8 +14,7 @@ VisualProgramPlayer::VisualProgramPlayer(std::shared_ptr<const VisualProgram> pr
 std::uint64_t VisualProgramPlayer::Select(const std::string& action,std::map<std::string,std::string> choices) {
     if(status_.closing)throw std::logic_error("visual program closing");
     if(!program_->actions.count(action))throw std::invalid_argument("unknown visual program action: "+action);
-    auto selected=services_.choices;for(auto& [key,value]:choices)selected[key]=std::move(value);
-    pending_=Selection{++next_,action,std::move(selected)};return next_;
+    pending_=Selection{++next_,action,std::move(choices)};return next_;
 }
 void VisualProgramPlayer::Retire(bool fade) {
     if(context_){context_->End(fade);retired_.push_back(std::move(context_));}
@@ -174,6 +173,15 @@ void VisualProgramPlayer::Service(bool advance) {
     status_.waiting.clear();
     if(pending_) {
         auto selected=std::move(*pending_);pending_.reset();
+        auto inputs=services_.choices;
+        try {
+            if(services_.select_inputs)for(auto& [key,value]:services_.select_inputs())inputs[key]=std::move(value);
+        } catch(const std::exception& e) {
+            status_={};status_.intent=selected.intent;status_.action=selected.action;
+            status_.issues.push_back(e.what());Retire(true);action_=nullptr;return;
+        }
+        if(next_!=selected.intent)return;
+        for(auto& [key,value]:selected.choices)inputs[key]=std::move(value);
         action_=&program_->actions.at(selected.action);
         if(action_->restart)Retire(true);
         if(next_!=selected.intent)return;
@@ -191,7 +199,7 @@ void VisualProgramPlayer::Service(bool advance) {
             if(next_!=selected.intent)return;
         }
         status_={};status_.intent=selected.intent;status_.action=selected.action;status_.state=action_->state;
-        choices_=std::move(selected.choices);enter_={};completion_={};lanes_.assign(action_->lanes.size(),{});progress_.reset();
+        choices_=std::move(inputs);enter_={};completion_={};lanes_.assign(action_->lanes.size(),{});progress_.reset();
     }
     if(context_)context_->Service();
     const auto intent=status_.intent;

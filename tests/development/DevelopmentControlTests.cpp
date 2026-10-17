@@ -133,4 +133,26 @@ void TestDevelopmentControl() {
     {DevelopmentControl temporary(42,{[&](auto,auto reply){late=std::move(reply);return 1;},[&]{return snapshot;}});
         temporary.Submit(request.dump());}
     late({1,7,true,"",0});
+    std::map<std::uint64_t,VisualProgramParameters> overrides;
+    DevelopmentControl preview(42,{
+        [&](auto command,auto reply){pending.push_back({std::move(command),std::move(reply)});return 99;},
+        [&]{return snapshot;},
+        [&](auto character,auto inputs){overrides[character]=std::move(inputs);}});
+    const auto queued_before=pending.size();
+    request["request_id"]="visual-values";
+    request["commands"]=Json::array({
+        {{"op","visual_inputs"},{"character",7},{"targets",{{"Target",9}}},{"choices",{{"prize","grand"}}}},
+        {{"op","visual_inputs"},{"character",8},{"choices",{{"prize","minor"}}}}});
+    preview.Submit(request.dump());
+    Check(preview.Drain().size()==2 && pending.size()==queued_before && overrides.size()==2);
+    Check(overrides[7].targets.at("Target")==9 && overrides[8].choices.at("prize")=="minor");
+    request["request_id"]="visual-invalid-independent";
+    request["commands"]=Json::array({
+        {{"op","visual_inputs"},{"character",7},{"targets",{{"Caster",9}}}},
+        {{"op","visual_inputs"},{"character",7},{"choices",{{"prize",5}}}},
+        {{"op","visual_inputs"},{"character",8}}});
+    preview.Submit(request.dump());const auto results=preview.Drain();
+    Check(results.size()==3 && Json::parse(results[0])["event"]=="command_error" &&
+        Json::parse(results[1])["event"]=="command_error" && Json::parse(results[2])["applies"]=="next_program_action");
+    Check(overrides[7].choices.at("prize")=="grand" && overrides[8].choices.empty());
 }

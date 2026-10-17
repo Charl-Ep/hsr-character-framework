@@ -5,14 +5,15 @@
 #include <chrono>
 
 namespace hksr::framework {
-void SceneCharacters::BindProfile(CharacterPlan& plan) const {
+void SceneCharacters::BindProfile(CharacterPlan& plan,std::uint64_t id) const {
     if(!plan.visual_program)for(const auto& root:plan.action_sources)if(root.domain==ActionDomain::Alternate && root.source.kind==api::ActionConfigKind::Battle) {
         const auto found=programs_.find(root.source.path);
         if(found!=programs_.end()){plan.visual_program=found->second;break;}
     }
-    if(plan.visual_program && !plan.visual_program->target_characters.empty()) {
+    if(plan.visual_program) {
         auto input=std::make_shared<VisualProgramInput>(*plan.visual_program);
-        input->resolve_character=[this](std::uint64_t id){return VisualTarget(id);};
+        input->character=id;
+        input->resolve_character=[this](std::uint64_t target){return VisualTarget(target);};
         plan.visual_program=std::move(input);
     }
     if(profiles_)for(const auto& root:plan.action_sources)if(root.domain==ActionDomain::Alternate && root.source.kind==api::ActionConfigKind::Battle) {
@@ -58,7 +59,7 @@ SceneCharacters::SceneCharacters(CharacterSessionServices services)
 }
 std::uint64_t SceneCharacters::Add(std::string scene,CharacterPlan plan,std::optional<PlacedAction> action,CharacterPlacement placement) {
     if(closing_ || scene.empty()) throw std::invalid_argument("scene character needs a scene and an open registry");
-    BindProfile(plan);
+    BindProfile(plan,next_+1);
     Entry entry; entry.plan=std::move(plan); entry.action=std::move(action);
     if(entry.action)entry.action_intent=++entry.next_action;
     entry.placement=placement;
@@ -131,7 +132,7 @@ void SceneCharacters::ReplacePlan(std::uint64_t id,CharacterPlan plan) {
     if(closing_) throw std::logic_error("scene registry closing");
     auto& entry=Edit(id);
     entry.plan=std::move(plan);entry.action.reset();entry.action_intent=0;entry.action_error.clear();++entry.revision;
-    BindProfile(entry.plan);
+    BindProfile(entry.plan,id);
     entry.status.error.clear();
 }
 SceneCharacters::Entry& SceneCharacters::Edit(std::uint64_t id) {

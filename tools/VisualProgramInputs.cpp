@@ -43,4 +43,24 @@ VisualProgramInputs ReadVisualProgramInputs(const std::filesystem::path& file) {
     }
     return result;
 }
+void VisualProgramOverrides::Set(std::uint64_t character,framework::VisualProgramParameters value) {
+    if(!character)throw std::invalid_argument("visual input requires an instance ID");
+    std::lock_guard<std::mutex> lock(mutex_);
+    if(value.targets.empty() && value.choices.empty())values_.erase(character);
+    else values_[character]=std::move(value);
+}
+framework::VisualProgramParameters VisualProgramOverrides::Read(std::uint64_t character) const {
+    std::lock_guard<std::mutex> lock(mutex_);
+    const auto found=values_.find(character);
+    return found==values_.end()?framework::VisualProgramParameters{}:found->second;
+}
+VisualProgramInputs BindVisualProgramOverrides(VisualProgramInputs inputs,std::shared_ptr<VisualProgramOverrides> overrides) {
+    if(!overrides)throw std::invalid_argument("visual input store absent");
+    for(auto& [source,original]:inputs) {
+        (void)source;auto input=std::make_shared<framework::VisualProgramInput>(*original);
+        input->read_parameters=[overrides](std::uint64_t character){return overrides->Read(character);};
+        original=std::move(input);
+    }
+    return inputs;
+}
 }

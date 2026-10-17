@@ -58,6 +58,9 @@ struct VisualProgramServices {
     std::function<bool()> timelines_drained;
     std::function<bool(std::shared_ptr<VisualEffectContext>,const std::string&,api::EffectRemovalOptions)> remove_in_flight;
     std::map<std::string,std::string> choices;
+    // Called once when an action selection is consumed, before any instruction.
+    // Returns current defaults; explicit Select choices take precedence.
+    std::function<std::map<std::string,std::string>()> select_inputs;
 };
 struct VisualProgramStatus {
     std::uint64_t intent=0,playback=0,model=0;

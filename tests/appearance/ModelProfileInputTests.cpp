@@ -771,6 +771,7 @@ void TestModelProfileInputs() {
         plan.visual_program=input;
         const auto visual_source=registry.Add(target_scene.key,plan);registry.SetEnabled(visual_source,false);
         const auto resolve_target=registry.Plan(visual_source).visual_program->resolve_character;
+        Check(registry.Plan(visual_source).visual_program->character==visual_source && input->character==0);
         Check(resolve_target && !resolve_target(target).token.entity && !resolve_target(999).token.entity);
         registry.Service(current,target_scene,appearance,{});
         const auto first=resolve_target(target);Check(first.token.entity==entity_ptr && first.world==world_ptr);

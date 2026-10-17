@@ -57,6 +57,7 @@ struct Extension {
     }
 #ifdef HKSR_RESEARCH
     std::unique_ptr<hksr::research::DevelopmentControl> control;
+    std::shared_ptr<hksr::research::VisualProgramOverrides> visual_inputs=std::make_shared<hksr::research::VisualProgramOverrides>();
     std::filesystem::path control_requests;
     std::filesystem::file_time_type control_modified{};
     void ReadControlRequests() {
@@ -66,7 +67,8 @@ struct Extension {
         if(!control)control=std::make_unique<hksr::research::DevelopmentControl>(GetCurrentProcessId(),
             hksr::research::DevelopmentControl::Services{
                 [this](auto command,auto reply){return framework->Application().Post(std::move(command),std::move(reply));},
-                [this]{return framework->Application().Snapshot();}});
+                [this]{return framework->Application().Snapshot();},
+                [this](auto character,auto inputs){visual_inputs->Set(character,std::move(inputs));}});
         std::error_code error;const auto modified=std::filesystem::last_write_time(control_requests,error);
         if(!error && modified!=control_modified) {
             std::ifstream input(control_requests,std::ios::binary);
@@ -131,7 +133,7 @@ void Run() {
                 try {
                     auto programs=hksr::research::ReadVisualProgramInputs(s.http_settings.parent_path()/L"VISUAL_PROGRAMS.json");
                     s.Log("visual programs loaded="+std::to_string(programs.size()));
-                    s.framework->SetVisualPrograms(std::move(programs));
+                    s.framework->SetVisualPrograms(hksr::research::BindVisualProgramOverrides(std::move(programs),s.visual_inputs));
                 } catch(const std::exception& e){s.Log(std::string("visual programs unavailable: ")+e.what());}
                 s.framework->SetModelObserver([](auto id,auto generation,auto domain,auto* entity,void* model,void* animator) {
                     hksr::framework::development::ObserveModel(id,generation,static_cast<int>(domain),entity,model,animator);

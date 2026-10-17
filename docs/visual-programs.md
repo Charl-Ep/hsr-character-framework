@@ -8,6 +8,8 @@ Call `FrameworkHost::SetVisualPrograms` before preparation with a map from chara
 
 `VisualProgramInput` contains the definition, explicit targets and preview choices. `Caster` resolves to the created actor. Other target names use `targets` for live entity generations or `target_characters` for framework instance IDs. `SceneCharacters` resolves instance IDs at submission, after creation or restoration. Missing, retired and cross-world targets do not fall back to the caster. Custom assemblies supplying instance IDs must provide `resolve_character` and keep it alive through cleanup.
 
+Optional `read_parameters(character)` supplies target IDs and choices when an action selection is consumed. Its values overlay the startup defaults; explicit `Select` choices take precedence. The player keeps that snapshot through the action. Existing effect requests retain their original targets. `SceneCharacters` binds the owning instance ID; custom assemblies provide it explicitly.
+
 The host prepares `VisualProgramRuntime` and activates its construction, sequence and submission observers before servicing characters. A session declares its rules before loading its alternate model. On scene entry, the runtime reads and retains the current event receiver. Native effects and Common Timelines remain owned until their actual cleanup completes.
 
 For custom assembly, use `CharacterPlan::visual_program` with `CharacterSessionServices::visual_program`, or configure `ActionPlayback` directly. Keep providers alive until sessions and program cleanup have closed.
@@ -16,6 +18,12 @@ Development builds optionally read `VISUAL_PROGRAMS.json` beside the DLL at star
 
 ```json
 {"programs":[{"file":"VisualPrograms/scene.json","targets":{"Target":2},"choices":{"variant":"a"}}]}
+```
+
+The development command channel accepts `visual_inputs` to replace one instance's parameter overrides. Omitted maps are empty; omitting both restores startup defaults. Definitions remain fixed until restart. The reply `visual_inputs_set` confirms storage, not playback. The command does not create instances, select an action or change a saved layout.
+
+```json
+{"op":"visual_inputs","character":7,"targets":{"Target":2},"choices":{"variant":"b"}}
 ```
 
 ## Data
@@ -43,6 +51,8 @@ An action with `restart: true` creates a new scene. Other actions retain its eff
 `ConnectVisualTimelines` connects a `VisualTimelines` scene to these callbacks. Its factory creates SDK `OwnedTimeline` requests bound to the actor. The adapter supports Common Timelines without task-level volume release. Replaying a key retains the cancelled prior borrow until cleanup completes.
 
 `Select` queues intent, merging supplied choices over the service defaults. `Service` prepares the scene and collects independent input errors. The body starts after preparation succeeds; `Played` and `Observe` identify its actual playback and model. Pending controls retry only unresolved receipts, without restarting accepted transitions.
+
+Runtime diagnostics report selection, waiting instructions, native event attribution and effect targets. Timeline records include the registry borrow, observed phase and cleanup status; unchanged records are suppressed.
 
 After successor instructions finish, existing effects and executing native producers retain their natural lifetimes. Stop looping Timelines explicitly in the instructions. `Leave` interrupts the scene, including retained tails, and permits a later restart. `End` closes the player. Continue `Service` until `Drained`, including effects, executing native producers and Timeline cleanup. `Service(false)` collects lifetimes without advancing instructions while a body replacement is pending.
 

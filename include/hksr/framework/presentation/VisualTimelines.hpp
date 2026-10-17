@@ -8,7 +8,8 @@ namespace hksr::framework {
 class VisualTimelines {
 public:
     using Factory=std::function<std::unique_ptr<api::OwnedTimeline>()>;
-    explicit VisualTimelines(Factory);
+    using Trace=std::function<void(const std::string&)>;
+    explicit VisualTimelines(Factory,Trace={});
     VisualStepResult Execute(const VisualTimeline&);
     void Cancel();
     void Service();
@@ -16,6 +17,9 @@ public:
     const std::vector<std::string>& Issues() const{return issues_;}
 private:
     Factory factory_;
+    Trace trace_;
+    std::map<const api::OwnedTimeline*,std::string> last_trace_;
+    void Report(const std::string& key,const api::OwnedTimeline&);
     std::map<std::string,std::shared_ptr<api::OwnedTimeline>> current_;
     std::vector<std::shared_ptr<api::OwnedTimeline>> retired_;
     std::vector<std::string> issues_;

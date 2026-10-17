@@ -17,6 +17,7 @@ bool Alive(api::EntityOrigin origin) {
 struct VisualProgramRuntime::Scene {
     api::EntityOrigin owner;
     VisualProgramInput input;
+    std::map<std::string,std::uint64_t> selected_targets;
     std::vector<VisualEventRoutes::RuleId> rules;
     std::shared_ptr<VisualProgramPlayer> player;
     std::unique_ptr<api::ManagedRoots> roots;
@@ -59,15 +60,28 @@ std::shared_ptr<VisualProgramPlayer> VisualProgramRuntime::Create(api::EntityOri
     const std::shared_ptr<const PresentationProfile>& profile) {
     if(closing_ || !Alive(owner) || !input.program)throw std::invalid_argument("visual program requires a live creation and program");
     auto scene=std::make_shared<Scene>();scene->owner=owner;scene->input=input;scene->roots=api_.CreateRoots();
+    scene->selected_targets=input.target_characters;
     scenes_.push_back(scene); // own partial declaration/setup before any later operation can fail
     VisualProgramServices services;services.effects=api_.EffectServices();services.choices=input.choices;
     std::weak_ptr<Scene> weak=scene;
     auto current=[weak]{auto value=weak.lock();if(!value)throw std::logic_error("visual scene ended");return value;};
+    services.select_inputs=[current] {
+        auto value=current();auto targets=value->input.target_characters;
+        auto choices=value->input.choices;
+        if(value->input.read_parameters) {
+            auto parameters=value->input.read_parameters(value->input.character);
+            for(auto& [key,id]:parameters.targets)targets[key]=id;
+            for(auto& [key,choice]:parameters.choices)choices[key]=std::move(choice);
+        }
+        value->selected_targets=std::move(targets);return choices;
+    };
     services.create=[this,current](auto& context,const auto& key,const auto& value){return CreateEffect(*current(),context,key,value);};
     services.attach=[this,current](auto context){Attach(*current(),std::move(context));};
     services.detach=[this,current]{Detach(*current());};
     services.remove_in_flight=[this](auto context,const auto& key,auto options){return routes_.RemoveInFlight(std::move(context),key,options);};
-    ConnectVisualTimelines(services,std::make_shared<VisualTimelines>([this,owner]{return api_.CreateTimeline(owner.token,owner.world);}));
+    const auto trace=trace_;
+    ConnectVisualTimelines(services,std::make_shared<VisualTimelines>([this,owner]{return api_.CreateTimeline(owner.token,owner.world);},
+        [trace,owner](const auto& text){if(trace){std::ostringstream out;out<<"visual owner="<<owner.token.entity<<" generation="<<owner.token.generation<<" "<<text;trace(out.str());}}));
     scene->player=std::make_shared<VisualProgramPlayer>(input.program,std::move(services));
     try {
         if(profile && profile->source==input.program->source)for(const auto& rule:profile->native_events)
@@ -94,8 +108,8 @@ VisualEffectId VisualProgramRuntime::CreateEffect(Scene& scene,VisualEffectConte
         const auto found=scene.input.targets.find(input.target);
         if(found!=scene.input.targets.end())target=found->second;
         else {
-            const auto character=scene.input.target_characters.find(input.target);
-            if(character==scene.input.target_characters.end() || !scene.input.resolve_character)
+            const auto character=scene.selected_targets.find(input.target);
+            if(character==scene.selected_targets.end() || !scene.input.resolve_character)
                 throw std::runtime_error("explicit visual target missing: "+input.target);
             target=scene.input.resolve_character(character->second);
         }
@@ -110,7 +124,13 @@ VisualEffectId VisualProgramRuntime::CreateEffect(Scene& scene,VisualEffectConte
     if(!path.call.returned || !path.object)throw std::runtime_error("visual effect path allocation failed");
     const auto pin=scene.Keep(path.object);scene.releasing.push_back(pin);
     if(!Alive(scene.owner) || !Alive(target))throw std::runtime_error("visual owner ended while preparing effect");
-    return context.StartEntity(key,scene.owner.token.entity,target.token.entity,path.object,input.options);
+    const auto id=context.StartEntity(key,scene.owner.token.entity,target.token.entity,path.object,input.options);
+    if(trace_) {
+        std::ostringstream out;out<<"visual-submit owner="<<scene.owner.token.entity<<" generation="<<scene.owner.token.generation
+            <<" target="<<target.token.entity<<" target_generation="<<target.token.generation
+            <<" key="<<key<<" receipt="<<id;trace_(out.str());
+    }
+    return id;
 }
 void VisualProgramRuntime::Collect() {
     sequences_->Collect();routes_.Collect();

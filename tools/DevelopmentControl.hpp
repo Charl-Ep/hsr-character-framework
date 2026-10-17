@@ -1,5 +1,6 @@
 #pragma once
 #include <hksr/framework/application/ApplicationService.hpp>
+#include <hksr/framework/presentation/VisualProgramRuntime.hpp>
 #include <set>
 
 namespace hksr::research {
@@ -10,6 +11,7 @@ public:
     struct Services {
         std::function<std::uint64_t(framework::CharacterCommand,framework::ApplicationService::ReplySink)> post;
         std::function<framework::ApplicationSnapshot()> snapshot;
+        std::function<void(std::uint64_t,framework::VisualProgramParameters)> visual_inputs;
     };
     explicit DevelopmentControl(unsigned process,Services services);
     void Submit(const std::string& text); // worker; parses each request id once

@@ -266,6 +266,28 @@ void DevelopmentControl::Submit(const std::string& text) {
                 if(commands[i].at("op")=="snapshot") {
                     emit({{"request_id",id},{"index",i},{"event","snapshot"},{"snapshot",Snapshot(services_.snapshot(),commands[i].value("catalog",false),commands[i].value("actions",false))}});continue;
                 }
+                if(commands[i].at("op")=="visual_inputs") {
+                    const auto& command=commands[i];
+                    for(auto it=command.begin();it!=command.end();++it)
+                        if(it.key()!="op" && it.key()!="character" && it.key()!="targets" && it.key()!="choices")
+                            throw std::invalid_argument("unknown visual input field: "+it.key());
+                    const auto character=Unsigned(command.at("character"));
+                    if(!character)throw std::invalid_argument("visual input requires an instance ID");
+                    VisualProgramParameters parameters;
+                    const auto targets=command.value("targets",Json::object());
+                    if(!targets.is_object())throw std::invalid_argument("visual targets must be an object");
+                    for(auto it=targets.begin();it!=targets.end();++it) {
+                        const auto target=Unsigned(it.value());
+                        if(it.key().empty() || it.key()=="Caster" || it.key().find('\0')!=std::string::npos || !target)
+                            throw std::invalid_argument("visual target requires an alias and positive instance ID");
+                        parameters.targets.emplace(it.key(),target);
+                    }
+                    parameters.choices=command.value("choices",Json::object()).get<std::map<std::string,std::string>>();
+                    if(!services_.visual_inputs)throw std::logic_error("visual input control unavailable");
+                    services_.visual_inputs(character,std::move(parameters));
+                    emit({{"request_id",id},{"index",i},{"event","visual_inputs_set"},{"character",character},
+                        {"applies","next_program_action"}});continue;
+                }
                 auto queue=replies_;
                 auto command=ParseDevelopmentCommand(commands[i]);
                 const auto serial=services_.post(std::move(command),[queue,id,i](const CommandReply& reply){

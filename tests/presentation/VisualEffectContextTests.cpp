@@ -171,10 +171,14 @@ void TestVisualEffectContext() {
     AnimationEventDefinitions definitions;
     definitions.rows={{AnimationEventPart::TimePoint,38,{"Skill02_Gift"},{},&collection1},
         {AnimationEventPart::TimePoint,33,{"Skill02"},{},&collection2}};
-    bool labels_readable=true;int label_errors=0;
+    bool labels_readable=true;int label_errors=0,definition_traces=0,submission_traces=0;
     VisualEventRoutes routes([&](const auto&){++reads;return definitions;},
         [&](const auto&,const auto&){++tracks;return AnimationSequenceTracking::Tracked;},
-        [&](const auto&){++label_errors;},
+        [&](const std::string& text){
+            if(text.find("effect source label unresolved:")==0)++label_errors;
+            if(text.find("visual event tracked ")==0)++definition_traces;
+            if(text.find("visual event submission ")==0)++submission_traces;
+        },
         [&](const auto&){return labels_readable?TextResult{{true,0},recipe[0].effect_keys.begin()->first,{}}:
             TextResult{{false,13},{},"path unavailable"};});
     std::vector<VisualEventRoutes::RuleId> rule_ids;
@@ -196,7 +200,7 @@ void TestVisualEffectContext() {
     submission.sequence=begin.execution;b={};b.state=3;b.callback=&official_callback;submission.request={b.id,0,&b};
     labels_readable=false;
     Check(routes.Submitted(submission).has_value() && gift->PendingRequests()==2 && a.removes==0);
-    Check(label_errors==1 && gift->Requests("native.resolution").size()==1);labels_readable=true;
+    Check(label_errors==1 && definition_traces==2 && submission_traces==2 && gift->Requests("native.resolution").size()==1);labels_readable=true;
     // An unrelated child collection cannot be mapped by config/output index.
     source.serial=200;routes.Before(source,recipe[0].file);built.serial=12;built.configurations=&unrelated;
     routes.Built(source,built);routes.After(source);Check(tracks==2);
@@ -339,6 +343,32 @@ void TestVisualProgram(const char* file) {
         alternative.End();release_on_remove=true;alternative.Service();Check(alternative.Drained() && roots.empty());
         delegates.clear();return;
     }
+    // Value inputs are snapshotted once per consumed action, not per cue or
+    // wall frame. A newer selection supersedes old input reads; explicit
+    // choices override the live defaults without altering another player.
+    requests.clear();created.clear();
+    auto hot_program=std::make_shared<VisualProgram>(ParseVisualProgram(R"({
+      "format":"hksr.visual-program","id":"hot","source":"config","scope":"scene",
+      "effects":{"PK":{"path":"pk","target":"Caster"},"recipient":{"path":"other","target":"Target"}},
+      "actions":{"hot":{"state":"Hot","restart":true,
+        "enter":[{"op":"create","source":"enter","effects":["PK"],"when":{"choice":"variant","is":"hot"}}],
+        "lanes":[[{"at":0.5,"instructions":[{"op":"create","source":"later","effects":["recipient"],"when":{"choice":"variant","is":"hot"}}]}]]}}})"));
+    auto hot_callbacks=callbacks;std::string variant="hot";int input_reads=0;
+    hot_callbacks.select_inputs=[&]{++input_reads;return std::map<std::string,std::string>{{"variant",variant}};};
+    VisualProgramPlayer hot(hot_program,hot_callbacks);
+    hot.Select("hot",{{"variant","cold"}});intent=hot.Select("hot");hot.Service();
+    Check(input_reads==1 && created==std::vector<std::string>{"PK"} && hot.Status().prepared);
+    Check(hot.Played(intent,120,7));variant="cold";
+    hot.Observe(120,7,"Hot",0.6f);hot.Service();
+    Check(input_reads==1 && created==std::vector<std::string>({"PK","recipient"}));
+    for(auto& p:requests)Complete(*p);
+    variant="hot";hot.Select("hot",{{"variant","cold"}});hot.Service();
+    Check(input_reads==2 && created.size()==2 && hot.Status().prepared);
+    hot.End();hot.Service();Check(hot.Drained() && roots.empty());
+    auto invalid_inputs=callbacks;invalid_inputs.select_inputs=[]()->std::map<std::string,std::string>{throw std::runtime_error("input read failed");};
+    VisualProgramPlayer failed_inputs(hot_program,invalid_inputs);failed_inputs.Select("hot");failed_inputs.Service();failed_inputs.Service();
+    Check(!failed_inputs.Status().prepared && failed_inputs.Status().issues.size()==1 && created.size()==2);
+    failed_inputs.End();failed_inputs.Service();Check(failed_inputs.Drained());
     // Attachment failure must remain visible, and must not run half a scene
     // or silently succeed on a subsequent Service call.
     auto failed_attachment=callbacks;

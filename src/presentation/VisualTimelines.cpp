@@ -1,9 +1,10 @@
 #include <hksr/framework/presentation/VisualTimelines.hpp>
 #include <algorithm>
 #include <stdexcept>
+#include <sstream>
 
 namespace hksr::framework {
-VisualTimelines::VisualTimelines(Factory factory):factory_(std::move(factory)) {
+VisualTimelines::VisualTimelines(Factory factory,Trace trace):factory_(std::move(factory)),trace_(std::move(trace)) {
     if(!factory_)throw std::invalid_argument("Timeline factory missing");
 }
 VisualStepResult VisualTimelines::Execute(const VisualTimeline& input) {
@@ -27,6 +28,7 @@ VisualStepResult VisualTimelines::Execute(const VisualTimeline& input) {
     if(!request)return {VisualStepState::Failed,"Timeline factory returned no request"};
     current_[op.key]=request; // publish before native start can reenter cancellation
     request->Start(op.path,op.wrap_mode);request->Service();
+    Report(op.key,*request);
     if(!request->Status().accepted)return {VisualStepState::Failed,request->Status().detail};
     return {VisualStepState::Done,{}};
 }
@@ -42,7 +44,26 @@ void VisualTimelines::Service() {
         request->Service();const auto& detail=request->Status().detail;
         if(!detail.empty() && std::find(issues_.begin(),issues_.end(),detail)==issues_.end())issues_.push_back(detail);
     }
-    retired_.erase(std::remove_if(retired_.begin(),retired_.end(),[](const auto& r){return r->Status().drained;}),retired_.end());
+    for(const auto& [key,request]:current_)Report(key,*request);
+    for(const auto& request:retired_)Report("retired",*request);
+    retired_.erase(std::remove_if(retired_.begin(),retired_.end(),[this](const auto& r){
+        if(!r->Status().drained)return false;
+        last_trace_.erase(r.get());return true;
+    }),retired_.end());
+}
+void VisualTimelines::Report(const std::string& key,const api::OwnedTimeline& request) {
+    if(!trace_)return;
+    const auto& value=request.Status();std::ostringstream text;
+    text<<"timeline key="<<key<<" playback="<<value.start.playback<<" accepted="<<value.accepted
+        <<" cancelled="<<value.cancelled<<" drained="<<value.drained<<" detail="<<value.detail;
+    for(std::size_t i=0;i<value.start.references.size();++i) {
+        const auto& ref=value.start.references[i];
+        text<<" [registry="<<ref.registry<<" record="<<ref.record<<" borrow="<<ref.borrow;
+        if(i<value.phases.size())text<<" phase="<<static_cast<int>(value.phases[i]);
+        text<<"]";
+    }
+    auto& previous=last_trace_[&request];
+    const auto next=text.str();if(previous!=next){previous=next;trace_(next);}
 }
 bool VisualTimelines::Drained() const {
     for(const auto& [key,request]:current_){(void)key;if(!request->Status().drained)return false;}

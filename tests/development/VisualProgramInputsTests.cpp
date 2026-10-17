@@ -24,6 +24,16 @@ void TestVisualProgramInputs() {
     const auto& input=*inputs.at("character");
     Check(input.program->id=="test" && input.targets.empty() && !input.resolve_character &&
         input.target_characters.at("Target")==2 && input.choices.at("prize")=="minor");
+    auto overrides=std::make_shared<hksr::research::VisualProgramOverrides>();
+    const auto bound=hksr::research::BindVisualProgramOverrides(inputs,overrides);
+    const auto read=bound.at("character")->read_parameters;
+    overrides->Set(7,{{{"Target",9}},{{"prize","grand"}}});
+    const auto snapshot=read(7);
+    Check(snapshot.targets.at("Target")==9 && snapshot.choices.at("prize")=="grand" && read(8).choices.empty());
+    overrides->Set(7,{{{"Target",10}},{{"prize","minor"}}});
+    Check(snapshot.targets.at("Target")==9 && read(7).targets.at("Target")==10);
+    overrides->Set(7,{});Check(read(7).targets.empty() && read(7).choices.empty());
+    Check(input.target_characters.at("Target")==2 && input.choices.at("prize")=="minor" && !input.read_parameters);
     for(const auto* text:{
         R"({"programs":[{"file":"scene.json","targets":{"Target":-1}}]})",
         R"({"programs":[{"file":"scene.json","targets":{"Caster":2}}]})",
