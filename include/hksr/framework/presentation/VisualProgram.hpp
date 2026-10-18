@@ -24,9 +24,10 @@ struct VisualRemove {
 struct VisualTrigger {std::vector<std::string> effects;std::string trigger;bool reset=false;};
 struct VisualFollow {std::string effect;std::vector<std::string> targets;}; // empty releases this binding
 struct VisualEffectState {std::string effect,state;float transition=0;bool restart=false;};
+struct VisualEffectParameter {std::string effect;api::EffectAnimatorParameter parameter;};
 struct VisualContextOperation {std::string name;bool enter=true;bool fade=true;};
 struct VisualTimeline {std::string key,path;bool play=true;int type=0,wrap_mode=0;bool release_volume=false;};
-using VisualOperation=std::variant<VisualCreate,VisualAssign,VisualProgress,VisualRemove,VisualTrigger,VisualTimeline,VisualFollow,VisualEffectState,VisualContextOperation>;
+using VisualOperation=std::variant<VisualCreate,VisualAssign,VisualProgress,VisualRemove,VisualTrigger,VisualTimeline,VisualFollow,VisualEffectState,VisualContextOperation,VisualEffectParameter>;
 struct VisualInstruction {
     VisualOperation operation;
     std::string source; // original configuration node, for diagnostics

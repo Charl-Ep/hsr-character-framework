@@ -43,6 +43,7 @@ public:
     api::EffectControlResult SetAnimatorState(VisualEffectId,int hash,float transition=0,bool restart=true);
     api::EffectControlResult SetAnimatorState(VisualEffectId,const std::string& state,float transition=0,bool restart=true);
     api::EffectControlResult SetAnimatorTrigger(VisualEffectId,const std::string& name,bool reset=false);
+    api::EffectControlResult SetAnimatorParameter(VisualEffectId,const api::EffectAnimatorParameter&);
     void Remove(VisualEffectId,api::EffectRemovalOptions);
     void UseEntityMotion(std::shared_ptr<VisualEntityMotion>,api::EntityOrigin);
     api::EffectControlResult BindTargets(VisualEffectId,const std::vector<api::EntityOrigin>&);

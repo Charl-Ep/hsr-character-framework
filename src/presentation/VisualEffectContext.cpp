@@ -128,6 +128,12 @@ api::EffectControlResult VisualEffectContext::SetAnimatorTrigger(VisualEffectId 
         found->second.request->Status().request_ended)return {api::EffectControlState::Ended,{},true,"visual receipt ended"};
     return services_->SetAnimatorTrigger(found->second.request->Status().reference,name,reset);
 }
+api::EffectControlResult VisualEffectContext::SetAnimatorParameter(VisualEffectId id,const api::EffectAnimatorParameter& value) {
+    Operation operation(operations_);const auto found=requests_.find(id);
+    if(closing_ || found==requests_.end() || !found->second.retained || found->second.request->Status().closed ||
+        found->second.request->Status().request_ended)return {api::EffectControlState::Ended,{},true,"visual receipt ended"};
+    return services_->SetAnimatorParameter(found->second.request->Status().reference,value);
+}
 api::EffectControlResult VisualEffectContext::SetProgress(VisualEffectId id,float value,float duration) {
     Operation operation(operations_);
     const auto found=requests_.find(id);

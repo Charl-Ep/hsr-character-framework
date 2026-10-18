@@ -107,7 +107,7 @@ VisualStepResult VisualProgramPlayer::Execute(const VisualInstruction& input,Cur
                 if(!Current(execution))return {VisualStepState::Pending,{}};
             }
             return {VisualStepState::Done,{}};
-        } else if constexpr(std::is_same_v<T,VisualProgress> || std::is_same_v<T,VisualTrigger> || std::is_same_v<T,VisualFollow> || std::is_same_v<T,VisualEffectState>) {
+        } else if constexpr(std::is_same_v<T,VisualProgress> || std::is_same_v<T,VisualTrigger> || std::is_same_v<T,VisualFollow> || std::is_same_v<T,VisualEffectState> || std::is_same_v<T,VisualEffectParameter>) {
             float number=0;
             if constexpr(std::is_same_v<T,VisualProgress>) {
                 if(const auto* literal=std::get_if<float>(&op.value))number=*literal;
@@ -137,6 +137,12 @@ VisualStepResult VisualProgramPlayer::Execute(const VisualInstruction& input,Cur
                     result=services_.follow?services_.follow(*context,id,op):VisualStepResult{VisualStepState::Failed,"entity motion service unavailable"};
                 } else if constexpr(std::is_same_v<T,VisualEffectState>) {
                     result=services_.effect_state?services_.effect_state(*context,id,op):VisualStepResult{VisualStepState::Failed,"effect Animator service unavailable"};
+                } else if constexpr(std::is_same_v<T,VisualEffectParameter>) {
+                    const auto control=context->SetAnimatorParameter(id,op.parameter);
+                    const bool no_match=control.state==api::EffectControlState::NoMatch;
+                    result={(control.state==api::EffectControlState::Applied || no_match)?VisualStepState::Done:
+                        control.state==api::EffectControlState::NotLoaded?VisualStepState::Pending:VisualStepState::Failed,control.detail};
+                    if(no_match)status_.notes.push_back(input.source+": receipt="+std::to_string(id)+" "+control.detail);
                 } else if(services_.trigger)result=services_.trigger(*context,id,op);
                 else {
                     const auto control=context->SetAnimatorTrigger(id,op.trigger,op.reset);

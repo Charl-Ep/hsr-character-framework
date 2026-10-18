@@ -2,6 +2,7 @@
 #include <nlohmann/json.hpp>
 #include <algorithm>
 #include <cmath>
+#include <limits>
 #include <stdexcept>
 
 namespace hksr::framework {
@@ -35,7 +36,7 @@ std::vector<std::string> Names(const Json& value) {
 std::vector<VisualInstruction> Instructions(const Json& rows,const VisualProgram& program) {
     Need(rows.is_array(),"visual instructions must be an array");std::vector<VisualInstruction> out;
     for(const auto& row:rows) {
-        Fields(row,{"op","source","when","effects","variable","value","effect","seconds","fade","immediate","trigger","reset","key","path","type","wrap_mode","release_volume","optional","targets","state","transition","restart","context","name"});
+        Fields(row,{"op","source","when","effects","variable","value","effect","seconds","fade","immediate","trigger","reset","key","path","type","wrap_mode","release_volume","optional","targets","state","transition","restart","context","name","selection"});
         VisualInstruction instruction;instruction.source=Name(row.at("source"));
         if(row.contains("context")) {
             instruction.context=Name(row.at("context"));
@@ -71,6 +72,25 @@ std::vector<VisualInstruction> Instructions(const Json& rows,const VisualProgram
         }
         else if(op=="effect_state")instruction.operation=VisualEffectState{Name(row.at("effect")),Name(row.at("state")),
             Number(row.value("transition",Json(0)),true),row.value("restart",false)};
+        else if(op=="effect_parameter") {
+            VisualEffectParameter parameter;parameter.effect=Name(row.at("effect"));parameter.parameter.name=Name(row.at("name"));
+            const auto type=Name(row.at("type"));
+            if(type=="float")parameter.parameter.value=Number(row.at("value"));
+            else if(type=="int") {
+                const auto& value=row.at("value");Need(value.is_number_integer(),"effect int parameter requires an integer");
+                if(value.is_number_unsigned())Need(value.get<std::uint64_t>()<=static_cast<std::uint64_t>(std::numeric_limits<int>::max()),"effect int parameter out of range");
+                else Need(value.get<std::int64_t>()>=std::numeric_limits<int>::min() && value.get<std::int64_t>()<=std::numeric_limits<int>::max(),"effect int parameter out of range");
+                parameter.parameter.value=value.get<int>();
+            } else if(type=="bool") {
+                Need(row.at("value").is_boolean(),"effect bool parameter requires a boolean");parameter.parameter.value=row.at("value").get<bool>();
+            } else if(type=="trigger") {
+                Need(!row.contains("value"),"effect trigger parameter has no value");parameter.parameter.value=api::EffectParameterTrigger{};
+            } else throw std::invalid_argument("unknown effect parameter type: "+type);
+            const auto selection=row.value("selection",std::string("first_active"));
+            if(selection=="first_matching_parameter")parameter.parameter.selection=api::EffectAnimatorSelection::FirstMatchingParameter;
+            else Need(selection=="first_active","unknown effect Animator selection: "+selection);
+            instruction.operation=std::move(parameter);
+        }
         else if(op=="timeline_play" || op=="timeline_stop") {
             VisualTimeline timeline;timeline.key=Name(row.at("key"));timeline.play=op=="timeline_play";
             if(timeline.play)timeline.path=Name(row.at("path"));

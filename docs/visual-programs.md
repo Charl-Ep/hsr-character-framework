@@ -55,7 +55,7 @@ Start a program action through the development channel:
 | `contexts` | Independent effect lifetimes with entry, exit and optional restore instructions |
 | `restore` | Optional reconstruction instructions for the default scene |
 
-Each instruction has an `op` and a `source` identifying its configuration node. Operations are `create`, `assign`, `progress`, `remove`, `trigger`, `follow`, `effect_state`, `context_enter`, `context_exit`, `timeline_play` and `timeline_stop`. An optional `when` selects an input by `choice` and `is`.
+Each instruction has an `op` and a `source` identifying its configuration node. Operations are `create`, `assign`, `progress`, `remove`, `trigger`, `follow`, `effect_state`, `effect_parameter`, `context_enter`, `context_exit`, `timeline_play` and `timeline_stop`. An optional `when` selects an input by `choice` and `is`.
 
 Each effect specifies either `target` or `anchor`. An anchor resolves through `VisualProgramInput::anchors` or parameter overrides; it contains world `position` and an optional `[x,y,z,w]` quaternion `rotation` (identity by default). Anchored effects accept `scale`, `unique_name`, `fade_in` and `simulate_immediately`, but not entity-relative offsets or attachment options. No target entity is created or substituted. The initial pose is fixed at submission; the effect's own animation can move it.
 
@@ -72,6 +72,12 @@ The corresponding effect definition is `{"path":"effect.prefab","anchor":"center
 ```
 
 `follow` binds the named effect's entity-follow plugin to explicit target names. An empty `targets` array releases that binding. Targets must be loaded entities owned by this host in the same world. The instruction does not change the effect's Animator state.
+
+`effect_parameter` sets one Animator per owned effect request. `type` is `float`, `int`, `bool` or `trigger`; `value` must match that type and is omitted for triggers. `selection` defaults to `first_active`; `first_matching_parameter` searches active children for the first matching name and type. A loaded effect with no match produces a note and continues. Pending requests wait independently, without repeating setters already accepted by loaded requests. `trigger` remains a separate operation that broadcasts to all child Animators, including inactive children.
+
+```json
+{"op":"effect_parameter","effect":"flame","name":"Speed","type":"float","value":0.5,"selection":"first_matching_parameter","source":"phase.enter.speed"}
+```
 
 ```json
 {"op":"follow","effect":"ground","targets":["Target"],"source":"scene.exit_view.follow"}

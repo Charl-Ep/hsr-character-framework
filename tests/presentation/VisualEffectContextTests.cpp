@@ -26,6 +26,8 @@ std::function<void()> on_remove;
 bool release_on_remove=false;
 std::vector<EffectRemovalOptions> explicit_removals;
 int default_triggers=0;
+std::vector<std::pair<void*,EffectAnimatorParameter>> parameter_calls;
+std::function<void()> on_parameter;
 void CheckAt(bool ok,int line){if(!ok)throw std::runtime_error("visual effect context test failed at "+std::to_string(line));}
 #define Check(value) CheckAt((value),__LINE__)
 template<class T>Method M(T entry){return {reinterpret_cast<void*>(entry),&info};}
@@ -82,6 +84,13 @@ std::shared_ptr<const PresentationEffects> Services() {
         explicit_removals.push_back(options);EffectRemovalResult result;
         result.removal.value=Remove(service,ref,options.fade,nullptr);result.removal.read={true,0};result.input_release={true,0};return result;
     };
+    actions.parameter=[](EffectReference ref,const EffectAnimatorParameter& value){
+        const auto* p=static_cast<Params*>(ref.parameters);
+        if(p->state!=3)return EffectControlResult{EffectControlState::NotLoaded,{},true,"loading"};
+        parameter_calls.emplace_back(ref.parameters,value);
+        if(on_parameter)on_parameter();
+        return EffectControlResult{value.name=="missing"?EffectControlState::NoMatch:EffectControlState::Applied,{true,0},true,"parameter result"};
+    };
     return std::make_shared<PresentationEffects>(std::move(requests),std::move(controls),
         [](void* raw,void* caster,void* target,void* callback,const EntityEffectOptions&) {
             Check(caster==&entity && target==&other_entity);auto* p=static_cast<Params*>(raw);
@@ -89,7 +98,50 @@ std::shared_ptr<const PresentationEffects> Services() {
         },std::move(actions));
 }
 }
+void TestVisualParameters() {
+    const std::string json=R"({
+      "format":"hksr.visual-program","id":"parameters","source":"fixture","scope":"scene","effects":{},
+      "actions":{"enter":{"state":"Enter","restart":true,"enter":[
+        {"op":"effect_parameter","effect":"flame","name":"speed","type":"float","value":0.5,"source":"float"},
+        {"op":"effect_parameter","effect":"flame","name":"phase","type":"int","value":-4,"selection":"first_matching_parameter","source":"int"},
+        {"op":"effect_parameter","effect":"flame","name":"active","type":"bool","value":true,"source":"bool"},
+        {"op":"effect_parameter","effect":"flame","name":"fire","type":"trigger","source":"trigger"},
+        {"op":"effect_parameter","effect":"flame","name":"missing","type":"float","value":1,"selection":"first_matching_parameter","source":"missing"}
+      ]}}
+    })";
+    auto program=std::make_shared<VisualProgram>(ParseVisualProgram(json));
+    auto services=Services();VisualProgramServices callbacks;callbacks.effects=services;
+    callbacks.create=[](auto&,const auto&,const auto&)->VisualEffectId{throw std::runtime_error("no creation expected");};
+    callbacks.attach=[&](auto context){context->Track("flame",&manager,{a.id,0,&a});context->Track("flame",&manager,{b.id,0,&b});};
+    a={};a.state=3;b={};b.id=2;b.state=1;parameter_calls.clear();
+    VisualProgramPlayer player(program,callbacks);player.Select("enter");player.Service();
+    Check(parameter_calls.size()==1 && parameter_calls[0].first==&a && !player.Status().prepared);
+    player.Service();Check(parameter_calls.size()==1); // no repeated accepted setter
+    b.state=3;player.Service();Check(player.Status().prepared && player.Status().issues.empty());
+    Check(parameter_calls.size()==10 && player.Status().notes.size()==2);
+    Check(std::get<float>(parameter_calls[1].second.value)==0.5f && parameter_calls[1].first==&b);
+    Check(std::get<int>(parameter_calls[2].second.value)==-4 && parameter_calls[2].second.selection==EffectAnimatorSelection::FirstMatchingParameter);
+    Check(std::get<bool>(parameter_calls[4].second.value) && std::holds_alternative<EffectParameterTrigger>(parameter_calls[6].second.value));
+    player.Service();Check(parameter_calls.size()==10); // no-match is a completed no-op
+    player.End();release_on_remove=true;player.Service();Check(player.Drained() && roots.empty());
+    // Interrupted callbacks cannot operate on the remaining batch or next instruction.
+    a={};a.state=3;b={};b.id=2;b.state=3;parameter_calls.clear();
+    VisualProgramPlayer interrupted(program,callbacks);interrupted.Select("enter");
+    on_parameter=[&]{interrupted.End();interrupted.Service();};interrupted.Service();on_parameter={};
+    Check(parameter_calls.size()==1);interrupted.Service();Check(interrupted.Drained() && roots.empty());
+    auto rejected=[&](const std::string& from,const std::string& to){
+        auto invalid=json;const auto at=invalid.find(from);Check(at!=std::string::npos);invalid.replace(at,from.size(),to);
+        bool caught=false;try{ParseVisualProgram(invalid);}catch(const std::exception&){caught=true;}Check(caught);
+    };
+    rejected("\"value\":-4","\"value\":0.5");
+    rejected("\"value\":-4","\"value\":4294967296");
+    rejected("\"value\":true","\"value\":1");
+    rejected("\"type\":\"trigger\"","\"type\":\"trigger\",\"value\":false");
+    rejected("first_matching_parameter","all");
+    a={};b={};allocating=&a;release_on_remove=false;parameter_calls.clear();
+}
 void TestVisualEffectContext() {
+    TestVisualParameters();
     {
         const auto anchors=ParseVisualSpatialAnchors(R"({"center":{"position":[6,0,58],"rotation":[0,1,0,0]}})");
         auto program=std::make_shared<VisualProgram>(ParseVisualProgram(R"({
