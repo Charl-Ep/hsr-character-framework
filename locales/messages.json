@@ -34,6 +34,13 @@
     "Waiting": {
       "parameters": {}
     },
+    "CharacterReady": {"parameters": {}},
+    "CharacterLoading": {"parameters": {}},
+    "CharacterSwitching": {"parameters": {}},
+    "CharacterPreparingAction": {"parameters": {}},
+    "CharacterRemoving": {"parameters": {}},
+    "CharacterOtherMap": {"parameters": {}},
+    "CharacterFailed": {"parameters": {}},
     "NoInstances": {
       "parameters": {}
     },

@@ -56,7 +56,10 @@ hksr::framework::ApplicationSnapshot Fixture() {
     actions->actions.ready_actions.push_back(ready);
     c->characters[1]=actions;
     out.catalog=c;
-    SceneCharacterStatus actor;actor.id=1;actor.creations=1;actor.active=true;actor.package=*source->result.character;actor.scene="preview-map";
+    SceneCharacterStatus actor;actor.id=1;actor.creations=1;actor.active=actor.creation_ready=true;actor.package=*source->result.character;actor.scene="preview-map";
+    actor.handoff=HandoffStatus{};actor.playback=ActionPlaybackStatus{};
+    ActionReceipt displayed;displayed.serial=1;displayed.request=FreeStyleState{"StandBy"};displayed.outcome=ActionOutcome::Returned;
+    actor.playback->last=displayed;
     actor.placement={{6.575f,-15.015f,60.552f},{0,0,0,1}};actor.controls=ControlStatus{};
     actor.controls->live.ready=true;actor.controls->live.position=actor.placement.position;actor.controls->live.rotation=actor.placement.rotation;
     actor.battle_idle_state="ConfiguredRest";
@@ -88,7 +91,8 @@ void TestMenuPreview(ID3D11Device* device,ID3D11DeviceContext* context) {
         {"battle",ui::MenuPage::Actions,false,800,600},
         {"battle-en",ui::MenuPage::Actions,false,800,600,ui::Language::English},
         {"battle-states",ui::MenuPage::Actions,false,800,600},
-        {"battle-states-en",ui::MenuPage::Actions,false,800,600,ui::Language::English}}) {
+        {"battle-states-en",ui::MenuPage::Actions,false,800,600,ui::Language::English},
+        {"status-long",ui::MenuPage::Actions,false,800,600,ui::Language::English}}) {
         auto* previous=ImGui::GetCurrentContext();auto* ctx=ImGui::CreateContext();
         auto& io=ImGui::GetIO();io.IniFilename=nullptr;io.DisplaySize={float(scenario.width),float(scenario.height)};io.DeltaTime=1.0f/60;
         ui::AddUiFonts();Require(!io.Fonts->Fonts.empty());
@@ -101,6 +105,8 @@ void TestMenuPreview(ID3D11Device* device,ID3D11DeviceContext* context) {
         ui::Menu menu(scenario.page,scenario.language);if(scenario.create)menu.OpenCreation(1);
         if(std::string(scenario.name).find("layouts")==0)menu.OpenLayouts();
         ApplicationService host;auto snapshot=Fixture();
+        if(std::string(scenario.name)=="status-long")snapshot.characters[0].playback->last->request=
+            FreeStyleState{"Very_Long_Animator_Name_With_A_Deeply_Nested_Path_To_Check_Status_Bar_Wrapping_And_Readability"};
         const bool battle=std::string(scenario.name).find("battle")==0;
         if(battle){snapshot.characters[0].handoff=HandoffStatus{};snapshot.characters[0].handoff->ready_domain=ActionDomain::Alternate;}
         ImGuiWindow* original_window=nullptr;ImGuiWindow* original_creation=nullptr;

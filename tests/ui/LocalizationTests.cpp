@@ -2,6 +2,7 @@
 #include "../../src/ui/UiPreferences.hpp"
 #include "../../src/ui/Menu.hpp"
 #include "../../src/ui/ControlMessages.hpp"
+#include "../../src/ui/CharacterStatus.hpp"
 #include <imgui_internal.h>
 #include <Windows.h>
 #include <set>
@@ -47,5 +48,27 @@ void TestLocalization() {
     Check(ReadLanguagePreference(file,Language::English)==Language::English);
     wchar_t value[16]{};GetPrivateProfileStringW(L"unrelated",L"preserve",L"",value,16,file.c_str());Check(std::wstring(value)==L"yes");
     Check(!WriteLanguagePreference(folder,Language::English)); // an existing directory is not a writable settings file
+    {
+        using namespace hksr::framework;
+        ApplicationSnapshot snapshot;snapshot.scene=SceneAddress{"map",1};
+        SceneCharacterStatus actor;actor.scene="map";actor.active=actor.creation_ready=true;
+        actor.handoff=HandoffStatus{};actor.handoff->ready_domain=ActionDomain::Alternate;
+        actor.playback=ActionPlaybackStatus{};
+        ActionReceipt receipt;receipt.serial=4;receipt.request=FreeStyleState{"Skill01"};receipt.outcome=ActionOutcome::Returned;
+        actor.playback->last=receipt;
+        Check(CharacterStatus(snapshot,actor,Language::English).text=="Battle · Skill01 · Ready");
+        actor.playback->successor=AutomaticSuccessor{4,0,"StandBy_Transfer",false,true};
+        Check(CharacterStatus(snapshot,actor,Language::Chinese).text=="战斗 · StandBy_Transfer · 就绪");
+        actor.playback->pending=true;
+        Check(CharacterStatus(snapshot,actor,Language::English).text=="Battle · Preparing action");
+        actor.playback->pending=false;actor.handoff->phase=HandoffPhase::Loading;
+        Check(CharacterStatus(snapshot,actor,Language::English).text=="Battle · Switching mode");
+        actor.handoff->phase=HandoffPhase::Ready;actor.creation_ready=false;
+        Check(CharacterStatus(snapshot,actor,Language::Chinese).text=="战斗 · 正在加载角色");
+        actor.creation_ready=true;actor.playback->last->outcome=ActionOutcome::CallFailed;actor.playback->last->detail="failed 100%";
+        auto failed=CharacterStatus(snapshot,actor,Language::English);Check(failed.text=="Battle · Error" && failed.error=="failed 100%");
+        actor.playback.reset();actor.scene="other";
+        Check(CharacterStatus(snapshot,actor,Language::English).text=="Battle · In another map");
+    }
     std::cout<<"Localization: "<<ids.size()<<" keys; registered languages, typed parameters, stable widget IDs, saved tags and typed status passed.\n";
 }
