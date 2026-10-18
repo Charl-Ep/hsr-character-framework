@@ -26,6 +26,24 @@ std::shared_ptr<const api::PhaseVisualConfigSources> VisualProgramPlayer::Curren
     }
     return result;
 }
+VisualBranchState VisualProgramPlayer::BranchState() const {
+    VisualBranchState out;
+    if(status_.closing || end_pending_)return out;
+    auto append=[&](const auto& choices,const auto& variables,const std::string& scope) {
+        for(const auto& [key,value]:choices)out.values.push_back({scope,key,value});
+        for(const auto& [key,value]:variables)out.values.push_back({scope,key,value});
+    };
+    if(context_ && !context_->Closing())append(choices_,variables_,{});
+    std::uint64_t latest=0;
+    for(const auto& [name,lifetime]:contexts_) {
+        if(!lifetime->effects->Closing())append(lifetime->choices,lifetime->variables,name);
+        // Same precedence and retirement semantics as CurrentPhase().
+        if(lifetime->phase_data && lifetime->token>latest) {
+            latest=lifetime->token;out.phase=program_->contexts.at(name).phase;
+        }
+    }
+    return out;
+}
 std::shared_ptr<VisualEffectContext> VisualProgramPlayer::ExecutionContext(
     const VisualInstruction& input,const Execution& execution) const {
     if(input.context.empty())return execution.lifetime?execution.lifetime->effects:context_;

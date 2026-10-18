@@ -141,6 +141,7 @@ public:
     std::shared_ptr<const api::PhaseVisualConfigSources> CurrentPhase() const;
     bool OwnsPhases() const {return !program_->phases.empty();}
     VisualProgramSnapshot Capture() const;
+    VisualBranchState BranchState() const;
     void Restore(VisualProgramSnapshot); // data-only, before scene entry
     bool Restoring() const {return restore_.has_value();}
     bool Drained() const;

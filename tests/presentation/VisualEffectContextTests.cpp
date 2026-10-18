@@ -165,7 +165,7 @@ void TestVisualEffectContext() {
         Check(idle.state=="Loop" && idle.normalized_start==0 && idle.normalized_transition==0.25f && idle.normalized_end==1);
         bool ready=false,drained=true;unsigned submissions=0,ends=0;
         std::shared_ptr<VisualEffectContext> owner;
-        VisualProgramServices services;services.effects=Services();
+        VisualProgramServices services;services.effects=Services();services.choices={{"mode","original"}};
         services.create=[](auto&,const auto&,const auto&)->VisualEffectId{throw std::runtime_error("no effects expected");};
         services.partner=[&](auto context,const auto& operation) {
             owner=context;drained=false;
@@ -177,8 +177,14 @@ void TestVisualEffectContext() {
         VisualProgramPlayer player(program,services);player.Select("enter");player.Service();
         Check(!player.Status().prepared && player.Status().issues.empty() && submissions==0 && ends==0);
         ready=true;player.Service();Check(player.Status().prepared && submissions==6 && ends==0);
+        const auto branches=player.BranchState();
+        Check(branches.values.size()==2 && branches.values[0].scope.empty() && branches.values[1].scope=="phase");
+        Check(std::get<std::string>(branches.values[1].value)=="original");
         const auto saved=player.Capture();Check(saved.contexts.size()==1);
-        player.Select("leave");player.Service();Check(ends==1 && player.ActiveContexts().empty());
+        player.Select("leave",{{"mode","next"}});
+        Check(std::get<std::string>(player.BranchState().values[0].value)=="original"); // not yet consumed
+        player.Service();Check(ends==1 && player.ActiveContexts().empty());
+        Check(player.BranchState().values.size()==1 && std::get<std::string>(player.BranchState().values[0].value)=="next");
         player.End();player.Service();Check(!player.Drained());drained=true;player.Service();Check(player.Drained());
         VisualProgramPlayer restored(program,services);restored.Restore(saved);restored.Service();
         Check(!restored.Restoring() && submissions==7);restored.End();restored.Service();Check(ends==2);
@@ -614,12 +620,15 @@ void TestVisualLifetimes() {
     phase_callbacks.read_phase=[&](const auto& name){++distinct_reads;return name=="first"?first_phase:second_phase;};
     VisualProgramPlayer layered(phase_program,phase_callbacks),independent(phase_program,phase_callbacks);
     layered.Select("one");layered.Service();Check(layered.CurrentPhase()==first_phase);
+    Check(layered.BranchState().phase=="first");
     layered.Select("two");layered.Service();Check(layered.CurrentPhase()==second_phase && distinct_reads==2);
+    Check(layered.BranchState().phase=="second");
     layered.Select("two");layered.Service();Check(distinct_reads==2);
     independent.Select("two");independent.Service();layered.Select("exit");layered.Service();
     Check(layered.CurrentPhase()==first_phase && independent.CurrentPhase()==second_phase);
+    Check(layered.BranchState().phase=="first" && independent.BranchState().phase=="second");
     layered.InterruptAction();layered.Service();Check(layered.CurrentPhase()==first_phase);
-    layered.Leave();Check(!layered.CurrentPhase());layered.Service();layered.End();layered.Service();
+    layered.Leave();Check(!layered.CurrentPhase() && layered.BranchState().phase.empty());layered.Service();layered.End();layered.Service();
     independent.End();Check(!independent.CurrentPhase());independent.Service();Check(layered.Drained() && independent.Drained());
     phase_callbacks.read_phase=[](const auto&)->std::shared_ptr<const PhaseVisualConfigSources>{throw std::runtime_error("source unavailable");};
     VisualProgramPlayer missing_phase(phase_program,phase_callbacks);missing_phase.Select("one");missing_phase.Service();

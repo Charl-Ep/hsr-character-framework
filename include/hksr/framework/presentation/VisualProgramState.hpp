@@ -4,6 +4,7 @@
 #include <optional>
 #include <string>
 #include <vector>
+#include <variant>
 
 namespace hksr::framework {
 struct VisualSpatialAnchor {api::Position3 position;api::Rotation4 rotation;};
@@ -13,6 +14,10 @@ struct VisualProgramParameters {
     std::map<std::string,std::string> choices;
     VisualSpatialAnchors anchors;
 };
+// Current presentation inputs, separate from a persistence recipe or an
+// animation receipt. Scope distinguishes values retained by named contexts.
+struct VisualBranchValue {std::string scope,name;std::variant<std::string,float> value;};
+struct VisualBranchState {std::string phase;std::vector<VisualBranchValue> values;};
 // Value-only reconstruction inputs; no native requests, playback clocks or
 // event tokens. Context order is entry order, not lexical name order.
 struct VisualContextSnapshot {

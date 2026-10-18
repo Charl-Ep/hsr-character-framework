@@ -56,19 +56,22 @@ void TestLocalization() {
         actor.playback=ActionPlaybackStatus{};
         ActionReceipt receipt;receipt.serial=4;receipt.request=FreeStyleState{"Skill01"};receipt.outcome=ActionOutcome::Returned;
         actor.playback->last=receipt;
-        Check(CharacterStatus(snapshot,actor,Language::English).text=="Battle · Skill01 · Ready");
+        Check(CharacterStatus(snapshot,actor,Language::English).text.empty());
+        actor.branch_state.phase="ultra";
+        actor.branch_state.values={{"","item",std::string("missile")},{"shooting","remaining",3.0f}};
+        Check(CharacterStatus(snapshot,actor,Language::English).text=="Phase: ultra\nitem = missile\nshooting.remaining = 3");
         actor.playback->successor=AutomaticSuccessor{4,0,"StandBy_Transfer",false,true};
-        Check(CharacterStatus(snapshot,actor,Language::Chinese).text=="战斗 · StandBy_Transfer · 就绪");
+        Check(CharacterStatus(snapshot,actor,Language::Chinese).text=="阶段: ultra\nitem = missile\nshooting.remaining = 3");
         actor.playback->pending=true;
-        Check(CharacterStatus(snapshot,actor,Language::English).text=="Battle · Preparing action");
+        Check(CharacterStatus(snapshot,actor,Language::English).text.find("Skill01")==std::string::npos);
         actor.playback->pending=false;actor.handoff->phase=HandoffPhase::Loading;
-        Check(CharacterStatus(snapshot,actor,Language::English).text=="Battle · Switching mode");
+        Check(CharacterStatus(snapshot,actor,Language::English).text.find("remaining = 3")!=std::string::npos);
         actor.handoff->phase=HandoffPhase::Ready;actor.creation_ready=false;
-        Check(CharacterStatus(snapshot,actor,Language::Chinese).text=="战斗 · 正在加载角色");
+        actor.branch_state={};Check(CharacterStatus(snapshot,actor,Language::Chinese).text.empty());
         actor.creation_ready=true;actor.playback->last->outcome=ActionOutcome::CallFailed;actor.playback->last->detail="failed 100%";
-        auto failed=CharacterStatus(snapshot,actor,Language::English);Check(failed.text=="Battle · Error" && failed.error=="failed 100%");
+        auto failed=CharacterStatus(snapshot,actor,Language::English);Check(failed.text.empty() && failed.error=="failed 100%");
         actor.playback.reset();actor.scene="other";
-        Check(CharacterStatus(snapshot,actor,Language::English).text=="Battle · In another map");
+        Check(CharacterStatus(snapshot,actor,Language::English).text.empty());
     }
     std::cout<<"Localization: "<<ids.size()<<" keys; registered languages, typed parameters, stable widget IDs, saved tags and typed status passed.\n";
 }

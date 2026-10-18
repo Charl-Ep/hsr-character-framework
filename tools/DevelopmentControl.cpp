@@ -140,6 +140,12 @@ Json Snapshot(const ApplicationSnapshot& source,bool include_catalog,bool includ
             {"retiring",c.retiring},{"pending_inputs",c.pending_inputs},{"error",c.error},{"npc_id",c.package.npc_id},{"scene",c.scene},
             {"position",{{"x",c.placement.position.x},{"y",c.placement.position.y},{"z",c.placement.position.z}}},
             {"rotation",{{"x",c.placement.rotation.x},{"y",c.placement.rotation.y},{"z",c.placement.rotation.z},{"w",c.placement.rotation.w}}}};
+        row["branch_state"]={{"phase",c.branch_state.phase},{"values",Json::array()}};
+        for(const auto& value:c.branch_state.values) {
+            Json item={{"scope",value.scope},{"name",value.name}};
+            std::visit([&](const auto& v){item["value"]=v;},value.value);
+            row["branch_state"]["values"].push_back(std::move(item));
+        }
         if(c.placement.snap_to_ground)row["snap_to_ground"]=*c.placement.snap_to_ground;
         if(c.handoff) {
             row["handoff"]={{"phase",static_cast<int>(c.handoff->phase)},{"error",c.handoff->error}};

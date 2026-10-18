@@ -49,6 +49,11 @@ void TestApplicationEvents() {
     change([&]{actor.handoff->ready_domain=ActionDomain::Alternate;});
     change([&]{actor.handoff->initial_state.normalized_time=0.25f;});
     change([&]{actor.playback->completion_note="returning";});
+    change([&]{actor.branch_state.phase="enhanced";});
+    change([&]{actor.branch_state.values.push_back({"","mode",std::string("a")});});
+    change([&]{actor.branch_state.values[0].value=std::string("b");});
+    change([&]{actor.branch_state.values[0].value=2.0f;});
+    change([&]{actor.branch_state.values.clear();});
     change([&]{actor.controls->live.ready=true;actor.controls->live.position.x=9;});
     change([&]{actor.controls->gaze_phase=api::GazePhase::TargetUnavailable;});
     change([&]{actor.controls->gaze_error="target absent";});

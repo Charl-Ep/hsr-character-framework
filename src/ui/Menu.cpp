@@ -94,10 +94,12 @@ void Menu::Render(ApplicationService& host,const ApplicationSnapshot& snapshot) 
             const auto& selected=*found;
             Text(ActorName(selected.package,rows,language_));
             const auto status=CharacterStatus(snapshot,selected,language_);
+            if(!status.text.empty()) {
             const float status_width=std::max(1.0f,ImGui::GetContentRegionAvail().x-2*ImGui::GetStyle().WindowPadding.x);
             const float status_height=ImGui::CalcTextSize(status.text.c_str(),nullptr,false,status_width).y+2*ImGui::GetStyle().WindowPadding.y;
             ImGui::BeginChild("character-status",{0,status_height},ImGuiChildFlags_Borders,ImGuiWindowFlags_NoScrollbar);
             Text(status.text);ImGui::EndChild();
+            }
             Text(status.error);
             if(selected.session) {
                 if(selected.active && selected.session->phase==SessionPhase::Active && queried_creation_!=selected.creations) {

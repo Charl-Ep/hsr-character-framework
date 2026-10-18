@@ -386,8 +386,10 @@ SceneCharacterStatus SceneCharacters::Status(std::uint64_t id) const {
             out.handoff=handoff->Status();out.playback=handoff->Playback();
             // Use the same live phase owner as automatic completion. The plan
             // only supplies the fallback before a battle model becomes active.
-            if(out.active_revision==out.revision && out.handoff->ready_domain==ActionDomain::Alternate)
+            if(out.active_revision==out.revision && out.handoff->ready_domain==ActionDomain::Alternate) {
                 out.battle_idle_state=handoff->CurrentIdle();
+                out.branch_state=handoff->BranchState();
+            }
         }
         if(out.action && entry.active->action_intent!=entry.action_intent && entry.action_error.empty()) {
             out.action->creation=out.creations;out.action->detail="waiting for official gaze restoration before model handoff";

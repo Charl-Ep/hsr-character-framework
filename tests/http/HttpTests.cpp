@@ -24,6 +24,11 @@ void Protocol() {
     Check(!controls.contains("look_note") && !controls.contains("placement_note"),"no translated status as identity");
     control_snapshot.characters.front().controls->gaze_phase=hksr::api::GazePhase::Restoring;
     Check(http::Snapshot(control_snapshot).at("characters").at("9").at("controls").at("gaze_phase")=="restoring","pending gaze restoration state");
+    auto& branches=control_snapshot.characters.front().branch_state;branches.phase="enhanced";
+    branches.values={{"","variant",std::string("a")},{"scene","count",3.0f}};
+    const auto branch_json=http::Snapshot(control_snapshot).at("characters").at("9").at("branch_state");
+    Check(branch_json.at("phase")=="enhanced" && branch_json.at("values")[0].at("value")=="a" &&
+        branch_json.at("values")[1].at("value")==3.0,"typed presentation branch inputs");
     Check(http::Id("18446744073709551615")==UINT64_MAX,"string IDs preserve 64 bits");
     Reject([]{http::Id(Json(9007199254740992ULL));});Reject([]{http::Id(-1);});Reject([]{http::Id(1.5);});Reject([]{http::Id("1x");});
     const auto npc=http::Command({{"op","prepare_source"},{"source",{{"kind","npc"},{"npc_id","100"}}}});

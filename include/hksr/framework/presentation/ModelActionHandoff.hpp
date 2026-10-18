@@ -28,6 +28,7 @@ public:
     const HandoffStatus& Status() const { return status_; }
     const ActionPlaybackStatus& Playback() const { return actions_.Status(); }
     std::string CurrentIdle() const { return actions_.CurrentIdle(); }
+    VisualBranchState BranchState() const {return actions_.BranchState();}
     bool SuccessorSettled() const {return actions_.SuccessorSettled();}
     std::optional<VisualProgramSnapshot> CaptureVisualProgram() const {
         return visual_restore_?visual_restore_:actions_.CaptureVisualProgram();

@@ -7,6 +7,12 @@ void ActionPlayback::ConfigureVisualProgram(std::shared_ptr<VisualProgramPlayer>
     if(program_ && program_!=player)throw std::logic_error("close the existing visual program before replacing its services");
     program_=std::move(player);
 }
+VisualBranchState ActionPlayback::BranchState() const {
+    if(!presentation_enabled_ || status_.closing)return {};
+    auto out=program_?program_->BranchState():VisualBranchState{};
+    if(!program_ || !program_->OwnsPhases())out.phase=presentation_.Phase();
+    return out;
+}
 std::optional<VisualProgramSnapshot> ActionPlayback::CaptureVisualProgram() const {
     if(!program_)return {};
     auto value=program_->Capture();

@@ -38,6 +38,7 @@ public:
     void SetPresentationDomain(bool battle) {presentation_enabled_=battle;if(!battle){presentation_.LeaveDomain();LeaveProgram();}SyncPresentation();}
     void ConfigureVisualProgram(std::shared_ptr<VisualProgramPlayer>);
     std::optional<VisualProgramSnapshot> CaptureVisualProgram() const;
+    VisualBranchState BranchState() const;
     void RestoreVisualProgram(VisualProgramSnapshot);
     void CancelPending(bool interrupt_presentation=true);
     // inputs_ready comes from model/event/appearance handoff, not a UI cache.

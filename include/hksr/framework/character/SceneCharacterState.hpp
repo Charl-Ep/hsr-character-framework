@@ -3,6 +3,7 @@
 #include "ControlValues.hpp"
 #include "../assets/CharacterPackage.hpp"
 #include "../presentation/HandoffStatus.hpp"
+#include "../presentation/VisualProgramState.hpp"
 #include <hksr/model/CharacterOutfit.hpp>
 
 namespace hksr::framework {
@@ -32,6 +33,7 @@ struct SceneCharacterStatus {
     std::string scene,error;
     std::string battle_idle_state;
     std::string presentation_phase;
+    VisualBranchState branch_state;
     std::string visual_program;
     std::map<std::string,std::string> program_actions; // action key -> body state
     std::optional<CharacterSessionStatus> session;

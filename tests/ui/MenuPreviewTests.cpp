@@ -92,6 +92,7 @@ void TestMenuPreview(ID3D11Device* device,ID3D11DeviceContext* context) {
         {"battle-en",ui::MenuPage::Actions,false,800,600,ui::Language::English},
         {"battle-states",ui::MenuPage::Actions,false,800,600},
         {"battle-states-en",ui::MenuPage::Actions,false,800,600,ui::Language::English},
+        {"status-values",ui::MenuPage::Actions,false,800,600,ui::Language::Chinese},
         {"status-long",ui::MenuPage::Actions,false,800,600,ui::Language::English}}) {
         auto* previous=ImGui::GetCurrentContext();auto* ctx=ImGui::CreateContext();
         auto& io=ImGui::GetIO();io.IniFilename=nullptr;io.DisplaySize={float(scenario.width),float(scenario.height)};io.DeltaTime=1.0f/60;
@@ -105,8 +106,11 @@ void TestMenuPreview(ID3D11Device* device,ID3D11DeviceContext* context) {
         ui::Menu menu(scenario.page,scenario.language);if(scenario.create)menu.OpenCreation(1);
         if(std::string(scenario.name).find("layouts")==0)menu.OpenLayouts();
         ApplicationService host;auto snapshot=Fixture();
-        if(std::string(scenario.name)=="status-long")snapshot.characters[0].playback->last->request=
-            FreeStyleState{"Very_Long_Animator_Name_With_A_Deeply_Nested_Path_To_Check_Status_Bar_Wrapping_And_Readability"};
+        if(std::string(scenario.name).find("status-")==0) {
+            snapshot.characters[0].branch_state.phase="enhanced";
+            snapshot.characters[0].branch_state.values={{"","item",std::string("missile")},
+                {"long_named_context","remaining_shots_in_current_sequence",3.0f}};
+        }
         const bool battle=std::string(scenario.name).find("battle")==0;
         if(battle){snapshot.characters[0].handoff=HandoffStatus{};snapshot.characters[0].handoff->ready_domain=ActionDomain::Alternate;}
         ImGuiWindow* original_window=nullptr;ImGuiWindow* original_creation=nullptr;

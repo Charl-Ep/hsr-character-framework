@@ -65,6 +65,12 @@ Json Actor(const SceneCharacterStatus& c) {
         {"retiring",c.retiring},{"pending_inputs",c.pending_inputs},{"scene",c.scene},{"placement",Pose(c.placement)},
         {"look",{{"mode",looks[static_cast<int>(c.look.mode)]},{"target",std::to_string(c.look.target)},{"point",Vector(c.look.point)},{"max_distance",c.look.max_distance}}},
         {"look_support",c.look_support},{"battle_idle_state",c.battle_idle_state},{"presentation_phase",c.presentation_phase}};
+    out["branch_state"]={{"phase",c.branch_state.phase},{"values",Json::array()}};
+    for(const auto& value:c.branch_state.values) {
+        Json item={{"scope",value.scope},{"name",value.name}};
+        std::visit([&](const auto& v){item["value"]=v;},value.value);
+        out["branch_state"]["values"].push_back(std::move(item));
+    }
     if(c.controls)out["controls"]={{"position",Vector(c.controls->live.position)},{"rotation",Rotation(c.controls->live.rotation)},
         {"ready",c.controls->live.ready},{"error",c.controls->live.error},{"placement_pending",c.controls->placement_pending},
         {"placement_phase",PlacementPhaseName(c.controls->placement_phase)},{"gaze_phase",GazePhaseName(c.controls->gaze_phase)},

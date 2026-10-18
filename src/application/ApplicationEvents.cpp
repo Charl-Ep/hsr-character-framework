@@ -32,6 +32,11 @@ bool Equal(const CharacterPackage& a,const CharacterPackage& b) {
         });
 }
 bool Equal(const SceneCharacterStatus& a,const SceneCharacterStatus& b) {
+    if(a.branch_state.phase!=b.branch_state.phase || a.branch_state.values.size()!=b.branch_state.values.size())return false;
+    for(std::size_t i=0;i<a.branch_state.values.size();++i) {
+        const auto& x=a.branch_state.values[i];const auto& y=b.branch_state.values[i];
+        if(std::tie(x.scope,x.name,x.value)!=std::tie(y.scope,y.name,y.value))return false;
+    }
     if(a.presentation_phase!=b.presentation_phase || a.visual_program!=b.visual_program || a.program_actions!=b.program_actions)return false;
     if(std::tie(a.id,a.creations,a.revision,a.active_revision,a.creation_ready,a.creation_error,a.enabled,a.active,a.deleting,
         a.retiring,a.pending_inputs,a.scene,a.error,a.look_support,a.battle_idle_state)!=
