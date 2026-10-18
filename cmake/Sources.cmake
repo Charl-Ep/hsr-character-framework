@@ -82,6 +82,11 @@ set(HKSR_RUNTIME_SOURCES
     src/presentation/VisualPartners.cpp
     src/presentation/VisualProgramRuntime.cpp
 
+    # src/tasks
+    src/tasks/TaskContext.cpp
+    src/tasks/TaskSources.cpp
+    src/tasks/TaskSequence.cpp
+
     # src/serialization
     src/serialization/PresentationProfileCodec.cpp
     src/serialization/VisualProgramCodec.cpp
@@ -151,4 +156,8 @@ set(HKSR_RUNTIME_TEST_SOURCES
     tests/presentation/ReadyPlaybackTests.cpp
     tests/presentation/TimelinePolicyTests.cpp
     tests/presentation/VisualPlaybackTests.cpp
+
+    # tests/tasks
+    tests/tasks/TaskModelTests.cpp
+    tests/tasks/TaskSequenceTests.cpp
 )

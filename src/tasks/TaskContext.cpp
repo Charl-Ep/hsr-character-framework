@@ -1,0 +1,122 @@
+#include <hksr/framework/tasks/TaskContext.hpp>
+#include <algorithm>
+#include <cmath>
+#include <set>
+#include <stdexcept>
+#include <type_traits>
+
+namespace hksr::framework {
+TaskValueType TypeOf(const TaskValue& value) {
+    return std::visit([](const auto& v) {
+        using T=std::decay_t<decltype(v)>;
+        if constexpr(std::is_same_v<T,bool>)return TaskValueType::Boolean;
+        else if constexpr(std::is_same_v<T,std::int64_t>)return TaskValueType::Integer;
+        else if constexpr(std::is_same_v<T,double>)return TaskValueType::Number;
+        else return TaskValueType::Text;
+    },value);
+}
+namespace {
+bool ValidValue(const TaskValue& value) {
+    const auto* number=std::get_if<double>(&value);return !number || std::isfinite(*number);
+}
+bool ValidKey(const TaskKey& key) {return !key.catalog.empty() && !key.name.empty();}
+}
+void ValidateTaskDefinition(const TaskDefinition& task) {
+    if(!ValidKey(task.key))throw std::invalid_argument("task identity is incomplete");
+    std::set<std::string> names;
+    for(const auto& input:task.inputs) {
+        if(input.name.empty() || !names.insert(input.name).second)throw std::invalid_argument("duplicate or empty task input");
+        if(input.default_value && (TypeOf(*input.default_value)!=input.type || !ValidValue(*input.default_value)))
+            throw std::invalid_argument("task input default has wrong type or nonfinite value: "+input.name);
+    }
+    for(const auto& condition:task.requirements)if(const auto* value=std::get_if<TaskValueEquals>(&condition))
+        if(value->name.empty() || !ValidValue(value->value))throw std::invalid_argument("invalid task value predicate");
+}
+TaskContextToken TaskContext::Enter(std::string name) {
+    if(name.empty())throw std::invalid_argument("context name is empty");
+    TaskContextView view;view.token={++next_};view.name=std::move(name);owners_.push_back(std::move(view));return owners_.back().token;
+}
+TaskContextView& TaskContext::Owner(TaskContextToken token) {
+    const auto found=std::find_if(owners_.begin(),owners_.end(),[&](const auto& owner){return owner.token.value==token.value;});
+    if(found==owners_.end())throw std::invalid_argument("context token is not active");
+    return *found;
+}
+bool TaskContext::Exit(TaskContextToken token) {
+    const auto found=std::find_if(owners_.begin(),owners_.end(),[&](const auto& owner){return owner.token.value==token.value;});
+    if(found==owners_.end())return false;
+    owners_.erase(found);return true;
+}
+void TaskContext::SetValue(TaskContextToken token,const std::string& name,TaskValue value) {
+    if(name.empty() || !ValidValue(value))throw std::invalid_argument("invalid context value");
+    Owner(token).values.insert_or_assign(name,std::move(value));
+}
+void TaskContext::SetPhase(TaskContextToken token,std::optional<std::string> phase) {Owner(token).phase=std::move(phase);}
+void TaskContext::SetSlot(TaskContextToken token,TaskSlot slot,TaskKey key) {
+    if(!ValidKey(key))throw std::invalid_argument("slot task identity is incomplete");
+    Owner(token).slots.insert_or_assign(slot.value,std::move(key));
+}
+void TaskContext::Disable(TaskContextToken token,TaskDisableContribution value) {Owner(token).disables.push_back(std::move(value));}
+std::map<std::string,TaskResolvedValue> TaskContext::Values() const {
+    std::map<std::string,TaskResolvedValue> result;
+    for(const auto& owner:owners_)for(const auto& [name,value]:owner.values)result.insert_or_assign(name,TaskResolvedValue{value,owner.token,owner.name});
+    return result;
+}
+std::optional<std::string> TaskContext::Phase() const {
+    for(auto it=owners_.rbegin();it!=owners_.rend();++it)if(it->phase)return it->phase;
+    return {};
+}
+TaskKey TaskContext::ResolveSlot(TaskSlot slot,const TaskKey& baseline) const {
+    for(auto it=owners_.rbegin();it!=owners_.rend();++it)if(const auto found=it->slots.find(slot.value);found!=it->slots.end())return found->second;
+    return baseline;
+}
+TaskQueryResult TaskContext::Query(const TaskDefinition& task,const TaskQuery& query) const {
+    ValidateTaskDefinition(task);TaskQueryResult result;auto values=Values();
+    auto reason=[&](TaskAvailability state,TaskReasonKind kind,std::string source,std::string detail) {
+        if(state==TaskAvailability::Unavailable || result.availability==TaskAvailability::Available)result.availability=state;
+        result.reasons.push_back({kind,std::move(source),std::move(detail)});
+    };
+    if(task.entry.empty())reason(TaskAvailability::Unknown,TaskReasonKind::Unimplemented,task.key.name,"no visual task entry");
+    for(const auto& input:task.inputs) {
+        const auto explicit_value=query.inputs.find(input.name);
+        const auto inherited=values.find(input.name);
+        const TaskValue* selected=explicit_value!=query.inputs.end()?&explicit_value->second:
+            inherited!=values.end()?&inherited->second.value:input.default_value?&*input.default_value:nullptr;
+        if(!selected)reason(TaskAvailability::Unavailable,TaskReasonKind::MissingInput,input.name,"required input is absent");
+        else if(TypeOf(*selected)!=input.type || !ValidValue(*selected))reason(TaskAvailability::Unavailable,TaskReasonKind::InputType,input.name,"input type differs or value is nonfinite");
+        else result.inputs.emplace(input.name,*selected);
+    }
+    for(const auto& [name,value]:query.inputs) {
+        (void)value;
+        if(std::none_of(task.inputs.begin(),task.inputs.end(),[&](const auto& input){return input.name==name;}))
+            reason(TaskAvailability::Unavailable,TaskReasonKind::InputType,name,"undeclared task input");
+    }
+    // Explicit task inputs shadow persistent values for this execution only.
+    for(const auto& [name,value]:result.inputs)values.insert_or_assign(name,TaskResolvedValue{value,{},"input"});
+    for(const auto& requirement:task.requirements)std::visit([&](const auto& item) {
+        using T=std::decay_t<decltype(item)>;
+        if constexpr(std::is_same_v<T,TaskValueEquals>) {
+            const auto found=values.find(item.name);
+            if(found==values.end())reason(TaskAvailability::Unknown,TaskReasonKind::Unresolved,item.name,"condition value is absent");
+            else if(TypeOf(found->second.value)!=TypeOf(item.value))reason(TaskAvailability::Unknown,TaskReasonKind::InputType,item.name,"condition value type differs");
+            else if(found->second.value!=item.value)reason(TaskAvailability::Unavailable,TaskReasonKind::Condition,item.name,"condition is false");
+        } else if constexpr(std::is_same_v<T,TaskPhaseEquals>) {
+            const auto phase=Phase();
+            if(!phase)reason(TaskAvailability::Unknown,TaskReasonKind::Unresolved,"phase","phase is not set");
+            else if(*phase!=item.phase)reason(TaskAvailability::Unavailable,TaskReasonKind::Condition,"phase","phase differs");
+        } else if constexpr(std::is_same_v<T,TaskNeedsParticipant>) {
+            if(std::none_of(query.participants.begin(),query.participants.end(),[&](const auto& participant){return participant.name==item.participant.name;}))
+                reason(TaskAvailability::Unavailable,TaskReasonKind::Participant,item.participant.name,"participant is absent");
+        } else reason(TaskAvailability::Unknown,TaskReasonKind::Unresolved,item.source,item.detail);
+    },requirement);
+    for(const auto& owner:owners_)for(const auto& disable:owner.disables) {
+        const auto matches=std::visit([&](const auto& selector) {
+            using T=std::decay_t<decltype(selector)>;
+            if constexpr(std::is_same_v<T,TaskKey>)return selector==task.key;
+            else if constexpr(std::is_same_v<T,TaskSlot>)return query.slot && query.slot->value==selector.value;
+            else return std::find(task.tags.begin(),task.tags.end(),selector.name)!=task.tags.end();
+        },disable.selector);
+        if(matches)reason(TaskAvailability::Unavailable,TaskReasonKind::Disabled,owner.name,disable.reason);
+    }
+    return result;
+}
+}

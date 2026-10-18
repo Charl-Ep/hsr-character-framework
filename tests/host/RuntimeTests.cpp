@@ -93,6 +93,8 @@ void TestVisualPartners();
 void TestVisualEntityMotion();
 void TestVisualProgram(const char* file);
 void TestVisualPlayback();
+void TestTaskModel();
+void TestTaskSequence();
 void TestReadyPlayback();
 void TestSourceCatalog();
 void TestActionCatalog();
@@ -128,6 +130,8 @@ int main(int argc,char** argv) try {
     TestVisualEntityMotion();
     TestVisualProgram(nullptr);
     TestVisualPlayback();
+    TestTaskModel();
+    TestTaskSequence();
     TestReadyPlayback();
     TestModelProfileInputs();
     TestOperationHistory();
