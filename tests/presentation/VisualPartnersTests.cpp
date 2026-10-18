@@ -11,7 +11,7 @@ void CheckAt(bool ok,int line){if(!ok)throw std::runtime_error("visual partners 
 int world_data,other_world_data,manager_data,info,definition,row;
 auto* world=reinterpret_cast<GameWorld*>(&world_data);
 struct Group {void* header[2]{};GameEntity* owner=nullptr;};
-struct Actor {bool loaded=false;std::array<Group,5> components;};
+struct Actor {bool loaded=false;std::array<Group,5> components;bool animation=true;};
 Actor parent;std::vector<std::unique_ptr<Actor>> actors;
 GameEntity* E(Actor& a){return reinterpret_cast<GameEntity*>(&a);}
 unsigned factories=0,kills=0,names=0,attachments=0,animations=0,visibilities=0;
@@ -45,7 +45,10 @@ GameEntity* __fastcall Partner(EntityManager*,GameEntity* summoner,void* model,v
     if(on_create)on_create();return result;
 }
 void* __fastcall Component(GameEntity* e,void* type,void*) {
-    for(std::size_t i=0;i<types.size();++i)if(type==&types[i])return &reinterpret_cast<Actor*>(e)->components[i];
+    for(std::size_t i=0;i<types.size();++i)if(type==&types[i]) {
+        auto* actor=reinterpret_cast<Actor*>(e);
+        return i==4 && !actor->animation?nullptr:&actor->components[i];
+    }
     throw std::runtime_error("unknown component type");
 }
 GameEntity* __fastcall Leader(void*,void*){return E(parent);}
@@ -73,6 +76,7 @@ struct Objects:ManagedObjects {
 void TestVisualPartners() {
     using namespace hksr::api;using namespace hksr::framework;
     Objects objects;EntityOwner owner;
+    for(auto& component:parent.components)component.owner=E(parent);
     const ReferenceMethods refs{M(Retain),M(Target),M(Free),{}, {}};
     EntityAccessMethods access;access.owner_world=M(Owner);access.runtime_id=M(Id);access.loaded=M(Loaded);
     access.kill_immediately=M(Immediate);access.make_die=M(Kill);
@@ -104,6 +108,10 @@ void TestVisualPartners() {
     Check(partners.Execute(context,create).state==VisualStepState::Done && factories==1);
     Check(partners.Resolve("helper").token.entity==E(*actors[0]));
     Check(partners.Execute(context,{"helper",VisualPartnerAttach{"Caster","EffectScale","Head",false,false,VisibilityFollow::None}}).state==VisualStepState::Done && attachments==1);
+    parent.animation=false;
+    const auto missing_source=partners.Execute(context,{"helper",VisualPartnerAnimationFollow{"Caster"}});
+    Check(missing_source.state==VisualStepState::Failed && animations==0);
+    parent.animation=true;
     Check(partners.Execute(context,{"helper",VisualPartnerAnimationFollow{"Caster"}}).state==VisualStepState::Done && animations==1);
     Check(partners.Execute(context,{"helper",PartnerVisibility{"show",false,true,false,false}}).state==VisualStepState::Done && visibilities==1);
     Check(partners.Execute(context,{"helper",PartnerIdleAnimation{"Loop",0,0.25f,1}}).state==VisualStepState::Done && idle_requests==1);
