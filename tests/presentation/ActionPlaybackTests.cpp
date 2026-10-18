@@ -261,7 +261,7 @@ void TestActionPlayback() {
     Check(state_plays==count+1 && !integrated.Status().pending && !integrated.Status().completion_pending);
     Check(exit_preparations==exits_before); // program owns its cross-action exits
     Check(std::get<framework::ProgramAction>(integrated.Status().last->request).action=="attack");
-    Check(integrated.Status().presentation_phase=="a"); // no body-name profile rule is inferred for a program action
+    Check(integrated.Status().presentation_phase=="a"); // explicit program phases exclude competing profile rules
     current_hash=93;current_time=0.8f;current_full_hash=0;
     integrated.Service(active_frame,true,objects);Check(state_plays==count+1);
     ++active_frame.sequence;integrated.Service(active_frame,true,objects);
@@ -312,5 +312,32 @@ void TestActionPlayback() {
     integrated.SetPresentationDomain(false);integrated.Service(active_frame,true,objects);Check(!scene_alive && player->ActiveContexts().empty());
     Check(integrated.CurrentIdle()=="待机");
     Check(integrated.Close(active_frame) && player->Drained() && roots.empty());api::TrackedEntities().Forget(token);
+    // Without program-owned phases, use the existing profile's phase policy
+    // for the resolved body, but never infer its automatic replay/return.
+    token=api::TrackedEntities().Track(own);
+    auto simple_program=std::make_shared<framework::VisualProgram>(framework::ParseVisualProgram(R"({
+      "format":"hksr.visual-program","id":"simple","source":"source","scope":"scene","effects":{},
+      "actions":{"play":{"state":"attack_loop","restart":true}}
+    })"));
+    framework::VisualProgramServices simple_services;
+    simple_services.effects=std::make_shared<api::PresentationEffects>(effects);
+    simple_services.create=[](auto&,const auto&,const auto&)->framework::VisualEffectId{throw std::logic_error("no effects in phase fixture");};
+    auto simple_player=std::make_shared<framework::VisualProgramPlayer>(simple_program,simple_services);
+    auto simple_profile=std::make_shared<framework::PresentationProfile>(*config);
+    simple_profile->actions["attack_loop"].enter_phase="b";
+    simple_profile->actions["attack_loop"].cues={{0.5f,"a"}};
+    simple_profile->actions["attack_loop"].complete_phase="b";
+    framework::ActionPlayback simple(token,owner_world,animations(token),simple_services.effects);
+    simple.ConfigurePresentation(simple_profile);simple.ConfigureVisualProgram(simple_player);
+    simple.SetPresentationDomain(true);simple.SetCompletionState("待机");active=&simple;
+    count=state_plays;current_hash=93;current_time=0.1f;current_full_hash=0;
+    simple.Queue(framework::ProgramAction{"simple","play"});simple.Service(active_frame,true,objects);
+    Check(simple.BranchState().phase=="b" && simple.CurrentIdle()==successor_name && state_plays==count+1);
+    ++active_frame.sequence;current_time=0.6f;simple.Service(active_frame,true,objects);
+    Check(simple.BranchState().phase=="a" && state_plays==count+1);
+    ++active_frame.sequence;current_time=1.1f;simple.Service(active_frame,true,objects);
+    Check(simple.BranchState().phase=="b" && !simple.Status().completion_pending && state_plays==count+1);
+    simple.SetPresentationDomain(false);Check(simple.BranchState().phase.empty());
+    Check(simple.Close(active_frame) && simple_player->Drained() && roots.empty());api::TrackedEntities().Forget(token);
     std::cout<<"Action playback passed: owned lookup, queued replacement, readiness, three official paths, current state membership, no replay after faults, disposal isolation; local only.\n";
 }

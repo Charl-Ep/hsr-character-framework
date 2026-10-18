@@ -253,7 +253,11 @@ void ActionPlayback::Service(const api::WorldFrame& frame,bool ready,api::Manage
                             }
                         }
                         if(receipt.call.returned && presentation_enabled_ && !npc && !visual && (!state || state->layer==0) && revision==intent_revision_ && !Ended()) {
-                            if(std::holds_alternative<ProgramAction>(receipt.request))presentation_.Interrupt();
+                            // A program with phase contexts owns phase selection.
+                            // Otherwise retain the profile's phase-only policy
+                            // for the resolved body; the program still owns its
+                            // sequence, completion destination and resource exits.
+                            if(std::holds_alternative<ProgramAction>(receipt.request) && program_ && program_->OwnsPhases())presentation_.Interrupt();
                             else if(ready_state && ready_state->actions && ready_state->pose<ready_state->actions->poses.size())
                                 presentation_.Begin(ready_state->actions->poses[ready_state->pose].state);
                             else if(state || free_state)presentation_.Begin(state?state->name:free_state->name);

@@ -95,6 +95,11 @@ void ActionPlayback::TickProgram(const api::WorldFrame& frame,api::ManagedObject
                 if(state.short_name_hash==hash.value || state.full_path_hash==hash.value) {
                     if(!program_->SuccessorPlayed(tracking.intent,tracking.action,tracking.model))throw std::runtime_error("official program successor not accepted");
                     program_playback_->returning=true;program_playback_->hash=hash.value;
+                    if(presentation_enabled_ && !program_->OwnsPhases()) {
+                        presentation_.Begin(destination);presentation_.Observe(state.normalized_time);
+                        if(std::isfinite(state.normalized_time) && state.normalized_time>=presentation_.CompletionTime())presentation_.Complete();
+                        SyncPresentation();
+                    }
                     program_->Observe(tracking.action,tracking.model,destination,state.normalized_time);
                     program_->Service();if(!live())return;
                     program_playback_->complete=program_->Status().completed;
@@ -103,6 +108,7 @@ void ActionPlayback::TickProgram(const api::WorldFrame& frame,api::ManagedObject
                 }
             }
             if(tracking.observed) {
+                if(presentation_enabled_ && !program_->OwnsPhases()){presentation_.Abandon();SyncPresentation();}
                 if(tracking.returning){LeaveProgram();status_.effect_note="successor left before visual tail finished";return;}
                 program_playback_->complete=true;
                 status_.effect_note="official successor retained; visual scene awaits explicit continuation or exit";
@@ -110,6 +116,11 @@ void ActionPlayback::TickProgram(const api::WorldFrame& frame,api::ManagedObject
             return;
         }
         program_playback_->observed=true;
+        if(presentation_enabled_ && !program_->OwnsPhases()) {
+            presentation_.Observe(state.normalized_time);
+            if(std::isfinite(state.normalized_time) && state.normalized_time>=presentation_.CompletionTime())presentation_.Complete();
+            SyncPresentation();
+        }
         program_->Observe(tracking.action,tracking.model,program_->Status().state,state.normalized_time);
         program_->Service();if(!live())return;
         for(const auto& issue:program_->Status().issues)status_.effect_note=issue;

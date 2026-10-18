@@ -153,6 +153,8 @@ Root kinds are `ability`, `global_modifier` and `global_template`. The path sele
 
 The most recently entered phase context takes precedence. Exiting it restores an earlier live phase context, or the actor's base idle when none remains. Action changes retain these contexts; domain changes and deletion clear them. Programs declaring phases use this lifetime policy instead of `PresentationProfile` idle cues.
 
+Without program-defined phases, the resolved body uses `PresentationProfile` phase-entry, progress and completion rules. The program still owns its completion destination and resource exits; profile rules do not cause an additional animation replay.
+
 `BattleIdle` resolves standby from the active phase after model and context restoration. The menu, HTTP idle command and automatic completion use this destination. Layouts retain the idle intent rather than a stale animation name. Visual-state selections resolve by their official flag against the active phase; expressions retain their global-table source. Literal animation requests remain literal.
 
 ### Layout reconstruction
