@@ -33,10 +33,22 @@ std::vector<std::string> Names(const Json& value) {
     for(const auto& item:value){auto name=Name(item);Need(unique.insert(name).second,"duplicate effect key: "+name);out.push_back(std::move(name));}
     return out;
 }
+api::VisibilityFollow FollowFlag(const Json& row) {
+    const auto name=row.value("visibility",std::string("none"));
+    if(name=="none")return api::VisibilityFollow::None;
+    if(name=="visible")return api::VisibilityFollow::Visible;
+    if(name=="invisible")return api::VisibilityFollow::Invisible;
+    if(name=="follow")return api::VisibilityFollow::Follow;
+    if(name=="transmit_visible")return api::VisibilityFollow::TransmitVisible;
+    if(name=="transmit_invisible")return api::VisibilityFollow::TransmitInvisible;
+    if(name=="transmit")return api::VisibilityFollow::Transmit;
+    throw std::invalid_argument("unknown partner visibility follow: "+name);
+}
 std::vector<VisualInstruction> Instructions(const Json& rows,const VisualProgram& program) {
     Need(rows.is_array(),"visual instructions must be an array");std::vector<VisualInstruction> out;
     for(const auto& row:rows) {
-        Fields(row,{"op","source","when","effects","variable","value","effect","seconds","fade","immediate","trigger","reset","key","path","type","wrap_mode","release_volume","optional","targets","state","transition","restart","context","name","selection"});
+        Fields(row,{"op","source","when","effects","variable","value","effect","seconds","fade","immediate","trigger","reset","key","path","type","wrap_mode","release_volume","optional","targets","state","transition","restart","context","name","selection",
+            "partner","target","self_point","target_point","disable_when_invisible","use_target_scale","visibility","visible","mute_collider","mute_triggers","mute_audio"});
         VisualInstruction instruction;instruction.source=Name(row.at("source"));
         if(row.contains("context")) {
             instruction.context=Name(row.at("context"));
@@ -45,7 +57,22 @@ std::vector<VisualInstruction> Instructions(const Json& rows,const VisualProgram
         if(row.contains("when")){const auto& when=row.at("when");Fields(when,{"choice","is"});instruction.choice=Name(when.at("choice"));instruction.value=Name(when.at("is"));}
         const auto op=Name(row.at("op"));
         Need(op=="remove" || !row.contains("optional"),"optional effect keys require remove");
-        if(op=="context_enter" || op=="context_exit") {
+        if(op.compare(0,8,"partner_")==0) {
+            VisualPartnerOperation partner;partner.partner=Name(row.at("partner"));
+            Need(program.partners.count(partner.partner)!=0,"unknown partner input: "+partner.partner);
+            if(op=="partner_create")partner.command=VisualPartnerCreate{};
+            else if(op=="partner_remove")partner.command=VisualPartnerRemove{};
+            else if(op=="partner_attach")partner.command=VisualPartnerAttach{Name(row.at("target")),Name(row.at("self_point")),Name(row.at("target_point")),
+                row.value("disable_when_invisible",false),row.value("use_target_scale",false),FollowFlag(row)};
+            else if(op=="partner_animation_follow" || op=="partner_visibility_follow") {
+                const auto target=row.at("target").is_null()?std::string{}:Name(row.at("target"));
+                if(op=="partner_animation_follow")partner.command=VisualPartnerAnimationFollow{target};
+                else partner.command=VisualPartnerVisibilityFollow{target,FollowFlag(row)};
+            }else if(op=="partner_visibility")partner.command=api::PartnerVisibility{Name(row.at("key")),row.at("visible").get<bool>(),
+                row.value("mute_collider",false),row.value("mute_triggers",false),row.value("mute_audio",false)};
+            else throw std::invalid_argument("unknown partner operation: "+op);
+            instruction.operation=std::move(partner);
+        }else if(op=="context_enter" || op=="context_exit") {
             const auto name=Name(row.at("name"));Need(program.contexts.count(name)!=0,"unknown visual context: "+name);
             instruction.operation=VisualContextOperation{name,op=="context_enter",row.value("fade",true)};
         } else if(op=="create") {
@@ -99,7 +126,7 @@ std::vector<VisualInstruction> Instructions(const Json& rows,const VisualProgram
         } else throw std::invalid_argument("unknown visual operation: "+op);
         if(!instruction.context.empty())Need(!std::holds_alternative<VisualContextOperation>(instruction.operation) &&
             !std::holds_alternative<VisualAssign>(instruction.operation),
-            "context selection applies to effect and Timeline operations");
+            "context selection applies to effect, partner and Timeline operations");
         out.push_back(std::move(instruction));
     }
     return out;
@@ -112,7 +139,7 @@ void ContextInstructions(const std::vector<VisualInstruction>& steps) {
 }
 }
 VisualProgram ParseVisualProgram(const std::string& text) {
-    const auto json=Json::parse(text);Fields(json,{"format","id","source","scope","effects","actions","signals","contexts","phases","restore"});
+    const auto json=Json::parse(text);Fields(json,{"format","id","source","scope","effects","partners","actions","signals","contexts","phases","restore"});
     Need(json.at("format")=="hksr.visual-program","unsupported visual program format");
     VisualProgram out;out.id=Name(json.at("id"));out.source=Name(json.at("source"));out.scope=Name(json.at("scope"));
     Need(json.at("effects").is_object(),"visual effects must be an object");
@@ -133,6 +160,16 @@ VisualProgram ParseVisualProgram(const std::string& text) {
         input.options.attach_to_target=row.value("attach_to_target",false);input.options.fade_in=row.value("fade_in",true);
         input.options.simulate_immediately=row.value("simulate_immediately",false);
         out.effects.emplace(Name(it.key()),std::move(input));
+    }
+    if(json.contains("partners")) {
+        Need(json.at("partners").is_object(),"visual partners must be an object");
+        std::set<std::string> members;
+        for(auto it=json.at("partners").begin();it!=json.at("partners").end();++it) {
+            const auto& row=it.value();Fields(row,{"model","config","member"});
+            VisualPartnerInput value{Name(row.at("model")),Name(row.at("config")),Name(row.at("member"))};
+            Need(members.insert(value.member).second,"duplicate partner member name: "+value.member);
+            out.partners.emplace(Name(it.key()),std::move(value));
+        }
     }
     if(json.contains("phases")) {
         Need(json.at("phases").is_object(),"visual phases must be an object");

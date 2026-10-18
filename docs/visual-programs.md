@@ -50,12 +50,13 @@ Start a program action through the development channel:
 |---|---|
 | `id`, `source`, `scope` | Program identity, character configuration and scene name |
 | `effects` | Local keys mapped to resource paths, explicit entity targets or world anchors, and visual options |
+| `partners` | Local keys mapped to model, character configuration and member name |
 | `actions` | Body state, entry instructions, progress lanes and completion destination |
 | `signals` | Named instruction sequences submitted independently of body progress |
 | `contexts` | Independent effect lifetimes with entry, exit and optional restore instructions |
 | `restore` | Optional reconstruction instructions for the default scene |
 
-Each instruction has an `op` and a `source` identifying its configuration node. Operations are `create`, `assign`, `progress`, `remove`, `trigger`, `follow`, `effect_state`, `effect_parameter`, `context_enter`, `context_exit`, `timeline_play` and `timeline_stop`. An optional `when` selects an input by `choice` and `is`.
+Each instruction has an `op` and a `source` identifying its configuration node. Operations include effect controls, partner controls, context entry/exit and Timeline playback. An optional `when` selects an input by `choice` and `is`.
 
 Each effect specifies either `target` or `anchor`. An anchor resolves through `VisualProgramInput::anchors` or parameter overrides; it contains world `position` and an optional `[x,y,z,w]` quaternion `rotation` (identity by default). Anchored effects accept `scale`, `unique_name`, `fade_in` and `simulate_immediately`, but not entity-relative offsets or attachment options. No target entity is created or substituted. The initial pose is fixed at submission; the effect's own animation can move it.
 
@@ -170,6 +171,27 @@ The top-level `restore` reconstructs the default scene used by continuation acti
 Layouts remap target instance IDs before creation. Native-only targets cannot be saved. `prepare_inputs` receives captured values before producer attachment; `capture_inputs` supplies values for storage, and `restore_inputs_ready` reports target availability. The first action after reconstruction uses saved inputs, with explicit action choices taking precedence over them.
 
 Snapshot capture requires stable contexts and a restore recipe for each live scope. Missing recipes, changing contexts and nonpersistent targets report a layout error without overwriting the previous save. Removal and shutdown still clean up the instance. Definitions are checked before a loaded layout replaces current characters. Switching explicitly to exploration ends the visual contexts; returning from a map rebuilds the saved ones.
+
+### Partners
+
+Define each partner with `model`, `config` and a unique `member` name. Instructions use the local `partner` key:
+
+| Operation | Fields |
+|---|---|
+| `partner_create` | `partner` |
+| `partner_remove` | `partner` |
+| `partner_attach` | `partner`, `target`, `self_point`, `target_point`; optional `disable_when_invisible`, `use_target_scale`, `visibility` |
+| `partner_animation_follow` | `partner`, `target` (null clears) |
+| `partner_visibility_follow` | `partner`, `target` (null clears), `visibility` |
+| `partner_visibility` | `partner`, `key`, `visible`; optional `mute_collider`, `mute_triggers`, `mute_audio` |
+
+Visibility-follow values are `none`, `visible`, `invisible`, `follow`, `transmit_visible`, `transmit_invisible` and `transmit`. `partner:KEY` resolves an existing partner as an effect or follow target.
+
+Creation returns acceptance without waiting for the model; subsequent control instructions wait for loading. List independent creates before controls to load them concurrently. Member naming occurs after factory return. The factory supplies the native animation-event baseline; animation following does not select an independent animation state.
+
+Partners belong to the instruction's context. Default-action partners retire on completion or interruption; named-context partners remain across body selections until context exit. Domain exit, deletion and parent retirement also clean up children and their auxiliary entities. Reusing a key waits for its prior retirement. Restore recipes recreate partners explicitly; native objects are not saved.
+
+Custom hosts supply `partner`, `end_partners` and `partners_drained`. `VisualPartners` services SDK sessions on actual `WorldFrame` values; `BeginFrame` records the current frame without game calls. Keep servicing until partners and their control references drain. The standard host performs this wiring.
 
 ### Effect services
 

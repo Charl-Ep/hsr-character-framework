@@ -1,8 +1,10 @@
 #include "../support/ModelServicesFixture.hpp"
 #include <hksr/framework/assets/RendererBindings.hpp>
+#include <hksr/framework/presentation/VisualProgram.hpp>
 #include <hksr/model/ModelRelease.hpp>
 #include <Windows.h>
 #include <iostream>
+#include <fstream>
 #include <map>
 #include <stdexcept>
 
@@ -87,6 +89,7 @@ void TestPresentationProfiles();
 void TestVisualEffectContext();
 void TestVisualProgramObservers();
 void TestVisualTimelines();
+void TestVisualPartners();
 void TestVisualEntityMotion();
 void TestVisualProgram(const char* file);
 void TestVisualPlayback();
@@ -102,6 +105,12 @@ void TestTimelinePolicy();
 int main(int argc,char** argv) try {
     std::cout<<std::unitbuf;
     if(argc==3 && std::string(argv[1])=="--visual-program") {TestVisualProgram(argv[2]);return 0;}
+    if(argc==3 && std::string(argv[1])=="--parse-visual-program") {
+        std::ifstream input(argv[2],std::ios::binary);if(!input)throw std::runtime_error("visual program file unavailable");
+        const auto program=ParseVisualProgram({std::istreambuf_iterator<char>(input),std::istreambuf_iterator<char>()});
+        std::cout<<program.id<<": actions="<<program.actions.size()<<" contexts="<<program.contexts.size()<<" partners="<<program.partners.size()<<"\n";
+        return 0;
+    }
     TestTimelinePolicy();
     TestSceneIdentity();
     TestSceneLayout();
@@ -114,6 +123,7 @@ int main(int argc,char** argv) try {
     TestPresentationProfiles();
     TestVisualEffectContext();
     TestVisualProgramObservers();
+    TestVisualPartners();
     TestVisualTimelines();
     TestVisualEntityMotion();
     TestVisualProgram(nullptr);

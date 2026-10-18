@@ -30,6 +30,7 @@ struct VisualProgramRuntime::Scene {
     struct Channel {std::vector<VisualEventRoutes::RuleId> rules;api::ManagedRootId receiver=0;};
     std::map<std::string,Channel> channels;
     std::shared_ptr<VisualProgramPlayer> player;
+    std::unique_ptr<VisualPartners> partners;
     std::unique_ptr<api::ManagedRoots> roots;
     std::vector<api::ManagedRootId> releasing;
     std::string last_trace;
@@ -63,6 +64,27 @@ VisualProgramRuntime::~VisualProgramRuntime()=default;
 void VisualProgramRuntime::Activate() {
     if(closing_)return;
     sequences_->ActivateOnCurrentThread();constructions_->ActivateOnCurrentThread();effects_->ActivateOnCurrentThread();
+}
+void VisualProgramRuntime::BeginFrame(const api::WorldFrame& frame) {
+    frame_=frame;
+    const auto scenes=scenes_;
+    for(const auto& scene:scenes)if(scene->partners)scene->partners->BeginFrame(frame);
+}
+VisualPartners& VisualProgramRuntime::Partners(const std::shared_ptr<Scene>& scene) {
+    if(!scene->partners) {
+        std::weak_ptr<Scene> weak=scene;
+        VisualPartnerServices services;
+        services.create=api_.Partners();
+        services.controls=[this,owner=scene->owner](api::EntityToken partner){return api_.PartnerControls(partner,owner.token,owner.world);};
+        services.target=[this,weak](auto& context,const std::string& name) {
+            const auto current=weak.lock();if(!current)throw std::runtime_error("partner parent scene ended");
+            return ResolveTarget(*current,context,name);
+        };
+        services.trace=trace_;
+        scene->partners=std::make_unique<VisualPartners>(scene->owner,scene->input.program->partners,std::move(services));
+        if(frame_)scene->partners->BeginFrame(*frame_);
+    }
+    return *scene->partners;
 }
 std::shared_ptr<VisualProgramPlayer> VisualProgramRuntime::Create(api::EntityOrigin owner,const VisualProgramInput& input,
     const std::shared_ptr<const PresentationProfile>& profile) {
@@ -101,6 +123,9 @@ std::shared_ptr<VisualProgramPlayer> VisualProgramRuntime::Create(api::EntityOri
         return VisualProgramParameters{std::move(targets),std::move(choices),std::move(anchors)};
     };
     services.create=[this,current](auto& context,const auto& key,const auto& value){return CreateEffect(*current(),context,key,value);};
+    services.partner=[this,current](auto context,const auto& op){return Partners(current()).Execute(std::move(context),op);};
+    services.end_partners=[current](auto context){const auto scene=current();if(scene->partners)scene->partners->End(context);};
+    services.partners_drained=[current]{const auto scene=current();return !scene->partners || scene->partners->Drained();};
     services.prepare_inputs=[current](auto context,const VisualProgramParameters& inputs,bool restored) {
         auto scene=current();
         scene->context_inputs[context.get()]={context,inputs.targets,inputs.anchors,{},restored};
@@ -180,6 +205,10 @@ void VisualProgramRuntime::Detach(Scene& scene,const std::string& name) {
     if(channel.receiver){scene.releasing.push_back(channel.receiver);channel.receiver=0;}
 }
 api::EntityOrigin VisualProgramRuntime::ResolveTarget(Scene& scene,VisualEffectContext& context,const std::string& name) {
+    if(name.compare(0,8,"partner:")==0) {
+        if(!scene.partners)throw std::runtime_error("partner target has not been created: "+name);
+        return scene.partners->Resolve(name.substr(8));
+    }
     const auto snapshot=scene.context_inputs.find(&context);
     auto* inputs=snapshot==scene.context_inputs.end()?nullptr:&snapshot->second;
     api::EntityOrigin target=scene.owner;
@@ -276,6 +305,7 @@ void VisualProgramRuntime::Collect() {
         }
         if(scene.player && (closing_ || !Alive(scene.owner)) && !scene.player->Status().closing)scene.player->End();
         if(scene.player && scene.player->Status().closing)scene.player->Service();
+        if(scene.partners && frame_)scene.partners->Service(*frame_);
         scene.ReleasePending();
         for(auto input=scene.context_inputs.begin();input!=scene.context_inputs.end();) {
             if(input->second.context.expired())input=scene.context_inputs.erase(input);else ++input;

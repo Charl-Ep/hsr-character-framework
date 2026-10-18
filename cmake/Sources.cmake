@@ -79,6 +79,7 @@ set(HKSR_RUNTIME_SOURCES
     src/presentation/VisualProgramContexts.cpp
     src/presentation/VisualProgramSnapshot.cpp
     src/presentation/VisualTimelines.cpp
+    src/presentation/VisualPartners.cpp
     src/presentation/VisualProgramRuntime.cpp
 
     # src/serialization
@@ -146,6 +147,7 @@ set(HKSR_RUNTIME_TEST_SOURCES
     tests/presentation/VisualEntityMotionTests.cpp
     tests/presentation/VisualProgramObserverTests.cpp
     tests/presentation/VisualTimelinesTests.cpp
+    tests/presentation/VisualPartnersTests.cpp
     tests/presentation/ReadyPlaybackTests.cpp
     tests/presentation/TimelinePolicyTests.cpp
     tests/presentation/VisualPlaybackTests.cpp

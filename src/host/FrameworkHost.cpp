@@ -146,7 +146,7 @@ CatalogBrowser& FrameworkHost::Browser() {
     return coordinator_->RequireCatalog();
 }
 bool FrameworkHost::Frame(const api::WorldFrame& frame,bool stop_requested) {
-    services_->ActivateIsolation();
+    services_->ActivateIsolation(frame);
     if(event_policy_)event_policy_->ActivateOnCurrentThread();
     if(!characters_) throw std::logic_error("framework host not prepared");
     if(mouse_) {

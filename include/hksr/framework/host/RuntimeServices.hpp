@@ -19,7 +19,7 @@ public:
         std::function<void(const std::string&)> trace);
     CharacterSessionServices Sessions(bool event_tracking) const;
     AppearanceServices Appearance() const;
-    void ActivateIsolation();
+    void ActivateIsolation(const api::WorldFrame&);
     void PrepareVisualPrograms(VisualEventRoutes::Trace={},VisualProgramRuntime::PhaseReader={});
     void CollectIsolation();
     bool Close();

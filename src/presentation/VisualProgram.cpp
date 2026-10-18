@@ -10,6 +10,8 @@ VisualProgramPlayer::VisualProgramPlayer(std::shared_ptr<const VisualProgram> pr
     if(!program_ || !services_.effects || !services_.create)throw std::invalid_argument("visual program inputs missing");
     if(services_.timeline && (!services_.cancel_timelines || !services_.timelines_drained))
         throw std::invalid_argument("Timeline submission requires cancellation and drain observations");
+    if(services_.partner && (!services_.end_partners || !services_.partners_drained))
+        throw std::invalid_argument("partner submission requires cancellation and drain observations");
 }
 std::uint64_t VisualProgramPlayer::Select(const std::string& action,std::map<std::string,std::string> choices) {
     if(status_.closing)throw std::logic_error("visual program closing");
@@ -32,6 +34,7 @@ std::uint64_t VisualProgramPlayer::Signal(std::uint64_t intent,const std::string
     status_.last_signal=serial;status_.signal=name;return serial;
 }
 void VisualProgramPlayer::Retire(bool fade) {
+    EndPartners(context_);
     if(context_){context_->End(fade);retired_.push_back(std::move(context_));}
     // An interruption also cancels tails retained by earlier natural finishes.
     for(auto& context:retired_)if(!context->Closing())context->End(fade);
@@ -41,6 +44,7 @@ void VisualProgramPlayer::Retire(bool fade) {
 }
 void VisualProgramPlayer::Finish() {
     DiscardActionSignals();
+    EndPartners(context_);
     if(context_){context_->Finish();retired_.push_back(std::move(context_));}
     try {if(services_.detach)services_.detach();}catch(const std::exception& e){status_.issues.push_back(e.what());}
     status_.playing=false;status_.completing=false;status_.completed=true;
@@ -66,8 +70,12 @@ const VisualProgramAction& VisualProgramPlayer::ResolveAction(const std::string&
     if(found==program_->actions.end())throw std::invalid_argument("unknown visual program action: "+action);
     return found->second;
 }
+void VisualProgramPlayer::EndPartners(const std::shared_ptr<VisualEffectContext>& context) {
+    if(!context || !services_.end_partners)return;
+    try{services_.end_partners(context);}catch(const std::exception& e){status_.issues.push_back(e.what());}
+}
 bool VisualProgramPlayer::Drained() const {return status_.closing && !end_pending_ && !context_ && retired_.empty() &&
-    contexts_.empty() && retired_contexts_.empty() && !timelines_pending_;}
+    contexts_.empty() && retired_contexts_.empty() && !timelines_pending_ && !partners_pending_;}
 void VisualProgramPlayer::Issue(const VisualInstruction& input,const std::string& detail) {
     status_.issues.push_back(input.source+": "+detail);
 }
@@ -91,7 +99,11 @@ VisualStepResult VisualProgramPlayer::Execute(const VisualInstruction& input,Cur
         if(!cursor.context)cursor.context=ExecutionContext(input,execution);
         auto& context=cursor.context;
         if(!context || context->Closing())return {VisualStepState::Failed,"effect context is absent or closing"};
-        if constexpr(std::is_same_v<T,VisualCreate>) {
+        if constexpr(std::is_same_v<T,VisualPartnerOperation>) {
+            if(!services_.partner)return {VisualStepState::Failed,"partner service unavailable"};
+            partners_pending_=true;
+            return services_.partner(context,op);
+        } else if constexpr(std::is_same_v<T,VisualCreate>) {
             // Every independent request is attempted, even if another asset or
             // target failed. Retain each receipt before a synchronous callback.
             while(cursor.created<op.effects.size()) {
@@ -218,6 +230,10 @@ void VisualProgramPlayer::Service(bool advance) {
     }
     if(timelines_pending_ && services_.timelines_drained) {
         try {timelines_pending_=!services_.timelines_drained();}
+        catch(const std::exception& e){if(status_.issues.empty() || status_.issues.back()!=e.what())status_.issues.push_back(e.what());}
+    }
+    if(partners_pending_ && services_.partners_drained) {
+        try{partners_pending_=!services_.partners_drained();}
         catch(const std::exception& e){if(status_.issues.empty() || status_.issues.back()!=e.what())status_.issues.push_back(e.what());}
     }
     ServiceContexts(false);

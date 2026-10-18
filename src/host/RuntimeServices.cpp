@@ -20,7 +20,7 @@ void RuntimeServices::PrepareVisualPrograms(VisualEventRoutes::Trace trace,Visua
     programs_=std::make_unique<VisualProgramRuntime>(*context_,objects_,std::move(trace));
     programs_->SetPhaseReader(std::move(phases));
 }
-void RuntimeServices::ActivateIsolation(){context_->Activate();if(programs_)programs_->Activate();}
+void RuntimeServices::ActivateIsolation(const api::WorldFrame& frame){context_->Activate();if(programs_){programs_->Activate();programs_->BeginFrame(frame);}}
 void RuntimeServices::CollectIsolation(){if(programs_)programs_->Collect();context_->Collect();}
 bool RuntimeServices::Close(){return (!programs_ || programs_->Close()) && context_->Close();}
 CharacterSessionServices RuntimeServices::Sessions(bool event_tracking) const {

@@ -1,6 +1,7 @@
 #pragma once
 #include "VisualEffectContext.hpp"
 #include "VisualProgramState.hpp"
+#include "VisualPartnerTypes.hpp"
 #include <functional>
 #include <deque>
 #include <optional>
@@ -27,7 +28,7 @@ struct VisualEffectState {std::string effect,state;float transition=0;bool resta
 struct VisualEffectParameter {std::string effect;api::EffectAnimatorParameter parameter;};
 struct VisualContextOperation {std::string name;bool enter=true;bool fade=true;};
 struct VisualTimeline {std::string key,path;bool play=true;int type=0,wrap_mode=0;bool release_volume=false;};
-using VisualOperation=std::variant<VisualCreate,VisualAssign,VisualProgress,VisualRemove,VisualTrigger,VisualTimeline,VisualFollow,VisualEffectState,VisualContextOperation,VisualEffectParameter>;
+using VisualOperation=std::variant<VisualCreate,VisualAssign,VisualProgress,VisualRemove,VisualTrigger,VisualTimeline,VisualFollow,VisualEffectState,VisualContextOperation,VisualEffectParameter,VisualPartnerOperation>;
 struct VisualInstruction {
     VisualOperation operation;
     std::string source; // original configuration node, for diagnostics
@@ -56,6 +57,7 @@ struct VisualProgramAction {
 struct VisualProgram {
     std::string id,source,scope;
     std::map<std::string,VisualEffectInput> effects;
+    std::map<std::string,VisualPartnerInput> partners;
     std::map<std::string,VisualProgramAction> actions;
     std::map<std::string,VisualProgramSignalDefinition> signals;
     std::map<std::string,VisualProgramContext> contexts;
@@ -97,6 +99,9 @@ struct VisualProgramServices {
     std::function<void(std::shared_ptr<VisualEffectContext>,const VisualProgramParameters&,bool)> prepare_inputs;
     std::function<VisualProgramParameters(const VisualEffectContext&)> capture_inputs;
     std::function<VisualStepResult(const VisualProgramParameters&)> restore_inputs_ready;
+    std::function<VisualStepResult(std::shared_ptr<VisualEffectContext>,const VisualPartnerOperation&)> partner;
+    std::function<void(std::shared_ptr<VisualEffectContext>)> end_partners;
+    std::function<bool()> partners_drained;
 };
 struct VisualProgramStatus {
     std::uint64_t intent=0,playback=0,model=0;
@@ -178,6 +183,7 @@ private:
     void ServiceSignals();
     void Issue(const VisualInstruction&,const std::string&);
     void Retire(bool fade);
+    void EndPartners(const std::shared_ptr<VisualEffectContext>&);
     void Finish();
     std::shared_ptr<const VisualProgram> program_;
     VisualProgramServices services_;
@@ -202,6 +208,6 @@ private:
     std::uint64_t next_signal_=0;
     std::uint64_t next_context_=0;
     std::optional<float> progress_;
-    bool servicing_=false,end_pending_=false,end_fade_=true,timelines_pending_=false,interrupt_pending_=false;
+    bool servicing_=false,end_pending_=false,end_fade_=true,timelines_pending_=false,partners_pending_=false,interrupt_pending_=false;
 };
 }

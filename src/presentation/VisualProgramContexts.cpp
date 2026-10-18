@@ -60,7 +60,7 @@ std::shared_ptr<VisualProgramPlayer::Lifetime> VisualProgramPlayer::StartContext
     }catch(...) {
         try {if(services_.context_stopped)services_.context_stopped(name);}
         catch(const std::exception& e){status_.issues.push_back(name+": detach after failed entry: "+e.what());}
-        lifetime->effects->End();retired_contexts_.push_back(lifetime->effects);
+        EndPartners(lifetime->effects);lifetime->effects->End();retired_contexts_.push_back(lifetime->effects);
         contexts_.erase(found);throw;
     }
     return lifetime;
@@ -95,7 +95,7 @@ void VisualProgramPlayer::DriveContext(std::shared_ptr<Lifetime> lifetime) {
         catch(const std::exception& e){status_.issues.push_back(e.what());}
         try {if(services_.cancel_timelines)services_.cancel_timelines(lifetime->token);}
         catch(const std::exception& e){status_.issues.push_back(e.what());}
-        lifetime->effects->End(lifetime->fade);
+        EndPartners(lifetime->effects);lifetime->effects->End(lifetime->fade);
         retired_contexts_.push_back(lifetime->effects);
         contexts_.erase(lifetime->name);
     }
@@ -123,7 +123,7 @@ void VisualProgramPlayer::EndContexts(bool fade) {
         catch(const std::exception& e){status_.issues.push_back(e.what());}
         try {if(services_.cancel_timelines)services_.cancel_timelines(lifetime->token);}
         catch(const std::exception& e){status_.issues.push_back(e.what());}
-        lifetime->effects->End(fade);retired_contexts_.push_back(lifetime->effects);
+        EndPartners(lifetime->effects);lifetime->effects->End(fade);retired_contexts_.push_back(lifetime->effects);
     }
     contexts_.clear();
 }

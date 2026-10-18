@@ -2,6 +2,7 @@
 #include "VisualEventRoutes.hpp"
 #include "VisualTimelines.hpp"
 #include "VisualEntityMotion.hpp"
+#include "VisualPartners.hpp"
 #include "PresentationProfile.hpp"
 #include <hksr/presentation/PresentationContext.hpp>
 #include <hksr/presentation/events/AnimationEventConstruction.hpp>
@@ -39,6 +40,7 @@ public:
     VisualProgramRuntime(api::PresentationContext&,api::ManagedObjects&,VisualEventRoutes::Trace={});
     ~VisualProgramRuntime();
     void Activate();
+    void BeginFrame(const api::WorldFrame&);
     void SetPhaseReader(PhaseReader reader) {phase_reader_=std::move(reader);}
     std::shared_ptr<VisualProgramPlayer> Create(api::EntityOrigin,const VisualProgramInput&,
         const std::shared_ptr<const PresentationProfile>&);
@@ -51,6 +53,7 @@ private:
     VisualEffectId CreateEffect(Scene&,VisualEffectContext&,const std::string&,const VisualEffectInput&);
     api::EntityOrigin ResolveTarget(Scene&,VisualEffectContext&,const std::string&);
     std::shared_ptr<VisualEntityMotion> Motion();
+    VisualPartners& Partners(const std::shared_ptr<Scene>&);
     api::PresentationContext& api_;
     api::ManagedObjects& objects_;
     VisualEventRoutes routes_;
@@ -65,5 +68,6 @@ private:
     struct PhaseCache {std::shared_ptr<const VisualProgram> program;std::map<std::string,std::shared_ptr<const api::PhaseVisualConfigSources>> values;};
     std::map<const VisualProgram*,PhaseCache> phase_cache_;
     bool closing_=false;
+    std::optional<api::WorldFrame> frame_;
 };
 }
