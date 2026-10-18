@@ -14,6 +14,6 @@ struct VisualPartnerAttach {
 struct VisualPartnerAnimationFollow {std::string target;}; // empty clears
 struct VisualPartnerVisibilityFollow {std::string target;api::VisibilityFollow flags=api::VisibilityFollow::None;};
 using VisualPartnerCommand=std::variant<VisualPartnerCreate,VisualPartnerRemove,VisualPartnerAttach,
-    VisualPartnerAnimationFollow,VisualPartnerVisibilityFollow,api::PartnerVisibility>;
+    VisualPartnerAnimationFollow,VisualPartnerVisibilityFollow,api::PartnerVisibility,api::PartnerIdleAnimation>;
 struct VisualPartnerOperation {std::string partner;VisualPartnerCommand command;};
 }

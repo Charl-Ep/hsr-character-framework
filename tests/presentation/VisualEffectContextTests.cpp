@@ -143,7 +143,8 @@ void TestVisualParameters() {
 void TestVisualEffectContext() {
     TestVisualParameters();
     {
-        const std::string json=R"({"format":"hksr.visual-program","id":"partners","source":"config","scope":"scene","effects":{},"restore":[],
+        const std::string json=R"({"format":"hksr.visual-program","id":"partners","source":"config","scope":"scene",
+          "effects":{"persistent":{"path":"effect.prefab","target":"partner:helper","resident":true}},"restore":[],
           "partners":{"helper":{"model":"partner.prefab","config":"partner.json","member":"helper"}},
           "contexts":{"phase":{"enter":[{"op":"partner_create","partner":"helper","source":"spawn"}],
             "restore":[{"op":"partner_create","partner":"helper","source":"restore"}],"exit":[]}},
@@ -152,12 +153,16 @@ void TestVisualEffectContext() {
               {"op":"partner_attach","context":"phase","partner":"helper","target":"Caster","self_point":"EffectScale","target_point":"Hand","source":"attach"},
               {"op":"partner_visibility","context":"phase","partner":"helper","key":"initial","visible":false,"mute_collider":true,"source":"hide"},
               {"op":"partner_animation_follow","context":"phase","partner":"helper","target":null,"source":"anim"},
-              {"op":"partner_visibility_follow","context":"phase","partner":"helper","target":"Caster","visibility":"invisible","source":"visible"}]},
+              {"op":"partner_visibility_follow","context":"phase","partner":"helper","target":"Caster","visibility":"invisible","source":"visible"},
+              {"op":"partner_idle","context":"phase","partner":"helper","state":"Loop","normalized_transition":0.25,"source":"idle"}]},
             "leave":{"state":"Leave","enter":[{"op":"context_exit","name":"phase","source":"exit"}]},
             "action":{"state":"Action","restart":true,"enter":[{"op":"partner_create","partner":"helper","source":"spawn"}],"completion_state":"Idle"}
           }})";
         auto program=std::make_shared<VisualProgram>(ParseVisualProgram(json));
-        Check(program->partners.size()==1 && program->actions.at("enter").enter.size()==5);
+        Check(program->partners.size()==1 && program->actions.at("enter").enter.size()==6);
+        Check(program->effects.at("persistent").options.resident);
+        const auto& idle=std::get<hksr::api::PartnerIdleAnimation>(std::get<VisualPartnerOperation>(program->actions.at("enter").enter.back().operation).command);
+        Check(idle.state=="Loop" && idle.normalized_start==0 && idle.normalized_transition==0.25f && idle.normalized_end==1);
         bool ready=false,drained=true;unsigned submissions=0,ends=0;
         std::shared_ptr<VisualEffectContext> owner;
         VisualProgramServices services;services.effects=Services();
@@ -171,12 +176,12 @@ void TestVisualEffectContext() {
         services.partners_drained=[&]{return drained;};
         VisualProgramPlayer player(program,services);player.Select("enter");player.Service();
         Check(!player.Status().prepared && player.Status().issues.empty() && submissions==0 && ends==0);
-        ready=true;player.Service();Check(player.Status().prepared && submissions==5 && ends==0);
+        ready=true;player.Service();Check(player.Status().prepared && submissions==6 && ends==0);
         const auto saved=player.Capture();Check(saved.contexts.size()==1);
         player.Select("leave");player.Service();Check(ends==1 && player.ActiveContexts().empty());
         player.End();player.Service();Check(!player.Drained());drained=true;player.Service();Check(player.Drained());
         VisualProgramPlayer restored(program,services);restored.Restore(saved);restored.Service();
-        Check(!restored.Restoring() && submissions==6);restored.End();restored.Service();Check(ends==2);
+        Check(!restored.Restoring() && submissions==7);restored.End();restored.Service();Check(ends==2);
         drained=true;restored.Service();Check(restored.Drained());
         VisualProgramPlayer action(program,services);const auto intent=action.Select("action");action.Service();
         Check(action.Played(intent,1,1));action.Observe(1,1,"Action",1);action.Service();

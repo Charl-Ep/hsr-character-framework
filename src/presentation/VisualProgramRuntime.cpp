@@ -262,7 +262,7 @@ VisualEffectId VisualProgramRuntime::CreateEffect(Scene& scene,VisualEffectConte
         if(found==anchors.end())throw std::runtime_error("explicit visual anchor missing: "+input.anchor);
         const auto& pose=found->second;
         spatial=api::SpatialEffectOptions{pose.position,pose.rotation,input.options.unique_name,input.options.scale,
-            input.options.fade_in,input.options.simulate_immediately};
+            input.options.fade_in,input.options.simulate_immediately,input.options.resident};
     }else target=ResolveTarget(scene,context,input.target);
     const auto path=objects_.NewStringUtf8(input.path.c_str());
     if(!path.call.returned || !path.object)throw std::runtime_error("visual effect path allocation failed");

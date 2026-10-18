@@ -48,7 +48,8 @@ std::vector<VisualInstruction> Instructions(const Json& rows,const VisualProgram
     Need(rows.is_array(),"visual instructions must be an array");std::vector<VisualInstruction> out;
     for(const auto& row:rows) {
         Fields(row,{"op","source","when","effects","variable","value","effect","seconds","fade","immediate","trigger","reset","key","path","type","wrap_mode","release_volume","optional","targets","state","transition","restart","context","name","selection",
-            "partner","target","self_point","target_point","disable_when_invisible","use_target_scale","visibility","visible","mute_collider","mute_triggers","mute_audio"});
+            "partner","target","self_point","target_point","disable_when_invisible","use_target_scale","visibility","visible","mute_collider","mute_triggers","mute_audio",
+            "normalized_start","normalized_transition","normalized_end"});
         VisualInstruction instruction;instruction.source=Name(row.at("source"));
         if(row.contains("context")) {
             instruction.context=Name(row.at("context"));
@@ -70,6 +71,9 @@ std::vector<VisualInstruction> Instructions(const Json& rows,const VisualProgram
                 else partner.command=VisualPartnerVisibilityFollow{target,FollowFlag(row)};
             }else if(op=="partner_visibility")partner.command=api::PartnerVisibility{Name(row.at("key")),row.at("visible").get<bool>(),
                 row.value("mute_collider",false),row.value("mute_triggers",false),row.value("mute_audio",false)};
+            else if(op=="partner_idle")partner.command=api::PartnerIdleAnimation{Name(row.at("state")),
+                Number(row.value("normalized_start",Json(0))),Number(row.value("normalized_transition",Json(0)),true),
+                Number(row.value("normalized_end",Json(1)))};
             else throw std::invalid_argument("unknown partner operation: "+op);
             instruction.operation=std::move(partner);
         }else if(op=="context_enter" || op=="context_exit") {
@@ -144,7 +148,7 @@ VisualProgram ParseVisualProgram(const std::string& text) {
     VisualProgram out;out.id=Name(json.at("id"));out.source=Name(json.at("source"));out.scope=Name(json.at("scope"));
     Need(json.at("effects").is_object(),"visual effects must be an object");
     for(auto it=json.at("effects").begin();it!=json.at("effects").end();++it) {
-        const auto& row=it.value();Fields(row,{"path","target","anchor","position_offset","rotation_offset","scale","attach_to_target","attach_point","fade_in","simulate_immediately","unique_name"});
+        const auto& row=it.value();Fields(row,{"path","target","anchor","position_offset","rotation_offset","scale","attach_to_target","attach_point","fade_in","simulate_immediately","unique_name","resident"});
         VisualEffectInput input;input.path=Name(row.at("path"));
         Need(row.contains("target")!=row.contains("anchor"),"effect needs exactly one target or world anchor");
         if(row.contains("anchor")) {
@@ -159,6 +163,7 @@ VisualProgram ParseVisualProgram(const std::string& text) {
         if(row.contains("attach_point"))input.options.attach_point=Name(row.at("attach_point"));
         input.options.attach_to_target=row.value("attach_to_target",false);input.options.fade_in=row.value("fade_in",true);
         input.options.simulate_immediately=row.value("simulate_immediately",false);
+        input.options.resident=row.value("resident",false);
         out.effects.emplace(Name(it.key()),std::move(input));
     }
     if(json.contains("partners")) {

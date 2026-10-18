@@ -11,11 +11,12 @@ void CheckAt(bool ok,int line){if(!ok)throw std::runtime_error("visual partners 
 int world_data,other_world_data,manager_data,info,definition,row;
 auto* world=reinterpret_cast<GameWorld*>(&world_data);
 struct Group {void* header[2]{};GameEntity* owner=nullptr;};
-struct Actor {bool loaded=false;std::array<Group,4> components;};
+struct Actor {bool loaded=false;std::array<Group,5> components;};
 Actor parent;std::vector<std::unique_ptr<Actor>> actors;
 GameEntity* E(Actor& a){return reinterpret_cast<GameEntity*>(&a);}
 unsigned factories=0,kills=0,names=0,attachments=0,animations=0,visibilities=0;
-int root_id=0;std::map<int,void*> roots;std::array<int,4> types{};
+int root_id=0;std::map<int,void*> roots;std::array<int,5> types{};
+unsigned idle_requests=0;
 std::function<void()> on_create,on_name;
 bool delay_disposal=false;
 std::vector<EntityToken> disposals;
@@ -54,12 +55,16 @@ void __fastcall Cancel(void*,void*){}
 void __fastcall Anim(void*,GameEntity*,void*){++animations;}
 void __fastcall Follow(void*,GameEntity*,VisibilityFollow,void*){++visibilities;}
 void __fastcall Visible(void*,bool,const void*,void*){++visibilities;}
+void __fastcall Idle(void*,int logic,void* state,float start,float transition,float end,int extra,unsigned request,bool flag,void*) {
+    Check(logic==1 && *static_cast<std::string*>(state)=="Loop" && start==0 && transition==0.25f && end==1 && !extra && !request && !flag);
+    ++idle_requests;
+}
 struct Objects:ManagedObjects {
     std::vector<std::unique_ptr<std::string>> strings;
     ObjectResult NewStringUtf8(const char* s)override{strings.push_back(std::make_unique<std::string>(s));return {{true,0},strings.back().get()};}
     ObjectResult AllocateObject(const char*,const char*)override{throw std::runtime_error("no object allocation expected");}
     ObjectResult ManagedType(const char*,const char* name)override {
-        const std::array<std::string,4> type_names{"OLABFALNLJM","TransformComponent","EAKGBLEMBLN","CharacterVisibleComponent"};
+        const std::array<std::string,5> type_names{"OLABFALNLJM","TransformComponent","EAKGBLEMBLN","CharacterVisibleComponent","CFFPEAALCPH"};
         for(std::size_t i=0;i<type_names.size();++i)if(name==type_names[i])return {{true,0},&types[i]};
         throw std::runtime_error("unknown type");
     }
@@ -78,6 +83,7 @@ void TestVisualPartners() {
     PartnerControlMethods control;control.component=M(Component);control.owner_world=M(Owner);control.component_owner=16;
     control.group_leader=M(Leader);control.member_name=M(Name);control.attach=M(Attach);control.cancel_smooth_follow=M(Cancel);
     control.animation_follow=M(Anim);control.visibility_follow=M(Follow);control.visibility=M(Visible);
+    control.idle_animation=M(Idle);
     VisualPartnerServices services;
     services.create=[&]{return std::make_unique<EntityCreationSession>(owner,Method{},Method{},&objects,access,refs,EntityCreationScope::BirthObserver{},M(Partner));};
     services.controls=[&](EntityToken child){return std::make_unique<PartnerControlSession>(owner,child,origin.token,world,control,refs,objects);};
@@ -92,6 +98,7 @@ void TestVisualPartners() {
     Check(partners.Execute(context,create).state==VisualStepState::Done && factories==1 && names==1);
     Check(partners.Execute(context,create).state==VisualStepState::Done && factories==1 && names==1);
     Check(partners.Execute(context,{"helper",VisualPartnerAnimationFollow{"Caster"}}).state==VisualStepState::Pending && animations==0);
+    Check(partners.Execute(context,{"helper",PartnerIdleAnimation{"Loop",0,0.25f,1}}).state==VisualStepState::Pending && idle_requests==0);
     Check(partners.Execute(other,create).state==VisualStepState::Failed && factories==1);
     actors[0]->loaded=true;partners.Service(frame);
     Check(partners.Execute(context,create).state==VisualStepState::Done && factories==1);
@@ -99,6 +106,7 @@ void TestVisualPartners() {
     Check(partners.Execute(context,{"helper",VisualPartnerAttach{"Caster","EffectScale","Head",false,false,VisibilityFollow::None}}).state==VisualStepState::Done && attachments==1);
     Check(partners.Execute(context,{"helper",VisualPartnerAnimationFollow{"Caster"}}).state==VisualStepState::Done && animations==1);
     Check(partners.Execute(context,{"helper",PartnerVisibility{"show",false,true,false,false}}).state==VisualStepState::Done && visibilities==1);
+    Check(partners.Execute(context,{"helper",PartnerIdleAnimation{"Loop",0,0.25f,1}}).state==VisualStepState::Done && idle_requests==1);
     delay_disposal=true;partners.End(context);partners.Service(frame);Check(kills==2 && !partners.Drained());
     partners.Service(frame);Check(kills==2);for(auto token:disposals)Dispose(token);disposals.clear();
     partners.Service(frame);Check(partners.Drained() && roots.size()==main_roots);delay_disposal=false;

@@ -66,6 +66,8 @@ Each effect specifies either `target` or `anchor`. An anchor resolves through `V
 
 The corresponding effect definition is `{"path":"effect.prefab","anchor":"center"}`. Startup manifest entries also accept `anchors`. Entity-targeted effects may specify `attach_point` for initial attachment independently of `attach_to_target` for continued parenting.
 
+Effects accept `resident: true` to set the official resident flag. Their owning context must explicitly remove them or end.
+
 `effect_state` sets the named effect's first Animator on layer zero. `transition` is normalized transition duration (default 0); `restart` defaults to false. The SDK resolves the state name through Unity's `Animator.StringToHash` and caches the result. This does not select the character's body state.
 
 ```json
@@ -184,10 +186,13 @@ Define each partner with `model`, `config` and a unique `member` name. Instructi
 | `partner_animation_follow` | `partner`, `target` (null clears) |
 | `partner_visibility_follow` | `partner`, `target` (null clears), `visibility` |
 | `partner_visibility` | `partner`, `key`, `visible`; optional `mute_collider`, `mute_triggers`, `mute_audio` |
+| `partner_idle` | `partner`, `state`; optional `normalized_start` (0), `normalized_transition` (0), `normalized_end` (1) |
 
 Visibility-follow values are `none`, `visible`, `invisible`, `follow`, `transmit_visible`, `transmit_invisible` and `transmit`. `partner:KEY` resolves an existing partner as an effect or follow target.
 
 Creation returns acceptance without waiting for the model; subsequent control instructions wait for loading. List independent creates before controls to load them concurrently. Member naming occurs after factory return. The factory supplies the native animation-event baseline; animation following does not select an independent animation state.
+
+`partner_idle` selects a named animation through the partner's official Idle logic state. It does not run an ability or wait for the animation to finish. Place display cues in a body-progress lane when they must follow the start of the body's new animation.
 
 Partners belong to the instruction's context. Default-action partners retire on completion or interruption; named-context partners remain across body selections until context exit. Domain exit, deletion and parent retirement also clean up children and their auxiliary entities. Reusing a key waits for its prior retirement. Restore recipes recreate partners explicitly; native objects are not saved.
 

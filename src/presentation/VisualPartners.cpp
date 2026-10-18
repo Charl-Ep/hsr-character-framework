@@ -90,6 +90,7 @@ VisualStepResult VisualPartners::Execute(std::shared_ptr<VisualEffectContext> co
         }else if constexpr(std::is_same_v<T,VisualPartnerAnimationFollow>)return entry->controls->FollowAnimation(target(command.target));
         else if constexpr(std::is_same_v<T,VisualPartnerVisibilityFollow>)return entry->controls->FollowVisibility(target(command.target),command.flags);
         else if constexpr(std::is_same_v<T,api::PartnerVisibility>)return entry->controls->SetVisibility(command);
+        else if constexpr(std::is_same_v<T,api::PartnerIdleAnimation>)return entry->controls->PlayIdle(command);
         else return {};
     },op.command);
     return {result.returned?VisualStepState::Done:VisualStepState::Failed,result.error};
