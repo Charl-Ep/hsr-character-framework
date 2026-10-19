@@ -65,6 +65,7 @@ set(HKSR_RUNTIME_SOURCES
     # src/presentation
     src/presentation/ActionEffects.cpp
     src/presentation/ActionPlayback.cpp
+    src/presentation/AnimationRequests.cpp
     src/presentation/ActionVisualProgram.cpp
     src/presentation/ModelActionHandoff.cpp
     src/presentation/PresentationProfile.cpp
@@ -77,6 +78,7 @@ set(HKSR_RUNTIME_SOURCES
     src/presentation/VisualEventRoutes.cpp
     src/presentation/VisualProgram.cpp
     src/presentation/VisualProgramContexts.cpp
+    src/presentation/VisualInstructionScopes.cpp
     src/presentation/VisualProgramSnapshot.cpp
     src/presentation/VisualTimelines.cpp
     src/presentation/VisualPartners.cpp
@@ -86,6 +88,7 @@ set(HKSR_RUNTIME_SOURCES
     src/tasks/TaskContext.cpp
     src/tasks/TaskSources.cpp
     src/tasks/TaskSequence.cpp
+    src/tasks/TaskPresentation.cpp
 
     # src/serialization
     src/serialization/PresentationProfileCodec.cpp
@@ -160,4 +163,5 @@ set(HKSR_RUNTIME_TEST_SOURCES
     # tests/tasks
     tests/tasks/TaskModelTests.cpp
     tests/tasks/TaskSequenceTests.cpp
+    tests/tasks/TaskPresentationTests.cpp
 )

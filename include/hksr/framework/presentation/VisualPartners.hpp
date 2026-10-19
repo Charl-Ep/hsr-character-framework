@@ -8,6 +8,8 @@ struct VisualPartnerServices {
     std::function<std::unique_ptr<api::PartnerControlSession>(api::EntityToken)> controls;
     std::function<api::EntityOrigin(VisualEffectContext&,const std::string&)> target;
     std::function<void(const std::string&)> trace;
+    std::function<std::unique_ptr<api::ActorAnimationSession>(api::EntityToken)> animations;
+    api::ManagedObjects* objects=nullptr;
 };
 // One parent's partners, with explicit ownership by action/named context.
 // The original SDK factory owns the model/events and native attachment tick.
@@ -21,6 +23,8 @@ public:
     void Service(const api::WorldFrame&);
     api::EntityOrigin Resolve(const std::string&) const;
     bool Drained() const;
+    bool Drained(const std::shared_ptr<VisualEffectContext>&) const;
+    std::optional<AnimationRequestEndpoint> Animation(const std::string&);
 private:
     struct Entry;
     bool Current(const std::shared_ptr<Entry>&) const;

@@ -4,6 +4,7 @@
 #include <hksr/framework/presentation/VisualProgram.hpp>
 #include <hksr/framework/presentation/VisualEntityMotion.hpp>
 #include <hksr/framework/presentation/PresentationProfileFiles.hpp>
+#include <hksr/framework/tasks/TaskPresentation.hpp>
 #include <array>
 #include <cstring>
 #include <functional>
@@ -98,6 +99,39 @@ std::shared_ptr<const PresentationEffects> Services() {
         },std::move(actions));
 }
 }
+void TestTaskEffects() {
+    auto program=std::make_shared<VisualProgram>();program->effects["flame"]={"flame.prefab","Target",{}};
+    VisualProgramServices services;services.effects=Services();
+    services.create=[](auto& context,const auto& key,const auto& input){
+        return context.StartEntity(key,&entity,&other_entity,&path,input.options);
+    };
+    auto player=std::make_shared<VisualProgramPlayer>(program,services);
+    auto plan=std::make_shared<TaskSequence>();plan->nodes={
+        {"create",TaskSubmit{"create",VisualInstruction{VisualCreate{{"flame"}},"create"}}},
+        {"created",TaskWaitRequest{"create",TaskWaitSignal::RequestComplete}},
+        {"progress",TaskSubmit{"progress",VisualInstruction{VisualProgress{"flame",0.5f,0},"progress"}}},
+        {"controlled",TaskWaitRequest{"progress",TaskWaitSignal::RequestComplete}},
+        {"hold",TaskWaitSeconds{10}},
+        {"entry",TaskSerial{{0,1,2,3,4}}}
+    };plan->entry=5;
+    a={};allocating=&a;controlled.clear();release_on_remove=false;
+    TaskPresentation run({701},1,plan,player,{},{});run.Service(0,1);run.Service(0,2);
+    Check(a.state==1 && !run.Drained() && run.Status().issues.empty());
+    Complete(a);run.Service(0,3);run.Service(0,4);
+    Check(!controlled.empty() && !run.Drained() && run.Status().issues.empty());
+    run.Stop(TaskExitReason::Deleted);run.Service(0,5);Check(a.removes>0 && !run.Drained());
+    a.released=true;run.Service(0,6);run.Service(0,7);Check(run.Drained() && roots.empty());
+    player->End();player->Service();Check(player->Drained());
+    // Cancellation during the native create keeps the returned effect receipt
+    // in the old scope. A late load callback is not adopted by a new task.
+    a={};allocating=&a;
+    auto cancelled_player=std::make_shared<VisualProgramPlayer>(program,services);
+    TaskPresentation cancelled({702},1,plan,cancelled_player,{},{});
+    on_submit=[&]{cancelled.Stop(TaskExitReason::Deleted);};cancelled.Service(0,1);on_submit={};
+    cancelled.Service(0,2);Complete(a);a.released=true;cancelled.Service(0,3);cancelled.Service(0,4);
+    Check(cancelled.Drained() && roots.empty());cancelled_player->End();cancelled_player->Service();
+    Check(cancelled_player->Drained());delegates.clear();a={};allocating=&a;controlled.clear();
+}
 void TestVisualParameters() {
     const std::string json=R"({
       "format":"hksr.visual-program","id":"parameters","source":"fixture","scope":"scene","effects":{},
@@ -141,6 +175,7 @@ void TestVisualParameters() {
     a={};b={};allocating=&a;release_on_remove=false;parameter_calls.clear();
 }
 void TestVisualEffectContext() {
+    TestTaskEffects();
     TestVisualParameters();
     {
         const std::string json=R"({"format":"hksr.visual-program","id":"partners","source":"config","scope":"scene",

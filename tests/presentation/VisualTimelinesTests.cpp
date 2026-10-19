@@ -48,6 +48,9 @@ void TestVisualTimelines() {
     services.cancel_timelines(0);services.timelines_drained();Check(stops==3);
     services.cancel_timelines(11);services.timelines_drained();Check(stops==4);
     Check(phases[4]==api::TimelinePlaybackPhase::Stopped && phases[5]==api::TimelinePlaybackPhase::Playing);
+    phases[4]=api::TimelinePlaybackPhase::Retired;
+    services.timelines_drained();
+    Check(services.timeline_scope_drained(11) && !services.timeline_scope_drained(12));
     Check(services.timeline(13,{"same","scene"}).state==VisualStepState::Done);
     services.cancel_timelines(11);services.timelines_drained();Check(stops==4 && phases[6]==api::TimelinePlaybackPhase::Playing);
     services.cancel_timelines(12);services.cancel_timelines(13);services.timelines_drained();Check(stops==6);

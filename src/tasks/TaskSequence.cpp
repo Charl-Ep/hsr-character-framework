@@ -150,7 +150,7 @@ struct TaskSequenceExecution::State {
                 const auto id=++next_request;
                 auto value=services.submit(status.token,id,node);
                 if(value.receipt.execution.value!=status.token.value || value.receipt.request!=id ||
-                    !value.receipt.entity_generation || value.receipt.participant.name.empty()) {
+                    (!value.receipt.entity_generation && value.state.submitted) || value.receipt.participant.name.empty()) {
                     Fail(c,"submission returned invalid request identity");return {};
                 }
                 named[node.request]=id;
@@ -245,14 +245,20 @@ bool TaskSequenceExecution::Observe(const TaskRequestReceipt& receipt,const Task
     const auto found=s.requests.find(static_cast<std::size_t>(receipt.request));
     if(found==s.requests.end())return false;
     auto expected=found->second.value.receipt;
+    if(update.submitted && !receipt.entity_generation)return false;
+    if(!expected.entity_generation)expected.entity_generation=receipt.entity_generation;
     if(!expected.model)expected.model=receipt.model; // first actual model binding
     if(!(expected==receipt))return false;
+    if(!found->second.value.receipt.entity_generation)found->second.value.receipt.entity_generation=receipt.entity_generation;
     if(!found->second.value.receipt.model)found->second.value.receipt.model=receipt.model;
     auto& value=found->second.value.state;
     value.submitted=value.submitted || update.submitted;value.request_complete=value.request_complete || update.request_complete;
     value.performance_complete=value.performance_complete || update.performance_complete;value.drained=value.drained || update.drained;
     if(update.progress && std::isfinite(*update.progress) && *update.progress>=0 && (!value.progress || *update.progress>*value.progress))value.progress=update.progress;
-    if(!update.error.empty())value.error=update.error;
+    if(!update.error.empty()) {
+        if(value.error!=update.error)s.status.issues.push_back("request="+std::to_string(receipt.request)+": "+update.error);
+        value.error=update.error;Stop(TaskExitReason::Failed);
+    }
     s.Collect();return true;
 }
 void TaskSequenceExecution::RequestFinish(){state_->status.finish_requested=true;}

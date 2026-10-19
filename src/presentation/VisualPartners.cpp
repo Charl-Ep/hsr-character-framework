@@ -16,6 +16,8 @@ struct VisualPartners::Entry {
     std::shared_ptr<VisualEffectContext> context;
     std::unique_ptr<api::EntityCreationSession> creation;
     std::unique_ptr<api::PartnerControlSession> controls;
+    std::unique_ptr<api::ActorAnimationSession> animation_session;
+    std::unique_ptr<AnimationRequests> animation_requests;
     api::EntityToken token;
     bool starting=true,ending=false,ready=false,named=false,name_attempted=false;
     std::string error,last_trace;
@@ -32,7 +34,9 @@ bool VisualPartners::Current(const std::shared_ptr<Entry>& entry) const {
 }
 void VisualPartners::End(const std::shared_ptr<VisualEffectContext>& context) {
     for(const auto& [key,entry]:entries_)if(entry->context==context) {
-        (void)key;entry->ending=true;if(entry->creation)entry->creation->Remove();
+        (void)key;entry->ending=true;
+        if(entry->animation_requests)entry->animation_requests->Cancel({},"partner owner ended");
+        if(entry->creation)entry->creation->Remove();
     }
 }
 VisualStepResult VisualPartners::Execute(std::shared_ptr<VisualEffectContext> context,const VisualPartnerOperation& operation) {
@@ -47,7 +51,11 @@ VisualStepResult VisualPartners::Execute(std::shared_ptr<VisualEffectContext> co
         return {found->second->ending?VisualStepState::Pending:VisualStepState::Failed,
             "partner belongs to another visual context: "+op.partner};
     if(std::holds_alternative<VisualPartnerRemove>(op.command)) {
-        if(found!=entries_.end()) {found->second->ending=true;if(found->second->creation)found->second->creation->Remove();}
+        if(found!=entries_.end()) {
+            found->second->ending=true;
+            if(found->second->animation_requests)found->second->animation_requests->Cancel({},"partner removed");
+            if(found->second->creation)found->second->creation->Remove();
+        }
         return {VisualStepState::Done,{}};
     }
     if(std::holds_alternative<VisualPartnerCreate>(op.command) && found==entries_.end()) {
@@ -143,11 +151,17 @@ void VisualPartners::Service(const api::WorldFrame& frame) {
     std::vector<std::shared_ptr<Entry>> snapshot;
     for(const auto& [key,entry]:entries_){(void)key;snapshot.push_back(entry);}
     for(const auto& entry:snapshot) {
-        try{Collect(entry);}catch(const std::exception& e){entry->error=e.what();entry->ending=true;}
+        try {
+            Collect(entry);
+            if(entry->animation_requests && services_.objects) {
+                if(entry->ending)entry->animation_requests->Cancel({},"partner ended");
+                else entry->animation_requests->Service(frame,entry->ready && entry->named,*services_.objects);
+            }
+        }catch(const std::exception& e){entry->error=e.what();entry->ending=true;}
         Report(*entry);
         if(entry->starting || !entry->ending)continue;
         const bool closed=!entry->creation || !entry->creation->Status().create_started || entry->creation->Status().closed;
-        if(closed && (!entry->controls || entry->controls->Close())) {
+        if(closed && (!entry->controls || entry->controls->Close()) && (!entry->animation_session || entry->animation_session->Close())) {
             const auto found=entries_.find(entry->key);
             if(found!=entries_.end() && found->second==entry)entries_.erase(found);
         }
@@ -160,4 +174,37 @@ api::EntityOrigin VisualPartners::Resolve(const std::string& key) const {
     return {found->second->token,owner_.world};
 }
 bool VisualPartners::Drained() const {return entries_.empty();}
+bool VisualPartners::Drained(const std::shared_ptr<VisualEffectContext>& context) const {
+    for(const auto& [key,entry]:entries_)if(entry->context==context)return false;
+    return true;
+}
+std::optional<AnimationRequestEndpoint> VisualPartners::Animation(const std::string& key) {
+    if(!inputs_.count(key))throw std::runtime_error("unknown owned partner: "+key);
+    const auto found=entries_.find(key);
+    if(found==entries_.end())return {}; // a parallel create may submit later in this boundary
+    const auto entry=found->second;
+    if(entry->ending || !entry->error.empty())throw std::runtime_error("partner ended: "+key+"; "+entry->error);
+    if(!entry->ready || !entry->named)return {};
+    if(!Current(entry) || !Live(entry->token))throw std::runtime_error("partner lifetime ended: "+key);
+    if(!entry->animation_requests) {
+        if(!services_.animations || !services_.objects)throw std::runtime_error("partner animation session unavailable");
+        entry->animation_session=services_.animations(entry->token);
+        if(!entry->animation_session)throw std::runtime_error("partner animation factory returned no session");
+        std::weak_ptr<Entry> weak=entry;
+        entry->animation_requests=std::make_unique<AnimationRequests>(entry->token,owner_.world,*entry->animation_session,
+            [this,weak](const auto& command) {
+                const auto current=weak.lock();
+                if(!current || !Current(current) || !Live(current->token))throw std::runtime_error("partner animation owner ended");
+                const auto result=current->controls->PlayIdle({command.state,0,command.transition,1});
+                if(!result.returned)throw std::runtime_error("partner animation: "+result.error);
+                return api::CallResult{result.returned,0};
+            });
+    }
+    std::weak_ptr<Entry> weak=entry;
+    return AnimationRequestEndpoint{entry->token.generation,[this,weak](const auto& command) {
+        const auto current=weak.lock();
+        if(!current || !Current(current) || !Live(current->token))throw std::runtime_error("partner animation owner ended");
+        return current->animation_requests->Submit(command);
+    },[weak](auto serial){if(const auto current=weak.lock())current->animation_requests->Release(serial);}};
+}
 }

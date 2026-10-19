@@ -16,6 +16,7 @@ VisualProgramPlayer::VisualProgramPlayer(std::shared_ptr<const VisualProgram> pr
 std::uint64_t VisualProgramPlayer::Select(const std::string& action,std::map<std::string,std::string> choices) {
     if(status_.closing)throw std::logic_error("visual program closing");
     if(!program_->actions.count(action))throw std::invalid_argument("unknown visual program action: "+action);
+    EndSequences();
     DiscardActionSignals();pending_=Selection{++next_,action,std::move(choices)};return next_;
 }
 std::uint64_t VisualProgramPlayer::Signal(std::uint64_t intent,const std::string& name) {
@@ -38,7 +39,7 @@ void VisualProgramPlayer::Retire(bool fade) {
     if(context_){context_->End(fade);retired_.push_back(std::move(context_));}
     // An interruption also cancels tails retained by earlier natural finishes.
     for(auto& context:retired_)if(!context->Closing())context->End(fade);
-    try {if(services_.detach)services_.detach();}catch(const std::exception& e){status_.issues.push_back(e.what());}
+    try {if(!attached_sequence_ && services_.detach)services_.detach();}catch(const std::exception& e){status_.issues.push_back(e.what());}
     try {if(services_.cancel_timelines)services_.cancel_timelines(0);}catch(const std::exception& e){status_.issues.push_back(e.what());}
     variables_.clear();
 }
@@ -46,7 +47,7 @@ void VisualProgramPlayer::Finish() {
     DiscardActionSignals();
     EndPartners(context_);
     if(context_){context_->Finish();retired_.push_back(std::move(context_));}
-    try {if(services_.detach)services_.detach();}catch(const std::exception& e){status_.issues.push_back(e.what());}
+    try {if(!attached_sequence_ && services_.detach)services_.detach();}catch(const std::exception& e){status_.issues.push_back(e.what());}
     status_.playing=false;status_.completing=false;status_.completed=true;
     variables_.clear();
 }
@@ -58,6 +59,7 @@ void VisualProgramPlayer::Leave(bool fade) {
     if(status_.closing)return;
     ++next_;pending_.reset();signals_.clear();status_.prepared=false;status_.playing=false;status_.completing=false;
     end_pending_=true;end_fade_=fade;restore_.reset();restored_inputs_.reset();
+    EndSequences();
 }
 void VisualProgramPlayer::InterruptAction(bool fade) {
     if(status_.closing)return;
@@ -75,16 +77,17 @@ void VisualProgramPlayer::EndPartners(const std::shared_ptr<VisualEffectContext>
     try{services_.end_partners(context);}catch(const std::exception& e){status_.issues.push_back(e.what());}
 }
 bool VisualProgramPlayer::Drained() const {return status_.closing && !end_pending_ && !context_ && retired_.empty() &&
-    contexts_.empty() && retired_contexts_.empty() && !timelines_pending_ && !partners_pending_;}
-void VisualProgramPlayer::Issue(const VisualInstruction& input,const std::string& detail) {
-    status_.issues.push_back(input.source+": "+detail);
+    contexts_.empty() && retired_contexts_.empty() && !timelines_pending_ && !partners_pending_ &&
+    std::all_of(instruction_scopes_.begin(),instruction_scopes_.end(),[](const auto& row){return row.second->drained;});}
+void VisualProgramPlayer::Issue(const VisualInstruction& input,const std::string& detail,const Execution& execution) {
+    (execution.issues?*execution.issues:status_.issues).push_back(input.source+": "+detail);
 }
 VisualStepResult VisualProgramPlayer::Execute(const VisualInstruction& input,Cursor& cursor,const Execution& execution) {
     return std::visit([&](const auto& op)->VisualStepResult {
         using T=std::decay_t<decltype(op)>;
         auto& variables=execution.lifetime?execution.lifetime->variables:variables_;
         if constexpr(std::is_same_v<T,VisualContextOperation>) {
-            return ChangeContext(op);
+            return ChangeContext(op,&execution);
         } else if constexpr(std::is_same_v<T,VisualAssign>) {
             variables[op.variable]=op.value;return {VisualStepState::Done,{}};
         } else if constexpr(std::is_same_v<T,VisualTimeline>) {
@@ -113,9 +116,9 @@ VisualStepResult VisualProgramPlayer::Execute(const VisualInstruction& input,Cur
                     if(!Current(execution))return {VisualStepState::Pending,{}};
                     const auto* submitted=context->Status(id);
                     if(!submitted || !submitted->submitted || !submitted->submit.returned || submitted->cancelled)
-                        Issue(input,key+": "+(submitted?submitted->detail:"creation returned no owned receipt"));
+                        Issue(input,key+": "+(submitted?submitted->detail:"creation returned no owned receipt"),execution);
                 }
-                catch(const std::exception& e){Issue(input,key+": "+e.what());}
+                catch(const std::exception& e){Issue(input,key+": "+e.what(),execution);}
                 if(!Current(execution))return {VisualStepState::Pending,{}};
             }
             return {VisualStepState::Done,{}};
@@ -134,7 +137,7 @@ VisualStepResult VisualProgramPlayer::Execute(const VisualInstruction& input,Cur
                 if constexpr(!std::is_same_v<T,VisualTrigger>)*cursor.receipts=context->Requests(op.effect);
                 else for(const auto& key:op.effects) {
                     const auto rows=context->Requests(key);cursor.receipts->insert(cursor.receipts->end(),rows.begin(),rows.end());
-                    if(rows.empty())Issue(input,"no owned effect receipt: "+key);
+                    if(rows.empty())Issue(input,"no owned effect receipt: "+key,execution);
                 }
                 if(cursor.receipts->empty())return {VisualStepState::Failed,"no owned effect receipt"};
             }
@@ -165,7 +168,7 @@ VisualStepResult VisualProgramPlayer::Execute(const VisualInstruction& input,Cur
                 if(result.state==VisualStepState::Pending)pending=true;
                 else {
                     cursor.completed.insert(id);
-                    if(result.state==VisualStepState::Failed)Issue(input,"receipt="+std::to_string(id)+" "+result.detail);
+                    if(result.state==VisualStepState::Failed)Issue(input,"receipt="+std::to_string(id)+" "+result.detail,execution);
                 }
             }
             return {pending?VisualStepState::Pending:VisualStepState::Done,{}};
@@ -179,7 +182,7 @@ VisualStepResult VisualProgramPlayer::Execute(const VisualInstruction& input,Cur
                     const bool pending=services_.remove_in_flight && services_.remove_in_flight(context,key,{op.fade,op.immediate,false});
                     if(rows.empty() && !pending) {
                         if(op.optional.count(key))status_.notes.push_back(input.source+": optional effect absent: "+key);
-                        else Issue(input,"no owned effect receipt for removal: "+key);
+                        else Issue(input,"no owned effect receipt for removal: "+key,execution);
                     }
                     for(const auto id:rows)context->Remove(id,{op.fade,op.immediate,false});
                 }
@@ -191,7 +194,7 @@ VisualStepResult VisualProgramPlayer::Execute(const VisualInstruction& input,Cur
                 const auto* status=context->Status(id);
                 if(status && !status->request_ended && !status->closed) {
                     if(!status->removal_attempts)return {VisualStepState::Pending,{}};
-                    if(!status->removal.read.returned || !status->removal.value)Issue(input,"receipt="+std::to_string(id)+" "+status->detail);
+                    if(!status->removal.read.returned || !status->removal.value)Issue(input,"receipt="+std::to_string(id)+" "+status->detail,execution);
                 }
                 cursor.completed.insert(id);
             }
@@ -206,7 +209,7 @@ bool VisualProgramPlayer::Instructions(const std::vector<VisualInstruction>& ste
         if(!input.choice.empty()) {
             const auto& choices=execution.lifetime?execution.lifetime->choices:choices_;
             const auto value=choices.find(input.choice);
-            if(value==choices.end()){Issue(input,"preview input absent: "+input.choice);cursor.Next();continue;}
+            if(value==choices.end()){Issue(input,"preview input absent: "+input.choice,execution);cursor.Next();continue;}
             if(value->second!=input.value){cursor.Next();continue;}
         }
         VisualStepResult result;
@@ -214,7 +217,7 @@ bool VisualProgramPlayer::Instructions(const std::vector<VisualInstruction>& ste
         catch(const std::exception& e){result={VisualStepState::Failed,e.what()};}
         if(!Current(execution))return false;
         if(result.state==VisualStepState::Pending){status_.waiting.push_back(input.source);return false;}
-        if(result.state==VisualStepState::Failed)Issue(input,result.detail);
+        if(result.state==VisualStepState::Failed)Issue(input,result.detail,execution);
         cursor.Next();
     }
     return true;
@@ -237,6 +240,7 @@ void VisualProgramPlayer::Service(bool advance) {
         catch(const std::exception& e){if(status_.issues.empty() || status_.issues.back()!=e.what())status_.issues.push_back(e.what());}
     }
     ServiceContexts(false);
+    ServiceSequences(advance && !status_.closing);
     if(status_.closing)return;
     if(!advance){if(context_)context_->Service();return;}
     status_.waiting.clear();

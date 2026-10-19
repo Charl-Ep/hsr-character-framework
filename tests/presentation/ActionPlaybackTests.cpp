@@ -1,4 +1,5 @@
 #include <hksr/framework/presentation/ActionPlayback.hpp>
+#include <hksr/framework/tasks/TaskPresentation.hpp>
 #include <Windows.h>
 #include <iostream>
 #include <map>
@@ -17,6 +18,7 @@ bool loaded=true,initialized=true,changing=false,exists=true,fault=false,requeue
 bool cancel_on_init=false,cancel_on_has=false;
 unsigned reads=0,plays=0,npc_plays=0,state_plays=0,hashes=0;
 int current_hash=93,current_full_hash=0;float current_time=0;bool looping=false,transitioning=false;
+float face_time=0;
 std::string successor_name="OtherPhaseIdle";bool cancel_on_resolve=false;
 int expected_layer=0;
 framework::ActionPlayback* active=nullptr;
@@ -64,11 +66,11 @@ void __fastcall Play(void* value,int hash,int layer,float time,void*) {
 void __fastcall Npc(void* value,unsigned id,void*) { Check(value==&style && id==912); ++npc_plays; }
 void __fastcall State(void* value,int hash,float first,float second,void*) { Check(value==&style && (hash==93 || hash==71 || hash==94) && first==0 && second==0); ++state_plays; }
 void __fastcall StateInfo(void* value,int layer,int index,unsigned char* bytes,void*) {
-    Check(value==&animator && layer==0 && index==0);std::memset(bytes,0,36);
+    Check(value==&animator && (layer==0 || layer==3) && index==0);std::memset(bytes,0,36);
     std::memcpy(bytes+8,&current_full_hash,4);
-    std::memcpy(bytes,&current_hash,4);std::memcpy(bytes+12,&current_time,4);int loop=looping?1:0;std::memcpy(bytes+32,&loop,4);
+    std::memcpy(bytes,&current_hash,4);std::memcpy(bytes+12,layer==0?&current_time:&face_time,4);int loop=looping?1:0;std::memcpy(bytes+32,&loop,4);
 }
-bool __fastcall Transition(void* value,int layer,void*) {Check(value==&animator && layer==0);return transitioning;}
+bool __fastcall Transition(void* value,int layer,void*) {Check(value==&animator && (layer==0 || layer==3));return transitioning;}
 struct Objects:api::ManagedObjects {
     api::ObjectResult ManagedType(const char* ns,const char* name) override {
         Check(std::string(ns)=="RPG.GameCore");
@@ -339,5 +341,60 @@ void TestActionPlayback() {
     Check(simple.BranchState().phase=="b" && !simple.Status().completion_pending && state_plays==count+1);
     simple.SetPresentationDomain(false);Check(simple.BranchState().phase.empty());
     Check(simple.Close(active_frame) && simple_player->Drained() && roots.empty());api::TrackedEntities().Forget(token);
+    // The task adapter uses the same SDK session and normal owner-frame path.
+    // A returned native call must not finish an animation wait by itself.
+    token=api::TrackedEntities().Track(own);
+    framework::ActionPlayback task_player(token,owner_world,animations(token),simple_services.effects);
+    active=&task_player;task_player.SetCompletionState("待机");
+    auto task_visual=std::make_shared<framework::VisualProgramPlayer>(std::make_shared<framework::VisualProgram>(),simple_services);
+    auto sequence=std::make_shared<framework::TaskSequence>();
+    sequence->nodes={
+        {"body",framework::TaskSubmit{"body",framework::TaskAnimationCommand{{"body"},"attack_loop"}}},
+        {"wait",framework::TaskWaitRequest{"body"}},
+        {"entry",framework::TaskSerial{{0,1}}}
+    };sequence->entry=2;
+    framework::TaskPresentationServices task_services;
+    task_services.animation=[&](const auto& participant)->std::optional<framework::TaskAnimationEndpoint>{
+        Check(participant.name=="body");return framework::BindTaskAnimation(task_player);
+    };
+    framework::TaskPresentation task({100},token.generation,sequence,task_visual,{},task_services);
+    count=state_plays;current_time=0;current_hash=93;
+    task.Service(0,++active_frame.sequence);Check(state_plays==count && !task.Drained());
+    task_player.Service(active_frame,false,objects);Check(state_plays==count);
+    task_player.Service(active_frame,true,objects);Check(state_plays==count+1 && !task_player.Status().completion_pending);
+    task.Service(0,active_frame.sequence);Check(!task.Drained());
+    current_time=0.4f;++active_frame.sequence;task_player.Service(active_frame,true,objects);task.Service(0.1,active_frame.sequence);
+    Check(!task.Drained());
+    current_time=1.2f;++active_frame.sequence;task_player.Service(active_frame,true,objects);task.Service(0.1,active_frame.sequence);
+    task.Service(0,++active_frame.sequence);Check(task.Drained() && state_plays==count+1); // no implicit idle replay
+    auto first=task_player.QueueAnimation({"attack_loop"});
+    ++active_frame.sequence;task_player.Service(active_frame,true,objects);Check(first->accepted && !first->entered);
+    task_player.ReleaseAnimation(first->serial);auto second=task_player.QueueAnimation({"待机"});
+    task_player.ReleaseAnimation(first->serial); // stale cleanup does not cancel replacement
+    ++active_frame.sequence;task_player.Service(active_frame,true,objects);Check(second->accepted && !second->released);
+    changing=true;++active_frame.sequence;task_player.Service(active_frame,true,objects);changing=false;
+    Check(second->cancelled && second->released && !second->error.empty());
+    const auto old_model=second->model_generation;
+    auto third=task_player.QueueAnimation({"待机"});++active_frame.sequence;task_player.Service(active_frame,true,objects);
+    Check(third->accepted && third->model_generation>old_model);
+    task_player.ReleaseAnimation(third->serial);
+    current_hash=93;current_time=0.1f;face_time=0.1f;
+    auto body_ticket=task_player.QueueAnimation({"attack_loop"});++active_frame.sequence;task_player.Service(active_frame,true,objects);
+    expected_layer=3;auto face_ticket=task_player.QueueAnimation({"attack_loop",3});
+    ++active_frame.sequence;task_player.Service(active_frame,true,objects);expected_layer=0;
+    Check(face_ticket->accepted && !body_ticket->released);
+    current_time=1.1f;++active_frame.sequence;task_player.Service(active_frame,true,objects);
+    Check(body_ticket->complete && face_ticket->entered && !face_ticket->complete);
+    face_time=1.1f;++active_frame.sequence;task_player.Service(active_frame,true,objects);Check(face_ticket->complete);
+    task_player.ReleaseAnimation(body_ticket->serial);task_player.ReleaseAnimation(face_ticket->serial);
+    // Cancellation during a managed read cannot reach the playback write.
+    const auto before_cancel=state_plays;
+    auto cancelled=task_player.QueueAnimation({"attack_loop"});cancel_on_has=true;
+    ++active_frame.sequence;task_player.Service(active_frame,true,objects);cancel_on_has=false;
+    Check(cancelled->released && !cancelled->accepted && state_plays==before_cancel);
+    auto departed=task_player.QueueAnimation({"attack_loop"});task_player.Service(foreign,true,objects);
+    Check(departed->released && !departed->accepted && state_plays==before_cancel);
+    Check(task_player.Close(active_frame) && roots.empty());task_visual->End();task_visual->Service();
+    Check(task_visual->Drained());api::TrackedEntities().Forget(token);
     std::cout<<"Action playback passed: owned lookup, queued replacement, readiness, three official paths, current state membership, no replay after faults, disposal isolation; local only.\n";
 }

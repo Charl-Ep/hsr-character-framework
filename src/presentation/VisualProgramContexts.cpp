@@ -6,6 +6,10 @@ namespace hksr::framework {
 bool VisualProgramPlayer::Current(const Execution& execution) const {
     if(status_.closing || end_pending_)return false;
     if(!execution.lifetime)return !interrupt_pending_ && next_==execution.intent;
+    if(execution.lifetime->name.empty()) {
+        const auto scope=instruction_scopes_.find(execution.lifetime->token);
+        return scope!=instruction_scopes_.end() && scope->second->lifetime==execution.lifetime && !scope->second->ending;
+    }
     const auto found=contexts_.find(execution.lifetime->name);
     return found!=contexts_.end() && found->second==execution.lifetime;
 }
@@ -56,9 +60,10 @@ void VisualProgramPlayer::DiscardActionSignals() {
     }),signals_.end());
 }
 std::shared_ptr<VisualProgramPlayer::Lifetime> VisualProgramPlayer::StartContext(
-    const std::string& name,const VisualContextSnapshot* restore) {
+    const std::string& name,const VisualContextSnapshot* restore,const VisualProgramParameters* inputs) {
     auto lifetime=std::make_shared<Lifetime>();lifetime->name=name;
-    lifetime->token=++next_context_;lifetime->choices=restore?restore->inputs.choices:choices_;
+    lifetime->inputs=restore?restore->inputs:inputs?*inputs:selected_inputs_;
+    lifetime->token=++next_context_;lifetime->choices=lifetime->inputs.choices;
     if(restore){lifetime->variables=restore->variables;lifetime->restoring=true;}
     lifetime->effects=std::make_shared<VisualEffectContext>(services_.effects);
     // Register ownership before any provider may reenter Select/End.
@@ -72,7 +77,7 @@ std::shared_ptr<VisualProgramPlayer::Lifetime> VisualProgramPlayer::StartContext
                 throw std::runtime_error("phase configuration unavailable: "+phase);
         }
         if(!Current({lifetime->token,lifetime}))return lifetime;
-        if(services_.prepare_inputs)services_.prepare_inputs(lifetime->effects,restore?restore->inputs:selected_inputs_,restore || selected_inputs_restored_);
+        if(services_.prepare_inputs)services_.prepare_inputs(lifetime->effects,lifetime->inputs,restore || (!inputs && selected_inputs_restored_));
         if(!Current({lifetime->token,lifetime}))return lifetime;
         if(services_.context_started)services_.context_started(name,lifetime->effects);
     }catch(...) {
@@ -83,11 +88,11 @@ std::shared_ptr<VisualProgramPlayer::Lifetime> VisualProgramPlayer::StartContext
     }
     return lifetime;
 }
-VisualStepResult VisualProgramPlayer::ChangeContext(const VisualContextOperation& operation) {
+VisualStepResult VisualProgramPlayer::ChangeContext(const VisualContextOperation& operation,const Execution* source) {
     auto found=contexts_.find(operation.name);
     if(operation.enter) {
         if(found==contexts_.end()) {
-            StartContext(operation.name);found=contexts_.find(operation.name);
+            StartContext(operation.name,nullptr,source && source->lifetime?&source->lifetime->inputs:nullptr);found=contexts_.find(operation.name);
         }
         auto lifetime=found->second;
         if(lifetime->phase==ContextPhase::Exiting)return {VisualStepState::Pending,{}};

@@ -15,11 +15,13 @@ std::unique_ptr<api::ActorAnimationSession> RequireSession(api::EntityToken owne
 ActionPlayback::ActionPlayback(api::EntityToken owner,api::GameWorld* world,std::unique_ptr<api::ActorAnimationSession> engine,
     std::shared_ptr<const api::PresentationEffects> effects,const api::ComponentConfig* text)
     :owner_(owner),world_(world),engine_(RequireSession(owner,std::move(engine))),entities_(engine_->Entities()),models_(engine_->Models()),
-    actions_(engine_->Control()),inputs_(engine_->Inputs()),resources_(engine_->Resources()),text_(std::move(text)),effect_services_(std::move(effects)) {
+    actions_(engine_->Control()),inputs_(engine_->Inputs()),resources_(engine_->Resources()),animation_requests_(owner,world,*engine_),text_(std::move(text)),effect_services_(std::move(effects)) {
     if(!owner.entity || !owner.generation || !world) throw std::invalid_argument("action playback requires its owned entity epoch");
 }
 std::uint64_t ActionPlayback::Queue(ActionRequest request) {
     if(status_.closing) throw std::logic_error("action playback already closing");
+    const auto* layer=std::get_if<AnimatorState>(&request);
+    animation_requests_.Cancel(layer?layer->layer:0);
     ++intent_revision_;
     completion_.reset();status_.completion_pending=false;status_.completion_note.clear();
     status_.successor.reset();
@@ -27,7 +29,22 @@ std::uint64_t ActionPlayback::Queue(ActionRequest request) {
     pending_=std::move(value); status_.pending=true;
     return status_.latest_serial;
 }
+std::shared_ptr<const AnimationRequestStatus> ActionPlayback::QueueAnimation(AnimationCommand command) {
+    if(status_.closing)throw std::logic_error("action playback already closing");
+    auto ticket=animation_requests_.Submit(command);
+    if(command.layer==0) {
+        ++intent_revision_;
+        if(pending_){pending_->outcome=ActionOutcome::Cancelled;status_.last=std::move(pending_);pending_.reset();}
+        status_.pending=false;completion_.reset();status_.completion_pending=false;status_.successor.reset();
+        visual_cancelled_=ready_cancelled_=retire_action_events_=true;
+        program_playback_.reset();program_preparing_=program_intent_=program_return_=0;
+        if(program_)program_->InterruptAction(); // persistent contexts and task scopes stay owned
+        presentation_.Abandon();SyncPresentation();
+    }
+    return ticket;
+}
 void ActionPlayback::CancelPending(bool interrupt_presentation) {
+    animation_requests_.Cancel();
     ++intent_revision_;
     if(interrupt_presentation){presentation_.Interrupt();LeaveProgram();SyncPresentation();}
     visual_cancelled_=true;
@@ -118,10 +135,11 @@ void ActionPlayback::Service(const api::WorldFrame& frame,bool ready,api::Manage
     if(servicing_ || status_.closing || status_.closed) return;
     ServiceEffects(frame);
     if(Ended()) {
+        animation_requests_.Cancel({},"animation owner ended");
         if(pending_) { pending_->outcome=ActionOutcome::OwnerEnded; status_.last=std::move(pending_); pending_.reset(); }
         status_.pending=false; return;
     }
-    if(!OwnFrame(frame)) return;
+    if(!OwnFrame(frame)) {animation_requests_.Cancel({},"animation owner world left");return;}
     resources_.Drain();
     if(!ready) return;
     servicing_=true;
@@ -166,6 +184,7 @@ void ActionPlayback::Service(const api::WorldFrame& frame,bool ready,api::Manage
             }
         }catch(const std::exception& e){status_.visual_note=e.what();visual_cancelled_=true;}
     }
+    animation_requests_.Service(frame,ready,objects);
     if(!pending_ && completion_) {Complete(frame,objects);status_.completion_pending=completion_.has_value();}
     if(!pending_) return;
     auto receipt=std::move(*pending_); pending_.reset(); status_.pending=false;

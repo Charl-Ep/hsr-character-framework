@@ -16,6 +16,7 @@
 #include "ActionRetirement.hpp"
 #include "PresentationProfile.hpp"
 #include "VisualProgram.hpp"
+#include "AnimationRequests.hpp"
 #include <variant>
 
 namespace hksr::framework {
@@ -27,6 +28,9 @@ public:
     ActionPlayback(api::EntityToken owner,api::GameWorld* world,std::unique_ptr<api::ActorAnimationSession> engine,
         std::shared_ptr<const api::PresentationEffects> effects={},const api::ComponentConfig* text=nullptr);
     std::uint64_t Queue(ActionRequest request);
+    std::shared_ptr<const AnimationRequestStatus> QueueAnimation(AnimationCommand);
+    void ReleaseAnimation(std::uint64_t serial){animation_requests_.Release(serial);}
+    api::EntityToken Owner() const {return owner_;}
     void SetCompletionState(std::string state) { completion_state_=std::move(state); }
     std::string CurrentIdle() const {return CompletionState();}
     bool SuccessorSettled() const {
@@ -79,6 +83,7 @@ private:
     const api::AnimationControl& actions_;
     const api::ProfileInputs& inputs_;
     api::AnimationResources& resources_;
+    AnimationRequests animation_requests_;
     const api::ComponentConfig* text_;
     bool servicing_=false;
     std::uint64_t intent_revision_=0;

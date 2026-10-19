@@ -9,7 +9,7 @@ Headers use `hksr/framework/<module>`. Source and test directories follow the sa
 | `character` | Logical instances, creation generations, controls and map membership |
 | `appearance` | Private model assembly, overlays and retirement |
 | `presentation` | Action selection, domain handoff, ready poses and phase rules |
-| `tasks` | Typed visual-task sources, context queries and sequence execution kernel |
+| `tasks` | Typed visual-task sources, context queries, sequence execution and presentation adapters |
 | `assets` | Package, mesh, texture and material inputs |
 | `layout` | Saved intent, restoration and filesystem storage |
 | `serialization` | File codecs returning typed values |
@@ -29,7 +29,7 @@ Player selections create an independent story actor from the selected prefab/con
 
 ## Visual effect ownership
 
-The [task runtime](task-runtime.md) is an engine-independent core; application and native-playback integration are pending. Existing menu actions continue through the presentation sessions below.
+The [task runtime](task-runtime.md) binds its execution kernel to owned animation requests and visual resource scopes. Application/frontend integration is pending; existing menu actions continue through the presentation sessions below.
 
 `VisualEffectContext` owns explicitly submitted or adopted effect requests. It can persist across body actions. `End` requests cancellation; `Service` drains asynchronous results. Progress and Animator controls address retained requests, not global names.
 

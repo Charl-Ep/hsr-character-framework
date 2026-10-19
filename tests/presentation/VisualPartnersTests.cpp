@@ -1,4 +1,7 @@
 #include <hksr/framework/presentation/VisualPartners.hpp>
+#include <hksr/animation/AnimationControl.hpp>
+#include <hksr/model/ProfileInputs.hpp>
+#include <cstring>
 #include <array>
 #include <functional>
 #include <map>
@@ -11,11 +14,11 @@ void CheckAt(bool ok,int line){if(!ok)throw std::runtime_error("visual partners 
 int world_data,other_world_data,manager_data,info,definition,row;
 auto* world=reinterpret_cast<GameWorld*>(&world_data);
 struct Group {void* header[2]{};GameEntity* owner=nullptr;};
-struct Actor {bool loaded=false;std::array<Group,5> components;bool animation=true;};
+struct Actor {bool loaded=false;std::array<Group,6> components;bool animation=true;float progress=0;};
 Actor parent;std::vector<std::unique_ptr<Actor>> actors;
 GameEntity* E(Actor& a){return reinterpret_cast<GameEntity*>(&a);}
 unsigned factories=0,kills=0,names=0,attachments=0,animations=0,visibilities=0;
-int root_id=0;std::map<int,void*> roots;std::array<int,5> types{};
+int root_id=0;std::map<int,void*> roots;std::array<int,6> types{};
 unsigned idle_requests=0;
 std::function<void()> on_create,on_name;
 bool delay_disposal=false;
@@ -62,12 +65,22 @@ void __fastcall Idle(void*,int logic,void* state,float start,float transition,fl
     Check(logic==1 && *static_cast<std::string*>(state)=="Loop" && start==0 && transition==0.25f && end==1 && !extra && !request && !flag);
     ++idle_requests;
 }
+void* __fastcall Animator(Group* model,void*){return model->owner;}
+bool __fastcall Changing(void*,void*){return false;}
+bool __fastcall Initialized(void*,void*){return true;}
+int __fastcall Hash(std::string* name,void*){Check(*name=="Loop");return 42;}
+bool __fastcall Has(void* actor,int layer,int hash,void*){Check(actor!=E(parent) && layer==0 && hash==42);return true;}
+void __fastcall StateInfo(Actor* actor,int layer,int index,unsigned char* bytes,void*) {
+    Check(actor!=&parent && layer==0 && index==0);std::memset(bytes,0,36);int hash=42;
+    std::memcpy(bytes,&hash,4);std::memcpy(bytes+12,&actor->progress,4);
+}
+bool __fastcall Transition(void*,int,void*){return false;}
 struct Objects:ManagedObjects {
     std::vector<std::unique_ptr<std::string>> strings;
     ObjectResult NewStringUtf8(const char* s)override{strings.push_back(std::make_unique<std::string>(s));return {{true,0},strings.back().get()};}
     ObjectResult AllocateObject(const char*,const char*)override{throw std::runtime_error("no object allocation expected");}
     ObjectResult ManagedType(const char*,const char* name)override {
-        const std::array<std::string,5> type_names{"OLABFALNLJM","TransformComponent","EAKGBLEMBLN","CharacterVisibleComponent","CFFPEAALCPH"};
+        const std::array<std::string,6> type_names{"OLABFALNLJM","TransformComponent","EAKGBLEMBLN","CharacterVisibleComponent","CFFPEAALCPH","CharacterModelComponent"};
         for(std::size_t i=0;i<type_names.size();++i)if(name==type_names[i])return {{true,0},&types[i]};
         throw std::runtime_error("unknown type");
     }
@@ -92,6 +105,15 @@ void TestVisualPartners() {
     services.create=[&]{return std::make_unique<EntityCreationSession>(owner,Method{},Method{},&objects,access,refs,EntityCreationScope::BirthObserver{},M(Partner));};
     services.controls=[&](EntityToken child){return std::make_unique<PartnerControlSession>(owner,child,origin.token,world,control,refs,objects);};
     services.target=[&](auto&,const auto& name){Check(name=="Caster");return origin;};
+    services.objects=&objects;
+    services.animations=[&](EntityToken child) {
+        auto entity_access=access;entity_access.component=M(Component);
+        ModelAccessMethods model;model.animator=M(Animator);model.changing=M(Changing);
+        AnimationControlMethods animation;animation.hash=M(Hash);animation.has_state=M(Has);
+        animation.state_info=M(StateInfo);animation.in_transition=M(Transition);
+        ProfileInputMethods inputs;inputs.animator_initialized=M(Initialized);
+        return std::make_unique<ActorAnimationSession>(child,refs,EntityAccess(entity_access),ModelAccess(model),AnimationControl(animation),ProfileInputs(inputs));
+    };
     auto effects=std::make_shared<PresentationEffects>(EffectRequestServices{refs,EffectAccess({}),{},{},{}});
     auto context=std::make_shared<VisualEffectContext>(effects),other=std::make_shared<VisualEffectContext>(effects);
     VisualPartners partners(origin,{{"helper",{"partner.prefab","partner.json","member"}}},services);
@@ -115,7 +137,14 @@ void TestVisualPartners() {
     Check(partners.Execute(context,{"helper",VisualPartnerAnimationFollow{"Caster"}}).state==VisualStepState::Done && animations==1);
     Check(partners.Execute(context,{"helper",PartnerVisibility{"show",false,true,false,false}}).state==VisualStepState::Done && visibilities==1);
     Check(partners.Execute(context,{"helper",PartnerIdleAnimation{"Loop",0,0.25f,1}}).state==VisualStepState::Done && idle_requests==1);
+    auto endpoint=partners.Animation("helper");Check(endpoint && endpoint->entity_generation==partners.Resolve("helper").token.generation);
+    auto playback=endpoint->submit({"Loop",0,0.25f});Check(!playback->accepted);
+    ++frame.sequence;partners.Service(frame);Check(playback->accepted && !playback->entered && idle_requests==2);
+    actors[0]->progress=0.4f;++frame.sequence;partners.Service(frame);Check(playback->entered && !playback->complete);
+    actors[0]->progress=1.2f;++frame.sequence;partners.Service(frame);Check(playback->complete);
+    endpoint->release(playback->serial);Check(playback->released);
     delay_disposal=true;partners.End(context);partners.Service(frame);Check(kills==2 && !partners.Drained());
+    Check(!partners.Drained(context) && partners.Drained(other));
     partners.Service(frame);Check(kills==2);for(auto token:disposals)Dispose(token);disposals.clear();
     partners.Service(frame);Check(partners.Drained() && roots.size()==main_roots);delay_disposal=false;
     // Cancellation inside a factory still retains both new entities for removal.

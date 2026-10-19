@@ -14,6 +14,8 @@ public:
     void Cancel(std::uint64_t scope);
     void Service();
     bool Drained() const;
+    bool Drained(std::uint64_t scope) const;
+    void Forget(std::uint64_t scope);
     const std::vector<std::string>& Issues() const{return issues_;}
 private:
     Factory factory_;
@@ -22,7 +24,8 @@ private:
     void Report(const std::string& key,const api::OwnedTimeline&);
     using Key=std::pair<std::uint64_t,std::string>;
     std::map<Key,std::shared_ptr<api::OwnedTimeline>> current_;
-    std::vector<std::shared_ptr<api::OwnedTimeline>> retired_;
+    struct Retired {std::uint64_t scope;std::shared_ptr<api::OwnedTimeline> request;};
+    std::vector<Retired> retired_;
     std::vector<std::string> issues_;
 };
 // Shares one receipt owner across all three VisualProgram callback boundaries.

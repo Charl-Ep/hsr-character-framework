@@ -2,6 +2,7 @@
 #include "VisualEffectContext.hpp"
 #include "VisualProgramState.hpp"
 #include "VisualPartnerTypes.hpp"
+#include "AnimationRequests.hpp"
 #include <functional>
 #include <deque>
 #include <optional>
@@ -84,6 +85,8 @@ struct VisualProgramServices {
     std::function<void()> detach;
     std::function<void(std::uint64_t)> cancel_timelines;
     std::function<bool()> timelines_drained;
+    std::function<bool(std::uint64_t)> timeline_scope_drained;
+    std::function<void(std::uint64_t)> forget_timelines;
     std::function<bool(std::shared_ptr<VisualEffectContext>,const std::string&,api::EffectRemovalOptions)> remove_in_flight;
     std::map<std::string,std::string> choices;
     // Called once when an action selection is consumed, before any instruction.
@@ -102,6 +105,12 @@ struct VisualProgramServices {
     std::function<VisualStepResult(std::shared_ptr<VisualEffectContext>,const VisualPartnerOperation&)> partner;
     std::function<void(std::shared_ptr<VisualEffectContext>)> end_partners;
     std::function<bool()> partners_drained;
+    std::function<bool(std::shared_ptr<VisualEffectContext>)> partner_scope_drained;
+    std::function<std::optional<AnimationRequestEndpoint>(const std::string&)> partner_animation;
+};
+struct VisualInstructionStatus {
+    bool complete=false,cancelled=false;
+    std::vector<std::string> issues;
 };
 struct VisualProgramStatus {
     std::uint64_t intent=0,playback=0,model=0;
@@ -145,6 +154,15 @@ public:
     void Restore(VisualProgramSnapshot); // data-only, before scene entry
     bool Restoring() const {return restore_.has_value();}
     bool Drained() const;
+    // Task sequences share the same instruction executor and native resource
+    // owners as authored programs, without inventing a body action/clock.
+    std::uint64_t BeginSequence(VisualProgramParameters);
+    std::shared_ptr<const VisualInstructionStatus> SubmitInstruction(std::uint64_t,const VisualInstruction&);
+    void CancelInstruction(std::uint64_t,const std::shared_ptr<const VisualInstructionStatus>&);
+    void EndSequence(std::uint64_t,bool natural);
+    bool SequenceDrained(std::uint64_t) const;
+    void ForgetSequence(std::uint64_t); // only after drain
+    std::optional<AnimationRequestEndpoint> PartnerAnimation(const std::string& key) const;
 private:
     struct Cursor {
         std::size_t cue=0,instruction=0;
@@ -165,24 +183,35 @@ private:
         std::map<std::string,std::string> choices;
         bool fade=true;
         bool restoring=false;
+        VisualProgramParameters inputs;
         std::shared_ptr<const api::PhaseVisualConfigSources> phase_data;
     };
-    struct Execution {std::uint64_t intent=0;std::shared_ptr<Lifetime> lifetime;};
+    struct Execution {std::uint64_t intent=0;std::shared_ptr<Lifetime> lifetime;std::vector<std::string>* issues=nullptr;};
+    struct InstructionRequest {VisualInstruction input;Cursor cursor;std::shared_ptr<VisualInstructionStatus> status;};
+    struct InstructionScope {
+        std::shared_ptr<Lifetime> lifetime;
+        std::vector<std::shared_ptr<InstructionRequest>> requests;
+        bool prepared=false,ending=false,natural=false,released=false,drained=false;
+    };
+    std::map<std::uint64_t,std::shared_ptr<InstructionScope>> instruction_scopes_;
+    std::uint64_t attached_sequence_=0;
+    void ServiceSequences(bool advance);
+    void EndSequences();
     struct Selection {std::uint64_t intent;std::string action;std::map<std::string,std::string> choices;};
     struct SignalExecution {std::uint64_t serial;Execution execution;std::string name;Cursor cursor;};
     bool Current(const Execution&) const;
     bool Instructions(const std::vector<VisualInstruction>&,Cursor&,const Execution&);
     VisualStepResult Execute(const VisualInstruction&,Cursor&,const Execution&);
     std::shared_ptr<VisualEffectContext> ExecutionContext(const VisualInstruction&,const Execution&) const;
-    VisualStepResult ChangeContext(const VisualContextOperation&);
-    std::shared_ptr<Lifetime> StartContext(const std::string&,const VisualContextSnapshot* restore=nullptr);
+    VisualStepResult ChangeContext(const VisualContextOperation&,const Execution* source=nullptr);
+    std::shared_ptr<Lifetime> StartContext(const std::string&,const VisualContextSnapshot* restore=nullptr,const VisualProgramParameters* inputs=nullptr);
     bool ServiceRestore();
     void ServiceContexts(bool advance);
     void DriveContext(std::shared_ptr<Lifetime>);
     void EndContexts(bool fade);
     void DiscardActionSignals();
     void ServiceSignals();
-    void Issue(const VisualInstruction&,const std::string&);
+    void Issue(const VisualInstruction&,const std::string&,const Execution& execution={});
     void Retire(bool fade);
     void EndPartners(const std::shared_ptr<VisualEffectContext>&);
     void Finish();

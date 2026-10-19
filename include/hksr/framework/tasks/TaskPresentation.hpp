@@ -1,0 +1,34 @@
+#pragma once
+#include "TaskSequence.hpp"
+#include <hksr/framework/presentation/ActionPlayback.hpp>
+
+namespace hksr::framework {
+using TaskAnimationEndpoint=AnimationRequestEndpoint;
+// The bound ActionPlayback must outlive the task's drain. This never resolves
+// official actors from a global name, target selector or battle registry.
+TaskAnimationEndpoint BindTaskAnimation(ActionPlayback&);
+struct TaskPresentationServices {
+    // Empty means a declared owned participant is still being constructed.
+    // Throw for unknown participants. First resolution is retained per request.
+    std::function<std::optional<TaskAnimationEndpoint>(const TaskParticipant&)> animation;
+    std::function<TaskAvailability(const TaskRequirement&)> condition;
+    std::function<bool()> yield;
+};
+// One task execution over an existing visual scene and owned animation players.
+// Service those animation players on their normal owner frame, then call
+// Service here. The visual scene can outlive this task through named contexts.
+class TaskPresentation {
+public:
+    TaskPresentation(TaskExecutionToken,std::uint64_t owner_generation,std::shared_ptr<const TaskSequence>,
+        std::shared_ptr<VisualProgramPlayer>,VisualProgramParameters,TaskPresentationServices);
+    ~TaskPresentation(); // data destruction only; call Stop/Service to drain first
+    void Service(double seconds,std::uint64_t frame);
+    void Stop(TaskExitReason);
+    void RequestFinish();
+    const TaskExecutionStatus& Status() const;
+    bool Drained() const;
+private:
+    struct State;
+    std::unique_ptr<State> state_;
+};
+}

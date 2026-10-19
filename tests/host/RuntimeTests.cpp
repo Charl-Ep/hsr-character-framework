@@ -95,6 +95,7 @@ void TestVisualProgram(const char* file);
 void TestVisualPlayback();
 void TestTaskModel();
 void TestTaskSequence();
+void TestTaskPresentation();
 void TestReadyPlayback();
 void TestSourceCatalog();
 void TestActionCatalog();
@@ -132,6 +133,7 @@ int main(int argc,char** argv) try {
     TestVisualPlayback();
     TestTaskModel();
     TestTaskSequence();
+    TestTaskPresentation();
     TestReadyPlayback();
     TestModelProfileInputs();
     TestOperationHistory();

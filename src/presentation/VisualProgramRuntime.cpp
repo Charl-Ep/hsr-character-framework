@@ -81,6 +81,7 @@ VisualPartners& VisualProgramRuntime::Partners(const std::shared_ptr<Scene>& sce
             return ResolveTarget(*current,context,name);
         };
         services.trace=trace_;
+        services.animations=api_.Animations();services.objects=&objects_;
         scene->partners=std::make_unique<VisualPartners>(scene->owner,scene->input.program->partners,std::move(services));
         if(frame_)scene->partners->BeginFrame(*frame_);
     }
@@ -126,6 +127,8 @@ std::shared_ptr<VisualProgramPlayer> VisualProgramRuntime::Create(api::EntityOri
     services.partner=[this,current](auto context,const auto& op){return Partners(current()).Execute(std::move(context),op);};
     services.end_partners=[current](auto context){const auto scene=current();if(scene->partners)scene->partners->End(context);};
     services.partners_drained=[current]{const auto scene=current();return !scene->partners || scene->partners->Drained();};
+    services.partner_scope_drained=[current](auto context){const auto scene=current();return !scene->partners || scene->partners->Drained(context);};
+    services.partner_animation=[this,current](const auto& key){return Partners(current()).Animation(key);};
     services.prepare_inputs=[current](auto context,const VisualProgramParameters& inputs,bool restored) {
         auto scene=current();
         scene->context_inputs[context.get()]={context,inputs.targets,inputs.anchors,{},restored};
