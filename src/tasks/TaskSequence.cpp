@@ -57,7 +57,7 @@ struct TaskSequenceExecution::State {
         std::optional<std::size_t> request;
         explicit Cursor(TaskNodeIndex value):node(value){}
     };
-    struct Request {TaskSubmission value;bool finished=false,cancelled=false;};
+    struct Request {TaskSubmission value;bool finished=false,cancelled=false;std::string name,source;};
     struct Step {bool done=false;double remainder=0;};
     std::shared_ptr<const TaskSequence> sequence;
     TaskSequenceServices services;
@@ -158,7 +158,8 @@ struct TaskSequenceExecution::State {
                     Fail(c,"submission returned invalid request identity");return {};
                 }
                 named[node.request]=id;
-                const auto& submitted=requests.emplace(id,Request{std::move(value),false,false}).first->second.value.state;
+                const auto& submitted=requests.emplace(id,Request{std::move(value),false,false,
+                    node.request,sequence->nodes[c.node].source}).first->second.value.state;
                 status.retained_requests=requests.size();
                 if(!submitted.error.empty()){Fail(c,submitted.error);return {};}
                 return finish(seconds);
@@ -177,6 +178,11 @@ struct TaskSequenceExecution::State {
                     node.signal==TaskWaitSignal::PerformanceComplete?value.performance_complete:
                     node.signal==TaskWaitSignal::Drained?value.drained:value.progress && *value.progress>=node.progress;
                 if(done){if(!first)c.progressed=true;return finish(first?seconds:0);} // unknown asynchronous completion time
+                if(node.signal==TaskWaitSignal::Progress && value.performance_complete) {
+                    Fail(c,"request completed before progress "+std::to_string(node.progress)+": "+node.request+
+                        "; observed="+(value.progress?std::to_string(*value.progress):std::string("unavailable")));
+                    return {};
+                }
             } else if constexpr(std::is_same_v<T,TaskSerial>) {
                 if(first)for(auto child:node.children)c.children.emplace_back(child);
                 double remaining=seconds;
@@ -283,5 +289,12 @@ void TaskSequenceExecution::Stop(TaskExitReason reason) {
     }
 }
 const TaskExecutionStatus& TaskSequenceExecution::Status() const{return state_->status;}
+std::vector<TaskRequestSnapshot> TaskSequenceExecution::Requests() const {
+    std::vector<TaskRequestSnapshot> out;out.reserve(state_->requests.size());
+    for(const auto& [id,request]:state_->requests) {
+        (void)id;out.push_back({request.name,request.source,request.value.receipt,request.value.state});
+    }
+    return out;
+}
 bool TaskSequenceExecution::Drained() const{return state_->status.phase==TaskExecutionPhase::Finished;}
 }

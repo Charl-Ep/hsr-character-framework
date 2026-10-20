@@ -695,6 +695,9 @@ void TestModelProfileInputs() {
         tick();tick();
         Check(battle_plays==before+1);
         Check(registry.ControlTask(id,epoch,{},current).status.execution->phase==framework::TaskExecutionPhase::Running);
+        const auto task_requests=registry.ControlTask(id,epoch,{},current).requests;
+        Check(task_requests.size()==1 && task_requests[0].name=="body" &&
+            task_requests[0].state.submitted && task_requests[0].receipt.model!=0);
         // These developer tasks must not overwrite the persisted normal action.
         Check(std::get<framework::NpcMotion>(registry.DesiredAction(id)->request).id==18);
         observed_time=1.1f;tick();tick();

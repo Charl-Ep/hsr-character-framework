@@ -47,6 +47,8 @@ Service animation players on their normal owner frame, then call `TaskPresentati
 
 Animation requests do not select an automatic successor. A completed non-loop state or observed exit completes its wait; looping states remain active. Releasing a receipt stops observation, not the Animator. The next task command owns the next state. Controlled domain changes cancel old requests, while observed Animator changes invalidate their bindings.
 
+Use a performance wait for animation completion. A progress wait requires that exact threshold to have been observed; if the request finishes below it, execution reports an unsatisfied dependency instead of waiting forever or assuming the missed cue ran.
+
 Submissions are asynchronous. Add explicit request waits for dependencies, including before reusing a request name. A visual creation instruction completing means the creation command was accepted, not that its effect finished. Effect controls retain and retry their exact pending receipts.
 
 Each task gets a resource scope using the existing effects, partner and Timeline owners. Natural completion can retain tails; cancellation ends that scope. Named contexts outlive individual tasks until explicitly exited or the scene closes. `TaskPresentation::Drained()` includes scope cleanup even after the sequence kernel has finished. Old scope cleanup cannot detach a newer scope's event producer.
@@ -126,5 +128,7 @@ The existing development command envelope accepts:
 - `task_cancel`: run its interruption and cancel retiring tails.
 
 All require `character` and `creation` from the current snapshot. Selection requires the catalog's model domain to be ready. `body` binds the owned actor, and `partner:<key>` binds a declared visual partner. Commands run through `ApplicationService` on the exploration-world frame; they cannot target official battle actors.
+
+Query results include active and retiring request receipts: authored name/source, execution, participant, entity/model generations, submission, acceptance, performance completion, progress and drain. These are copied from existing observations only when queried; reading them does not query the engine or retain execution history.
 
 Transport acceptance is separate from task availability, execution and drain. Full task selection and context persistence are not yet implemented.

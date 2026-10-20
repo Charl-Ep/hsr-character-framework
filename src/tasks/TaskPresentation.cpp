@@ -139,6 +139,7 @@ void TaskPresentation::Service(double seconds,std::uint64_t frame) {
 void TaskPresentation::Stop(TaskExitReason reason){state_->execution->Stop(reason);state_->cancel_scope=true;state_->EndScope();}
 void TaskPresentation::RequestFinish(){state_->execution->RequestFinish();}
 const TaskExecutionStatus& TaskPresentation::Status() const{return state_->execution->Status();}
+std::vector<TaskRequestSnapshot> TaskPresentation::Requests() const{return state_->execution->Requests();}
 bool TaskPresentation::Drained() const{return state_->execution->Drained() && state_->forgotten;}
 bool TaskPresentation::YieldedControl() const {
     const auto phase=Status().phase;

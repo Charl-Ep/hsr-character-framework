@@ -25,6 +25,11 @@ struct TaskSequence {
     std::optional<TaskNodeIndex> interruption;
 };
 struct TaskSubmission {TaskRequestReceipt receipt;TaskRequestState state;};
+struct TaskRequestSnapshot {
+    std::string name,source;
+    TaskRequestReceipt receipt;
+    TaskRequestState state;
+};
 struct TaskSequenceServices {
     // Resolve participants through the owned actor/partner bindings. Return
     // reserved receipts for queued or partially failed work. A queued model
@@ -63,6 +68,7 @@ public:
     void Stop(TaskExitReason); // actor/world loss skips authored interruption
     void Fail(std::string); // scoped provider failure, including before first submit
     const TaskExecutionStatus& Status() const;
+    std::vector<TaskRequestSnapshot> Requests() const; // explicit diagnostic read, no native calls
     bool Drained() const;
 private:
     struct State;

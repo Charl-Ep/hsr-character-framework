@@ -39,6 +39,7 @@ public:
     TaskContext& Context();
     const TaskContext& Context() const;
     const TaskControllerStatus& Status() const;
+    std::vector<TaskRequestSnapshot> Requests() const;
     bool Drained() const;
 private:
     struct State;
@@ -54,5 +55,6 @@ struct TaskControlResult {
     TaskControllerStatus status;
     std::vector<TaskContextView> contexts;
     std::map<std::string,TaskQueryResult> catalog; // populated by query without a selection
+    std::vector<TaskRequestSnapshot> requests; // active/retiring executions, query only
 };
 }

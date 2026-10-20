@@ -94,7 +94,17 @@ framework::ControlCharacterTask ParseTaskCommand(const Json& row) {
 Json TaskResult(const framework::TaskControlResult& result) {
     const auto& state=result.status;
     Json out={{"requested",state.requested},{"started",state.started},{"retiring",state.retiring},
-        {"closing",state.closing},{"error",state.error},{"contexts",Json::array()},{"catalog",Json::object()}};
+        {"closing",state.closing},{"error",state.error},{"contexts",Json::array()},{"catalog",Json::object()},
+        {"requests",Json::array()}};
+    for(const auto& request:result.requests) {
+        const auto& r=request.receipt;const auto& s=request.state;
+        Json row={{"name",request.name},{"source",request.source},{"execution",r.execution.value},
+            {"request",r.request},{"entity_generation",r.entity_generation},{"model_generation",r.model},
+            {"participant",r.participant.name},{"submitted",s.submitted},{"accepted",s.request_complete},
+            {"performance_complete",s.performance_complete},{"drained",s.drained},{"error",s.error}};
+        if(s.progress)row["progress"]=*s.progress;
+        out["requests"].push_back(std::move(row));
+    }
     for(const auto& [name,query]:result.catalog)out["catalog"][name]=Query(query);
     if(state.current)out["current"]=Key(*state.current);
     if(state.pending)out["pending"]=Key(*state.pending);

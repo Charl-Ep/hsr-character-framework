@@ -197,7 +197,13 @@ void TestDevelopmentControl() {
     task_reply.task->status.current=TaskKey{"test","attack"};
     task_reply.task->status.execution=TaskExecutionStatus{};
     task_reply.task->contexts.push_back({{3},"phase",{{"enhanced",true}},std::string("boosted")});
+    TaskRequestSnapshot receipt;receipt.name="body";receipt.source="task/body";
+    receipt.receipt={{2},3,5,{"body"},7};receipt.state.performance_complete=true;receipt.state.progress=0.99;
+    task_reply.task->requests.push_back(receipt);
     pending.back().reply(task_reply);task_rows=preview.Drain();
     Check(task_rows.size()==1 && Json::parse(task_rows[0])["task"]["current"]["name"]=="attack");
     Check(Json::parse(task_rows[0])["task"]["contexts"][0]["values"]["enhanced"]==true);
+    const auto request_value=Json::parse(task_rows[0])["task"]["requests"][0];
+    Check(request_value["name"]=="body" && request_value["execution"]==2 && request_value["model_generation"]==5 &&
+        request_value["entity_generation"]==7 && request_value["performance_complete"]==true && request_value["progress"]==0.99);
 }

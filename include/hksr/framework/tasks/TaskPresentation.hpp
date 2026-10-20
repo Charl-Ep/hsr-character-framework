@@ -26,6 +26,7 @@ public:
     void Stop(TaskExitReason);
     void RequestFinish();
     const TaskExecutionStatus& Status() const;
+    std::vector<TaskRequestSnapshot> Requests() const;
     bool Drained() const;
     bool YieldedControl() const; // no pending producer work, tails may remain
 private:

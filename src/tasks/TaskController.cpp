@@ -163,6 +163,13 @@ void TaskController::Service(double seconds,std::uint64_t frame) {
 TaskContext& TaskController::Context(){return state_->context;}
 const TaskContext& TaskController::Context() const{return state_->context;}
 const TaskControllerStatus& TaskController::Status() const{return state_->status;}
+std::vector<TaskRequestSnapshot> TaskController::Requests() const {
+    auto out=state_->active?state_->active->player->Requests():std::vector<TaskRequestSnapshot>{};
+    for(const auto& run:state_->retiring) {
+        const auto rows=run->player->Requests();out.insert(out.end(),rows.begin(),rows.end());
+    }
+    return out;
+}
 bool TaskController::Drained() const {
     return !state_->pending && (!state_->active || state_->active->player->Drained()) && state_->retiring.empty() &&
         (!state_->status.closing || state_->visual->Drained());

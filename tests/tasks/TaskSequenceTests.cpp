@@ -114,6 +114,25 @@ void Loops() {
     budget_enabled=false;credited.Advance(0,2);
     Check(credited.Drained() && host.requests.size()==8,"budget yield discarded parallel remaining time");
 }
+void TerminalProgress() {
+    Host host;
+    auto plan=Plan({Submit("body"),{"final-cue",TaskWaitRequest{"body",TaskWaitSignal::Progress,1}},
+        Submit("cue"),{"entry",TaskSerial{{0,1,2}}}},3);
+    TaskSequenceExecution run({40},plan,host.Services());run.Advance(0,1);
+    TaskRequestState ended;ended.performance_complete=true;ended.progress=0.99;
+    run.Observe(host.requests[0].receipt,ended);run.Advance(0.1,2);
+    Check(run.Status().reason==TaskExitReason::Failed && host.requests.size()==1,
+        "terminal progress wait either hung or executed an unobserved cue");
+    Check(run.Status().issues.at(0).find("observed=0.990000")!=std::string::npos,"terminal progress diagnostic omitted its observation");
+    const auto receipts=run.Requests();
+    Check(receipts.size()==1 && receipts[0].name=="body" && receipts[0].receipt.execution.value==40 &&
+        receipts[0].state.performance_complete && receipts[0].state.progress==0.99,"request snapshot lost value/ownership");
+    // Performance completion is a different, explicitly authored dependency.
+    auto completion=Plan({Submit("body"),{"end",TaskWaitRequest{"body"}},Submit("after"),{"entry",TaskSerial{{0,1,2}}}},3);
+    TaskSequenceExecution finished({41},completion,host.Services());finished.Advance(0,1);
+    finished.Observe(host.requests.back().receipt,ended);finished.Advance(0.1,2);
+    Check(host.requests.size()==3 && finished.Status().reason==TaskExitReason::Completed,"state exit did not satisfy completion wait");
+}
 void Stops() {
     Host host;host.immediate=true;
     auto plan=Plan({Submit("start"),{"wait",TaskWaitSeconds{1}},{"entry",TaskSerial{{0,1}}},Submit("abort")},2);plan->interruption=3;
@@ -148,4 +167,4 @@ void Stops() {
     Check(rejected,"structural cycle accepted");
 }
 }
-void TestTaskSequence(){Clocks();Receipts();Loops();Stops();}
+void TestTaskSequence(){Clocks();Receipts();Loops();TerminalProgress();Stops();}

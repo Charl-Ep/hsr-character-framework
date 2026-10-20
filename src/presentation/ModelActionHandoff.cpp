@@ -49,6 +49,7 @@ TaskControlResult ModelActionHandoff::ControlTask(TaskControlInput input) {
         input.selection->query.participants={{"body"}};
         result.selection=tasks_->Select(std::move(*input.selection));
     } else if(input.operation==TaskControlOperation::Query) {
+        result.requests=tasks_->Requests();
         if(input.selection){input.selection->query.participants={{"body"}};result.selection=tasks_->Query(*input.selection);}
         else for(const auto& [name,plan]:task_catalog_->tasks) {
             (void)plan;TaskSelection selection{{task_catalog_->id,name}};selection.query.participants={{"body"}};
