@@ -85,6 +85,8 @@ void ApplicationCoordinator::Execute(CharacterCommand command,CommandReply& repl
                     player.position.y+value.player_world_offset.y,player.position.z+value.player_world_offset.z},player.rotation,value.placement.snap_to_ground};
             }
             auto plan=RequireCatalog().Plan(value.source_request,std::move(value.payload),std::move(value.npc_look_source));
+            if(value.transient)plan.persistence=CharacterPersistence::Session;
+            if(!value.task_catalog.empty())characters_.ConfigureTaskPreview(plan,value.task_catalog);
             Execute(AddCharacter{std::move(plan),std::move(value.scene),std::move(value.action),value.placement},reply,scene,frame,control);
             RequireCatalog().InspectActions(reply.character,characters_.Plan(reply.character).action_sources);
         } else if constexpr(std::is_same_v<T,AddCharacter>) {

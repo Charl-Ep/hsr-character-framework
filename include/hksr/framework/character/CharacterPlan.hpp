@@ -8,6 +8,7 @@
 
 namespace hksr::framework {
 struct VisualProgramInput;
+enum class CharacterPersistence {Layout,Session};
 // Immutable, copied selection for ONE NPC creation epoch. A missing battle
 // source does not invalidate an exploration source. Payload IO happens before
 // this object reaches the official world thread.
@@ -26,6 +27,7 @@ struct CharacterPlan {
     std::string presentation_phase;
     std::shared_ptr<const VisualProgramInput> visual_program;
     std::optional<VisualProgramSnapshot> visual_state;
+    CharacterPersistence persistence=CharacterPersistence::Layout;
     static CharacterPlan FromPrepared(const PreparedSource& source,
         std::shared_ptr<const ModelAssetInput> payload={},std::string npc_look_source={});
 };

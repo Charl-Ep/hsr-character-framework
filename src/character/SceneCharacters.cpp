@@ -7,8 +7,8 @@
 namespace hksr::framework {
 void SceneCharacters::BindProfile(CharacterPlan& plan,std::uint64_t id) const {
     if(!plan.visual_program)for(const auto& root:plan.action_sources) {
-        const auto found=programs_.find(root.source.path);
-        if(found!=programs_.end() && (found->second->tasks?found->second->tasks->domain==root.domain:
+        const auto found=programs_.sources.find(root.source.path);
+        if(found!=programs_.sources.end() && (found->second->tasks?found->second->tasks->domain==root.domain:
             root.domain==ActionDomain::Alternate && root.source.kind==api::ActionConfigKind::Battle)) {
             plan.visual_program=found->second;break;
         }
@@ -16,7 +16,13 @@ void SceneCharacters::BindProfile(CharacterPlan& plan,std::uint64_t id) const {
     if(plan.visual_program) {
         auto input=std::make_shared<VisualProgramInput>(*plan.visual_program);
         input->character=id;
-        input->resolve_character=[this](std::uint64_t target){return VisualTarget(target);};
+        const bool saved=plan.persistence==CharacterPersistence::Layout;
+        input->resolve_character=[this,saved](std::uint64_t target){
+            const auto found=entries_.find(target);
+            if(saved && found!=entries_.end() && found->second.plan.persistence==CharacterPersistence::Session)
+                throw std::invalid_argument("a saved visual context cannot retain a session-only target");
+            return VisualTarget(target);
+        };
         plan.visual_program=std::move(input);
     }
     if(profiles_)for(const auto& root:plan.action_sources)if(root.domain==ActionDomain::Alternate && root.source.kind==api::ActionConfigKind::Battle) {
@@ -25,6 +31,18 @@ void SceneCharacters::BindProfile(CharacterPlan& plan,std::uint64_t id) const {
     }
     PresentationState state;state.Configure(plan.presentation_profile,plan.presentation_phase);
     plan.presentation_phase=state.Phase();if(!state.Note().empty())plan.source_notes.push_back(state.Note());
+}
+void SceneCharacters::ConfigureTaskPreview(CharacterPlan& plan,const std::string& catalog) const {
+    const auto found=programs_.catalogs.find(catalog);
+    if(found==programs_.catalogs.end() || !found->second || !found->second->tasks)
+        throw std::invalid_argument("task catalog not registered: "+catalog);
+    const auto& input=found->second;
+    bool matches=false;
+    for(const auto& root:plan.action_sources)
+        if(root.domain==input->tasks->domain && root.source.path==input->program->source)matches=true;
+    if(!matches)throw std::invalid_argument("task catalog source/domain does not match the prepared character: "+catalog);
+    plan.visual_program=input;plan.visual_state.reset();
+    plan.persistence=CharacterPersistence::Session;
 }
 api::EntityOrigin SceneCharacters::VisualTarget(std::uint64_t id) const {
     const auto found=entries_.find(id);
@@ -125,6 +143,9 @@ std::shared_ptr<const ControlSubmission> SceneCharacters::Look(std::uint64_t id,
     if(intent.mode==LookMode::Point && (!std::isfinite(intent.point.x) || !std::isfinite(intent.point.y) || !std::isfinite(intent.point.z)))
         throw std::invalid_argument("look point must be finite");
     auto& entry=Edit(id);
+    if(intent.mode==LookMode::Instance && entry.plan.persistence==CharacterPersistence::Layout &&
+        entries_.at(intent.target).plan.persistence==CharacterPersistence::Session)
+        throw std::invalid_argument("a saved character cannot retain a session-only gaze target");
     auto submission=std::make_shared<ControlSubmission>();
     const bool in_session=entry.active && entry.active->controls && entry.active->revision==entry.revision;
     if(in_session)
@@ -150,6 +171,7 @@ void SceneCharacters::Rebuild(std::uint64_t id) {
 void SceneCharacters::ReplacePlan(std::uint64_t id,CharacterPlan plan) {
     if(closing_) throw std::logic_error("scene registry closing");
     auto& entry=Edit(id);
+    plan.persistence=entry.plan.persistence;
     entry.plan=std::move(plan);entry.action.reset();entry.action_intent=0;entry.action_error.clear();entry.visual_restore_error.clear();++entry.revision;
     BindProfile(entry.plan,id);
     entry.status.error.clear();
@@ -357,6 +379,7 @@ void SceneCharacters::Service(const api::WorldFrame& frame,const std::optional<S
 }
 SceneCharacterStatus SceneCharacters::Status(std::uint64_t id) const {
     const auto& entry=entries_.at(id); auto out=entry.status;
+    out.transient=entry.plan.persistence==CharacterPersistence::Session;
     out.active=entry.active.has_value(); out.retiring=entry.retired.size();
     for(const auto& input:creation_inputs_)if(input.character==id && input.value)++out.pending_inputs;
     out.revision=entry.revision;
@@ -439,6 +462,7 @@ SceneCharacterStatus SceneCharacters::Status(std::uint64_t id) const {
 }
 std::optional<VisualProgramSnapshot> SceneCharacters::CaptureVisualProgram(std::uint64_t id) const {
     const auto& entry=entries_.at(id);
+    if(entry.plan.persistence==CharacterPersistence::Session)return {};
     if(!entry.visual_restore_error.empty())throw std::runtime_error(entry.visual_restore_error);
     if(entry.active && entry.active->revision==entry.revision)
         if(const auto* handoff=entry.active->session->Handoff())return handoff->CaptureVisualProgram();

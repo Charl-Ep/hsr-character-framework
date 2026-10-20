@@ -32,6 +32,7 @@ bool Equal(const CharacterPackage& a,const CharacterPackage& b) {
         });
 }
 bool Equal(const SceneCharacterStatus& a,const SceneCharacterStatus& b) {
+    if(a.transient!=b.transient)return false;
     if(a.branch_state.phase!=b.branch_state.phase || a.branch_state.values.size()!=b.branch_state.values.size())return false;
     for(std::size_t i=0;i<a.branch_state.values.size();++i) {
         const auto& x=a.branch_state.values[i];const auto& y=b.branch_state.values[i];

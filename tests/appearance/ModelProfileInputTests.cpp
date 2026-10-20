@@ -707,6 +707,15 @@ void TestModelProfileInputs() {
         bool stale=false;try{registry.ControlTask(id,epoch+1,select,current);}catch(const std::logic_error&){stale=true;}Check(stale);
         auto battle=current;battle.battle={true,{true,0}};bool rejected_battle=false;
         try{registry.ControlTask(id,epoch,select,battle);}catch(const std::logic_error&){rejected_battle=true;}Check(rejected_battle);
+        // A previously accepted task also loses permission when the frame changes,
+        // even if the game reuses the same world pointer.
+        registry.ControlTask(id,epoch,select,current);
+        const auto before_battle=battle_plays;
+        current.battle={true,{true,0}};tick();tick();
+        current.battle={false,{true,0}};tick();tick();
+        Check(battle_plays==before_battle && !registry.ControlTask(id,epoch,{},current).status.pending);
+        Check(registry.ControlTask(id,epoch,{},current).status.execution->reason==framework::TaskExitReason::WorldLeft);
+        registry.ControlTask(id,epoch,select,current);tick();tick();Check(battle_plays==before_battle+1);
         registry.Delete(id);tick();tick();
         Check(registry.Ids().empty() && player->Drained() && roots.empty());
     }

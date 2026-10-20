@@ -3,6 +3,7 @@
 #include <hksr/framework/character/SceneCharacters.hpp>
 #include <hksr/framework/host/RuntimeServices.hpp>
 #include <hksr/framework/presentation/VisualProgramRuntime.hpp>
+#include <hksr/framework/tasks/TaskCatalog.hpp>
 #include <Windows.h>
 #include <fstream>
 #include <limits>
@@ -117,6 +118,38 @@ void TestSceneLayout() {
     Reject([&]{scene.Select(id,{ActionDomain::Alternate,ProgramAction{"fixture","absent"}});});
     Reject([&]{scene.Select(id,{ActionDomain::Exploration,ProgramAction{"fixture","first"}});});
     Check(std::get<ProgramAction>(scene.DesiredAction(id)->request).action=="second");
+    // Explicit task catalogs cannot override the automatic scene of this source.
+    auto tasks=std::make_shared<TaskCatalog>(ParseTaskCatalog(R"({
+      "format":"hksr.task-catalog","id":"tasks","domain":"battle",
+      "visual":{"id":"task-scene","source":"official/config","scope":"test","effects":{}},
+      "sequences":{"idle":{"entry":{"op":"animation","request":"body","participant":"body","state":"StandBy"}}},
+      "tasks":{"idle":{"entry":"idle"}}})"));
+    auto task_input=std::make_shared<VisualProgramInput>();task_input->tasks=tasks;task_input->program=tasks->visual;
+    scene.ConfigurePrograms({{{"official/config",input}},{{"tasks",task_input}}});
+    plan.visual_program.reset();
+    plan.action_sources.push_back({ActionDomain::Alternate,{hksr::api::ActionConfigKind::Battle,"official/config"}});
+    auto automatic=plan;scene.ReplacePlan(id,automatic);
+    Check(scene.Plan(id).visual_program->program==input->program && !scene.Plan(id).visual_program->tasks);
+    scene.ConfigureTaskPreview(plan,"tasks");
+    Check(plan.visual_program->tasks==tasks && plan.persistence==CharacterPersistence::Session);
+    auto foreign=automatic;foreign.action_sources.clear();
+    Reject([&]{scene.ConfigureTaskPreview(foreign,"tasks");});
+    Reject([&]{scene.ConfigureTaskPreview(foreign,"absent");});
+    Check(!foreign.visual_program && foreign.persistence==CharacterPersistence::Layout);
+    // Omission precedes source/action/context serialization, including unsupported
+    // development-only values. The rest of the map still saves without error.
+    plan.source_intent.reset();plan.package.source=SourceKind::External;
+    const auto before=EncodeSceneLayout(CaptureSceneLayout(scene,data.scene));
+    const auto transient=scene.Add(data.scene,plan,PlacedAction{ActionDomain::Alternate,AnimatorState{"Face",1,0}});
+    Check(scene.Status(transient).transient && !scene.Status(id).transient);
+    Check(EncodeSceneLayout(CaptureSceneLayout(scene,data.scene))==before && !scene.CaptureVisualProgram(transient));
+    Reject([&]{scene.Look(id,{LookMode::Instance,transient,{}});});
+    Reject([&]{scene.Plan(id).visual_program->resolve_character(transient);});
+    Check(EncodeSceneLayout(CaptureSceneLayout(scene,data.scene))==before);
+    scene.ReplacePlan(transient,automatic);
+    Check(scene.Plan(transient).persistence==CharacterPersistence::Session);
+    Check(EncodeSceneLayout(CaptureSceneLayout(scene,data.scene))==before);
+    scene.Delete(transient);
     scene.SetEnabled(id,false);Check(!CaptureSceneLayout(scene,data.scene).characters[0].enabled);
     scene.Delete(id);Check(CaptureSceneLayout(scene,data.scene).characters.empty());
     scene.Shutdown();

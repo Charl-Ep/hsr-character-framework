@@ -36,6 +36,8 @@ struct AddPreparedCharacter {
     std::string npc_look_source;
     bool near_player=false;
     api::Position3 player_world_offset{2,0,0};
+    bool transient=false;
+    std::string task_catalog; // explicit per-instance development preview
 };
 struct ReadCharacterNpcActions {std::uint64_t id;};
 struct ReplacePreparedCharacter {

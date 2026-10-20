@@ -22,14 +22,14 @@ void TestVisualProgramInputs() {
     auto write=[&](const std::string& text){std::ofstream output(file);output<<text;output.close();Check(static_cast<bool>(output));};
     write(R"({"programs":[{"file":"scene.json","targets":{"Target":2},"choices":{"prize":"minor"},
       "anchors":{"center":{"position":[6,1,58],"rotation":[0,1,0,0]}}}]})");
-    const auto inputs=ReadVisualProgramInputs(file);Check(inputs.size()==1);
-    const auto& input=*inputs.at("character");
+    const auto inputs=ReadVisualProgramInputs(file);Check(inputs.sources.size()==1 && inputs.catalogs.empty());
+    const auto& input=*inputs.sources.at("character");
     Check(input.program->id=="test" && input.targets.empty() && !input.resolve_character &&
         input.target_characters.at("Target")==2 && input.choices.at("prize")=="minor");
     Check(input.anchors.at("center").position.x==6 && input.anchors.at("center").rotation.y==1);
     auto overrides=std::make_shared<hksr::research::VisualProgramOverrides>();
     const auto bound=hksr::research::BindVisualProgramOverrides(inputs,overrides);
-    const auto read=bound.at("character")->read_parameters;
+    const auto read=bound.sources.at("character")->read_parameters;
     overrides->Set(7,{{{"Target",9}},{{"prize","grand"}}});
     const auto snapshot=read(7);
     Check(snapshot.targets.at("Target")==9 && snapshot.choices.at("prize")=="grand" && read(8).choices.empty());
@@ -42,10 +42,10 @@ void TestVisualProgramInputs() {
     Check(held.anchors.at("center").position.x==7 && held.anchors.at("center").rotation.w==1);
     overrides->Set(7,{});Check(read(7).anchors.empty() && held.anchors.size()==1 && input.anchors.at("center").position.x==6);
     overrides->Push(7,{11,3,"enter_view"});overrides->Push(7,{11,3,"exit_view"});
-    Check(bound.at("character")->take_signals(8).empty());
-    const auto signals=bound.at("character")->take_signals(7);
+    Check(bound.sources.at("character")->take_signals(8).empty());
+    const auto signals=bound.sources.at("character")->take_signals(7);
     Check(signals.size()==2 && signals[0].generation==11 && signals[0].intent==3 &&
-        signals[0].name=="enter_view" && signals[1].name=="exit_view" && bound.at("character")->take_signals(7).empty());
+        signals[0].name=="enter_view" && signals[1].name=="exit_view" && bound.sources.at("character")->take_signals(7).empty());
     Check(input.target_characters.at("Target")==2 && input.choices.at("prize")=="minor" && !input.read_parameters);
     for(const auto* text:{
         R"({"programs":[{"file":"scene.json","targets":{"Target":-1}}]})",
@@ -67,8 +67,14 @@ void TestVisualProgramInputs() {
     })";
     write(R"({"programs":[{"file":"scene.json"}]})");
     const auto task_inputs=ReadVisualProgramInputs(file);
-    Check(task_inputs.at("character")->tasks && task_inputs.at("character")->tasks->tasks.count("idle")==1);
-    Check(task_inputs.at("character")->program==task_inputs.at("character")->tasks->visual &&
-        task_inputs.at("character")->program->actions.empty());
-    Check(hksr::research::BindVisualProgramOverrides(task_inputs,overrides).at("character")->tasks==task_inputs.at("character")->tasks);
+    Check(task_inputs.sources.empty() && task_inputs.catalogs.at("tasks")->tasks->tasks.count("idle")==1);
+    Check(task_inputs.catalogs.at("tasks")->program==task_inputs.catalogs.at("tasks")->tasks->visual &&
+        task_inputs.catalogs.at("tasks")->program->actions.empty());
+    const auto task_bound=hksr::research::BindVisualProgramOverrides(task_inputs,overrides);
+    Check(task_bound.catalogs.at("tasks")->tasks==task_inputs.catalogs.at("tasks")->tasks);
+    overrides->Set(7,spatial);
+    Check(task_bound.catalogs.at("tasks")->read_parameters(7).anchors.at("center").position.x==7);
+    write(R"({"programs":[{"file":"scene.json"},{"file":"scene.json"}]})");
+    bool duplicate=false;try{ReadVisualProgramInputs(file);}catch(const std::invalid_argument&){duplicate=true;}
+    Check(duplicate);
 }

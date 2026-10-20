@@ -112,7 +112,11 @@ Top-level `contexts` binds visual-context names to `values`, `phase`, `slots` (`
 
 ## Development control
 
-In a development build, `VISUAL_PROGRAMS.json` entries can point to task catalogs using the existing `file`, `targets`, `choices` and `anchors` fields. Catalogs bind by their visual source and model domain. One configured visual scene owns an actor's task resources; replacing a live resource catalog is not supported.
+In a development build, `VISUAL_PROGRAMS.json` accepts `file`, `targets`, `choices` and `anchors`. Visual programs register source defaults; task catalogs register by catalog ID and do not change those defaults.
+
+Create a preview with `create_prepared`, a prepared `source_request`, and `task_catalog`. Its source and model domain must match the catalog. One configured visual scene owns its resources; replacing a live resource catalog is not supported. Prepare the catalog's model domain through the ordinary action control before selecting a task.
+
+Task previews are session-only. Ordinary `create_prepared` also accepts `transient: true`. These instances appear in snapshots with `transient: true`, but are omitted from automatic saves and named layouts. Loading a layout leaves them untouched. Source replacement preserves their session-only lifetime. Saved actors cannot retain references to session-only targets in gaze or visual contexts. Delete previews through the ordinary character lifecycle.
 
 The existing development command envelope accepts:
 
@@ -123,4 +127,4 @@ The existing development command envelope accepts:
 
 All require `character` and `creation` from the current snapshot. Selection requires the catalog's model domain to be ready. `body` binds the owned actor, and `partner:<key>` binds a declared visual partner. Commands run through `ApplicationService` on the exploration-world frame; they cannot target official battle actors.
 
-Transport acceptance is separate from task availability, execution and drain. Task preview does not replace the saved action intention. Full task selection and context persistence are not yet implemented.
+Transport acceptance is separate from task availability, execution and drain. Full task selection and context persistence are not yet implemented.

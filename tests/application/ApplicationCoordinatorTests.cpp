@@ -1,6 +1,7 @@
 #include <hksr/framework/application/ApplicationCoordinator.hpp>
 #include <hksr/presentation/PresentationBindings.hpp>
 #include <hksr/framework/host/RuntimeServices.hpp>
+#include <hksr/framework/tasks/TaskCatalog.hpp>
 #include <stdexcept>
 
 namespace {
@@ -28,7 +29,8 @@ void TestApplicationCoordinator() {
     CatalogReaders readers;
     readers.characters=[&]{
         ++reads;api::CharacterCatalog out;out.npcs.enumerated=true;
-        out.npcs.rows={{77,"Npc/config","Npc/model"}};return out;
+        out.npcs.rows={{77,"Npc/config","Npc/model"}};
+        out.players.enumerated=true;out.players.rows={{11,0,0,0,"Player/config","Player.prefab"}};return out;
     };
     readers.document=[](auto kind,const std::string& path){
         api::ActionConfigInput out;out.kind=kind;out.path=path;out.loaded=true;return out;
@@ -65,6 +67,31 @@ void TestApplicationCoordinator() {
         state.placement.position.z==34 && state.placement.rotation.y==1);
     Check(!state.active && state.creations==0); // intent only; no engine session serviced
     Check(snapshot().operations.entries.at(replies[0].serial).phase==OperationPhase::Waiting);
+
+    auto input=std::make_shared<VisualProgramInput>();
+    input->tasks=std::make_shared<const TaskCatalog>(ParseTaskCatalog(R"({
+      "format":"hksr.task-catalog","id":"test-preview","domain":"exploration",
+      "visual":{"id":"preview-scene","source":"Player/config","scope":"preview","effects":{}},
+      "sequences":{"idle":{"entry":{"op":"animation","request":"body","participant":"body","state":"StandBy"}}},
+      "tasks":{"idle":{"entry":"idle"}}})"));
+    input->program=input->tasks->visual;
+    characters.ConfigurePrograms({{},{{"test-preview",input}}});
+    service.Post(PrepareSource{BrowsePlayer{{11,0,0},{}}});replies=dispatch();
+    const auto player_source=replies[0].source_request;coordinator.Catalog()->Advance(0);
+    Check(snapshot().catalog->Source(player_source)->phase==SourceRequestPhase::Ready);
+    auto preview=add;preview.source_request=player_source;preview.near_player=false;preview.task_catalog="test-preview";
+    service.Post(preview);replies=dispatch();
+    Check(replies[0].accepted && characters.Plan(replies[0].character).visual_program->tasks==input->tasks);
+    Check(characters.Status(replies[0].character).transient && !characters.Status(id).transient &&
+        !characters.Plan(id).visual_program);
+    const auto preview_id=replies[0].character;
+    preview.task_catalog="missing";const auto count=characters.Ids().size();
+    service.Post(preview);replies=dispatch();
+    Check(!replies[0].accepted && characters.Ids().size()==count);
+    service.Post(ReplacePreparedCharacter{preview_id,source,{},{}});replies=dispatch();
+    Check(replies[0].accepted && characters.Status(preview_id).transient);
+    service.Post(DeleteCharacter{preview_id});dispatch();
+    invalidations=0; // the next assertions concern the original source replacement
 
     service.Post(ReadCharacterNpcActions{id}); // diagnostic failure cannot block ordinary control
     const auto old_action=service.Post(SelectCharacterAction{id,{ActionDomain::Exploration,NpcMotion{1}}});

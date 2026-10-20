@@ -15,7 +15,9 @@ SceneLayout CaptureSceneLayout(const SceneCharacters& registry,const std::string
     for(auto id:registry.Ids()) {
         const auto status=registry.Status(id);
         if(status.scene!=scene || status.deleting)continue;
-        const auto& plan=registry.Plan(id);SavedCharacter row;row.key=id;
+        const auto& plan=registry.Plan(id);
+        if(plan.persistence==CharacterPersistence::Session)continue;
+        SavedCharacter row;row.key=id;
         if(plan.source_intent)row.source=*plan.source_intent;
         else if(plan.package.source==SourceKind::Official && !plan.package.appearance && !plan.payload)
             row.source=BrowseNpc{plan.package.npc_id};

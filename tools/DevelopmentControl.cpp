@@ -135,7 +135,7 @@ Json Snapshot(const ApplicationSnapshot& source,bool include_catalog,bool includ
         }
     }
     for(const auto& c:source.characters) {
-        Json row={{"id",c.id},{"creations",c.creations},{"enabled",c.enabled},{"active",c.active},
+        Json row={{"id",c.id},{"creations",c.creations},{"enabled",c.enabled},{"active",c.active},{"transient",c.transient},
             {"presentation_phase",c.presentation_phase},{"battle_idle_state",c.battle_idle_state},
             {"revision",c.revision},{"active_revision",c.active_revision},{"creation_ready",c.creation_ready},{"creation_error",c.creation_error},
             {"retiring",c.retiring},{"pending_inputs",c.pending_inputs},{"error",c.error},{"npc_id",c.package.npc_id},{"scene",c.scene},
@@ -191,6 +191,13 @@ CharacterCommand ParseDevelopmentCommand(const Json& input) {
     if(op=="release_source")return ReleaseSource{Unsigned(input.at("source_request"))};
     if(op=="create_prepared") {
         AddPreparedCharacter value;value.source_request=Unsigned(input.at("source_request"));value.near_player=input.value("near_player",true);
+        value.transient=input.value("transient",false);
+        if(input.contains("task_catalog")) {
+            value.task_catalog=input.at("task_catalog").get<std::string>();
+            if(value.task_catalog.empty() || value.task_catalog.find('\0')!=std::string::npos)
+                throw std::invalid_argument("task_catalog must be a nonempty catalog ID");
+            value.transient=true;
+        }
         if(input.contains("position"))value.placement.position=Position(input.at("position"));
         if(input.contains("rotation")) {
             const auto& rotation=input.at("rotation");

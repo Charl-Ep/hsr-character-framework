@@ -2,6 +2,7 @@
 #include "SceneCharacterState.hpp"
 #include "CharacterSession.hpp"
 #include "CharacterControls.hpp"
+#include "../presentation/VisualProgramRuntime.hpp"
 #include <hksr/entity/MapNpcInputs.hpp>
 #include <hksr/presentation/PresentationContext.hpp>
 #include <hksr/runtime/OperationTrace.hpp>
@@ -39,7 +40,9 @@ public:
         create_controls_=std::move(create);player_=std::move(player);
     }
     void ConfigureProfiles(std::shared_ptr<const PresentationProfiles> profiles) {profiles_=std::move(profiles);}
-    void ConfigurePrograms(std::map<std::string,std::shared_ptr<const VisualProgramInput>> programs) {programs_=std::move(programs);}
+    void ConfigurePrograms(VisualProgramLibrary programs) {programs_=std::move(programs);}
+    // Select a catalog for a new session-only instance, before any native work.
+    void ConfigureTaskPreview(CharacterPlan&,const std::string& catalog) const;
     void ConfigureTiming(api::OperationTrace::Sink sink){timing_=std::move(sink);}
     void EnableTiming(bool enabled){timing_enabled_=enabled;}
     std::shared_ptr<const ControlSubmission> Place(std::uint64_t id,CharacterPlacement pose,bool relative);
@@ -100,7 +103,7 @@ private:
     api::PresentationContext::ControlFactory create_controls_;
     api::PresentationContext::PlayerResolver player_;
     std::shared_ptr<const PresentationProfiles> profiles_;
-    std::map<std::string,std::shared_ptr<const VisualProgramInput>> programs_;
+    VisualProgramLibrary programs_;
     void BindProfile(CharacterPlan& plan,std::uint64_t id) const;
     api::EntityOrigin VisualTarget(std::uint64_t id) const;
     void SubmitAction(Entry&);

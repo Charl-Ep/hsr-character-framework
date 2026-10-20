@@ -46,5 +46,6 @@ struct SceneCharacterStatus {
     std::string look_support;
     std::optional<api::CharacterOutfitStatus> outfit;
     std::optional<ActionIntentStatus> action;
+    bool transient=false;
 };
 }

@@ -59,6 +59,15 @@ void TestDevelopmentControl() {
     Check(std::get<BrowsePlayer>(std::get<PrepareSource>(ParseDevelopmentCommand({{"op","source_player"},{"player_id",1217},{"npc_id",77}})).source).key.id==1217);
     const auto create=std::get<AddPreparedCharacter>(ParseDevelopmentCommand({{"op","create_prepared"},{"source_request",12}}));
     Check(create.source_request==12 && create.near_player);
+    Check(!create.transient && create.task_catalog.empty());
+    const auto preview_creation=std::get<AddPreparedCharacter>(ParseDevelopmentCommand({{"op","create_prepared"},
+        {"source_request",12},{"task_catalog","fixture"}}));
+    Check(preview_creation.transient && preview_creation.task_catalog=="fixture");
+    Check(std::get<AddPreparedCharacter>(ParseDevelopmentCommand({{"op","create_prepared"},
+        {"source_request",12},{"transient",true}})).transient);
+    bool invalid_preview=false;
+    try {ParseDevelopmentCommand({{"op","create_prepared"},{"source_request",12},{"task_catalog",""}});}
+    catch(const std::invalid_argument&){invalid_preview=true;}Check(invalid_preview);
     const auto placed=std::get<AddPreparedCharacter>(ParseDevelopmentCommand({{"op","create_prepared"},{"source_request",12},
         {"near_player",false},{"position",{{"x",1},{"y",2},{"z",3}}},{"rotation",{{"x",0},{"y",0},{"z",0},{"w",1}}}}));
     Check(!placed.near_player && placed.placement.position.z==3 && placed.placement.rotation.w==1);

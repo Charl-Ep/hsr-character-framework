@@ -104,11 +104,19 @@ void ModelActionHandoff::Finish(const api::WorldFrame& frame,AppearanceServices 
 void ModelActionHandoff::Service(const api::WorldFrame& frame,AppearanceServices appearance,api::AnimationInputTypes types) {
     if(busy_ || status_.closed)return;
     busy_=true;struct Exit{bool& flag;~Exit(){flag=false;}} exit{busy_};
+    // Submission-time checks are insufficient for a queued/running task.
+    // Cancel only this actor's task ownership before another frame can dispatch
+    // its leaf operations, including a same-world exploration -> battle change.
+    if(tasks_ && (!OwnFrame(frame) || !frame.battle.read.returned || frame.battle.value))
+        tasks_->Reset(TaskExitReason::WorldLeft);
     actions_.ServiceEffects(frame);
     if(removing_ || Ended() || character_.Creation().removal_requested || character_.Creation().closed) {
         removing_=true;Finish(frame,appearance,types);return;
     }
-    if(!OwnFrame(frame)){character_.Service(frame,appearance,types);return;}
+    if(!OwnFrame(frame)){
+        if(tasks_)tasks_->Service(0,frame.sequence);
+        character_.Service(frame,appearance,types);return;
+    }
     try {
         if(desired_ && desired_->serial!=status_.servicing) {
             actions_.SetCompletionState(desired_->domain==ActionDomain::Alternate?initial_state_name_:std::string{});

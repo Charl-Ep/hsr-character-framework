@@ -65,7 +65,7 @@ void TestLayoutController() {
     visual_input->program=std::make_shared<VisualProgram>(ParseVisualProgram(R"({
         "format":"hksr.visual-program","id":"saved-program","source":"battle/config","scope":"scene","effects":{},
         "contexts":{"phase":{"restore":[]}},"actions":{"idle":{"state":"OfficialIdle","restart":true}}})"));
-    registry.ConfigurePrograms({{"battle/config",visual_input}});
+    registry.ConfigurePrograms({{{"battle/config",visual_input}},{}});
     unsigned removed=0;LayoutController controller(registry,catalog,io,[&](auto){++removed;});
     const SceneAddress mapA{"mapA",1},mapB{"mapB",2};
     auto tick=[&](const SceneAddress& scene) {
@@ -118,12 +118,19 @@ void TestLayoutController() {
     for(unsigned i=0;i<10;++i)tick(mapA);
     Check(registry.Ids()==ids && removed==0 && !controller.Snapshot().maps.at("mapA").error.empty(),
         "unavailable visual program destroyed the current layout");
+    CharacterPlan temporary;temporary.package.npc_id=77;temporary.persistence=CharacterPersistence::Session;
+    const auto preview=registry.Add("mapA",temporary);
+    registry.SetEnabled(preview,false);
+    const auto before_preview=EncodeSceneLayout(*store.Current("mapA"));
+    controller.Capture(true);io->Pump();controller.Advance(mapA);
+    Check(EncodeSceneLayout(*store.Current("mapA"))==before_preview,"session preview changed saved layout");
     controller.Execute({LayoutOperation::Load,"first"},"mapA",11);
     io->Pump();controller.Advance(mapB);
     for(unsigned i=0;i<6;++i)tick(mapB);
-    Check(registry.Ids()==ids,"noncurrent map replacement committed in wrong world");
+    auto with_preview=ids;with_preview.push_back(preview);
+    Check(registry.Ids()==with_preview,"noncurrent map replacement committed in wrong world");
     for(unsigned i=0;i<32;++i)tick(mapA);
-    Check(registry.Ids().size()==2 && registry.Ids()!=ids && removed==2,"explicit snapshot replacement failed");
+    Check(registry.Ids().size()==3 && registry.Contains(preview) && removed==2,"layout replacement affected session preview");
     const auto replacement=registry.Ids();
     for(auto id:replacement)registry.Delete(id);
     tick(mapA);tick(mapA);

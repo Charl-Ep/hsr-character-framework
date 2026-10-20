@@ -61,7 +61,8 @@ void LayoutController::Prepare(Map& map) {
     }
     if(pending)return;
     map.old.clear();map.added.clear();
-    for(auto id:characters_.Ids())if(characters_.Status(id).scene==map.incoming->scene)map.old.push_back(id);
+    for(auto id:characters_.Ids())if(characters_.Status(id).scene==map.incoming->scene &&
+        characters_.Plan(id).persistence==CharacterPersistence::Layout)map.old.push_back(id);
     // All file/source/action preparation completed before touching old actors.
     for(auto id:map.old){characters_.Delete(id);catalog_.ForgetCharacter(id);if(removed_)removed_(id);}
     map.phase=Phase::Removing;map.status.phase="removing";

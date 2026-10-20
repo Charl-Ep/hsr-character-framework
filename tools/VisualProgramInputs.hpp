@@ -6,7 +6,7 @@
 namespace hksr::research {
 // Optional development startup file. No engine reads, target creation or
 // action submission. Instance IDs resolve later through SceneCharacters.
-using VisualProgramInputs=std::map<std::string,std::shared_ptr<const framework::VisualProgramInput>>;
+using VisualProgramInputs=framework::VisualProgramLibrary;
 VisualProgramInputs ReadVisualProgramInputs(const std::filesystem::path& file);
 // Worker updates, engine-thread snapshots. Definitions stay fixed for the host
 // lifetime; only value inputs can change while a model is running.

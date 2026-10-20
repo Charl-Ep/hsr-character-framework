@@ -34,6 +34,13 @@ struct VisualProgramInput {
     std::function<std::vector<VisualProgramSignal>(std::uint64_t)> take_signals;
     VisualSpatialAnchors anchors;
 };
+// Source defaults and explicitly selected task catalogs are separate namespaces.
+// Registering a task catalog must not replace an existing source's visual scene.
+struct VisualProgramLibrary {
+    std::map<std::string,std::shared_ptr<const VisualProgramInput>> sources;
+    std::map<std::string,std::shared_ptr<const VisualProgramInput>> catalogs;
+    bool empty() const {return sources.empty() && catalogs.empty();}
+};
 // Prepared with the host, activated before model construction. Owns observers
 // and keeps retiring players until their effects and Timelines drain.
 class VisualProgramRuntime {

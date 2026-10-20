@@ -46,7 +46,11 @@ VisualProgramInputs ReadVisualProgramInputs(const std::filesystem::path& file) {
         }
         input->choices=row.value("choices",Json::object()).get<std::map<std::string,std::string>>();
         input->anchors=framework::ParseVisualSpatialAnchors(row.value("anchors",Json::object()).dump());
-        if(!result.emplace(input->program->source,input).second)throw std::invalid_argument("duplicate visual program source: "+input->program->source);
+        if(input->tasks) {
+            if(!result.catalogs.emplace(input->tasks->id,input).second)
+                throw std::invalid_argument("duplicate task catalog: "+input->tasks->id);
+        } else if(!result.sources.emplace(input->program->source,input).second)
+            throw std::invalid_argument("duplicate visual program source: "+input->program->source);
     }
     return result;
 }
@@ -63,12 +67,13 @@ framework::VisualProgramParameters VisualProgramOverrides::Read(std::uint64_t ch
 }
 VisualProgramInputs BindVisualProgramOverrides(VisualProgramInputs inputs,std::shared_ptr<VisualProgramOverrides> overrides) {
     if(!overrides)throw std::invalid_argument("visual input store absent");
-    for(auto& [source,original]:inputs) {
+    auto bind=[&](auto& entries){for(auto& [source,original]:entries) {
         (void)source;auto input=std::make_shared<framework::VisualProgramInput>(*original);
         input->read_parameters=[overrides](std::uint64_t character){return overrides->Read(character);};
         input->take_signals=[overrides](std::uint64_t character){return overrides->Take(character);};
         original=std::move(input);
-    }
+    }};
+    bind(inputs.sources);bind(inputs.catalogs);
     return inputs;
 }
 void VisualProgramOverrides::Push(std::uint64_t character,framework::VisualProgramSignal signal) {
