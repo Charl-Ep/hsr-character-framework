@@ -54,7 +54,7 @@ target_link_libraries(CharacterUi PUBLIC CharacterRuntime framework_imgui PRIVAT
 
 add_library(CharacterFramework SHARED src/host/Extension.cpp)
 if(HKSR_DEVELOPMENT)
-    target_sources(CharacterFramework PRIVATE tools/DevelopmentControl.cpp tools/VisualProgramInputs.cpp)
+    target_sources(CharacterFramework PRIVATE tools/DevelopmentControl.cpp tools/VisualProgramInputs.cpp tools/TaskCommands.cpp)
     target_link_libraries(CharacterFramework PRIVATE framework_json)
     target_compile_definitions(CharacterFramework PRIVATE HKSR_RESEARCH)
 endif()
@@ -78,7 +78,7 @@ if(BUILD_TESTING)
     if(HKSR_DEVELOPMENT)
         add_executable(DevelopmentControlTests tests/development/DevelopmentControlTestMain.cpp
             tests/development/DevelopmentControlTests.cpp tools/DevelopmentControl.cpp
-            tests/development/VisualProgramInputsTests.cpp tools/VisualProgramInputs.cpp)
+            tests/development/VisualProgramInputsTests.cpp tools/VisualProgramInputs.cpp tools/TaskCommands.cpp)
         framework_target(DevelopmentControlTests)
         target_link_libraries(DevelopmentControlTests PRIVATE framework_json)
         target_link_libraries(DevelopmentControlTests PRIVATE CharacterRuntime)

@@ -1,4 +1,5 @@
 #include <hksr/framework/presentation/VisualProgram.hpp>
+#include "VisualCodec.hpp"
 #include <nlohmann/json.hpp>
 #include <algorithm>
 #include <cmath>
@@ -142,9 +143,10 @@ void ContextInstructions(const std::vector<VisualInstruction>& steps) {
     }
 }
 }
-VisualProgram ParseVisualProgram(const std::string& text) {
-    const auto json=Json::parse(text);Fields(json,{"format","id","source","scope","effects","partners","actions","signals","contexts","phases","restore"});
-    Need(json.at("format")=="hksr.visual-program","unsupported visual program format");
+std::vector<VisualInstruction> visual_codec::Instructions(const Json& json,const VisualProgram& program) {
+    return hksr::framework::Instructions(json,program);
+}
+VisualProgram visual_codec::Resources(const Json& json) {
     VisualProgram out;out.id=Name(json.at("id"));out.source=Name(json.at("source"));out.scope=Name(json.at("scope"));
     Need(json.at("effects").is_object(),"visual effects must be an object");
     for(auto it=json.at("effects").begin();it!=json.at("effects").end();++it) {
@@ -227,6 +229,25 @@ VisualProgram ParseVisualProgram(const std::string& text) {
     if(json.contains("restore")) {
         out.restore=Instructions(json.at("restore"),out);ContextInstructions(*out.restore);
     }
+    if(json.contains("signals")) {
+        Need(json.at("signals").is_object(),"visual signals must be an object");
+        for(auto it=json.at("signals").begin();it!=json.at("signals").end();++it) {
+            VisualProgramSignalDefinition signal;
+            if(it.value().is_array())signal.instructions=Instructions(it.value(),out);
+            else {
+                Fields(it.value(),{"context","instructions"});signal.context=Name(it.value().at("context"));
+                Need(out.contexts.count(signal.context)!=0,"unknown signal context: "+signal.context);
+                signal.instructions=Instructions(it.value().at("instructions"),out);ContextInstructions(signal.instructions);
+            }
+            out.signals.emplace(Name(it.key()),std::move(signal));
+        }
+    }
+    return out;
+}
+VisualProgram ParseVisualProgram(const std::string& text) {
+    const auto json=Json::parse(text);Fields(json,{"format","id","source","scope","effects","partners","actions","signals","contexts","phases","restore"});
+    Need(json.at("format")=="hksr.visual-program","unsupported visual program format");
+    auto out=visual_codec::Resources(json);
     Need(json.at("actions").is_object() && !json.at("actions").empty(),"visual actions must be nonempty object");
     for(auto it=json.at("actions").begin();it!=json.at("actions").end();++it) {
         const auto& row=it.value();Fields(row,{"state","restart","enter","lanes","completion_state","complete_at","completion_at","after_completion"});
@@ -252,19 +273,6 @@ VisualProgram ParseVisualProgram(const std::string& text) {
             }
         }
         out.actions.emplace(Name(it.key()),std::move(action));
-    }
-    if(json.contains("signals")) {
-        Need(json.at("signals").is_object(),"visual signals must be an object");
-        for(auto it=json.at("signals").begin();it!=json.at("signals").end();++it) {
-            VisualProgramSignalDefinition signal;
-            if(it.value().is_array())signal.instructions=Instructions(it.value(),out);
-            else {
-                Fields(it.value(),{"context","instructions"});signal.context=Name(it.value().at("context"));
-                Need(out.contexts.count(signal.context)!=0,"unknown signal context: "+signal.context);
-                signal.instructions=Instructions(it.value().at("instructions"),out);ContextInstructions(signal.instructions);
-            }
-            out.signals.emplace(Name(it.key()),std::move(signal));
-        }
     }
     return out;
 }

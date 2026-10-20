@@ -89,10 +89,13 @@ set(HKSR_RUNTIME_SOURCES
     src/tasks/TaskSources.cpp
     src/tasks/TaskSequence.cpp
     src/tasks/TaskPresentation.cpp
+    src/tasks/TaskCatalog.cpp
+    src/tasks/TaskController.cpp
 
     # src/serialization
     src/serialization/PresentationProfileCodec.cpp
     src/serialization/VisualProgramCodec.cpp
+    src/serialization/TaskCatalogCodec.cpp
     src/serialization/SceneLayoutCodec.cpp
 )
 
@@ -164,4 +167,5 @@ set(HKSR_RUNTIME_TEST_SOURCES
     tests/tasks/TaskModelTests.cpp
     tests/tasks/TaskSequenceTests.cpp
     tests/tasks/TaskPresentationTests.cpp
+    tests/tasks/TaskCatalogTests.cpp
 )

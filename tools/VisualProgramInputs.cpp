@@ -1,4 +1,5 @@
 #include "VisualProgramInputs.hpp"
+#include <hksr/framework/tasks/TaskCatalog.hpp>
 #include <nlohmann/json.hpp>
 #include <fstream>
 #include <stdexcept>
@@ -29,7 +30,12 @@ VisualProgramInputs ReadVisualProgramInputs(const std::filesystem::path& file) {
         const auto filename=row.at("file").get<std::string>();
         if(filename.empty() || filename.find('\0')!=std::string::npos)throw std::invalid_argument("visual program filename missing");
         auto input=std::make_shared<framework::VisualProgramInput>();
-        input->program=std::make_shared<framework::VisualProgram>(framework::ParseVisualProgram(Read(file.parent_path()/std::filesystem::u8path(filename))));
+        const auto text=Read(file.parent_path()/std::filesystem::u8path(filename));
+        const auto format=Json::parse(text).value("format",std::string{});
+        if(format=="hksr.task-catalog") {
+            input->tasks=std::make_shared<const framework::TaskCatalog>(framework::ParseTaskCatalog(text));
+            input->program=input->tasks->visual;
+        } else input->program=std::make_shared<framework::VisualProgram>(framework::ParseVisualProgram(text));
         const auto targets=row.value("targets",Json::object());
         if(!targets.is_object())throw std::invalid_argument("visual targets must be an object");
         for(auto it=targets.begin();it!=targets.end();++it) {

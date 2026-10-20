@@ -50,6 +50,10 @@ bool VisualProgramPlayer::SequenceDrained(std::uint64_t token) const {
     const auto found=instruction_scopes_.find(token);
     return found==instruction_scopes_.end() || found->second->drained;
 }
+std::string VisualProgramPlayer::SequenceError(std::uint64_t token) const {
+    const auto found=instruction_scopes_.find(token);
+    return found==instruction_scopes_.end()?std::string{}:found->second->error;
+}
 void VisualProgramPlayer::ForgetSequence(std::uint64_t token) {
     if(!SequenceDrained(token))throw std::logic_error("visual instruction scope not drained");
     if(services_.forget_timelines)services_.forget_timelines(token);
@@ -62,6 +66,7 @@ void VisualProgramPlayer::ServiceSequences(bool advance) {
         if(scope->drained)continue;
         auto lifetime=scope->lifetime;const auto token=lifetime->token;
         auto issue=[&](const std::string& text) {
+            scope->error=text;
             for(const auto& request:scope->requests)if(!request->status->complete)
                 request->status->issues.push_back(text);
             status_.issues.push_back("sequence="+std::to_string(token)+": "+text);
@@ -92,6 +97,12 @@ void VisualProgramPlayer::ServiceSequences(bool advance) {
             if(!advance)continue;
             if(!scope->prepared) {
                 scope->prepared=true;
+                auto inputs=services_.select_inputs?services_.select_inputs():VisualProgramParameters{{},services_.choices,{}};
+                if(!Current({token,lifetime}))continue;
+                for(const auto& [key,value]:lifetime->inputs.targets)inputs.targets[key]=value;
+                for(const auto& [key,value]:lifetime->inputs.choices)inputs.choices[key]=value;
+                for(const auto& [key,value]:lifetime->inputs.anchors)inputs.anchors[key]=value;
+                lifetime->inputs=std::move(inputs);lifetime->choices=lifetime->inputs.choices;
                 if(services_.prepare_inputs)services_.prepare_inputs(lifetime->effects,lifetime->inputs,false);
                 if(!Current({token,lifetime}))continue;
                 attached_sequence_=token; // an older tail cannot detach this producer

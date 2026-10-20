@@ -1,4 +1,5 @@
 #include <hksr/framework/character/CharacterSession.hpp>
+#include <hksr/framework/presentation/VisualProgramRuntime.hpp>
 #include <stdexcept>
 
 namespace hksr::framework {
@@ -50,6 +51,12 @@ void CharacterSession::Create(const api::StoryCreateInput& input) {
     }
 }
 void CharacterSession::Remove() { removing_=true; desired_.reset(); if(baseline_)baseline_->Cancel(); }
+TaskControlResult CharacterSession::ControlTask(TaskControlInput input) {
+    if(removing_ || status_.closed || !handoff_)throw std::logic_error("task session is not active");
+    if(input.operation==TaskControlOperation::Select && desired_ && desired_->serial!=status_.submitted_action)
+        throw std::logic_error("model action change is pending");
+    return handoff_->ControlTask(std::move(input));
+}
 bool CharacterSession::Ended() const {
     return owner_.entity && (api::TrackedEntities().IsDisposed(owner_) ||
         api::TrackedEntities().Current(owner_.entity).generation!=owner_.generation);
@@ -67,7 +74,8 @@ void CharacterSession::StartHandoff(std::unique_ptr<api::ModelProfileRequest> re
             if(!services_.visual_program)throw std::logic_error("visual program runtime was not prepared");
             auto player=services_.visual_program({owner_,world_},*plan_.visual_program,plan_.presentation_profile);
             if(!player)throw std::runtime_error("visual program factory returned no player");
-            handoff_->ConfigureVisualProgram(std::move(player));
+            if(plan_.visual_program->tasks)handoff_->ConfigureTasks(plan_.visual_program->tasks,std::move(player));
+            else handoff_->ConfigureVisualProgram(std::move(player));
         }catch(const std::exception& e) {
             // This is not a baseline failure. Do not reconstruct a second
             // handoff or silently play without the explicitly requested scene.

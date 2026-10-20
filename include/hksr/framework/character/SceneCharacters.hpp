@@ -25,6 +25,8 @@ public:
     SceneCharacters& operator=(const SceneCharacters&)=delete;
     std::uint64_t Add(std::string scene,CharacterPlan plan,std::optional<PlacedAction> action={},CharacterPlacement placement={});
     std::uint64_t Select(std::uint64_t id,PlacedAction action);
+    // Transient developer control; never rewrites the saved layout intention.
+    TaskControlResult ControlTask(std::uint64_t id,std::uint64_t creation,TaskControlInput,const api::WorldFrame&);
     void SetEnabled(std::uint64_t id,bool enabled); // explicit suspension, not deletion
     void Delete(std::uint64_t id); // forget intent only after owned resources drain
     bool Contains(std::uint64_t id) const {return entries_.count(id)!=0;}

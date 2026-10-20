@@ -17,12 +17,49 @@ std::uint64_t ModelActionHandoff::Queue(ActionDomain domain,ActionRequest action
         throw std::invalid_argument("visual program requires its battle model domain");
     if(domain==ActionDomain::Alternate && !transition_->RequestStatus())
         throw std::logic_error("alternate source unavailable; exploration remains usable");
+    if(tasks_)tasks_->Reset(TaskExitReason::ActorLost);
     desired_=Intent{++status_.requested,domain,std::move(action)};
     if(domain==ActionDomain::Alternate && initial_state_name_.empty())
         status_.initialization_note="battle config has no readable initial state; automatic completion destination unavailable";
     return status_.requested;
 }
+void ModelActionHandoff::ConfigureTasks(std::shared_ptr<const TaskCatalog> catalog,std::shared_ptr<VisualProgramPlayer> scene) {
+    if(tasks_)throw std::logic_error("task catalog already configured");
+    if(!catalog || !scene)throw std::invalid_argument("task catalog and scene required");
+    TaskPresentationServices services;
+    services.animation=[this](const auto& participant)->std::optional<TaskAnimationEndpoint> {
+        if(participant.name!="body")throw std::invalid_argument("unknown owned task participant: "+participant.name);
+        if(removing_ || Ended())throw std::runtime_error("task actor ended");
+        if(status_.phase!=HandoffPhase::Ready || status_.ready_domain!=task_catalog_->domain)return {};
+        return BindTaskAnimation(actions_);
+    };
+    tasks_=std::make_unique<TaskController>(owner_.generation,catalog,scene,std::move(services));
+    task_catalog_=std::move(catalog);actions_.ConfigureVisualProgram(std::move(scene));
+}
+TaskControlResult ModelActionHandoff::ControlTask(TaskControlInput input) {
+    if(!tasks_)throw std::logic_error("no task catalog configured for this actor");
+    if(removing_ || Ended() || status_.closed)throw std::logic_error("task actor is closing");
+    TaskControlResult result;
+    if(input.operation==TaskControlOperation::Select) {
+        if(!input.selection)throw std::invalid_argument("task selection missing");
+        if(!active_ || !transition_->Status().controller_ready || !VisualReady(task_catalog_->domain) ||
+            status_.phase!=HandoffPhase::Ready || status_.ready_domain!=task_catalog_->domain ||
+            (desired_ && desired_->serial!=status_.servicing))
+            throw std::logic_error("task catalog model domain is not ready");
+        input.selection->query.participants={{"body"}};
+        result.selection=tasks_->Select(std::move(*input.selection));
+    } else if(input.operation==TaskControlOperation::Query) {
+        if(input.selection){input.selection->query.participants={{"body"}};result.selection=tasks_->Query(*input.selection);}
+        else for(const auto& [name,plan]:task_catalog_->tasks) {
+            (void)plan;TaskSelection selection{{task_catalog_->id,name}};selection.query.participants={{"body"}};
+            result.catalog.emplace(name,tasks_->Query(selection).query);
+        }
+    } else if(input.operation==TaskControlOperation::Finish)tasks_->RequestFinish();
+    else tasks_->Cancel();
+    result.status=tasks_->Status();result.contexts=tasks_->Context().Owners();return result;
+}
 void ModelActionHandoff::Remove() {
+    if(tasks_)tasks_->Close(TaskExitReason::Deleted);
     removing_=true;desired_.reset();actions_.CancelPending();transition_->Cancel();
 }
 bool ModelActionHandoff::Ended() const {
@@ -51,15 +88,17 @@ bool ModelActionHandoff::VisualReady(ActionDomain domain) const {
 void ModelActionHandoff::Fail(std::string message) {
     status_.phase=HandoffPhase::Failed;status_.error=std::move(message);status_.ready_domain.reset();
     actions_.CancelPending();
+    if(tasks_)tasks_->Reset(TaskExitReason::Failed);
 }
 void ModelActionHandoff::Finish(const api::WorldFrame& frame,AppearanceServices appearance,api::AnimationInputTypes types) {
     status_.phase=HandoffPhase::Closing;
     actions_.Close(frame);
+    if(tasks_) {tasks_->Close(TaskExitReason::ActorLost);tasks_->Service(0,frame.sequence);}
     transition_->Close(frame); // cancel model work before entity retirement
     character_.Remove();character_.Service(frame,appearance,types);
     if(Ended()){transition_->Close(frame);actions_.Close(frame);}
     status_.event_value_note=transition_->Status().event_value_note;
-    status_.closed=character_.Status().closed && actions_.Status().closed && transition_->Status().closed;
+    status_.closed=character_.Status().closed && actions_.Status().closed && transition_->Status().closed && (!tasks_ || tasks_->Drained());
     if(status_.closed)status_.phase=HandoffPhase::Closed;
 }
 void ModelActionHandoff::Service(const api::WorldFrame& frame,AppearanceServices appearance,api::AnimationInputTypes types) {
@@ -145,11 +184,15 @@ void ModelActionHandoff::Service(const api::WorldFrame& frame,AppearanceServices
             character_.Service(frame,appearance,types);
             if(interrupted())return;
             actions_.Service(frame,status_.ready_domain && VisualReady(*status_.ready_domain),appearance.assets.objects);
+            if(tasks_)tasks_->Service(frame.delta_time,frame.sequence);
             const auto& output=actions_.Status().last;
             if(output && status_.playback_serial && output->serial==status_.playback_serial &&
                 (!status_.output || status_.output->outcome==ActionOutcome::Waiting))status_.output=output;
         }else if(status_.phase==HandoffPhase::Loading || status_.phase==HandoffPhase::Initializing ||
-            status_.phase==HandoffPhase::Failed)character_.Service(frame,appearance,types);
+            status_.phase==HandoffPhase::Failed) {
+            character_.Service(frame,appearance,types);
+            if(tasks_)tasks_->Service(0,frame.sequence);
+        }
     }catch(const std::exception& error){Fail(error.what());}
 }
 }

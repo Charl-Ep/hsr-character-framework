@@ -96,6 +96,7 @@ void TestVisualPlayback();
 void TestTaskModel();
 void TestTaskSequence();
 void TestTaskPresentation();
+void TestTaskCatalog();
 void TestReadyPlayback();
 void TestSourceCatalog();
 void TestActionCatalog();
@@ -134,6 +135,7 @@ int main(int argc,char** argv) try {
     TestTaskModel();
     TestTaskSequence();
     TestTaskPresentation();
+    TestTaskCatalog();
     TestReadyPlayback();
     TestModelProfileInputs();
     TestOperationHistory();

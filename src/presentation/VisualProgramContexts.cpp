@@ -22,6 +22,12 @@ std::map<std::string,std::uint64_t> VisualProgramPlayer::ActiveContexts() const 
     for(const auto& [name,context]:contexts_)out.emplace(name,context->token);
     return out;
 }
+std::map<std::string,std::uint64_t> VisualProgramPlayer::ReadyContexts() const {
+    std::map<std::string,std::uint64_t> out;
+    if(status_.closing || end_pending_)return out;
+    for(const auto& [name,context]:contexts_)if(context->phase==ContextPhase::Active)out.emplace(name,context->token);
+    return out;
+}
 std::shared_ptr<const api::PhaseVisualConfigSources> VisualProgramPlayer::CurrentPhase() const {
     if(status_.closing || end_pending_)return {};
     std::shared_ptr<const api::PhaseVisualConfigSources> result;std::uint64_t latest=0;

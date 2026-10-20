@@ -27,6 +27,7 @@ public:
     void RequestFinish();
     const TaskExecutionStatus& Status() const;
     bool Drained() const;
+    bool YieldedControl() const; // no pending producer work, tails may remain
 private:
     struct State;
     std::unique_ptr<State> state_;

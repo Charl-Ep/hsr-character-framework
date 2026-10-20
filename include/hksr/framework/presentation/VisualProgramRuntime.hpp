@@ -9,6 +9,7 @@
 #include <hksr/managed/ManagedRoots.hpp>
 
 namespace hksr::framework {
+struct TaskCatalog;
 struct VisualProgramSignal {
     std::uint64_t generation=0,intent=0;
     std::string name;
@@ -17,6 +18,7 @@ struct VisualProgramSignal {
 // gameplay target selector or a fallback to the caster. Not layout data.
 struct VisualProgramInput {
     std::shared_ptr<const VisualProgram> program;
+    std::shared_ptr<const TaskCatalog> tasks;
     std::map<std::string,api::EntityOrigin> targets;
     std::map<std::string,std::string> choices;
     // Application instance IDs are resolved on the engine thread at submission,

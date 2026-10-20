@@ -69,6 +69,9 @@ struct TaskPresentation::State {
         }
     }
     void Pump() {
+        if(const auto error=visual->SequenceError(scope);!error.empty()) {
+            cancel_scope=true;execution->Fail("visual scope: "+error);
+        }
         std::vector<std::shared_ptr<Request>> snapshot;
         for(const auto& [id,request]:requests)snapshot.push_back(request);
         for(const auto& request:snapshot) {
@@ -104,7 +107,7 @@ struct TaskPresentation::State {
         const bool natural=execution->Status().reason==TaskExitReason::Completed && !cancel_scope;
         bool submitted=true;
         for(const auto& [id,request]:requests)submitted=submitted && (request->released || request->value.state.request_complete);
-        if((execution->Status().phase==TaskExecutionPhase::Draining || execution->Status().phase==TaskExecutionPhase::Finished) && (!natural || submitted))
+        if((execution->Status().phase==TaskExecutionPhase::Draining || execution->Status().phase==TaskExecutionPhase::Finished) && submitted)
             visual->EndSequence(scope,natural);
         if(execution->Drained() && visual->SequenceDrained(scope)) {
             visual->ForgetSequence(scope);forgotten=true;
@@ -137,4 +140,11 @@ void TaskPresentation::Stop(TaskExitReason reason){state_->execution->Stop(reaso
 void TaskPresentation::RequestFinish(){state_->execution->RequestFinish();}
 const TaskExecutionStatus& TaskPresentation::Status() const{return state_->execution->Status();}
 bool TaskPresentation::Drained() const{return state_->execution->Drained() && state_->forgotten;}
+bool TaskPresentation::YieldedControl() const {
+    const auto phase=Status().phase;
+    if(phase!=TaskExecutionPhase::Draining && phase!=TaskExecutionPhase::Finished)return false;
+    for(const auto& [id,request]:state_->requests)
+        if(!request->released && !request->value.state.request_complete)return false;
+    return true;
+}
 }

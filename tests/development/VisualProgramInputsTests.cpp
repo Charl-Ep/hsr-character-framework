@@ -1,4 +1,5 @@
 #include "../../tools/VisualProgramInputs.hpp"
+#include <hksr/framework/tasks/TaskCatalog.hpp>
 #include <chrono>
 #include <fstream>
 #include <stdexcept>
@@ -58,4 +59,16 @@ void TestVisualProgramInputs() {
     }) {
         write(text);bool failed=false;try{ReadVisualProgramInputs(file);}catch(const std::exception&){failed=true;}Check(failed);
     }
+    std::ofstream(directory/"scene.json") << R"({
+        "format":"hksr.task-catalog","id":"tasks","domain":"battle",
+        "visual":{"id":"scene","source":"character","scope":"test","effects":{}},
+        "sequences":{"idle":{"entry":{"op":"animation","request":"body","participant":"body","state":"StandBy"}}},
+        "tasks":{"idle":{"entry":"idle"}}
+    })";
+    write(R"({"programs":[{"file":"scene.json"}]})");
+    const auto task_inputs=ReadVisualProgramInputs(file);
+    Check(task_inputs.at("character")->tasks && task_inputs.at("character")->tasks->tasks.count("idle")==1);
+    Check(task_inputs.at("character")->program==task_inputs.at("character")->tasks->visual &&
+        task_inputs.at("character")->program->actions.empty());
+    Check(hksr::research::BindVisualProgramOverrides(task_inputs,overrides).at("character")->tasks==task_inputs.at("character")->tasks);
 }

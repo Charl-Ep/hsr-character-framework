@@ -1,6 +1,7 @@
 #pragma once
 #include "HandoffStatus.hpp"
 #include "../character/CharacterInstance.hpp"
+#include <hksr/framework/tasks/TaskController.hpp>
 #include <hksr/model/ModelTransition.hpp>
 #include <hksr/presentation/PresentationContext.hpp>
 
@@ -36,6 +37,8 @@ public:
     void RestoreVisualProgram(VisualProgramSnapshot value) {visual_restore_=std::move(value);}
     void ConfigurePresentation(std::shared_ptr<const PresentationProfile> profile,const std::string& phase={}) {actions_.ConfigurePresentation(std::move(profile),phase);}
     void ConfigureVisualProgram(std::shared_ptr<VisualProgramPlayer> program){actions_.ConfigureVisualProgram(std::move(program));}
+    void ConfigureTasks(std::shared_ptr<const TaskCatalog>,std::shared_ptr<VisualProgramPlayer>);
+    TaskControlResult ControlTask(TaskControlInput);
     const api::ModelRequestStatus* ModelRequest() const { return transition_->RequestStatus(); }
 private:
     bool Ended() const;
@@ -57,5 +60,7 @@ private:
     bool initial_requested_=false;
     HandoffStatus status_;
     std::optional<VisualProgramSnapshot> visual_restore_;
+    std::shared_ptr<const TaskCatalog> task_catalog_;
+    std::unique_ptr<TaskController> tasks_;
 };
 }

@@ -1,6 +1,6 @@
 # Task runtime
 
-The `tasks` module provides typed visual tasks, an execution kernel and adapters for owned animation and visual resources. Application selection, configuration loading, persistence and frontend integration are pending.
+The `tasks` module provides typed visual tasks, configuration loading, owned-resource execution and per-actor selection. Development commands exercise it through the application queue. User-facing task menus, HTTP endpoints and task-layout persistence are pending.
 
 ## Model
 
@@ -11,6 +11,8 @@ The `tasks` module provides typed visual tasks, an execution kernel and adapters
 | `TaskContext` | Per-actor phases, values, slot overrides and disable contributions |
 | `TaskSequenceExecution` | One execution's cursors, waits, request receipts and exit reason |
 | `TaskPresentation` | A sequence bound to owned animation players and a visual resource scope |
+| `TaskCatalog` | Authored tasks, sequences and shared visual resources for one model domain |
+| `TaskController` | Selection, configured successors, interruption and persistent context contributions |
 
 `BuildTaskSources` consumes `OfficialCatalog::ReadTaskConfig`. It preserves skills without ready poses and reports missing or ambiguous literal group owners. Inventory entries are not execution permissions.
 
@@ -48,3 +50,77 @@ Animation requests do not select an automatic successor. A completed non-loop st
 Submissions are asynchronous. Add explicit request waits for dependencies, including before reusing a request name. A visual creation instruction completing means the creation command was accepted, not that its effect finished. Effect controls retain and retry their exact pending receipts.
 
 Each task gets a resource scope using the existing effects, partner and Timeline owners. Natural completion can retain tails; cancellation ends that scope. Named contexts outlive individual tasks until explicitly exited or the scene closes. `TaskPresentation::Drained()` includes scope cleanup even after the sequence kernel has finished. Old scope cleanup cannot detach a newer scope's event producer.
+
+## Selection
+
+`TaskController` owns one catalog on an already-prepared actor/domain. `Select` queries the requested task and optional slot override without native calls. An unavailable selection leaves the running task unchanged. The latest queued selection wins; an interruption already in progress is allowed to finish before it starts.
+
+The controller waits for old producer work to be accepted or cancelled, not for independent visual tails to disappear. Final commands in a completed interruption branch are delivered before control passes. Natural completion uses only the configured `next` task; it does not infer StandBy. Successors are re-queried against the current context and at most one starts per frame.
+
+Visual contexts contribute values, phase, slot replacements and disables only after entry completes. Exit revokes those contributions. Precedence follows actual entry order. Removing a context restores earlier owners; no official combat values are changed.
+
+`Reset` cancels execution and leaves the visual scene for a domain/action change. `Close` also permanently closes the scene. Keep servicing until drained. A later task can reuse a reset controller.
+
+## Configuration
+
+`ParseTaskCatalog` reads `hksr.task-catalog`. `visual` uses the resource, context and signal fields of a visual program, without its `format` or `actions`. `sequences` hold compiled plans; `tasks` reference them. A task without `entry` remains queryable as unimplemented.
+
+```json
+{
+  "format": "hksr.task-catalog",
+  "id": "example",
+  "domain": "battle",
+  "visual": {
+    "id": "example-scene",
+    "source": "Config/Character/Example.json",
+    "scope": "example",
+    "effects": {}
+  },
+  "sequences": {
+    "gesture": {
+      "entry": {
+        "op": "serial",
+        "children": [
+          {"op": "animation", "request": "body", "participant": "body", "state": "Gesture"},
+          {"op": "wait_request", "request": "body"}
+        ]
+      }
+    }
+  },
+  "tasks": {
+    "gesture": {"entry": "gesture"}
+  }
+}
+```
+
+State names and resource paths must match the selected model. A sequence may also define `interruption`. Node `source` is optional provenance; omitted sources use their configuration path.
+
+| Node `op` | Fields |
+|---|---|
+| `serial`, `parallel` | `children` |
+| `animation` | `request`, `participant`, `state`; optional `layer`, `transition` |
+| `visual` | `request`, `instruction` using the existing visual instruction schema |
+| `wait_request` | `request`; optional `signal`: `submitted`, `accepted`, `performance` (default), `progress`, `drained`; `progress` requires its numeric value |
+| `wait_seconds` | `seconds` |
+| `wait_frame` | No additional fields |
+| `repeat` | `child`; `count` and/or `until_finish` |
+| `branch` | `condition`, `yes`, `no` |
+
+Task fields: `sources` (`document`/`field`), `inputs`, `requires`, `tags`, `entry`, and `next` (`task` plus optional `inputs`). Input definitions use `type` (`bool`, `integer`, `number`, `text`) and optional `default`. JSON integer and floating-point types are distinct. Requirements use `op`: `value` (`name`, `is`), `phase` (`is`), `participant` (`name`), or `unresolved` (`source`, `detail`).
+
+Top-level `contexts` binds visual-context names to `values`, `phase`, `slots` (`slot`/`task`) and `disables` (one of `task`, `slot`, `tag`, plus `reason`). Task references are local to the catalog. Unsupported fields and broken references are reported during loading.
+
+## Development control
+
+In a development build, `VISUAL_PROGRAMS.json` entries can point to task catalogs using the existing `file`, `targets`, `choices` and `anchors` fields. Catalogs bind by their visual source and model domain. One configured visual scene owns an actor's task resources; replacing a live resource catalog is not supported.
+
+The existing development command envelope accepts:
+
+- `task_query`: return current execution, context values and task availability; optional `catalog`/`task` queries one task.
+- `task_select`: requires `catalog` and `task`; accepts `inputs`, `slot`, `targets`, `choices`, `anchors`.
+- `task_finish`: finish the selected continuous task at its configured boundary.
+- `task_cancel`: run its interruption and cancel retiring tails.
+
+All require `character` and `creation` from the current snapshot. Selection requires the catalog's model domain to be ready. `body` binds the owned actor, and `partner:<key>` binds a declared visual partner. Commands run through `ApplicationService` on the exploration-world frame; they cannot target official battle actors.
+
+Transport acceptance is separate from task availability, execution and drain. Task preview does not replace the saved action intention. Full task selection and context persistence are not yet implemented.

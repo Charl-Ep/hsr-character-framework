@@ -90,9 +90,29 @@ TaskQueryResult TaskContext::Query(const TaskDefinition& task,const TaskQuery& q
         if(std::none_of(task.inputs.begin(),task.inputs.end(),[&](const auto& input){return input.name==name;}))
             reason(TaskAvailability::Unavailable,TaskReasonKind::InputType,name,"undeclared task input");
     }
-    // Explicit task inputs shadow persistent values for this execution only.
-    for(const auto& [name,value]:result.inputs)values.insert_or_assign(name,TaskResolvedValue{value,{},"input"});
-    for(const auto& requirement:task.requirements)std::visit([&](const auto& item) {
+    TaskQuery conditions=query;conditions.inputs=result.inputs;
+    for(const auto& requirement:task.requirements) {
+        const auto evaluated=Evaluate(requirement,conditions);
+        for(const auto& item:evaluated.reasons)reason(evaluated.availability,item.kind,item.source,item.detail);
+    }
+    for(const auto& owner:owners_)for(const auto& disable:owner.disables) {
+        const auto matches=std::visit([&](const auto& selector) {
+            using T=std::decay_t<decltype(selector)>;
+            if constexpr(std::is_same_v<T,TaskKey>)return selector==task.key;
+            else if constexpr(std::is_same_v<T,TaskSlot>)return query.slot && query.slot->value==selector.value;
+            else return std::find(task.tags.begin(),task.tags.end(),selector.name)!=task.tags.end();
+        },disable.selector);
+        if(matches)reason(TaskAvailability::Unavailable,TaskReasonKind::Disabled,owner.name,disable.reason);
+    }
+    return result;
+}
+TaskQueryResult TaskContext::Evaluate(const TaskRequirement& requirement,const TaskQuery& query) const {
+    TaskQueryResult result;auto values=Values();
+    auto reason=[&](TaskAvailability state,TaskReasonKind kind,std::string source,std::string detail) {
+        result.availability=state;result.reasons.push_back({kind,std::move(source),std::move(detail)});
+    };
+    for(const auto& [name,value]:query.inputs)values.insert_or_assign(name,TaskResolvedValue{value,{},"input"});
+    std::visit([&](const auto& item) {
         using T=std::decay_t<decltype(item)>;
         if constexpr(std::is_same_v<T,TaskValueEquals>) {
             const auto found=values.find(item.name);
@@ -108,15 +128,6 @@ TaskQueryResult TaskContext::Query(const TaskDefinition& task,const TaskQuery& q
                 reason(TaskAvailability::Unavailable,TaskReasonKind::Participant,item.participant.name,"participant is absent");
         } else reason(TaskAvailability::Unknown,TaskReasonKind::Unresolved,item.source,item.detail);
     },requirement);
-    for(const auto& owner:owners_)for(const auto& disable:owner.disables) {
-        const auto matches=std::visit([&](const auto& selector) {
-            using T=std::decay_t<decltype(selector)>;
-            if constexpr(std::is_same_v<T,TaskKey>)return selector==task.key;
-            else if constexpr(std::is_same_v<T,TaskSlot>)return query.slot && query.slot->value==selector.value;
-            else return std::find(task.tags.begin(),task.tags.end(),selector.name)!=task.tags.end();
-        },disable.selector);
-        if(matches)reason(TaskAvailability::Unavailable,TaskReasonKind::Disabled,owner.name,disable.reason);
-    }
     return result;
 }
 }

@@ -61,6 +61,7 @@ public:
     bool Observe(const TaskRequestReceipt&,const TaskRequestState&);
     void RequestFinish(); // lets an until_finish loop enter its normal successor
     void Stop(TaskExitReason); // actor/world loss skips authored interruption
+    void Fail(std::string); // scoped provider failure, including before first submit
     const TaskExecutionStatus& Status() const;
     bool Drained() const;
 private:

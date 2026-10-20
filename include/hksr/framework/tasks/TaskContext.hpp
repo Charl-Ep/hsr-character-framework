@@ -30,6 +30,7 @@ public:
     std::optional<std::string> Phase() const;
     TaskKey ResolveSlot(TaskSlot,const TaskKey& baseline) const;
     TaskQueryResult Query(const TaskDefinition&,const TaskQuery&) const;
+    TaskQueryResult Evaluate(const TaskRequirement&,const TaskQuery&) const;
 private:
     TaskContextView& Owner(TaskContextToken);
     std::uint64_t next_=0;

@@ -6,9 +6,12 @@
 
 namespace hksr::framework {
 void SceneCharacters::BindProfile(CharacterPlan& plan,std::uint64_t id) const {
-    if(!plan.visual_program)for(const auto& root:plan.action_sources)if(root.domain==ActionDomain::Alternate && root.source.kind==api::ActionConfigKind::Battle) {
+    if(!plan.visual_program)for(const auto& root:plan.action_sources) {
         const auto found=programs_.find(root.source.path);
-        if(found!=programs_.end()){plan.visual_program=found->second;break;}
+        if(found!=programs_.end() && (found->second->tasks?found->second->tasks->domain==root.domain:
+            root.domain==ActionDomain::Alternate && root.source.kind==api::ActionConfigKind::Battle)) {
+            plan.visual_program=found->second;break;
+        }
     }
     if(plan.visual_program) {
         auto input=std::make_shared<VisualProgramInput>(*plan.visual_program);
@@ -76,6 +79,14 @@ std::uint64_t SceneCharacters::Select(std::uint64_t id,PlacedAction action) {
     entry.action=std::move(action);entry.action_intent=++entry.next_action;
     entry.action_error.clear();entry.visual_restore_error.clear();SubmitAction(entry);
     return entry.action_intent;
+}
+TaskControlResult SceneCharacters::ControlTask(std::uint64_t id,std::uint64_t creation,TaskControlInput input,const api::WorldFrame& frame) {
+    auto& entry=Edit(id);
+    if(!frame.battle.read.returned || frame.battle.value)
+        throw std::logic_error("task previews require an exploration world");
+    if(!creation || entry.status.creations!=creation || !Active(id,frame))
+        throw std::logic_error("task command targets an inactive or replaced creation");
+    return entry.active->session->ControlTask(std::move(input));
 }
 void SceneCharacters::SubmitAction(Entry& entry) {
     if(!entry.action || !entry.active || closing_ || !entry.status.enabled ||

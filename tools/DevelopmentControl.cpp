@@ -1,5 +1,6 @@
 #include "DevelopmentControl.hpp"
 #include "DevelopmentProtocol.hpp"
+#include "TaskCommands.hpp"
 #include <cmath>
 #include <limits>
 
@@ -198,6 +199,7 @@ CharacterCommand ParseDevelopmentCommand(const Json& input) {
         if(input.contains("offset"))value.player_world_offset=Position(input.at("offset"));return value;
     }
     const auto id=Unsigned(input.at("character"));
+    if(op.compare(0,5,"task_")==0)return ParseTaskCommand(input);
     if(op=="observe")return ObserveCharacter{id};
     if(!id)throw std::invalid_argument("character must identify a framework-owned entry");
     if(op=="select")return BrowseCharacterActions{id};
@@ -331,9 +333,11 @@ std::vector<std::string> DevelopmentControl::Drain() {
         if constexpr(std::is_same_v<T,Json>)return row.dump();
         else {
             const auto& reply=row.value;
-            return Json{{"request_id",row.request},{"index",row.index},{"event","command_reply"},{"serial",reply.serial},
+            Json result={{"request_id",row.request},{"index",row.index},{"event","command_reply"},{"serial",reply.serial},
                 {"accepted",reply.accepted},{"character",reply.character},{"source_request",reply.source_request},
-                {"action_intent",reply.action_intent},{"operation",reply.operation},{"error",reply.error}}.dump();
+                {"action_intent",reply.action_intent},{"operation",reply.operation},{"error",reply.error}};
+            if(reply.task)result["task"]=TaskResult(*reply.task);
+            return result.dump();
         }
     },record));
     return result;

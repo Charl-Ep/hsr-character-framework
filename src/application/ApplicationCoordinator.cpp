@@ -62,6 +62,9 @@ void ApplicationCoordinator::Execute(CharacterCommand command,CommandReply& repl
             if(value.id)(void)characters_.Plan(value.id);
             reply.character=value.id;runtime_.observe_character(value.id);
         }
+        else if constexpr(std::is_same_v<T,ControlCharacterTask>) {
+            reply.character=value.id;reply.task=characters_.ControlTask(value.id,value.creation,std::move(value.input),frame);
+        }
         else if constexpr(std::is_same_v<T,ReadCharacterControllerActions>) {
             (void)characters_.Plan(value.id);reply.character=value.id;runtime_.controller_actions(value.id);
         }

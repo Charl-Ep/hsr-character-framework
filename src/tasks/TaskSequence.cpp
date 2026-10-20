@@ -101,8 +101,12 @@ struct TaskSequenceExecution::State {
         }
         status.retained_requests=requests.size();
     }
-    void Close(TaskExitReason reason) {
-        status.reason=reason;status.phase=TaskExecutionPhase::Draining;ReleaseAll(reason);Collect();
+    void Close(TaskExitReason reason,bool finished_branch=false) {
+        status.reason=reason;status.phase=TaskExecutionPhase::Draining;
+        // An interruption branch can end by submitting a final cleanup command.
+        // Its own completed work finishes normally even though the original
+        // task was replaced. Prior requests were cancelled when it began.
+        ReleaseAll(finished_branch?TaskExitReason::Completed:reason);Collect();
     }
     void Stop(TaskExitReason reason) {
         if(status.phase==TaskExecutionPhase::Finished)return;
@@ -235,7 +239,7 @@ void TaskSequenceExecution::Advance(double seconds,std::uint64_t frame) {
     try {
         const auto result=s.Drive(s.cursor,seconds,frame);
         if(s.pending_stop)s.FlushStop();
-        else if(result.done)s.Close(s.status.reason.value_or(TaskExitReason::Completed));
+        else if(result.done)s.Close(s.status.reason.value_or(TaskExitReason::Completed),true);
     }catch(const std::exception& e){s.status.issues.push_back(e.what());s.pending_stop.reset();s.Close(TaskExitReason::Failed);}
     s.FlushStop();
     s.CollectRequests();
@@ -262,6 +266,10 @@ bool TaskSequenceExecution::Observe(const TaskRequestReceipt& receipt,const Task
     s.Collect();return true;
 }
 void TaskSequenceExecution::RequestFinish(){state_->status.finish_requested=true;}
+void TaskSequenceExecution::Fail(std::string error) {
+    if(state_->status.issues.empty() || state_->status.issues.back()!=error)state_->status.issues.push_back(std::move(error));
+    Stop(TaskExitReason::Failed);
+}
 void TaskSequenceExecution::Stop(TaskExitReason reason) {
     auto& s=*state_;
     if(reason==TaskExitReason::Completed)throw std::invalid_argument("completion comes from task execution");

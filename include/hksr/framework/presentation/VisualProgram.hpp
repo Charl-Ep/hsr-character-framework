@@ -146,6 +146,7 @@ public:
     std::shared_ptr<VisualEffectContext> Context() const {return context_;}
     std::uint64_t ContextToken(const std::string&) const;
     std::map<std::string,std::uint64_t> ActiveContexts() const;
+    std::map<std::string,std::uint64_t> ReadyContexts() const; // excludes entry/exit in flight
     // Last-entered phase owner wins; removing it restores the prior live owner.
     std::shared_ptr<const api::PhaseVisualConfigSources> CurrentPhase() const;
     bool OwnsPhases() const {return !program_->phases.empty();}
@@ -161,6 +162,7 @@ public:
     void CancelInstruction(std::uint64_t,const std::shared_ptr<const VisualInstructionStatus>&);
     void EndSequence(std::uint64_t,bool natural);
     bool SequenceDrained(std::uint64_t) const;
+    std::string SequenceError(std::uint64_t) const;
     void ForgetSequence(std::uint64_t); // only after drain
     std::optional<AnimationRequestEndpoint> PartnerAnimation(const std::string& key) const;
 private:
@@ -192,6 +194,7 @@ private:
         std::shared_ptr<Lifetime> lifetime;
         std::vector<std::shared_ptr<InstructionRequest>> requests;
         bool prepared=false,ending=false,natural=false,released=false,drained=false;
+        std::string error;
     };
     std::map<std::uint64_t,std::shared_ptr<InstructionScope>> instruction_scopes_;
     std::uint64_t attached_sequence_=0;

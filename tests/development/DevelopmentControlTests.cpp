@@ -172,4 +172,23 @@ void TestDevelopmentControl() {
     Check(signal_results.size()==3 && signals.size()==2 && pending.size()==queued_before);
     Check(signals[0].first==7 && signals[0].second.generation==11 && signals[0].second.intent==3 && signals[0].second.name=="enter_view");
     Check(Json::parse(signal_results[0])["event"]=="visual_signal_queued" && Json::parse(signal_results[1])["event"]=="command_error");
+    request["request_id"]="task-control";
+    request["commands"]=Json::array({
+        {{"op","task_select"},{"character",7},{"creation",3},{"catalog","test"},{"task","attack"},{"inputs",{{"power",2},{"enhanced",true}}}},
+        {{"op","task_query"},{"character",7},{"creation",3}},
+        {{"op","task_finish"},{"character",7},{"creation",3}},
+        {{"op","task_cancel"},{"character",7},{"creation",0}}});
+    preview.Submit(request.dump());auto task_rows=preview.Drain();
+    Check(task_rows.size()==4 && Json::parse(task_rows.back())["event"]=="command_error");
+    const auto& task=std::get<ControlCharacterTask>(pending[pending.size()-3].command);
+    Check(task.id==7 && task.creation==3 && task.input.selection->task.name=="attack");
+    Check(std::get<std::int64_t>(task.input.selection->query.inputs.at("power"))==2);
+    Check(std::get<bool>(task.input.selection->query.inputs.at("enhanced")));
+    CommandReply task_reply;task_reply.accepted=true;task_reply.task.emplace();
+    task_reply.task->status.current=TaskKey{"test","attack"};
+    task_reply.task->status.execution=TaskExecutionStatus{};
+    task_reply.task->contexts.push_back({{3},"phase",{{"enhanced",true}},std::string("boosted")});
+    pending.back().reply(task_reply);task_rows=preview.Drain();
+    Check(task_rows.size()==1 && Json::parse(task_rows[0])["task"]["current"]["name"]=="attack");
+    Check(Json::parse(task_rows[0])["task"]["contexts"][0]["values"]["enhanced"]==true);
 }

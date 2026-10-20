@@ -656,6 +656,61 @@ void TestModelProfileInputs() {
         model.child=&string_type; load_state=5; changing=false; animator_present=true; animator_ready=true;
     };
     {
+        reset_baseline();framework::CharacterPlan plan;plan.package=package;
+        auto input=std::make_shared<framework::VisualProgramInput>();
+        input->tasks=std::make_shared<const framework::TaskCatalog>(framework::ParseTaskCatalog(R"({
+          "format":"hksr.task-catalog","id":"owned","domain":"exploration",
+          "visual":{"id":"owned-visual","source":"test","scope":"task","effects":{}},
+          "sequences":{"play":{"entry":{"op":"serial","children":[
+            {"op":"animation","request":"body","participant":"body","state":"SomeState"},
+            {"op":"wait_request","request":"body"}]}}},
+          "tasks":{"play":{"entry":"play"}}
+        })"));
+        input->program=input->tasks->visual;plan.visual_program=input;
+        auto configured=session_services;std::shared_ptr<framework::VisualProgramPlayer> player;
+        configured.visual_program=[&](api::EntityOrigin origin,const framework::VisualProgramInput& value,const auto&) {
+            Check(origin.token.entity==entity_ptr && origin.world==world_ptr);
+            framework::VisualProgramServices callbacks;
+            callbacks.effects=std::make_shared<api::PresentationEffects>(api::EffectRequestServices{{},api::EffectAccess({}),{},{},{}});
+            callbacks.create=[](auto&,const auto&,const auto&)->framework::VisualEffectId{throw std::logic_error("unexpected effect");};
+            player=std::make_shared<framework::VisualProgramPlayer>(value.program,std::move(callbacks));return player;
+        };
+        framework::SceneCharacters registry(configured,[&](auto& value,const auto&,const auto&){value.Create(create);});
+        auto current=frame;current.manager={create.manager,{true,0}};current.battle={false,{true,0}};current.sequence=1000;
+        observed_hash=37;observed_time=0;
+        const framework::SceneAddress address{"task-map",1};
+        const auto id=registry.Add(address.key,plan,framework::PlacedAction{Domain::Exploration,framework::NpcMotion{18}});
+        auto tick=[&]{++current.sequence;registry.Service(current,address,appearance,types);};
+        tick();const auto epoch=registry.Status(id).creations;
+        framework::TaskControlInput select{framework::TaskControlOperation::Select,framework::TaskSelection{{"owned","play"}}};
+        const auto before=battle_plays;
+        framework::ApplicationService application;
+        framework::ApplicationCoordinator coordinator(application,registry,nullptr,{},{});
+        application.Post(framework::ControlCharacterTask{id,epoch,select});
+        auto batch=application.TakeCommands(false);
+        Check(batch.size()==1 && battle_plays==before);
+        coordinator.Dispatch(batch.front(),address,current,false);
+        const auto replies=application.TakeReplies();
+        Check(replies.size()==1 && replies[0].accepted && replies[0].task->selection->intent!=0 && battle_plays==before);
+        tick();tick();
+        Check(battle_plays==before+1);
+        Check(registry.ControlTask(id,epoch,{},current).status.execution->phase==framework::TaskExecutionPhase::Running);
+        // These developer tasks must not overwrite the persisted normal action.
+        Check(std::get<framework::NpcMotion>(registry.DesiredAction(id)->request).id==18);
+        observed_time=1.1f;tick();tick();
+        Check(registry.ControlTask(id,epoch,{},current).status.execution->phase==framework::TaskExecutionPhase::Finished);
+        Check(battle_plays==before+1); // no implicit idle selection
+        observed_time=0;registry.ControlTask(id,epoch,select,current);tick();tick();
+        registry.Select(id,{Domain::Exploration,framework::NpcMotion{18}});tick();
+        const auto stopped=battle_plays;tick();Check(battle_plays==stopped);
+        registry.ControlTask(id,epoch,select,current);tick();tick();Check(battle_plays==stopped+1);
+        bool stale=false;try{registry.ControlTask(id,epoch+1,select,current);}catch(const std::logic_error&){stale=true;}Check(stale);
+        auto battle=current;battle.battle={true,{true,0}};bool rejected_battle=false;
+        try{registry.ControlTask(id,epoch,select,battle);}catch(const std::logic_error&){rejected_battle=true;}Check(rejected_battle);
+        registry.Delete(id);tick();tick();
+        Check(registry.Ids().empty() && player->Drained() && roots.empty());
+    }
+    {
         reset_baseline();
         framework::PreparedSource prepared; prepared.character=package; prepared.finished=true;
         auto plan=framework::CharacterPlan::FromPrepared(prepared);
