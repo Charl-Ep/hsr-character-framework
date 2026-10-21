@@ -55,6 +55,11 @@ void Protocol() {
     auto ready=http::Command({{"op","action"},{"character","5"},{"revision","9"},
         {"action",{{"kind","ready"},{"source","config"},{"pose","2"}}}});
     Check(std::get<ReadyActionKey>(std::get<SelectCatalogAction>(ready).action.key).pose==2,"ready selection");
+    auto reaction=http::Command({{"op","action"},{"character",5},{"revision",9},
+        {"action",{{"kind","visual_behavior"},{"source","config"},{"flag",28},{"recover",true}}}});
+    Check(std::get<VisualActionKey>(std::get<SelectCatalogAction>(reaction).action.key).recover,"recovery selection");
+    for(const Json flag:{Json(1.5),Json(true),Json(4294967295ULL)})Reject([&]{http::Command({{"op","action"},{"character",5},{"revision",9},
+        {"action",{{"kind","visual_behavior"},{"source","config"},{"flag",flag},{"recover",false}}}});});
     const auto program=http::Command({{"op","action"},{"character","5"},
         {"action",{{"kind","program"},{"program","fixture"},{"action","alternative"},{"choices",{{"branch","b"}}}}}});
     const auto& program_request=std::get<ProgramAction>(std::get<SelectCharacterAction>(program).action.request);
@@ -92,8 +97,19 @@ void Protocol() {
     actions->revision=4;actions->actions.finished=true;actions->actions.proposals.push_back({ActionDomain::Alternate,"StandBy",{}, {}});
     auto set=std::make_shared<ReadyActions>();set->source="battle/config";set->poses.resize(1);set->poses[0].label="Skill ready";
     actions->actions.ready_actions.push_back(set);catalog->characters[3]=actions;state.catalog=catalog;state.characters.resize(1);state.characters[0].id=3;
+    VisualState visual;visual.character_config="battle/config";visual.source="global";visual.value.flag={true,28,{}};
+    visual.value.occur.resolved_state={true,"Stagger",{}};visual.value.loop.resolved_state={true,"Stagger_Loop",{}};
+    visual.value.recover.resolved_state={true,"Stagger_Recover",{}};
+    visual.value.occur.transition=visual.value.loop.transition=visual.value.recover.transition={true,0,{}};
+    visual.expression={true,"Emo_Stun",{}};visual.expression_transition={true,0.2f,{}};
+    actions->actions.visual_states.push_back(visual);
     const auto list=http::Actions(state,3);Check(list["revision"]=="4" && list["ready"].size()==1 && list["configured"].size()==1,"per-character action view");
     Check(list["domain_ready"]["exploration"]==true && list["domain_ready"]["battle"]==true,"settled action domains");
+    Check(list["reactions"].size()==2 && list["reactions"][0]["available"]==true &&
+        list["reactions"][0]["expression"]=="Emo_Stun","shared reactions exposed");
+    const auto reaction_command=http::Command({{"op","action"},{"character",3},{"revision",4},{"action",list["reactions"][1]["action"]}});
+    const auto resolved=ResolveCatalogAction(*actions,std::get<SelectCatalogAction>(reaction_command).action);
+    Check(std::get<VisualState>(resolved.request).recover,"published reaction round trip through actual resolver");
     state.characters[0].visual_program="fixture";state.characters[0].program_actions={{"first","SameBody"},{"second","SameBody"}};
     const auto program_list=http::Actions(state,3).at("program");
     Check(program_list.size()==2 && program_list[0]["action"]["action"]=="first" && program_list[1]["action"]["action"]=="second","shared body retains both program entries");

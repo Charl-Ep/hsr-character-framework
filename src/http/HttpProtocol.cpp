@@ -218,6 +218,13 @@ CharacterCommand Command(const Json& v) {
         if(kind=="ready") {
             Fields(a,{"kind","source","pose"});return SelectCatalogAction{id,{revision,ReadyActionKey{Text(a.at("source")),static_cast<std::size_t>(Id(a.at("pose")))}}};
         }
+        if(kind=="visual_behavior") {
+            Fields(a,{"kind","source","flag","recover"});const auto& flag=a.at("flag");
+            if(!flag.is_number_integer() || (flag.is_number_unsigned()?flag.get<std::uint64_t>()>INT32_MAX:
+                flag.get<std::int64_t>()<INT32_MIN || flag.get<std::int64_t>()>INT32_MAX))
+                throw std::invalid_argument("visual behavior flag must be int32");
+            return SelectCatalogAction{id,{revision,VisualActionKey{Text(a.at("source")),flag.get<std::int32_t>(),a.at("recover").get<bool>()}}};
+        }
         throw std::invalid_argument("unknown action kind");
     }
     throw std::invalid_argument("unknown command op");
@@ -251,7 +258,7 @@ Json Actions(const ApplicationSnapshot& s,std::uint64_t character) {
     const SceneCharacterStatus* actor=nullptr;for(const auto& c:s.characters)if(c.id==character){actor=&c;break;}
     if(!actor)throw std::out_of_range("character not found");
     Json out={{"character",std::to_string(character)},{"available",!actor->program_actions.empty()},{"revision","0"},{"finished",false},
-        {"configured",Json::array()},{"ready",Json::array()},{"npc",Json::array()},{"program",Json::array()}};
+        {"configured",Json::array()},{"ready",Json::array()},{"npc",Json::array()},{"program",Json::array()},{"reactions",Json::array()}};
     for(const auto& [key,state]:actor->program_actions)out["program"].push_back({
         {"action",{{"kind","program"},{"program",actor->visual_program},{"action",key}}},{"state",state}});
     if(const auto* c=s.catalog?s.catalog->Actions(character):nullptr) {
@@ -259,6 +266,15 @@ Json Actions(const ApplicationSnapshot& s,std::uint64_t character) {
         out["domain_ready"]={{"exploration",c->actions.Ready(ActionDomain::Exploration)},
             {"battle",c->actions.Ready(ActionDomain::Alternate)}};
         for(const auto& p:c->actions.proposals)out["configured"].push_back(Configured(p.domain,p.state));
+        for(const auto& row:c->actions.visual_states)if(row.value.flag.available)for(bool recover:{false,true}) {
+            const auto query=QueryVisualAction(row,recover);
+            out["reactions"].push_back({{"action",{{"kind","visual_behavior"},{"source",row.character_config},
+                {"flag",row.value.flag.value},{"recover",recover}}},{"available",query.available},{"issues",query.issues},
+                {"body_source",row.source},{"expression_source",row.expression_source},
+                {"occur",row.value.occur.resolved_state.value},{"loop",row.value.loop.resolved_state.value},
+                {"recovery",row.value.recover.resolved_state.value},{"expression",row.expression.value},
+                {"scope",{"body","expression","blink"}}});
+        }
         for(const auto& set:c->actions.ready_actions)for(std::size_t i=0;i<set->poses.size();++i) {
             const auto& pose=set->poses[i];Json attacks=Json::array();
             for(const auto* a:ReadyAttacks(c->actions,*set,pose))attacks.push_back(Configured(a->domain,a->state));

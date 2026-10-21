@@ -74,6 +74,36 @@ void TestSceneLayout() {
     ReadyPose other;other.state="Other";other.skill_name="Skill01";ready->poses.push_back(other);
     ReadyPose pose;pose.state="Ready";pose.skill_name="Skill02";ready->poses.push_back(pose);
     catalog.ready_actions.push_back(ready);
+    VisualState reaction;reaction.character_config="official/config";reaction.source="global";reaction.value.flag={true,28,{}};
+    reaction.value.occur.resolved_state={true,"Stagger",{}};reaction.value.loop.resolved_state={true,"Stagger_Loop",{}};
+    reaction.value.recover.resolved_state={true,"Stagger_Recover",{}};
+    reaction.value.occur.transition=reaction.value.loop.transition=reaction.value.recover.transition={true,0.15f,{}};
+    reaction.expression={true,"Emo_Stun",{}};reaction.expression_transition={true,0.2f,{}};
+    auto no_face=reaction;no_face.value.flag.value=6;no_face.expression.value.clear();
+    catalog.visual_states={reaction,no_face};
+    const VisualActionKey enter_key{"official/config",28,false},recover_key{"official/config",28,true};
+    auto reacting=data;reacting.characters[1].action=enter_key;
+    Check(SameLayout(reacting,DecodeSceneLayout(EncodeSceneLayout(reacting))));
+    auto recovering=reacting;recovering.characters[1].action=recover_key;Check(!SameLayout(reacting,recovering));
+    Check(std::get<VisualState>(RestoreLayoutAction(recover_key,catalog)->request).recover);
+    // Shared body names never merge different official flags/expressions.
+    Check(ResolveVisualAction(catalog,enter_key).expression.value=="Emo_Stun");
+    Check(ResolveVisualAction(catalog,{"official/config",6,false}).expression.value.empty());
+    Reject([&]{ResolveVisualAction(catalog,{"another/config",28,false});});
+    auto duplicate=catalog;duplicate.visual_states.push_back(reaction);Reject([&]{ResolveVisualAction(duplicate,enter_key);});
+    auto incomplete=reaction;incomplete.value.loop.resolved_state.available=false;
+    Check(!QueryVisualAction(incomplete,false).available && QueryVisualAction(incomplete,true).available);
+    incomplete=reaction;incomplete.value.occur.resolved_state.value.clear();incomplete.value.loop.resolved_state.value.clear();
+    Check(!QueryVisualAction(incomplete,false).available); // material-only is not a fake playable animation
+    // A complete reaction source doesn't depend on the rest of the skill graph.
+    auto reaction_pending=catalog;reaction_pending.pending_domains.insert(ActionDomain::Alternate);
+    CharacterActionCatalog reaction_view{37,reaction_pending};
+    Check(std::get<VisualState>(ResolveCatalogAction(reaction_view,{37,enter_key}).request).expression.value=="Emo_Stun");
+    Reject([&]{ResolveCatalogAction(reaction_view,{36,enter_key});});
+    Check(std::get<VisualState>(RestoreLayoutAction(enter_key,reaction_pending)->request).value.flag.value==28);
+    hksr::api::VisualConfigSources read_source;read_source.character_config="official/config";
+    reaction_pending.visual_sources.push_back(read_source);
+    Check(VisualActionSourceReady(reaction_pending,"official/config") && !VisualActionSourceReady(reaction_pending,"other"));
     auto restored=RestoreLayoutAction(data.characters[1].action,catalog);
     Check(std::get<ReadyState>(restored->request).pose==1); // not a persisted old array index
     ready->poses.push_back(pose);Reject([&]{RestoreLayoutAction(data.characters[1].action,catalog);});ready->poses.pop_back();
@@ -107,6 +137,10 @@ void TestSceneLayout() {
     Check(CaptureSceneLayout(scene,data.scene).characters.size()==1);
     scene.Select(id,{ActionDomain::Exploration,AnimatorState{"IdleShow",0,0}});
     Check(std::get<SavedConfiguredAction>(*CaptureSceneLayout(scene,data.scene).characters[0].action).state=="IdleShow");
+    scene.Select(id,{ActionDomain::Alternate,reaction});
+    const auto reaction_layout=CaptureSceneLayout(scene,data.scene);
+    Check(std::get<VisualActionKey>(*reaction_layout.characters[0].action).flag==28);
+    Check(SameLayout(reaction_layout,DecodeSceneLayout(EncodeSceneLayout(reaction_layout))));
     auto program=std::make_shared<VisualProgram>();program->id="fixture";
     program->actions["first"].state=program->actions["second"].state="SameBody";
     auto input=std::make_shared<VisualProgramInput>();input->program=program;plan.visual_program=input;

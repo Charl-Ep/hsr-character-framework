@@ -58,7 +58,7 @@ private:
     void Complete(const api::WorldFrame& frame,api::ManagedObjects& objects);
     void StartVisual(const VisualState& request,void* animator,void* style,const api::WorldFrame& frame,
         api::ManagedObjects& objects,ActionReceipt& receipt);
-    void TickVisual(void* animator,void* style,const api::WorldFrame& frame);
+    void TickVisual(void* animator,void* style,const api::WorldFrame& frame,api::ManagedObjects& objects);
     void ReleaseVisual(void* animator);
     void StartReady(const ReadyState& request,void* animator,void* style,const api::WorldFrame& frame,
         api::ManagedObjects& objects,ActionReceipt& receipt);
@@ -111,6 +111,7 @@ private:
         std::shared_ptr<api::ExpressionOverride> expression;
         std::shared_ptr<api::BlinkOverride> blink;
         std::uint64_t boundary=0;
+        std::uint64_t serial=0;
     };
     std::optional<VisualPlayback> visual_;
     bool visual_cancelled_=false;

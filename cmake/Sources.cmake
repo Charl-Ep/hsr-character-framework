@@ -38,6 +38,7 @@ set(HKSR_RUNTIME_SOURCES
 
     # src/catalog
     src/catalog/ActionCatalog.cpp
+    src/catalog/VisualActionCatalog.cpp
     src/catalog/CatalogBrowser.cpp
     src/catalog/OfficialCharacterFamilies.cpp
     src/catalog/OfficialSourcePreferences.cpp

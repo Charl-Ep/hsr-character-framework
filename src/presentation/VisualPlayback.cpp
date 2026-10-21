@@ -9,6 +9,7 @@ std::optional<VisualState> ResolveVisualState(const api::VisualConfigSources& so
     for(const auto* config:{&sources.defaults,&sources.character})for(const auto& row:config->behaviors.rows)
         if(row.flag.available && row.flag.value==flag) {
             VisualState value;value.source=config->source;value.value=row;value.recover=recover;
+            value.character_config=sources.character_config;
             value.expression_source=sources.defaults.source;value.expression_transition=sources.expression_transition;
             value.expression={true,"",{}};
             if(!sources.defaults.loaded || !sources.defaults.behaviors.enumerated)value.expression={false,"","global expression table unread"};
@@ -56,7 +57,7 @@ void ActionPlayback::StartVisual(const VisualState& input,void* animator,void* s
     }
     const auto revision=intent_revision_;
     auto live=[&]{return !Ended() && !status_.closing && revision==intent_revision_;};
-    VisualPlayback next;next.request=request;next.animator=animator;next.phase=request.recover?2:0;next.boundary=frame.sequence;
+    VisualPlayback next;next.request=request;next.animator=animator;next.phase=request.recover?2:0;next.boundary=frame.sequence;next.serial=receipt.serial;
     if(!request.recover && !request.expression.available)throw std::runtime_error("configured expression unread: "+request.expression.error);
     const int begin=request.recover?2:0,end=request.recover?3:2;
     for(int i=begin;i<end;++i) {
@@ -111,7 +112,7 @@ void ActionPlayback::StartVisual(const VisualState& input,void* animator,void* s
     status_.visual_note=request.source+" flag="+std::to_string(request.value.flag.value)+
         (request.recover?" recovery requested":" occurrence/hold requested")+"; body/expression only";
 }
-void ActionPlayback::TickVisual(void* animator,void* style,const api::WorldFrame& frame) {
+void ActionPlayback::TickVisual(void* animator,void* style,const api::WorldFrame& frame,api::ManagedObjects& objects) {
     if(!visual_ || frame.sequence<=visual_->boundary)return;
     const auto tracking=*visual_;const auto revision=intent_revision_;
     const auto current=actions_.CurrentState(animator,0);
@@ -123,7 +124,14 @@ void ActionPlayback::TickVisual(void* animator,void* style,const api::WorldFrame
         if(tracking.phase==0 && tracking.body[1] && Matches(current,tracking.body[1])) {
             visual_->phase=1;visual_->body_seen=true;status_.visual_note="official occurrence -> loop observed";return;
         }
-        if(tracking.body_seen){ReleaseVisual(animator);status_.visual_note="official body successor retained";}
+        if(tracking.body_seen) {
+            ReleaseVisual(animator);status_.visual_note="official body successor retained";
+            if(tracking.phase==2 && !Ended() && revision==intent_revision_ && !CompletionState().empty()) {
+                const auto idle=CompletionState();const auto hash=HashName(idle,objects);
+                if(!Ended() && revision==intent_revision_ && Matches(current,hash))
+                    status_.successor=AutomaticSuccessor{tracking.serial,0,idle,false,true};
+            }
+        }
         return;
     }
     visual_->body_seen=true;
@@ -136,7 +144,10 @@ void ActionPlayback::TickVisual(void* animator,void* style,const api::WorldFrame
         status_.visual_note="occurrence completed; configured loop requested";
     } else if(tracking.phase==2) {
         ReleaseVisual(animator);
-        if(!Ended() && !status_.closing && revision==intent_revision_ && !CompletionState().empty())Queue(FreeStyleState{CompletionState()});
+        if(!Ended() && !status_.closing && revision==intent_revision_ && !CompletionState().empty()) {
+            const auto idle=CompletionState();const auto serial=Queue(FreeStyleState{idle});
+            status_.successor=AutomaticSuccessor{tracking.serial,serial,idle,false};
+        }
     }
     // No inferred duration: without a loop clip, hold the occurrence's final
     // pose until the next user intent rather than apply gameplay modifiers.

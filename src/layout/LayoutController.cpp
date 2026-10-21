@@ -51,11 +51,13 @@ void LayoutController::Prepare(Map& map) {
         if(map.action_views[i]==source_view)continue;
         const auto& saved=map.incoming->characters[i].action;
         const auto* configured=saved?std::get_if<SavedConfiguredAction>(&*saved):nullptr;
+        const auto* visual=saved?std::get_if<VisualActionKey>(&*saved):nullptr;
         const auto& available=source->actions;
         // Even a proposal seen early can gain exit tasks during discovery. A
         // configured/ready request waits for its required domain's complete
         // projection, not the other domain's unrelated ability graph.
-        if(saved && !std::holds_alternative<NpcMotion>(*saved) && !std::holds_alternative<ProgramAction>(*saved) && !std::holds_alternative<BattleIdle>(*saved) && !(configured && configured->controller_observed) &&
+        if(visual && !VisualActionSourceReady(available,visual->character_config)){pending=true;continue;}
+        if(saved && !visual && !std::holds_alternative<NpcMotion>(*saved) && !std::holds_alternative<ProgramAction>(*saved) && !std::holds_alternative<BattleIdle>(*saved) && !(configured && configured->controller_observed) &&
             !available.Ready(configured?configured->domain:ActionDomain::Alternate)){pending=true;continue;}
         map.actions[i]=RestoreLayoutAction(saved,available);map.action_views[i]=source_view;
     }

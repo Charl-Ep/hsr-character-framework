@@ -180,7 +180,7 @@ void ActionPlayback::Service(const api::WorldFrame& frame,bool ready,api::Manage
             else {
                 const auto style=resources_.Component(api::AnimationComponent::FreeStyle,objects);
                 if(!style.call.returned || !style.object)throw std::runtime_error("visual FreeStyle unavailable");
-                if(!Ended()) TickVisual(model.animator.value,style.object,frame);
+                if(!Ended()) TickVisual(model.animator.value,style.object,frame,objects);
             }
         }catch(const std::exception& e){status_.visual_note=e.what();visual_cancelled_=true;}
     }

@@ -8,7 +8,7 @@ namespace hksr::framework {
 class SceneCharacters;
 struct SavedConfiguredAction {ActionDomain domain=ActionDomain::Exploration;std::string state;bool controller_observed=false;};
 struct SavedReadyAction {std::string source,state,skill;int variant=-1;};
-using SavedAction=std::variant<NpcMotion,SavedConfiguredAction,SavedReadyAction,ProgramAction,BattleIdle>;
+using SavedAction=std::variant<NpcMotion,SavedConfiguredAction,SavedReadyAction,ProgramAction,BattleIdle,VisualActionKey>;
 struct SavedCharacter {
     std::uint64_t key=0; // document-local identity; remapped on restoration
     BrowseSource source;

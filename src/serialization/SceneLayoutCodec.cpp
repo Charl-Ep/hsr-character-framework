@@ -96,6 +96,7 @@ std::string EncodeSceneLayout(const SceneLayout& layout) {
             using T=std::decay_t<decltype(action)>;
             if constexpr(std::is_same_v<T,NpcMotion>)return {{"kind","npc"},{"id",action.id}};
             else if constexpr(std::is_same_v<T,BattleIdle>)return {{"kind","battle_idle"}};
+            else if constexpr(std::is_same_v<T,VisualActionKey>)return {{"kind","visual_behavior"},{"source",action.character_config},{"flag",action.flag},{"recover",action.recover}};
             else if constexpr(std::is_same_v<T,SavedConfiguredAction>)
                 return {{"kind","configured"},{"domain",Domain(action.domain)},{"state",action.state},{"controller_observed",action.controller_observed}};
             else if constexpr(std::is_same_v<T,ProgramAction>)return {{"kind","program"},{"program",action.program},{"action",action.action},{"choices",action.choices}};
@@ -130,6 +131,12 @@ SceneLayout DecodeSceneLayout(const std::string& text) {
             const auto& a=item.at("action");
             if(a.at("kind")=="npc")row.action=NpcMotion{number(a.at("id"))};
             else if(a.at("kind")=="battle_idle")row.action=BattleIdle{};
+            else if(a.at("kind")=="visual_behavior") {
+                const auto& flag=a.at("flag");
+                Need(flag.is_number_integer() && (flag.is_number_unsigned()?flag.get<std::uint64_t>()<=INT32_MAX:
+                    flag.get<std::int64_t>()>=INT32_MIN && flag.get<std::int64_t>()<=INT32_MAX),"invalid visual behavior flag");
+                row.action=VisualActionKey{a.at("source").get<std::string>(),flag.get<std::int32_t>(),a.at("recover").get<bool>()};
+            }
             else if(a.at("kind")=="program")row.action=ProgramAction{a.at("program").get<std::string>(),a.at("action").get<std::string>(),
                 a.value("choices",std::map<std::string,std::string>{})};
             else if(a.at("kind")=="configured")row.action=SavedConfiguredAction{Domain(a.at("domain").get<std::string>()),a.at("state").get<std::string>(),a.value("controller_observed",false)};

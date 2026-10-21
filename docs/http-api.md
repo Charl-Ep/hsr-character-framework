@@ -41,7 +41,7 @@ HTTP 202 returns `serial` and `request_url`. Poll that URL for queued/dispatched
 | `enable` | `character`, `enabled` |
 | `delete`, `rebuild`, `idle` | `character` |
 | `browse_actions`, `browse_npc_actions` | `character` |
-| `action` | `character`, `action`; `revision` for configured/ready actions |
+| `action` | `character`, `action`; `revision` for configured, ready and visual-behavior actions |
 | `place` | `character`, `placement`; optional `relative` |
 | `look` | `character`, `mode`; target/point where required, optional `max_distance` |
 | `layout` | `operation`; optional `name`, `overwrite`, `scene` |
@@ -74,6 +74,10 @@ Configured actions use `{"kind":"configured","domain":"battle","state":"Skill01"
 
 NPC motions use `{"kind":"npc","id":"123"}` without a revision. Action completion is separate from the initial returned playback call.
 
+Shared reactions use `{"kind":"visual_behavior","source":"<character config>","flag":28,"recover":false}` from the `reactions` array, with the current catalog revision. False enters and holds the configured body/expression; true plays recovery and releases the expression. Identity is the character configuration plus official flag, not the animation name. Layouts save that identity and resolve it again on restoration.
+
+Reaction availability checks the resolved configuration; playback checks the active Animator. The implemented scope is body phases, expression and blink. Material, speed and floating effects are not implemented; entries without animation remain listed with an unavailable reason. A resolved reaction does not wait for unrelated skill discovery.
+
 Authored program actions use `{"kind":"program","program":"scene","action":"enter","choices":{"variant":"b"}}` without a catalog revision. Use an entry from the action response's `program` array; `choices` is optional. The bound definition supplies the body state. A different program ID or unknown action key is rejected by the character service.
 
 ## Map layouts
@@ -105,7 +109,7 @@ Instance gaze references are remapped on restoration. Cross-map targets, externa
 |---|---|
 | `GET /v1/snapshot` | Current snapshot and atomic event cursor |
 | `GET /v1/catalog` | Official rows and source preparations |
-| `GET /v1/characters/{id}/actions` | Configured, ready/follow-up and queried NPC actions |
+| `GET /v1/characters/{id}/actions` | Configured, ready/follow-up, reactions, programs and queried NPC actions |
 | `GET /v1/requests/{serial}` | Dispatch receipt |
 | `GET /v1/events` | SSE stream |
 

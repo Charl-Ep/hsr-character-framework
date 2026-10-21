@@ -256,6 +256,7 @@ void TestActionCatalog() {
     Check(visual_states[1].source=="custom" && visual_states[1].value.emotion.value=="FaceFromCharacter");
     Check(visual_states[1].expression.value=="FaceFromGlobal" && visual_states[1].expression_transition.value==0.2f);
     Check(visual_states[0].blink_source==-1 && visual_states[1].blink_source==3);
+    Check(visual_states[0].character_config=="custom" && visual_states[1].character_config=="custom");
     visual_catalog.Request({{ActionDomain::Alternate,{K::Battle,"custom"}}});visual_catalog.Advance();Check(visual_reads==1);
     visual_catalog.Refresh({K::Battle,"custom"});visual_catalog.Advance();visual_catalog.Advance();Check(visual_reads==2);
     int default_reads=0;

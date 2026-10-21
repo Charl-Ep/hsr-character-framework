@@ -24,7 +24,14 @@ float Number(const Json& value) {
 api::Position3 Position(const Json& row) {return {Number(row.at("x")),Number(row.at("y")),Number(row.at("z"))};}
 template<class T> Json Input(const T& value) {return {{"available",value.available},{"value",value.value},{"error",value.error}};}
 Json Actions(const ActionCatalogStatus& source) {
-    Json out={{"finished",source.finished},{"proposals",Json::array()},{"ready",Json::array()}};
+    Json out={{"finished",source.finished},{"proposals",Json::array()},{"ready",Json::array()},{"reactions",Json::array()}};
+    for(const auto& row:source.visual_states)if(row.value.flag.available)for(bool recover:{false,true}) {
+        const auto query=QueryVisualAction(row,recover);
+        out["reactions"].push_back({{"source",row.character_config},{"flag",row.value.flag.value},{"recover",recover},
+            {"available",query.available},{"issues",query.issues},{"body_source",row.source},{"expression_source",row.expression_source},
+            {"occur",Input(row.value.occur.resolved_state)},{"loop",Input(row.value.loop.resolved_state)},
+            {"recovery",Input(row.value.recover.resolved_state)},{"expression",Input(row.expression)}});
+    }
     Json cleanup=Json::array();
     for(const auto& ability:source.abilities)if(ability.removal_sources || !ability.issues.empty()) {
         Json errors=Json::array();for(const auto& error:ability.issues)errors.push_back(error.error);
@@ -220,10 +227,17 @@ CharacterCommand ParseDevelopmentCommand(const Json& input) {
     if(op=="npc_motion")return SelectCharacterAction{id,{ActionDomain::Exploration,NpcMotion{U32(input.at("motion_id"))}}};
     if(op=="program_action")return SelectCharacterAction{id,{ActionDomain::Alternate,ProgramAction{
         input.at("program").get<std::string>(),input.at("action").get<std::string>(),input.value("choices",std::map<std::string,std::string>{})}}};
-    if(op=="configured_state" || op=="ready_pose") {
+    if(op=="configured_state" || op=="ready_pose" || op=="visual_behavior") {
         CatalogActionSelection selection;selection.revision=Unsigned(input.at("revision"));
         if(op=="ready_pose")selection.key=ReadyActionKey{input.at("source").get<std::string>(),
             static_cast<std::size_t>(Unsigned(input.at("pose")))};
+        else if(op=="visual_behavior") {
+            const auto& flag=input.at("flag");
+            if(!flag.is_number_integer() || (flag.is_number_unsigned()?flag.get<std::uint64_t>()>INT32_MAX:
+                flag.get<std::int64_t>()<INT32_MIN || flag.get<std::int64_t>()>INT32_MAX))
+                throw std::invalid_argument("visual behavior flag must be int32");
+            selection.key=VisualActionKey{input.at("source").get<std::string>(),flag.get<std::int32_t>(),input.at("recover").get<bool>()};
+        }
         else {
             const auto domain=input.at("domain").get<std::string>();
             if(domain!="battle" && domain!="exploration")throw std::invalid_argument("invalid configured action domain");

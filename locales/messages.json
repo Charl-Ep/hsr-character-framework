@@ -38,6 +38,10 @@
       "parameters": {}
     },
     "BranchPhase": {"parameters": {}},
+    "Reactions": {"parameters": {}},
+    "RecoverReaction": {"parameters": {}},
+    "VisualEffect": {"parameters": {}},
+    "ReactionScope": {"parameters": {}},
     "NoInstances": {
       "parameters": {}
     },

@@ -31,6 +31,7 @@ struct VisualState {
     api::TextInput expression;std::string expression_source;
     api::ConfigValue<float> expression_transition;
     int blink_source=-1;
+    std::string character_config; // resolution context; global rows are not character identities
 };
 std::optional<VisualState> ResolveVisualState(const api::VisualConfigSources&,std::int32_t flag,bool recover=false);
 using ActionRequest=std::variant<NpcMotion,AnimatorState,FreeStyleState,VisualState,ReadyState,ProgramAction,BattleIdle>;

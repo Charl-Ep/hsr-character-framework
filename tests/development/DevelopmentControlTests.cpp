@@ -82,6 +82,10 @@ void TestDevelopmentControl() {
     Check(std::get<ObserveCharacter>(ParseDevelopmentCommand({{"op","observe"},{"character",0}})).id==0);
     const auto free_state=std::get<SelectCharacterAction>(ParseDevelopmentCommand({{"op","free_state"},{"character",7},{"domain","battle"},{"name","Skill02_V1"}}));
     Check(free_state.action.domain==ActionDomain::Alternate && std::get<FreeStyleState>(free_state.action.request).name=="Skill02_V1");
+    const auto visual=std::get<SelectCatalogAction>(ParseDevelopmentCommand({{"op","visual_behavior"},{"character",7},
+        {"revision",9},{"source","battle/config"},{"flag",28},{"recover",true}}));
+    Check(visual.action.revision==9 && std::get<VisualActionKey>(visual.action.key).flag==28 &&
+        std::get<VisualActionKey>(visual.action.key).recover);
     const auto program=std::get<SelectCharacterAction>(ParseDevelopmentCommand({{"op","program_action"},{"character",7},
         {"program","fixture"},{"action","first"},{"choices",{{"branch","a"}}}}));
     Check(program.action.domain==ActionDomain::Alternate && std::get<ProgramAction>(program.action.request).program=="fixture" &&

@@ -111,10 +111,15 @@ void TestVisualPlayback() {
     Check(blink_mask.enabled[3] && blink_mask.active[1] && !blink_mask.enabled[1]);
     enter();layers[2]={5,0,0,false,false};layers[0].time=1.1f;tick();Check(layers[0].current==2 && last_blend==0.2f);
     int before=body_writes;tick();tick();Check(body_writes==before); // no repeated loop dispatch
-    auto exit=Recipe();exit.recover=true;player.Queue(exit);tick();Check(layers[0].current==3 && last_blend==0.3f);
+    auto exit=Recipe();exit.recover=true;const auto recovery=player.Queue(exit);tick();Check(layers[0].current==3 && last_blend==0.3f);
     Check(layers[0].time==0 && layers[2].transition && layers[2].next==100); // restoration starts WITH recovery
     Check(blink_mask.enabled[3]);
     layers[2]={100,0,0.6f,false,false};layers[0].time=1.2f;tick();Check(layers[0].current==4 && layers[2].current==100);
+    Check(player.Status().successor && player.Status().successor->predecessor==recovery && player.Status().successor->returned);
+    // An official recovery successor updates persistence without replaying it.
+    const auto official_recovery=player.Queue(exit);tick();tick();before=body_writes;
+    layers[0]={4,0,0.2f,true,false};tick();Check(body_writes==before);
+    Check(player.Status().successor && player.Status().successor->predecessor==official_recovery && player.Status().successor->observed);
     // Natural occurrence -> loop takes precedence; no duplicate manual play.
     enter();before=body_writes;layers[0]={2,0,0.2f,true,false};tick();Check(body_writes==before);
     // A later official expression is not overwritten by cancellation.

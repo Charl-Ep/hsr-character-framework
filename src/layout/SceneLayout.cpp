@@ -29,6 +29,10 @@ SceneLayout CaptureSceneLayout(const SceneCharacters& registry,const std::string
             if(const auto* npc=std::get_if<NpcMotion>(&action->request))row.action=*npc;
             else if(const auto* program=std::get_if<ProgramAction>(&action->request))row.action=*program;
             else if(std::holds_alternative<BattleIdle>(action->request))row.action=BattleIdle{};
+            else if(const auto* visual=std::get_if<VisualState>(&action->request)) {
+                Need(visual->value.flag.available,"visual behavior identity unavailable");
+                row.action=VisualActionKey{visual->character_config,visual->value.flag.value,visual->recover};
+            }
             else if(const auto* configured=std::get_if<FreeStyleState>(&action->request))
                 row.action=SavedConfiguredAction{action->domain,configured->name,configured->controller_observed};
             else if(const auto* animator=std::get_if<AnimatorState>(&action->request)) {
@@ -52,6 +56,7 @@ std::optional<PlacedAction> RestoreLayoutAction(const std::optional<SavedAction>
         if constexpr(std::is_same_v<T,NpcMotion>)return {ActionDomain::Exploration,value};
         else if constexpr(std::is_same_v<T,ProgramAction>)return {ActionDomain::Alternate,value};
         else if constexpr(std::is_same_v<T,BattleIdle>)return {ActionDomain::Alternate,value};
+        else if constexpr(std::is_same_v<T,VisualActionKey>)return {ActionDomain::Alternate,ResolveVisualAction(catalog,value)};
         else if constexpr(std::is_same_v<T,SavedConfiguredAction>) {
             // This identity came from an observed official successor, not the
             // selectable config catalogue. Recheck membership at playback on
@@ -97,6 +102,8 @@ void ValidateSceneLayout(const SceneLayout& layout) {
             using T=std::decay_t<decltype(action)>;
             if constexpr(std::is_same_v<T,NpcMotion>)Need(action.id!=0,"NPC motion ID must be nonzero");
             else if constexpr(std::is_same_v<T,BattleIdle>){}
+            else if constexpr(std::is_same_v<T,VisualActionKey>)
+                Need(!action.character_config.empty() && action.character_config.find('\0')==std::string::npos,"invalid visual behavior source");
             else if constexpr(std::is_same_v<T,ProgramAction>) {
                 auto name=[](const auto& value){return !value.empty() && value.find('\0')==std::string::npos;};
                 Need(name(action.program) && name(action.action),"invalid saved program action identity");
@@ -140,6 +147,7 @@ bool SameLayout(const SceneLayout& a,const SceneLayout& b) {
                 using T=std::decay_t<decltype(left)>;const auto& right=std::get<T>(*y.action);
                 if constexpr(std::is_same_v<T,NpcMotion>)return left.id==right.id;
                 else if constexpr(std::is_same_v<T,BattleIdle>)return true;
+                else if constexpr(std::is_same_v<T,VisualActionKey>)return std::tie(left.character_config,left.flag,left.recover)==std::tie(right.character_config,right.flag,right.recover);
                 else if constexpr(std::is_same_v<T,SavedConfiguredAction>)return left.domain==right.domain && left.state==right.state && left.controller_observed==right.controller_observed;
                 else if constexpr(std::is_same_v<T,ProgramAction>)return std::tie(left.program,left.action,left.choices)==std::tie(right.program,right.action,right.choices);
                 else return std::tie(left.source,left.state,left.skill,left.variant)==std::tie(right.source,right.state,right.skill,right.variant);

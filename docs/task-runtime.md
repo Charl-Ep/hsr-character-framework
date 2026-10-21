@@ -2,6 +2,8 @@
 
 The `tasks` module provides typed visual tasks, configuration loading, owned-resource execution and per-actor selection. Development commands exercise it through the application queue. User-facing task menus, HTTP endpoints and task-layout persistence are pending.
 
+Shared reaction rows currently use the existing `VisualState` executor, exposed through the action catalog, menu, HTTP and layout persistence. It handles configured enter/hold/recover body phases, expression and blink ownership. These rows are not compiled `TaskSequence` plans; material, speed and floating behavior are not implemented. See [action API](http-api.md#actions).
+
 ## Model
 
 | Type | Responsibility |

@@ -54,6 +54,12 @@ hksr::framework::ApplicationSnapshot Fixture() {
     auto ready=std::make_shared<ReadyActions>();ready->source="fixture/battle";
     ReadyPose pose;pose.state="Skill01Ready";pose.label="Skill01Ready";ready->poses.push_back(pose);
     actions->actions.ready_actions.push_back(ready);
+    VisualState visual;visual.character_config="fixture/battle";visual.source="global";visual.value.flag={true,28,{}};
+    visual.value.occur.resolved_state={true,"Stagger",{}};visual.value.loop.resolved_state={true,"Stagger_Loop",{}};
+    visual.value.recover.resolved_state={true,"Stagger_Recover",{}};
+    visual.value.occur.transition=visual.value.loop.transition=visual.value.recover.transition={true,0.15f,{}};
+    visual.expression={true,"Emo_Stun",{}};visual.expression_transition={true,0.2f,{}};
+    actions->actions.visual_states.push_back(visual);
     c->characters[1]=actions;
     out.catalog=c;
     SceneCharacterStatus actor;actor.id=1;actor.creations=1;actor.active=actor.creation_ready=true;actor.package=*source->result.character;actor.scene="preview-map";
@@ -133,9 +139,11 @@ void TestMenuPreview(ID3D11Device* device,ID3D11DeviceContext* context) {
 #endif
                     Require(text.find(ui::Translate(ui::UiText::IdleState,menu.GetLanguage()))!=std::string::npos);
                     Require(text.find("Skill01Ready")!=std::string::npos);
+                    Require(text.find("Stagger")!=std::string::npos && text.find("Emo_Stun")!=std::string::npos);
                     Require(text.find("技能准备态")==std::string::npos && text.find("Skill ready poses")==std::string::npos);
                 } else if(battle) {
                     Require(text.find("ConfiguredRest")!=std::string::npos);
+                    Require(text.find("Stagger")!=std::string::npos);
 #if HKSR_DEVELOPMENT_UI
                     Require(text.find(ui::Translate(ui::UiText::ConfiguredActions,menu.GetLanguage()))<
                         text.find(ui::Translate(ui::UiText::Exploration,menu.GetLanguage())));
