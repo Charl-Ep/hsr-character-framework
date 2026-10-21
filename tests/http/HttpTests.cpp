@@ -124,6 +124,38 @@ void Protocol() {
     Check(http::Actions(state,3)["npc"].empty(),"do not expose a prior creation's NPC motions");
     state.characters[0].creations=1;Check(http::Actions(state,3)["npc"].size()==1,"matching NPC motion generation");
     Reject([&]{http::Actions(state,4);});
+    state.characters[0].active=true;state.characters[0].battle_idle_state="StandBy";
+    auto task_view=std::make_shared<CharacterTaskStatus>();state.characters[0].tasks=task_view;
+    auto& actor_tasks=*task_view;actor_tasks.domain=ActionDomain::Alternate;
+    state.characters[0].task_catalog="full";state.characters[0].task_catalog_revision=7;
+    TaskDefinition task;task.key={"full","modifier-followup"};task.entry="followup";
+    task.sources={{"fixture","Modifier.OnExit"}};actor_tasks.definitions.emplace(task.key.name,task);
+    actor_tasks.control.catalog.emplace(task.key.name,TaskQueryResult{});
+    auto unknown=task;unknown.key.name="unmapped";unknown.entry.clear();actor_tasks.definitions.emplace(unknown.key.name,unknown);
+    actor_tasks.control.catalog[unknown.key.name]={TaskAvailability::Unknown,{},{{TaskReasonKind::Unimplemented,"fixture","no visual entry"}}};
+    const auto directory=http::Tasks(state,3);std::set<std::string> backends;
+    for(const auto& entry:directory.at("entries")) {
+        backends.insert(entry.at("backend").get<std::string>());
+        const auto parsed=http::Command(entry.at("command"));
+        if(entry.at("backend")=="sequence") {
+            const auto& selected=std::get<ControlCharacterTask>(parsed);
+            Check(selected.id==3 && selected.creation==1 && selected.input.selection->task.catalog=="full","task identity roundtrip");
+        }
+    }
+    Check(backends==std::set<std::string>{"npc","configured_clip","ready","reaction","program","sequence","idle"},"complete available backend directory");
+    auto command=Json{{"op","task_select"},{"character","3"},{"creation","1"},{"catalog","full"},{"task","modifier-followup"},
+        {"inputs",{{"charged",true},{"count",3}}},{"targets",{{"Target","9007199254740999"}}}};
+    const auto task_command=std::get<ControlCharacterTask>(http::Command(command));
+    Check(task_command.input.selection->visual.targets.at("Target")==9007199254740999ULL,"task target IDs preserve precision");
+    command["targets"]["Target"]=9007199254740999ULL;Reject([&]{http::Command(command);});
+    CommandReply task_reply;task_reply.task=actor_tasks.control;
+    Check(http::Reply(task_reply)["task"]["catalog"].contains("modifier-followup"),"query response included");
+    app.Publish(state);const auto task_cursor=app.ReadUpdates().changes.cursor;
+    auto updated_tasks=std::make_shared<CharacterTaskStatus>(actor_tasks);
+    updated_tasks->control.contexts.push_back({{1},"enhanced",{{"charged",true}},"enhanced",{}, {}});
+    state.characters[0].tasks=updated_tasks;
+    app.Publish(state);const auto task_update=http::Updates(app.ReadUpdates(task_cursor));
+    Check(task_update["characters"]["3"]["tasks"]["control"]["contexts"].size()==1,"task-only context update published over SSE");
 }
 void Configuration() {
     auto path=std::filesystem::temp_directory_path()/("hksr-http-"+std::to_string(GetCurrentProcessId())+".cfg");

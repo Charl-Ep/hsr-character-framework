@@ -73,6 +73,8 @@ private:
         std::uint64_t creation=0;
     };
     struct Entry {
+        enum class IntentOwner {Action,Task};
+        IntentOwner intent_owner=IntentOwner::Action;
         CharacterPlan plan;
         CharacterPlacement placement;
         std::optional<PlacedAction> action;
@@ -83,6 +85,10 @@ private:
         std::uint64_t next_action=0,action_intent=0;
         std::string action_error;
         std::string visual_restore_error;
+        std::optional<TaskSelection> pending_task;
+        bool pending_task_finish=false;
+        std::uint64_t task_revision=0;
+        std::string task_preparation_error;
         api::GameWorld* attempted_world=nullptr;
         std::uint64_t attempted_incarnation=0,attempted_revision=0;
         std::optional<Epoch> active;
@@ -111,5 +117,7 @@ private:
     void BindProfile(CharacterPlan& plan,std::uint64_t id) const;
     api::EntityOrigin VisualTarget(std::uint64_t id) const;
     void SubmitAction(Entry&);
+    bool PrepareDomain(Entry&,ActionDomain);
+    std::optional<TaskControlResult> SubmitTask(Entry&);
 };
 }

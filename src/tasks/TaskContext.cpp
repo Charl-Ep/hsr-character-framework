@@ -126,6 +126,15 @@ TaskQueryResult TaskContext::Evaluate(const TaskRequirement& requirement,const T
         } else if constexpr(std::is_same_v<T,TaskNeedsParticipant>) {
             if(std::none_of(query.participants.begin(),query.participants.end(),[&](const auto& participant){return participant.name==item.participant.name;}))
                 reason(TaskAvailability::Unavailable,TaskReasonKind::Participant,item.participant.name,"participant is absent");
+        } else if constexpr(std::is_same_v<T,TaskNeedsTarget> || std::is_same_v<T,TaskNeedsAnchor>) {
+            const auto& names=std::is_same_v<T,TaskNeedsTarget>?query.targets:query.anchors;
+            if(std::find(names.begin(),names.end(),item.name)==names.end())
+                reason(TaskAvailability::Unavailable,TaskReasonKind::MissingInput,item.name,
+                    std::is_same_v<T,TaskNeedsTarget>?"owned target is unavailable":"spatial anchor is absent");
+        } else if constexpr(std::is_same_v<T,TaskChoiceEquals>) {
+            const auto found=query.choices.find(item.name);
+            if(found==query.choices.end())reason(TaskAvailability::Unavailable,TaskReasonKind::MissingInput,item.name,"visual choice is absent");
+            else if(found->second!=item.value)reason(TaskAvailability::Unavailable,TaskReasonKind::Condition,item.name,"visual choice differs");
         } else reason(TaskAvailability::Unknown,TaskReasonKind::Unresolved,item.source,item.detail);
     },requirement);
     return result;

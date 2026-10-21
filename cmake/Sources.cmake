@@ -23,6 +23,7 @@ set(HKSR_RUNTIME_SOURCES
 
     # src/application
     src/application/ApplicationCoordinator.cpp
+    src/application/CharacterTasks.cpp
     src/application/ApplicationEvents.cpp
     src/application/ApplicationService.cpp
     src/application/OperationHistory.cpp
@@ -97,6 +98,7 @@ set(HKSR_RUNTIME_SOURCES
     src/serialization/PresentationProfileCodec.cpp
     src/serialization/VisualProgramCodec.cpp
     src/serialization/TaskCatalogCodec.cpp
+    src/serialization/TaskControlCodec.cpp
     src/serialization/SceneLayoutCodec.cpp
 )
 

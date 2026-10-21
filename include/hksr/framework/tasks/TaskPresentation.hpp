@@ -20,7 +20,7 @@ struct TaskPresentationServices {
 class TaskPresentation {
 public:
     TaskPresentation(TaskExecutionToken,std::uint64_t owner_generation,std::shared_ptr<const TaskSequence>,
-        std::shared_ptr<VisualProgramPlayer>,VisualProgramParameters,TaskPresentationServices);
+        std::shared_ptr<VisualProgramPlayer>,VisualProgramParameters,TaskPresentationServices,bool captured=false);
     ~TaskPresentation(); // data destruction only; call Stop/Service to drain first
     void Service(double seconds,std::uint64_t frame);
     void Stop(TaskExitReason);

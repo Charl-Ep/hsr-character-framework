@@ -1,4 +1,6 @@
 #include "HttpProtocol.hpp"
+#include "../serialization/TaskControlCodec.hpp"
+#include <hksr/framework/application/CharacterTasks.hpp>
 #include <charconv>
 #include <cmath>
 #include <limits>
@@ -84,6 +86,8 @@ Json Actor(const SceneCharacterStatus& c) {
     if(c.playback)out["playback"]={{"pending",c.playback->pending},{"completion_pending",c.playback->completion_pending},
         {"completion_note",c.playback->completion_note},{"effect_note",c.playback->effect_note},
         {"ready_note",c.playback->ready_note},{"visual_note",c.playback->visual_note}};
+    if(c.tasks)out["tasks"]={{"catalog",c.task_catalog},{"revision",std::to_string(c.task_catalog_revision)},
+        {"domain",Domain(c.tasks->domain)},{"control",task_codec::TaskResult(c.tasks->control)}};
     return out;
 }
 Json Operation(const OperationStatus& value) {
@@ -145,6 +149,11 @@ std::uint64_t Id(const Json& value) {
 }
 CharacterCommand Command(const Json& v) {
     const auto op=Text(v.at("op"));
+    if(op=="task_query" || op=="task_select" || op=="task_finish" || op=="task_cancel") {
+        (void)Id(v.at("character"));(void)Id(v.at("creation"));
+        if(v.contains("targets"))for(const auto& target:v.at("targets").items())(void)Id(target.value());
+        return task_codec::ParseTaskCommand(v);
+    }
     if(op=="layout") {
         Fields(v,{"op","operation","name","overwrite","scene"});const auto action=Text(v.at("operation"));
         LayoutOperation operation;
@@ -230,13 +239,16 @@ CharacterCommand Command(const Json& v) {
     throw std::invalid_argument("unknown command op");
 }
 Json Reply(const CommandReply& r) {
-    return {{"serial",std::to_string(r.serial)},{"accepted",r.accepted},{"error",r.error},
+    Json out={{"serial",std::to_string(r.serial)},{"accepted",r.accepted},{"error",r.error},
         {"character",std::to_string(r.character)},{"source_request",std::to_string(r.source_request)},
         {"action_intent",std::to_string(r.action_intent)},{"operation",std::to_string(r.operation)}};
+    if(r.task)out["task"]=task_codec::TaskResult(*r.task);
+    return out;
 }
 Json Snapshot(const ApplicationSnapshot& s) {
     Json out={{"runtime",Runtime(s)},{"characters",Json::object()},{"operations",Json::object()},
-        {"sources",Sources(s)},{"catalog_url","/v1/catalog"},{"actions_url_template","/v1/characters/{id}/actions"}};
+        {"sources",Sources(s)},{"catalog_url","/v1/catalog"},{"actions_url_template","/v1/characters/{id}/actions"},
+        {"tasks_url_template","/v1/characters/{id}/tasks"}};
     for(const auto& c:s.characters)out["characters"][std::to_string(c.id)]=Actor(c);
     for(const auto& o:s.operations.entries)out["operations"][std::to_string(o.first)]=Operation(o.second);
     return out;
@@ -287,6 +299,48 @@ Json Actions(const ApplicationSnapshot& s,std::uint64_t character) {
         out["npc"].push_back({{"action",{{"kind","npc"},{"id",std::to_string(m.id)}}},
             {"name",m.name.available?m.name.value:m.indexed_name}});
     return out;
+}
+Json Tasks(const ApplicationSnapshot& snapshot,std::uint64_t id) {
+    Json entries=Json::array();
+    for(const auto& entry:CharacterTasks(snapshot,id)) {
+        static const char* kinds[]={"npc","configured_clip","ready","reaction","program","sequence","idle"};
+        Json command=std::visit([](const auto& value)->Json {
+            using T=std::decay_t<decltype(value)>;
+            if constexpr(std::is_same_v<T,ControlCharacterTask>)return task_codec::TaskCommand(value);
+            else if constexpr(std::is_same_v<T,IdleCharacter>)return {{"op","idle"},{"character",std::to_string(value.id)}};
+            else if constexpr(std::is_same_v<T,SelectCharacterAction>) {
+                Json action;
+                if(const auto* npc=std::get_if<NpcMotion>(&value.action.request))action={{"kind","npc"},{"id",std::to_string(npc->id)}};
+                else if(const auto* program=std::get_if<ProgramAction>(&value.action.request))
+                    action={{"kind","program"},{"program",program->program},{"action",program->action},{"choices",program->choices}};
+                else throw std::logic_error("unsupported task directory action backend");
+                return {{"op","action"},{"character",std::to_string(value.id)},{"action",std::move(action)}};
+            } else if constexpr(std::is_same_v<T,SelectCatalogAction>) {
+                auto action=std::visit([](const auto& key)->Json {
+                    using K=std::decay_t<decltype(key)>;
+                    if constexpr(std::is_same_v<K,ConfiguredActionKey>)return Configured(key.domain,key.state);
+                    else if constexpr(std::is_same_v<K,ReadyActionKey>)return {{"kind","ready"},{"source",key.source},{"pose",std::to_string(key.pose)}};
+                    else return {{"kind","visual_behavior"},{"source",key.character_config},{"flag",key.flag},{"recover",key.recover}};
+                },value.action.key);
+                return {{"op","action"},{"character",std::to_string(value.id)},{"revision",std::to_string(value.action.revision)},{"action",std::move(action)}};
+            } else throw std::logic_error("unsupported task directory command");
+        },entry.command);
+        const char* available=entry.query.availability==TaskAvailability::Available?"available":
+            entry.query.availability==TaskAvailability::Unavailable?"unavailable":"unknown";
+        Json reasons=Json::array(),sources=Json::array(),inputs=Json::object();
+        for(const auto& reason:entry.query.reasons)reasons.push_back({{"source",reason.source},{"detail",reason.detail}});
+        for(const auto& source:entry.sources)sources.push_back({{"document",source.document},{"field",source.field}});
+        for(const auto& input:entry.inputs) {
+            static const char* types[]={"bool","integer","number","text"};
+            Json description={{"type",types[static_cast<int>(input.type)]}};
+            if(input.default_value)std::visit([&](const auto& value){description["default"]=value;},*input.default_value);
+            inputs[input.name]=std::move(description);
+        }
+        entries.push_back({{"backend",kinds[static_cast<int>(entry.kind)]},{"domain",Domain(entry.domain)},
+            {"label",entry.label},{"detail",entry.detail},{"recovery",entry.recovery},{"availability",available},
+            {"reasons",std::move(reasons)},{"sources",std::move(sources)},{"inputs",std::move(inputs)},{"command",std::move(command)}});
+    }
+    return {{"character",std::to_string(id)},{"entries",std::move(entries)}};
 }
 std::string Cursor(const ApplicationCursor& c) {return c.stream+":"+std::to_string(c.sequence);}
 ApplicationCursor ParseCursor(const std::string& text) {

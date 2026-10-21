@@ -39,6 +39,8 @@ public:
     void ConfigureVisualProgram(std::shared_ptr<VisualProgramPlayer> program){actions_.ConfigureVisualProgram(std::move(program));}
     void ConfigureTasks(std::shared_ptr<const TaskCatalog>,std::shared_ptr<VisualProgramPlayer>);
     TaskControlResult ControlTask(TaskControlInput);
+    TaskControlResult QueryTasks(const std::optional<TaskSelection>& selection={}) const;
+    bool HasTasks() const {return bool(tasks_);}
     const api::ModelRequestStatus* ModelRequest() const { return transition_->RequestStatus(); }
 private:
     bool Ended() const;
@@ -47,7 +49,7 @@ private:
     bool VisualReady(ActionDomain domain) const;
     void Fail(std::string message);
     void Finish(const api::WorldFrame& frame,AppearanceServices appearance,api::AnimationInputTypes types);
-    struct Intent { std::uint64_t serial; ActionDomain domain; ActionRequest action; };
+    struct Intent { std::uint64_t serial; ActionDomain domain; std::optional<ActionRequest> action; };
     CharacterInstance& character_;
     api::EntityToken owner_;
     api::GameWorld* world_;

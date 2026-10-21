@@ -123,6 +123,17 @@ std::shared_ptr<VisualProgramPlayer> VisualProgramRuntime::Create(api::EntityOri
         }
         return VisualProgramParameters{std::move(targets),std::move(choices),std::move(anchors)};
     };
+    services.available_targets=[current](const VisualProgramParameters& inputs) {
+        const auto scene=current();std::map<std::string,api::EntityOrigin> targets=scene->input.targets;
+        for(const auto& [name,id]:inputs.targets) {
+            if(targets.count(name))continue; // same precedence as ResolveTarget
+            if(scene->input.resolve_character)targets[name]=scene->input.resolve_character(id);
+        }
+        targets["Caster"]=scene->owner;std::vector<std::string> result;
+        for(const auto& [name,target]:targets)
+            if(Alive(target) && target.world==scene->owner.world)result.push_back(name);
+        return result;
+    };
     services.create=[this,current](auto& context,const auto& key,const auto& value){return CreateEffect(*current(),context,key,value);};
     services.partner=[this,current](auto context,const auto& op){return Partners(current()).Execute(std::move(context),op);};
     services.end_partners=[current](auto context){const auto scene=current();if(scene->partners)scene->partners->End(context);};

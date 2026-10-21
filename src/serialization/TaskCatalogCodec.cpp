@@ -46,6 +46,9 @@ TaskRequirement Requirement(const Json& row) {
     if(op=="value") {Fields(row,{"op","name","is"});return TaskValueEquals{Name(row.at("name")),Value(row.at("is"))};}
     if(op=="phase") {Fields(row,{"op","is"});return TaskPhaseEquals{Name(row.at("is"))};}
     if(op=="participant") {Fields(row,{"op","name"});return TaskNeedsParticipant{{Name(row.at("name"))}};}
+    if(op=="target") {Fields(row,{"op","name"});return TaskNeedsTarget{Name(row.at("name"))};}
+    if(op=="anchor") {Fields(row,{"op","name"});return TaskNeedsAnchor{Name(row.at("name"))};}
+    if(op=="choice") {Fields(row,{"op","name","is"});return TaskChoiceEquals{Name(row.at("name")),Name(row.at("is"))};}
     if(op=="unresolved") {Fields(row,{"op","source","detail"});return TaskUnresolvedRequirement{Name(row.at("source")),Name(row.at("detail"))};}
     throw std::invalid_argument("unknown task predicate: "+op);
 }

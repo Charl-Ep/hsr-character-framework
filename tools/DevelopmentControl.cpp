@@ -162,6 +162,7 @@ Json Snapshot(const ApplicationSnapshot& source,bool include_catalog,bool includ
             {"position",{{"x",c.placement.position.x},{"y",c.placement.position.y},{"z",c.placement.position.z}}},
             {"rotation",{{"x",c.placement.rotation.x},{"y",c.placement.rotation.y},{"z",c.placement.rotation.z},{"w",c.placement.rotation.w}}}};
         if(!c.task_catalog.empty()){row["task_catalog"]=c.task_catalog;row["task_catalog_revision"]=c.task_catalog_revision;}
+        if(c.tasks)row["tasks"]=TaskResult(c.tasks->control);
         row["branch_state"]={{"phase",c.branch_state.phase},{"values",Json::array()}};
         for(const auto& value:c.branch_state.values) {
             Json item={{"scope",value.scope},{"name",value.name}};

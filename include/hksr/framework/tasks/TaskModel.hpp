@@ -29,8 +29,12 @@ struct TaskInputDefinition {
 struct TaskValueEquals {std::string name;TaskValue value;};
 struct TaskPhaseEquals {std::string phase;};
 struct TaskNeedsParticipant {TaskParticipant participant;};
+struct TaskNeedsTarget {std::string name;};
+struct TaskNeedsAnchor {std::string name;};
+struct TaskChoiceEquals {std::string name,value;};
 struct TaskUnresolvedRequirement {std::string source,detail;};
-using TaskRequirement=std::variant<TaskValueEquals,TaskPhaseEquals,TaskNeedsParticipant,TaskUnresolvedRequirement>;
+using TaskRequirement=std::variant<TaskValueEquals,TaskPhaseEquals,TaskNeedsParticipant,TaskUnresolvedRequirement,
+    TaskNeedsTarget,TaskNeedsAnchor,TaskChoiceEquals>;
 struct TaskSourceLocation {std::string document,field;};
 // Authored visual task, not an Animator state or permission to invoke the
 // containing battle ability. The entry identifies a compiled visual sequence.
@@ -54,6 +58,8 @@ struct TaskQuery {
     TaskValues inputs;
     std::vector<TaskParticipant> participants;
     std::optional<TaskSlot> slot;
+    std::vector<std::string> targets,anchors;
+    std::map<std::string,std::string> choices;
 };
 enum class TaskExitReason { Completed,Interrupted,Replaced,ActorLost,WorldLeft,Deleted,Failed };
 // The adapter reserves request identity before native submission. Model is
@@ -79,5 +85,19 @@ struct TaskRequestState {
     // This execution deliberately handed the same animation channel to a
     // later request. Not natural completion and not an external interruption.
     bool superseded=false;
+};
+struct TaskRequestSnapshot {
+    std::string name,source;
+    TaskRequestReceipt receipt;
+    TaskRequestState state;
+};
+enum class TaskExecutionPhase { Running,Interrupting,Draining,Finished };
+struct TaskExecutionStatus {
+    TaskExecutionToken token;
+    TaskExecutionPhase phase=TaskExecutionPhase::Running;
+    std::optional<TaskExitReason> reason;
+    bool finish_requested=false;
+    std::size_t retained_requests=0;
+    std::vector<std::string> issues,waiting;
 };
 }

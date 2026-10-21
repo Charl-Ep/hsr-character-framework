@@ -110,6 +110,8 @@ std::uint64_t SceneCharacters::Select(std::uint64_t id,PlacedAction action) {
             !input->program->actions.count(selected->action))throw std::invalid_argument("visual program action absent from this character");
     }
     entry.action=std::move(action);entry.action_intent=++entry.next_action;
+    entry.intent_owner=Entry::IntentOwner::Action;
+    entry.pending_task.reset();++entry.task_revision;entry.task_preparation_error.clear();
     entry.action_error.clear();entry.visual_restore_error.clear();SubmitAction(entry);
     return entry.action_intent;
 }
@@ -119,23 +121,70 @@ TaskControlResult SceneCharacters::ControlTask(std::uint64_t id,std::uint64_t cr
         throw std::logic_error("task previews require an exploration world");
     if(!creation || entry.status.creations!=creation || !Active(id,frame))
         throw std::logic_error("task command targets an inactive or replaced creation");
-    return entry.active->session->ControlTask(std::move(input));
+    if(input.operation==TaskControlOperation::Select) {
+        if(!input.selection)throw std::invalid_argument("task selection missing");
+        auto queried=entry.active->session->ControlTask({TaskControlOperation::Query,input.selection});
+        if(queried.selection->query.availability!=TaskAvailability::Available)return queried;
+        entry.pending_task=std::move(input.selection);entry.pending_task_finish=false;
+        ++entry.task_revision;entry.task_preparation_error.clear();
+        entry.intent_owner=Entry::IntentOwner::Task;entry.active->session->SupersedeQueuedAction();
+        if(auto submitted=SubmitTask(entry))return *submitted;
+        queried.preparing=entry.pending_task?std::optional<TaskKey>(entry.pending_task->task):std::nullopt;
+        queried.preparation_error=entry.task_preparation_error;return queried;
+    }
+    if(input.operation==TaskControlOperation::Finish && entry.pending_task) {
+        entry.pending_task_finish=true;input.operation=TaskControlOperation::Query;
+    }
+    if(input.operation==TaskControlOperation::Cancel){entry.pending_task.reset();++entry.task_revision;entry.task_preparation_error.clear();}
+    auto result=entry.active->session->ControlTask(std::move(input));
+    if(entry.pending_task)result.preparing=entry.pending_task->task;
+    result.preparation_error=entry.task_preparation_error;return result;
+}
+bool SceneCharacters::PrepareDomain(Entry& entry,ActionDomain domain) {
+    if(!entry.active)return false;
+    if(!entry.active->controls)return true;
+    const auto* handoff=entry.active->session->Handoff();
+    if((handoff && handoff->Status().ready_domain!=domain) ||
+        entry.active->controls->Status().gaze_phase==api::GazePhase::Restoring) {
+        const auto phase=entry.active->controls->Suspend();
+        if(phase==api::ControlPhase::Waiting || phase==api::ControlPhase::Running)return false;
+        if(phase!=api::ControlPhase::Returned)throw std::runtime_error("look target restoration failed before model handoff");
+    }
+    return true;
+}
+std::optional<TaskControlResult> SceneCharacters::SubmitTask(Entry& entry) {
+    if(!entry.pending_task || !entry.active || closing_ || !entry.status.enabled ||
+        entry.active->revision!=entry.revision)return {};
+    const auto serial=entry.task_revision,creation=entry.status.creations;
+    const auto selection=*entry.pending_task;
+    try {
+        if(!PrepareDomain(entry,entry.plan.visual_program->tasks->domain))return {};
+        if(serial!=entry.task_revision || creation!=entry.status.creations || !entry.active ||
+            closing_ || !entry.status.enabled || entry.active->revision!=entry.revision)return {};
+        auto result=entry.active->session->ControlTask({TaskControlOperation::Select,selection});
+        if(serial==entry.task_revision) {
+            entry.pending_task.reset();
+            if(result.selection && result.selection->intent) {
+                entry.active->action_intent=entry.action_intent;
+                if(entry.pending_task_finish)entry.active->session->ControlTask({TaskControlOperation::Finish,{}});
+            } else if(result.selection) {
+                entry.task_preparation_error="task conditions changed while preparing";
+                for(const auto& reason:result.selection->query.reasons)entry.task_preparation_error+="; "+reason.source+": "+reason.detail;
+            }
+        }
+        return result;
+    } catch(const std::exception& error) {
+        if(serial==entry.task_revision){entry.task_preparation_error=error.what();entry.pending_task.reset();}
+        return {};
+    }
 }
 void SceneCharacters::SubmitAction(Entry& entry) {
-    if(!entry.action || !entry.active || closing_ || !entry.status.enabled ||
+    if(entry.intent_owner==Entry::IntentOwner::Task || !entry.action || !entry.active || closing_ || !entry.status.enabled ||
         entry.active->revision!=entry.revision || entry.active->action_intent==entry.action_intent || !entry.action_error.empty())return;
     const auto intent=entry.action_intent;
     const auto creation=entry.status.creations;
     try {
-        if(entry.active->controls) {
-            const auto* handoff=entry.active->session->Handoff();
-            if((handoff && handoff->Status().ready_domain!=entry.action->domain) ||
-                entry.active->controls->Status().gaze_phase==api::GazePhase::Restoring) {
-                const auto phase=entry.active->controls->Suspend();
-                if(phase==api::ControlPhase::Waiting || phase==api::ControlPhase::Running)return;
-                if(phase!=api::ControlPhase::Returned)throw std::runtime_error("look target restoration failed before model handoff");
-            }
-        }
+        if(!PrepareDomain(entry,entry.action->domain))return;
         if(entry.action_intent!=intent || entry.status.creations!=creation || !entry.active ||
             closing_ || !entry.status.enabled || entry.active->revision!=entry.revision)return;
         entry.active->session_action=entry.active->session->Queue(entry.action->domain,entry.action->request);
@@ -188,6 +237,7 @@ void SceneCharacters::ReplacePlan(std::uint64_t id,CharacterPlan plan) {
     auto& entry=Edit(id);
     plan.persistence=entry.plan.persistence;
     entry.plan=std::move(plan);entry.action.reset();entry.action_intent=0;entry.action_error.clear();entry.visual_restore_error.clear();++entry.revision;
+    entry.intent_owner=Entry::IntentOwner::Action;
     BindProfile(entry.plan,id);
     entry.status.error.clear();
 }
@@ -214,6 +264,8 @@ void SceneCharacters::Shutdown() {
 }
 void SceneCharacters::Retire(Entry& entry) {
     if(!entry.active) return;
+    entry.pending_task.reset();++entry.task_revision;
+    entry.intent_owner=Entry::IntentOwner::Action;
     if(!entry.status.deleting && entry.active->revision==entry.revision)SaveVisualState(entry);
     if(entry.active->controls) {
         // Preserve returned gaze receipts, but keep an unapplied saved target
@@ -277,6 +329,11 @@ void SceneCharacters::Service(const api::WorldFrame& frame,const std::optional<S
         if(entry.active) {
             api::OperationTrace timing("character.advance",id,entry.active->creation,frame.sequence,
                 entry.plan.package.id.c_str(),timing_enabled_ && pending?timing_:disabled);
+            if(!frame.battle.read.returned || frame.battle.value){
+                if(entry.pending_task)entry.task_preparation_error="task preparation cancelled by world change";
+                entry.pending_task.reset();++entry.task_revision;
+            }
+            else SubmitTask(entry);
             SubmitAction(entry);
             advance(*entry.active);
             // Adopt only a successfully played automatic successor of THIS
@@ -284,7 +341,7 @@ void SceneCharacters::Service(const api::WorldFrame& frame,const std::optional<S
             if(const auto* handoff=entry.active->session->Handoff()) {
                 if(entry.active->revision==entry.revision)entry.plan.presentation_phase=handoff->Playback().presentation_phase;
                 const auto& output=handoff->Playback().successor;
-                if(output && (output->returned || output->observed) && entry.active->revision==entry.revision &&
+                if(entry.intent_owner==Entry::IntentOwner::Action && output && (output->returned || output->observed) && entry.active->revision==entry.revision &&
                     entry.active->action_intent==entry.action_intent &&
                     entry.active->session->Status().submitted_action==entry.active->session_action &&
                     handoff->Status().phase==HandoffPhase::Ready &&
@@ -303,7 +360,8 @@ void SceneCharacters::Service(const api::WorldFrame& frame,const std::optional<S
                     if(const auto* other=Active(entry.look.target,frame))target=other->Character().Creation().factory.entity;
                 }
                 const auto* handoff=entry.active->session->Handoff();
-                const bool pending_action=entry.action && entry.active->action_intent!=entry.action_intent;
+                const bool pending_action=entry.pending_task || (entry.intent_owner==Entry::IntentOwner::Action &&
+                    entry.action && entry.active->action_intent!=entry.action_intent);
                 const bool ready=handoff && handoff->Status().phase==HandoffPhase::Ready && !pending_action;
                 entry.active->controls->Service(frame,appearance,target,ready);
                 const auto& live=entry.active->controls->Status();
@@ -394,6 +452,7 @@ void SceneCharacters::Service(const api::WorldFrame& frame,const std::optional<S
 }
 SceneCharacterStatus SceneCharacters::Status(std::uint64_t id) const {
     const auto& entry=entries_.at(id); auto out=entry.status;
+    std::shared_ptr<CharacterTaskStatus> task_view;
     out.transient=entry.plan.persistence==CharacterPersistence::Session;
     out.active=entry.active.has_value(); out.retiring=entry.retired.size();
     for(const auto& input:creation_inputs_)if(input.character==id && input.value)++out.pending_inputs;
@@ -402,14 +461,19 @@ SceneCharacterStatus SceneCharacters::Status(std::uint64_t id) const {
     out.package=entry.plan.package;out.placement=entry.placement;out.look=entry.look;
     if(const auto input=entry.plan.visual_program;input && input->program) {
         out.visual_program=input->program->id;
-        if(input->tasks){out.task_catalog=input->tasks->id;out.task_catalog_revision=input->catalog_revision;}
+        if(input->tasks){
+            out.task_catalog=input->tasks->id;out.task_catalog_revision=input->catalog_revision;
+            task_view=std::make_shared<CharacterTaskStatus>();out.tasks=task_view;task_view->domain=input->tasks->domain;
+            for(const auto& [name,task]:input->tasks->tasks)task_view->definitions.emplace(name,task.definition);
+        }
         for(const auto& [key,action]:input->program->actions)out.program_actions.emplace(key,action.state);
     }
     if(entry.plan.alternate && entry.plan.alternate->initial_state.available)
         out.battle_idle_state=entry.plan.alternate->initial_state.value;
     PresentationState presentation;presentation.Configure(entry.plan.presentation_profile,entry.plan.presentation_phase);
     out.presentation_phase=presentation.Phase();out.battle_idle_state=presentation.Idle(out.battle_idle_state);
-    if(entry.action)out.action=ActionIntentStatus{entry.action_intent,0,ActionIntentPhase::Waiting,{},"waiting for this intent's active creation"};
+    if(entry.action && entry.intent_owner==Entry::IntentOwner::Action)
+        out.action=ActionIntentStatus{entry.action_intent,0,ActionIntentPhase::Waiting,{},"waiting for this intent's active creation"};
     if(out.action && !entry.action_error.empty()) {out.action->phase=ActionIntentPhase::Failed;out.action->detail=entry.action_error;}
     if(entry.active) {
         out.active_revision=entry.active->revision;
@@ -434,6 +498,11 @@ SceneCharacterStatus SceneCharacters::Status(std::uint64_t id) const {
         }
         if(const auto* handoff=entry.active->session->Handoff()) {
             out.handoff=handoff->Status();out.playback=handoff->Playback();
+            if(task_view && handoff->HasTasks())task_view->control=handoff->QueryTasks();
+            if(task_view) {
+                if(entry.pending_task)task_view->control.preparing=entry.pending_task->task;
+                task_view->control.preparation_error=entry.task_preparation_error;
+            }
             // Use the same live phase owner as automatic completion. The plan
             // only supplies the fallback before a battle model becomes active.
             if(out.active_revision==out.revision && out.handoff->ready_domain==ActionDomain::Alternate) {

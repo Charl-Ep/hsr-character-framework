@@ -189,7 +189,10 @@
     "LayoutLoadHelp": "加载后将替换当前布局，未另行保存的布局将丢失。继续加载吗？",
     "LayoutOverwriteHelp": "将覆盖同名快照。",
     "LayoutDeleteHelp": "删除此命名快照，不改变当前布置。",
-    "LayoutKeepHelp": "放弃恢复原自动存档，以当前布置覆盖它。当前没有角色时会保存空布局。"
+    "LayoutKeepHelp": "放弃恢复原自动存档，以当前布置覆盖它。当前没有角色时会保存空布局。",
+    "ShowUnavailableTasks": "显示当前不可执行的任务",
+    "FinishTask": "结束任务",
+    "CancelTask": "取消任务"
   },
   "source_names": {
     "family:tingyun": "停云",

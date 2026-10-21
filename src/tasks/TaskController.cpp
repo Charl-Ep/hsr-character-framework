@@ -24,10 +24,26 @@ struct TaskController::State {
     TaskControllerStatus status;
     bool servicing=false;
     std::optional<std::uint64_t> frame;
-    TaskSelectionResult Query(const TaskSelection& selection) const {
+    TaskQuery Inputs(const TaskSelection& selection,bool captured,const std::vector<TaskRequirement>& requirements) const {
+        auto query=selection.query;
+        const auto inputs=captured?selection.visual:visual->Parameters(selection.visual);
+        query.targets.clear();query.choices=inputs.choices;query.anchors.clear();
+        VisualProgramParameters required;bool needs_target=false;
+        for(const auto& requirement:requirements)if(const auto* target=std::get_if<TaskNeedsTarget>(&requirement)) {
+            needs_target=true;
+            if(const auto found=inputs.targets.find(target->name);found!=inputs.targets.end())required.targets.insert(*found);
+        }
+        if(needs_target)query.targets=visual->AvailableTargets(required);
+        for(const auto& [name,anchor]:inputs.anchors){(void)anchor;query.anchors.push_back(name);}
+        return query;
+    }
+    TaskSelectionResult Query(const TaskSelection& selection,bool captured=false) const {
         const auto key=selection.query.slot?context.ResolveSlot(*selection.query.slot,selection.task):selection.task;
         const auto& task=catalog->Resolve(key);
-        return {0,key,context.Query(task.definition,selection.query)};
+        try {return {0,key,context.Query(task.definition,Inputs(selection,captured,task.definition.requirements))};}
+        catch(const std::exception& error) {
+            return {0,key,{TaskAvailability::Unknown,{},{{TaskReasonKind::Unresolved,"visual inputs",error.what()}}}};
+        }
     }
     void SyncContexts() {
         const auto live=visual->ReadyContexts();
@@ -55,7 +71,8 @@ struct TaskController::State {
         if(active){status.current=active->selection.task;status.execution=active->player->Status();}
     }
     void Start(Pending desired) {
-        auto checked=Query(desired.selection);
+        desired.selection.visual=visual->Parameters(desired.selection.visual);
+        auto checked=Query(desired.selection,true);
         if(checked.query.availability!=TaskAvailability::Available) {
             status.blocked=std::move(checked.query);return;
         }
@@ -63,12 +80,12 @@ struct TaskController::State {
         auto run=std::make_shared<Run>();run->selection=std::move(desired.selection);
         const auto& plan=catalog->Resolve(run->selection.task);run->next=plan.next;
         auto ports=services;
-        const auto query=run->selection.query;
-        ports.condition=[this,query](const auto& requirement) {
-            SyncContexts();return context.Evaluate(requirement,query).availability;
+        const auto selection=run->selection;
+        ports.condition=[this,selection](const auto& requirement) {
+            SyncContexts();return context.Evaluate(requirement,Inputs(selection,true,{requirement})).availability;
         };
         run->player=std::make_unique<TaskPresentation>(TaskExecutionToken{++next_execution},owner,
-            catalog->sequences.at(plan.definition.entry),visual,run->selection.visual,std::move(ports));
+            catalog->sequences.at(plan.definition.entry),visual,run->selection.visual,std::move(ports),true);
         if(desired.finish)run->player->RequestFinish();
         active=std::move(run);status.started=desired.intent;status.blocked.reset();status.error.clear();
     }
@@ -123,7 +140,7 @@ void TaskController::Reset(TaskExitReason reason) {
     for(const auto& run:state.retiring)run->player->Stop(reason);
     state.visual->Leave();state.SyncContexts();state.Publish();
 }
-void TaskController::Service(double seconds,std::uint64_t frame) {
+void TaskController::Service(double seconds,std::uint64_t frame,bool allow_start) {
     auto& state=*state_;if(state.servicing || state.frame==frame)return;
     state.servicing=true;struct Guard{bool& value;~Guard(){value=false;}} guard{state.servicing};state.frame=frame;
     try {
@@ -144,7 +161,7 @@ void TaskController::Service(double seconds,std::uint64_t frame) {
             }
             state.RetireActive();
         }
-        if(!state.active && state.pending && !state.status.closing) {
+        if(allow_start && !state.active && state.pending && !state.status.closing) {
             auto desired=std::move(*state.pending);state.pending.reset();
             state.Start(std::move(desired));
             // A successor starts with no guessed carry-over time. It can

@@ -540,6 +540,15 @@
     },
     "LayoutKeepHelp": {
       "parameters": {}
+    },
+    "ShowUnavailableTasks": {
+      "parameters": {}
+    },
+    "FinishTask": {
+      "parameters": {}
+    },
+    "CancelTask": {
+      "parameters": {}
     }
   }
 }

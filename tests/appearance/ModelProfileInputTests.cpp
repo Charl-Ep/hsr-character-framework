@@ -257,11 +257,27 @@ __declspec(noinline) void TestGazeHandoff(const api::WorldFrame& frame,const api
     gaze_scene_methods.components=M(+[](void*,void*,bool,void*)->void*{return &gaze_components;});
     api::SceneObjects gaze_scene(gaze_scene_methods);
     framework::AppearanceServices with_gaze{assets,gaze_scene,visuals,config,components};
-    framework::SceneCharacters registry(session_services,[&](auto& session,const auto&,const auto&){session.Create(create);});
+    auto task_services=session_services;
+    task_services.visual_program=[](api::EntityOrigin,const framework::VisualProgramInput& value,const auto&) {
+        framework::VisualProgramServices ports;
+        ports.effects=std::make_shared<api::PresentationEffects>(api::EffectRequestServices{{},api::EffectAccess({}),{},{},{}});
+        ports.create=[](auto&,const auto&,const auto&)->framework::VisualEffectId{throw std::logic_error("unexpected effect");};
+        return std::make_shared<framework::VisualProgramPlayer>(value.program,std::move(ports));
+    };
+    framework::SceneCharacters registry(task_services,[&](auto& session,const auto&,const auto&){session.Create(create);});
     api::PresentationContext control_context(assets.objects,controls);
     registry.ConfigureControls(control_context.Controls(),control_context.Player());
     framework::CharacterPlan plan;plan.package=package;
     plan.alternate=framework::BattlePresentation{{"battle.prefab",{},{}},{true,"OtherState",{}}};
+    auto task_input=std::make_shared<framework::VisualProgramInput>();
+    task_input->tasks=std::make_shared<const framework::TaskCatalog>(framework::ParseTaskCatalog(R"({
+      "format":"hksr.task-catalog","id":"gaze","domain":"battle",
+      "visual":{"id":"gaze-visual","source":"fixture","scope":"owned","effects":{}},
+      "sequences":{"hold":{"entry":{"op":"serial","children":[
+        {"op":"animation","request":"body","participant":"body","state":"SomeState"},
+        {"op":"repeat","until_finish":true,"child":{"op":"wait_frame"}}]}}},
+      "tasks":{"hold":{"entry":"hold"}}})"));
+    task_input->program=task_input->tasks->visual;plan.visual_program=task_input;
     const framework::SceneAddress address{"gaze-map",1};
     const auto id=registry.Add(address.key,plan,framework::PlacedAction{Domain::Alternate,framework::FreeStyleState{"SomeState"}});
     registry.Service(current,address,with_gaze,types);++current.sequence;registry.Service(current,address,with_gaze,types);
@@ -285,6 +301,29 @@ __declspec(noinline) void TestGazeHandoff(const api::WorldFrame& frame,const api
     Check(registry.Status(id).action->id==replacement && registry.Status(id).action->phase==framework::ActionIntentPhase::Returned);
     Check(npc_plays==plays_before && animator_plays==animator_before+1);
     Check(registry.Status(id).handoff->ready_domain==Domain::Exploration);
+    const auto creation=registry.Status(id).creations;
+    const framework::TaskControlInput task_select{framework::TaskControlOperation::Select,framework::TaskSelection{{"gaze","hold"}}};
+    const auto before_task=battle_plays;
+    const auto old_queue=animator_plays;
+    registry.Select(id,{Domain::Exploration,framework::AnimatorState{"OtherState"}}); // not dispatched yet
+    gaze_fading=true;
+    auto deferred=registry.ControlTask(id,creation,task_select,current);
+    Check(deferred.preparing && battle_plays==before_task);
+    Check(!registry.Status(id).action); // previous operation is superseded, not left waiting
+    registry.ControlTask(id,creation,{framework::TaskControlOperation::Cancel,{}},current);
+    gaze_active=false;gaze_fading=false;++current.sequence;registry.Service(current,address,with_gaze,types);
+    Check(!registry.ControlTask(id,creation,{},current).preparing && battle_plays==before_task);
+    Check(animator_plays==old_queue); // cancelling the task never revives the superseded command
+    gaze_fading=true;
+    deferred=registry.ControlTask(id,creation,task_select,current);Check(deferred.preparing.has_value());
+    registry.ControlTask(id,creation,{framework::TaskControlOperation::Finish,{}},current);
+    ++current.sequence;registry.Service(current,address,with_gaze,types);Check(battle_plays==before_task);
+    gaze_active=false;gaze_fading=false;observed_hash=41;observed_time=0;
+    for(unsigned i=0;i<4;++i){++current.sequence;registry.Service(current,address,with_gaze,types);}
+    const auto task_state=registry.ControlTask(id,creation,{},current);
+    Check(!task_state.preparing && task_state.preparation_error.empty());
+    Check(task_state.status.execution && task_state.status.execution->finish_requested && task_state.status.execution->phase==framework::TaskExecutionPhase::Finished);
+    Check(registry.Status(id).handoff->ready_domain==Domain::Alternate && battle_plays==before_task+2);
     registry.Shutdown();registry.Service(current,address,with_gaze,types);
     Check(registry.Closed() && roots.empty() && !gaze_enabled && gaze_automatic);
 }
@@ -655,10 +694,11 @@ void TestModelProfileInputs() {
         consumer.paths=&baseline_events; consumer.layers=&baseline_layers;
         model.child=&string_type; load_state=5; changing=false; animator_present=true; animator_ready=true;
     };
-    {
+    for(bool alternate:{false,true}) {
         reset_baseline();framework::CharacterPlan plan;plan.package=package;
+        if(alternate)plan.alternate=framework::BattlePresentation{{"battle.prefab",{},{}},{}};
         auto input=std::make_shared<framework::VisualProgramInput>();
-        input->tasks=std::make_shared<const framework::TaskCatalog>(framework::ParseTaskCatalog(R"({
+        auto task_catalog=std::make_shared<framework::TaskCatalog>(framework::ParseTaskCatalog(R"({
           "format":"hksr.task-catalog","id":"owned","domain":"exploration",
           "visual":{"id":"owned-visual","source":"test","scope":"task","effects":{}},
           "sequences":{"play":{"entry":{"op":"serial","children":[
@@ -666,6 +706,7 @@ void TestModelProfileInputs() {
             {"op":"wait_request","request":"body"}]}}},
           "tasks":{"play":{"entry":"play"}}
         })"));
+        task_catalog->domain=alternate?Domain::Alternate:Domain::Exploration;input->tasks=task_catalog;
         input->program=input->tasks->visual;plan.visual_program=input;
         auto configured=session_services;std::shared_ptr<framework::VisualProgramPlayer> player;
         configured.visual_program=[&](api::EntityOrigin origin,const framework::VisualProgramInput& value,const auto&) {
@@ -679,7 +720,7 @@ void TestModelProfileInputs() {
         auto current=frame;current.manager={create.manager,{true,0}};current.battle={false,{true,0}};current.sequence=1000;
         observed_hash=37;observed_time=0;
         const framework::SceneAddress address{"task-map",1};
-        const auto id=registry.Add(address.key,plan,framework::PlacedAction{Domain::Exploration,framework::NpcMotion{18}});
+        const auto id=registry.Add(address.key,plan); // no preparatory idle/action command
         auto tick=[&]{++current.sequence;registry.Service(current,address,appearance,types);};
         tick();const auto epoch=registry.Status(id).creations;
         framework::TaskControlInput select{framework::TaskControlOperation::Select,framework::TaskSelection{{"owned","play"}}};
@@ -699,7 +740,7 @@ void TestModelProfileInputs() {
         Check(task_requests.size()==1 && task_requests[0].name=="body" &&
             task_requests[0].state.submitted && task_requests[0].receipt.model!=0);
         // These developer tasks must not overwrite the persisted normal action.
-        Check(std::get<framework::NpcMotion>(registry.DesiredAction(id)->request).id==18);
+        Check(!registry.DesiredAction(id));
         observed_time=1.1f;tick();tick();
         Check(registry.ControlTask(id,epoch,{},current).status.execution->phase==framework::TaskExecutionPhase::Finished);
         Check(battle_plays==before+1); // no implicit idle selection

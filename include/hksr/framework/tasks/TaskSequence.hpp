@@ -25,11 +25,6 @@ struct TaskSequence {
     std::optional<TaskNodeIndex> interruption;
 };
 struct TaskSubmission {TaskRequestReceipt receipt;TaskRequestState state;};
-struct TaskRequestSnapshot {
-    std::string name,source;
-    TaskRequestReceipt receipt;
-    TaskRequestState state;
-};
 struct TaskSequenceServices {
     // Resolve participants through the owned actor/partner bindings. Return
     // reserved receipts for queued or partially failed work. A queued model
@@ -43,15 +38,6 @@ struct TaskSequenceServices {
     std::function<TaskAvailability(const TaskRequirement&)> condition;
     // Cooperative work budget. Yield retains the cursor; it never drops nodes.
     std::function<bool()> yield;
-};
-enum class TaskExecutionPhase { Running,Interrupting,Draining,Finished };
-struct TaskExecutionStatus {
-    TaskExecutionToken token;
-    TaskExecutionPhase phase=TaskExecutionPhase::Running;
-    std::optional<TaskExitReason> reason;
-    bool finish_requested=false;
-    std::size_t retained_requests=0;
-    std::vector<std::string> issues,waiting;
 };
 // One execution, not one actor. The coordinator retains interrupted instances
 // until Drained, so old native callbacks cannot advance a newer execution.

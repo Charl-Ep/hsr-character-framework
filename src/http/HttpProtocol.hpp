@@ -10,6 +10,7 @@ Json Reply(const CommandReply&);
 Json Snapshot(const ApplicationSnapshot&);
 Json Catalog(const ApplicationSnapshot&);
 Json Actions(const ApplicationSnapshot&,std::uint64_t character);
+Json Tasks(const ApplicationSnapshot&,std::uint64_t character);
 Json Updates(const ApplicationUpdates&);
 std::string Cursor(const ApplicationCursor&);
 ApplicationCursor ParseCursor(const std::string&);

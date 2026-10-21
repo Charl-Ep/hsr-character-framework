@@ -42,21 +42,36 @@ TaskControlResult ModelActionHandoff::ControlTask(TaskControlInput input) {
     TaskControlResult result;
     if(input.operation==TaskControlOperation::Select) {
         if(!input.selection)throw std::invalid_argument("task selection missing");
-        if(!active_ || !transition_->Status().controller_ready || !VisualReady(task_catalog_->domain) ||
-            status_.phase!=HandoffPhase::Ready || status_.ready_domain!=task_catalog_->domain ||
-            (desired_ && desired_->serial!=status_.servicing))
-            throw std::logic_error("task catalog model domain is not ready");
+        if(task_catalog_->domain==ActionDomain::Alternate && !transition_->RequestStatus())
+            throw std::logic_error("alternate source unavailable; exploration remains usable");
         input.selection->query.participants={{"body"}};
         result.selection=tasks_->Select(std::move(*input.selection));
+        if(result.selection->intent && (!desired_ || desired_->domain!=task_catalog_->domain || desired_->action ||
+            status_.phase==HandoffPhase::Failed))
+            desired_=Intent{++status_.requested,task_catalog_->domain,{}};
     } else if(input.operation==TaskControlOperation::Query) {
-        result.requests=tasks_->Requests();
-        if(input.selection){input.selection->query.participants={{"body"}};result.selection=tasks_->Query(*input.selection);}
-        else for(const auto& [name,plan]:task_catalog_->tasks) {
-            (void)plan;TaskSelection selection{{task_catalog_->id,name}};selection.query.participants={{"body"}};
-            result.catalog.emplace(name,tasks_->Query(selection).query);
-        }
+        result=QueryTasks(input.selection);result.requests=tasks_->Requests();return result;
     } else if(input.operation==TaskControlOperation::Finish)tasks_->RequestFinish();
     else tasks_->Cancel();
+    result.status=tasks_->Status();result.contexts=tasks_->Context().Owners();return result;
+}
+TaskControlResult ModelActionHandoff::QueryTasks(const std::optional<TaskSelection>& selected) const {
+    if(!tasks_)throw std::logic_error("no task catalog configured for this actor");
+    TaskControlResult result;
+    auto query=[&](TaskSelection selection) {
+        selection.query.participants={{"body"}};
+        auto value=tasks_->Query(selection);
+        if(removing_ || Ended() || status_.closed ||
+            (task_catalog_->domain==ActionDomain::Alternate && !transition_->RequestStatus())) {
+            value.query.availability=TaskAvailability::Unavailable;
+            value.query.reasons.push_back({TaskReasonKind::Unresolved,"model","owned model source is unavailable"});
+        }
+        return value;
+    };
+    if(selected)result.selection=query(*selected);
+    else for(const auto& [name,plan]:task_catalog_->tasks) {
+        (void)plan;result.catalog.emplace(name,query({{task_catalog_->id,name}}).query);
+    }
     result.status=tasks_->Status();result.contexts=tasks_->Context().Owners();return result;
 }
 void ModelActionHandoff::Remove() {
@@ -108,8 +123,10 @@ void ModelActionHandoff::Service(const api::WorldFrame& frame,AppearanceServices
     // Submission-time checks are insufficient for a queued/running task.
     // Cancel only this actor's task ownership before another frame can dispatch
     // its leaf operations, including a same-world exploration -> battle change.
-    if(tasks_ && (!OwnFrame(frame) || !frame.battle.read.returned || frame.battle.value))
+    if(tasks_ && (!OwnFrame(frame) || !frame.battle.read.returned || frame.battle.value)) {
         tasks_->Reset(TaskExitReason::WorldLeft);
+        if(desired_ && !desired_->action && desired_->serial!=status_.servicing)desired_.reset();
+    }
     actions_.ServiceEffects(frame);
     if(removing_ || Ended() || character_.Creation().removal_requested || character_.Creation().closed) {
         removing_=true;Finish(frame,appearance,types);return;
@@ -130,7 +147,9 @@ void ModelActionHandoff::Service(const api::WorldFrame& frame,AppearanceServices
             if(!same_pending_domain)actions_.CancelPending(false);
             if(same_pending_domain){ /* Preserve the model operation; only replace the desired action. */ }
             else if(status_.phase==HandoffPhase::Ready && status_.ready_domain==active_->domain &&
-                transition_->Status().controller_ready)status_.playback_serial=actions_.Queue(active_->action);
+                transition_->Status().controller_ready) {
+                    if(active_->action)status_.playback_serial=actions_.Queue(*active_->action);
+                }
             else {
                 api::ModelTransitionPlan plan;
                 plan.destination=active_->domain==ActionDomain::Exploration?api::ModelDestination::Baseline:api::ModelDestination::Alternate;
@@ -189,18 +208,21 @@ void ModelActionHandoff::Service(const api::WorldFrame& frame,AppearanceServices
                 if(active_->domain==ActionDomain::Alternate)actions_.RestoreVisualProgram(std::move(*visual_restore_));
                 visual_restore_.reset();
             }
-            if(before!=HandoffPhase::Ready){status_.ready_domain=active_->domain;status_.playback_serial=actions_.Queue(active_->action);}
+            if(before!=HandoffPhase::Ready){
+                status_.ready_domain=active_->domain;
+                if(active_->action)status_.playback_serial=actions_.Queue(*active_->action);
+            }
             character_.Service(frame,appearance,types);
             if(interrupted())return;
             actions_.Service(frame,status_.ready_domain && VisualReady(*status_.ready_domain),appearance.assets.objects);
-            if(tasks_)tasks_->Service(frame.delta_time,frame.sequence);
+            if(tasks_)tasks_->Service(frame.delta_time,frame.sequence,status_.ready_domain==task_catalog_->domain);
             const auto& output=actions_.Status().last;
             if(output && status_.playback_serial && output->serial==status_.playback_serial &&
                 (!status_.output || status_.output->outcome==ActionOutcome::Waiting))status_.output=output;
         }else if(status_.phase==HandoffPhase::Loading || status_.phase==HandoffPhase::Initializing ||
             status_.phase==HandoffPhase::Failed) {
             character_.Service(frame,appearance,types);
-            if(tasks_)tasks_->Service(0,frame.sequence);
+            if(tasks_)tasks_->Service(0,frame.sequence,false);
         }
     }catch(const std::exception& error){Fail(error.what());}
 }

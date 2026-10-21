@@ -3,15 +3,26 @@
 #include <stdexcept>
 
 namespace hksr::framework {
+VisualProgramParameters VisualProgramPlayer::Parameters(VisualProgramParameters overrides) const {
+    auto result=services_.select_inputs?services_.select_inputs():VisualProgramParameters{{},services_.choices,{}};
+    for(auto& [name,id]:overrides.targets)result.targets[name]=id;
+    for(auto& [name,value]:overrides.choices)result.choices[name]=std::move(value);
+    for(auto& [name,value]:overrides.anchors)result.anchors[name]=value;
+    return result;
+}
+std::vector<std::string> VisualProgramPlayer::AvailableTargets(const VisualProgramParameters& inputs) const {
+    return services_.available_targets?services_.available_targets(inputs):std::vector<std::string>{};
+}
 std::optional<AnimationRequestEndpoint> VisualProgramPlayer::PartnerAnimation(const std::string& key) const {
     if(status_.closing || end_pending_ || !services_.partner_animation)
         throw std::runtime_error("owned partner animation service unavailable");
     return services_.partner_animation(key);
 }
-std::uint64_t VisualProgramPlayer::BeginSequence(VisualProgramParameters inputs) {
+std::uint64_t VisualProgramPlayer::BeginSequence(VisualProgramParameters inputs,bool captured) {
     if(status_.closing || end_pending_)throw std::logic_error("visual scene closing");
     if(context_ || pending_ || action_)InterruptAction();
     auto scope=std::make_shared<InstructionScope>();
+    scope->captured=captured;
     scope->lifetime=std::make_shared<Lifetime>();
     auto& lifetime=*scope->lifetime;
     lifetime.token=++next_context_;lifetime.phase=ContextPhase::Active;
@@ -97,7 +108,8 @@ void VisualProgramPlayer::ServiceSequences(bool advance) {
             if(!advance)continue;
             if(!scope->prepared) {
                 scope->prepared=true;
-                auto inputs=services_.select_inputs?services_.select_inputs():VisualProgramParameters{{},services_.choices,{}};
+                auto inputs=scope->captured?VisualProgramParameters{}:
+                    services_.select_inputs?services_.select_inputs():VisualProgramParameters{{},services_.choices,{}};
                 if(!Current({token,lifetime}))continue;
                 for(const auto& [key,value]:lifetime->inputs.targets)inputs.targets[key]=value;
                 for(const auto& [key,value]:lifetime->inputs.choices)inputs.choices[key]=value;

@@ -3,7 +3,7 @@
 #include "../catalog/CatalogSnapshot.hpp"
 #include "../character/CharacterPlan.hpp"
 #include "ApplicationEvents.hpp"
-#include <hksr/framework/tasks/TaskController.hpp>
+#include <hksr/framework/tasks/TaskControlTypes.hpp>
 #include <hksr/framework/presentation/VisualProgramLibrary.hpp>
 #include "../layout/LayoutState.hpp"
 #include <hksr/animation/AnimatorCatalog.hpp>

@@ -1,7 +1,7 @@
 #include "Menu.hpp"
 #include "MenuLabels.hpp"
 #include "Widgets.hpp"
-#include <set>
+#include <hksr/framework/application/CharacterTasks.hpp>
 
 namespace hksr::framework::ui {
 void Menu::Actions(ApplicationService& host,const ApplicationSnapshot& snapshot,const SceneCharacterStatus& selected) {
@@ -31,92 +31,67 @@ void Menu::Actions(ApplicationService& host,const ApplicationSnapshot& snapshot,
             ImGui::RadioButton(L(UiText::Battle),&action_domain_,1);
         }
     }
+#if HKSR_DEVELOPMENT_UI
+    ImGui::Checkbox(L(UiText::ShowUnavailableTasks),&show_unavailable_tasks_);
+#endif
+    if(selected.tasks) {
+        const auto& control=selected.tasks->control;
+        for(const auto& context:control.contexts) {
+            auto line=context.phase.value_or(std::string{});
+            for(const auto& [name,value]:context.values) {
+                const auto text=std::visit([](const auto& input)->std::string {
+                    using T=std::decay_t<decltype(input)>;
+                    if constexpr(std::is_same_v<T,std::string>)return input;
+                    else if constexpr(std::is_same_v<T,bool>)return input?"true":"false";
+                    else return std::to_string(input);
+                },value);
+                if(!line.empty())line+=" · ";line+=name+": "+text;
+            }
+            if(!line.empty())Text(line);
+            if(ImGui::IsItemHovered()){BeginHelp();Text(context.name);EndHelp();}
+        }
+        if(!control.status.error.empty())Text(control.status.error);
+        if(!control.preparation_error.empty())Text(control.preparation_error);
+        ImGui::BeginDisabled(!selected.active);
+        if(ImGui::Button(L(UiText::FinishTask)))host.Post(ControlCharacterTask{actor_,selected.creations,{TaskControlOperation::Finish,{}}});
+        ImGui::SameLine();
+        if(ImGui::Button(L(UiText::CancelTask)))host.Post(ControlCharacterTask{actor_,selected.creations,{TaskControlOperation::Cancel,{}}});
+        ImGui::EndDisabled();
+    }
     ImGui::SetNextItemWidth(-1);
     ImGui::InputTextWithHint("##action-filter",T(UiText::SearchActions),action_filter_,sizeof(action_filter_));
     const auto* current=snapshot.catalog?snapshot.catalog->Actions(actor_):nullptr;
     const auto domain=action_domain_==0?ActionDomain::Exploration:ActionDomain::Alternate;
-#if HKSR_DEVELOPMENT_UI
-    const bool show_ready=!npc && action_kind_==1,show_configured=!show_ready;
-#else
-    const bool show_ready=!npc && domain==ActionDomain::Alternate,show_configured=true;
-#endif
-    ImGui::BeginDisabled(!selected.active);
     ImGui::BeginChild("action-list",{0,std::max(100.0f,ImGui::GetContentRegionAvail().y-30)});
     int shown=0;
-    std::set<std::string> ready_names;
-    auto row=[&](const std::string& label,const std::string& detail,CharacterCommand command,bool available=true) {
-        if(!SourceMatches(label+" "+detail,action_filter_))return;
+    for(const auto& entry:CharacterTasks(snapshot,actor_)) {
+        if(npc && entry.kind!=CharacterTaskKind::Npc)continue;
+#if HKSR_DEVELOPMENT_UI
+        if(!npc && action_kind_==1) {
+            if(entry.kind!=CharacterTaskKind::Ready && entry.kind!=CharacterTaskKind::Idle && entry.kind!=CharacterTaskKind::Reaction)continue;
+        } else
+#endif
+        if(!npc && entry.domain!=domain)continue;
+        const bool available=entry.query.availability==TaskAvailability::Available;
+        if(!available && !show_unavailable_tasks_)continue;
+        auto label=entry.recovery?std::string(T(UiText::RecoverReaction))+" · "+entry.label:entry.label;
+        if(entry.kind==CharacterTaskKind::Idle)label=std::string(T(UiText::IdleState))+" · "+label;
+        auto detail=entry.detail;
+        if(entry.kind==CharacterTaskKind::Reaction)detail+="\n"+std::string(T(UiText::ReactionScope));
+        for(const auto& source:entry.sources)detail+="\n"+source.document+" · "+source.field;
+        for(const auto& reason:entry.query.reasons)detail+="\n"+reason.source+": "+reason.detail;
+        if(!SourceMatches(label+" "+detail,action_filter_))continue;
         ImGui::PushID(shown++);
         const float width=std::max(1.0f,ImGui::GetContentRegionAvail().x);
-        bool pending=!available;
-        if(const auto* selection=std::get_if<SelectCatalogAction>(&command)) {
-            if(!std::holds_alternative<VisualActionKey>(selection->action.key))
-                pending=pending || (current && !current->actions.Ready(std::holds_alternative<ReadyActionKey>(selection->action.key)?
-                    ActionDomain::Alternate:std::get<ConfiguredActionKey>(selection->action.key).domain));
+        ImGui::BeginDisabled(!available);
+        if(ImGui::Selectable(label.c_str(),false,0,{width,ImGui::GetTextLineHeight()+12}))host.Post(entry.command);
+        if(ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled) && (!detail.empty() || ImGui::CalcTextSize(label.c_str()).x>width)) {
+            BeginHelp();Text(label);Text(detail);EndHelp();
         }
-        ImGui::BeginDisabled(pending);
-        if(ImGui::Selectable(label.c_str(),false,0,{width,ImGui::GetTextLineHeight()+12}))host.Post(std::move(command));
-        if(ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled) && (!detail.empty() || ImGui::CalcTextSize(label.c_str()).x>width)){BeginHelp();Text(label);Text(detail);EndHelp();}
-        ImGui::EndDisabled();
-        ImGui::PopID();
-    };
-    if(!npc && current && (show_ready || domain==ActionDomain::Alternate) && !current->actions.visual_states.empty()) {
-        if(ImGui::CollapsingHeader(L(UiText::Reactions),ImGuiTreeNodeFlags_DefaultOpen)) {
-            for(const auto& visual:current->actions.visual_states) {
-                const auto& value=visual.value;
-                if(!value.flag.available)continue;
-                const auto& occur=value.occur.resolved_state;
-                const auto& loop=value.loop.resolved_state;
-                std::string label=occur.available && !occur.value.empty()?occur.value:loop.value;
-                if(label.empty())label=T(UiText::VisualEffect);
-                if(visual.expression.available && !visual.expression.value.empty())label+=" · "+visual.expression.value;
-                if(value.priority.available && !value.priority.value.empty())label+=" · "+value.priority.value;
-                const auto detail=occur.value+" → "+loop.value+" → "+value.recover.resolved_state.value+
-                    "\n"+T(UiText::ReactionScope)+"\n"+visual.source+"\nflag="+std::to_string(value.flag.value);
-                for(bool recover:{false,true}) {
-                    const auto query=QueryVisualAction(visual,recover);
-                    auto explanation=detail;for(const auto& issue:query.issues)explanation+="\n"+issue;
-                    row(recover?std::string("    ")+T(UiText::RecoverReaction)+" · "+label:label,explanation,
-                        SelectCatalogAction{actor_,{current->revision,VisualActionKey{visual.character_config,value.flag.value,recover}}},query.available);
-                }
-            }
-        }
-        ImGui::Separator();
-    }
-    if(!npc && current && (show_ready || domain==ActionDomain::Alternate))
-        for(const auto& sources:current->actions.visual_sources)
-            for(const auto* table:{&sources.defaults,&sources.character})for(const auto& issue:table->issues)Text(issue.error);
-    if(show_ready && current) {
-        if(!selected.battle_idle_state.empty()) {
-            ready_names.insert(selected.battle_idle_state);
-            row(std::string(T(UiText::IdleState))+" · "+selected.battle_idle_state,{},IdleCharacter{actor_});
-        }
-        for(const auto& set:current->actions.ready_actions)for(std::size_t i=0;i<set->poses.size();++i) {
-            const auto& pose=set->poses[i];ready_names.insert(pose.state);
-            row(pose.label+(pose.variant_index>=0?T(UiText::ConditionalVariant):""),{},
-                SelectCatalogAction{actor_,{current->revision,ReadyActionKey{set->source,i}}});
-#if HKSR_DEVELOPMENT_UI
-            for(const auto* attack:ReadyAttacks(current->actions,*set,pose))
-                row("    "+attack->state,{},SelectCatalogAction{actor_,{current->revision,ConfiguredActionKey{attack->domain,attack->state}}});
-#endif
-        }
-    }
-    if(show_configured) {
-        if(!npc && domain==ActionDomain::Alternate)for(const auto& [key,state]:selected.program_actions)
-            row(key,state,SelectCharacterAction{actor_,{ActionDomain::Alternate,ProgramAction{selected.visual_program,key}}});
-        if(npc) {
-            const auto found=snapshot.npc_actions.find(actor_);
-            if(found!=snapshot.npc_actions.end() && found->second->creation==selected.creations)
-                for(const auto& motion:found->second->source.motions)
-                    row(motion.name.available?motion.name.value:motion.indexed_name,{},
-                        SelectCharacterAction{actor_,{ActionDomain::Exploration,NpcMotion{motion.id}}});
-        }else if(current)for(const auto& proposal:current->actions.proposals) {
-            if(proposal.domain!=domain || ready_names.count(proposal.state))continue;
-            row(proposal.state,{},SelectCatalogAction{actor_,{current->revision,ConfiguredActionKey{domain,proposal.state}}});
-        }
+        ImGui::EndDisabled();ImGui::PopID();
     }
     if(!shown)ImGui::TextWrapped("%s",T(UiText::NoActionMatches));
-    ImGui::EndChild();ImGui::EndDisabled();
+    ImGui::EndChild();
     if(current && !current->actions.finished)ImGui::TextDisabled("%s",T(UiText::ReadingActions));
 }
 }

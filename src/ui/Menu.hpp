@@ -54,6 +54,7 @@ private:
     std::uint64_t actor_=0,queried_creation_=0,source_serial_=0,source_request_=0,create_serial_=0;
     std::set<std::uint64_t> source_replies_;
     bool requested_=false;
+    bool show_unavailable_tasks_=false;
     std::shared_ptr<PackageJob> package_job_;
     std::shared_ptr<const ModelAssetInput> payload_;
     std::string message_;

@@ -53,9 +53,10 @@ void CharacterSession::Create(const api::StoryCreateInput& input) {
 void CharacterSession::Remove() { removing_=true; desired_.reset(); if(baseline_)baseline_->Cancel(); }
 TaskControlResult CharacterSession::ControlTask(TaskControlInput input) {
     if(removing_ || status_.closed || !handoff_)throw std::logic_error("task session is not active");
-    if(input.operation==TaskControlOperation::Select && desired_ && desired_->serial!=status_.submitted_action)
-        throw std::logic_error("model action change is pending");
-    return handoff_->ControlTask(std::move(input));
+    const bool select=input.operation==TaskControlOperation::Select;
+    auto result=handoff_->ControlTask(std::move(input));
+    if(select && result.selection && result.selection->intent)desired_.reset();
+    return result;
 }
 bool CharacterSession::Ended() const {
     return owner_.entity && (api::TrackedEntities().IsDisposed(owner_) ||

@@ -80,6 +80,14 @@ Shared reactions use `{"kind":"visual_behavior","source":"<character config>","f
 
 Authored program actions use `{"kind":"program","program":"scene","action":"enter","choices":{"variant":"b"}}` without a catalog revision. Use an entry from the action response's `program` array; `choices` is optional. The bound definition supplies the body state. A different program ID or unknown action key is rejected by the character service.
 
+## Tasks
+
+`GET /v1/characters/{id}/tasks` returns the same directory used by the menu. Entries include `backend`, `domain`, `sources`, `availability`, reasons, input types/defaults and a ready-to-submit `command`. Backends distinguish NPC motions, configured animation clips, ready transitions, reactions, authored programs, sequences and idle. A clip entry is not a complete battle ability.
+
+Sequence commands are `task_query`, `task_select`, `task_finish` and `task_cancel`, with the current `character` and `creation`. Selection includes `catalog` and `task`; optional `inputs`, `slot`, `targets`, `choices` and `anchors` are defined in [task runtime](task-runtime.md). Preparation uses the existing model/gaze handoff. A returned command means intent was accepted, not that its task has started or finished.
+
+Task replies and snapshots expose current/pending execution, preparation errors, context owners, typed values and availability. SSE publishes changes without native queries. Only explicit queries include detailed request receipts. Task catalogs currently bind to session-only previews and are not persisted in layouts.
+
 ## Map layouts
 
 The working layout is saved in `Layouts/map-<escaped-key>/current.json`; named snapshots use `snapshots/layout-<name>.json`. Layouts retain official sources, placement, enable state, gaze, selected actions and presentation phases. Restored actions start from the beginning.

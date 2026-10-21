@@ -4,6 +4,7 @@
 #include "../assets/CharacterPackage.hpp"
 #include "../presentation/HandoffStatus.hpp"
 #include "../presentation/VisualProgramState.hpp"
+#include "../tasks/TaskControlTypes.hpp"
 #include <hksr/model/CharacterOutfit.hpp>
 
 namespace hksr::framework {
@@ -49,5 +50,6 @@ struct SceneCharacterStatus {
     bool transient=false;
     std::string task_catalog;
     std::uint64_t task_catalog_revision=0;
+    std::shared_ptr<const CharacterTaskStatus> tasks;
 };
 }

@@ -15,7 +15,6 @@ struct VisualEffectInput {
     api::EntityEffectOptions options;
     std::string anchor; // named world pose, mutually exclusive with target
 };
-VisualSpatialAnchors ParseVisualSpatialAnchors(const std::string& json);
 struct VisualCreate {std::vector<std::string> effects;};
 struct VisualAssign {std::string variable;float value=0;};
 struct VisualProgress {std::string effect;std::variant<float,std::string> value;float seconds=0;};
@@ -92,6 +91,8 @@ struct VisualProgramServices {
     // Called once when an action selection is consumed, before any instruction.
     // Returns current defaults; explicit Select choices take precedence.
     std::function<VisualProgramParameters()> select_inputs;
+    // Value-only owner/generation lookup; no engine reads or resource creation.
+    std::function<std::vector<std::string>(const VisualProgramParameters&)> available_targets;
     // Capture resolved input values for a named lifetime before it can submit.
     // Does not attach native animation-event producers.
     std::function<void(const std::string&,std::shared_ptr<VisualEffectContext>)> context_started;
@@ -155,9 +156,11 @@ public:
     void Restore(VisualProgramSnapshot); // data-only, before scene entry
     bool Restoring() const {return restore_.has_value();}
     bool Drained() const;
+    VisualProgramParameters Parameters(VisualProgramParameters overrides={}) const;
+    std::vector<std::string> AvailableTargets(const VisualProgramParameters&) const;
     // Task sequences share the same instruction executor and native resource
     // owners as authored programs, without inventing a body action/clock.
-    std::uint64_t BeginSequence(VisualProgramParameters);
+    std::uint64_t BeginSequence(VisualProgramParameters,bool captured=false);
     std::shared_ptr<const VisualInstructionStatus> SubmitInstruction(std::uint64_t,const VisualInstruction&);
     void CancelInstruction(std::uint64_t,const std::shared_ptr<const VisualInstructionStatus>&);
     void EndSequence(std::uint64_t,bool natural);
@@ -193,7 +196,7 @@ private:
     struct InstructionScope {
         std::shared_ptr<Lifetime> lifetime;
         std::vector<std::shared_ptr<InstructionRequest>> requests;
-        bool prepared=false,ending=false,natural=false,released=false,drained=false;
+        bool prepared=false,ending=false,natural=false,released=false,drained=false,captured=false;
         std::string error;
     };
     std::map<std::uint64_t,std::shared_ptr<InstructionScope>> instruction_scopes_;

@@ -98,6 +98,8 @@ void TestMenuPreview(ID3D11Device* device,ID3D11DeviceContext* context) {
         {"battle-en",ui::MenuPage::Actions,false,800,600,ui::Language::English},
         {"battle-states",ui::MenuPage::Actions,false,800,600},
         {"battle-states-en",ui::MenuPage::Actions,false,800,600,ui::Language::English},
+        {"tasks",ui::MenuPage::Actions,false,800,600},
+        {"tasks-en",ui::MenuPage::Actions,false,800,600,ui::Language::English},
         {"status-values",ui::MenuPage::Actions,false,800,600,ui::Language::Chinese},
         {"status-long",ui::MenuPage::Actions,false,800,600,ui::Language::English}}) {
         auto* previous=ImGui::GetCurrentContext();auto* ctx=ImGui::CreateContext();
@@ -112,6 +114,17 @@ void TestMenuPreview(ID3D11Device* device,ID3D11DeviceContext* context) {
         ui::Menu menu(scenario.page,scenario.language);if(scenario.create)menu.OpenCreation(1);
         if(std::string(scenario.name).find("layouts")==0)menu.OpenLayouts();
         ApplicationService host;auto snapshot=Fixture();
+        const bool task_menu=std::string(scenario.name).find("tasks")==0;
+        if(task_menu) {
+            auto tasks=std::make_shared<CharacterTaskStatus>();tasks->domain=ActionDomain::Alternate;
+            TaskDefinition task;task.key={"preview","enter_phase"};task.entry="entry";
+            tasks->definitions.emplace(task.key.name,task);tasks->control.catalog.emplace(task.key.name,TaskQueryResult{});
+            task.key.name="unmapped";task.entry.clear();tasks->definitions.emplace(task.key.name,task);
+            tasks->control.catalog[task.key.name].availability=TaskAvailability::Unknown;
+            tasks->control.contexts.push_back({{1},"phase-owner",{{"charged",true},{"remaining",std::int64_t(3)}},"enhanced",{}, {}});
+            snapshot.characters[0].task_catalog="preview";snapshot.characters[0].task_catalog_revision=2;
+            snapshot.characters[0].tasks=std::move(tasks);snapshot.characters[0].handoff->ready_domain=ActionDomain::Alternate;
+        }
         if(std::string(scenario.name).find("status-")==0) {
             snapshot.characters[0].branch_state.phase="enhanced";
             snapshot.characters[0].branch_state.values={{"","item",std::string("missile")},
@@ -133,6 +146,10 @@ void TestMenuPreview(ID3D11Device* device,ID3D11DeviceContext* context) {
                 Require(text.find(ui::Translate(ui::UiText::BattleIdle,menu.GetLanguage()))==std::string::npos);
                 Require(text.find(ui::Translate(ui::UiText::RefreshActions,menu.GetLanguage()))==std::string::npos);
                 Require(text.find(ui::Translate(ui::UiText::Rebuild,menu.GetLanguage()))==std::string::npos);
+                if(task_menu) {
+                    Require(text.find("enter_phase")!=std::string::npos && text.find("unmapped")==std::string::npos);
+                    Require(text.find("charged: true")!=std::string::npos && text.find("remaining: 3")!=std::string::npos);
+                }
                 if(states) {
 #if HKSR_DEVELOPMENT_UI
                     Require(text.find(ui::Translate(ui::UiText::BattleStates,menu.GetLanguage()))!=std::string::npos);

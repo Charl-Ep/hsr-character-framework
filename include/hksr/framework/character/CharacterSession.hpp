@@ -25,6 +25,7 @@ public:
     void Create(const api::StoryCreateInput& input);
     std::uint64_t Queue(ActionDomain domain,ActionRequest action);
     TaskControlResult ControlTask(TaskControlInput input);
+    void SupersedeQueuedAction() {desired_.reset();} // leave already-playing output to its owner
     void Remove();
     void Service(const api::WorldFrame& frame,AppearanceServices appearance,api::AnimationInputTypes types);
     const CharacterSessionStatus& Status() const { return status_; }

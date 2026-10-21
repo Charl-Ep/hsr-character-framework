@@ -62,6 +62,14 @@ struct Fixture {
         visual.create=[](auto&,const auto&,const auto&)->VisualEffectId{throw std::runtime_error("unexpected effect");};
         visual.attach=[&](auto){if(on_attach)on_attach();};
         visual.select_inputs=[&]{return defaults;};
+        visual.available_targets=[](const auto& inputs) {
+            std::vector<std::string> result{"Caster"};
+            for(const auto& [name,id]:inputs.targets) {
+                if(id==777)throw std::runtime_error("unrelated unresolved target");
+                if(id==99)result.push_back(name);
+            }
+            return result;
+        };
         visual.prepare_inputs=[&](auto,const auto& inputs,bool){captured=inputs;};
         scene=std::make_shared<VisualProgramPlayer>(catalog->visual,std::move(visual));
         TaskPresentationServices ports;
@@ -167,5 +175,37 @@ void CloseAndReentrant() {
     Check(broken.controller->Status().execution->issues.at(0).find("scope preparation failed")!=std::string::npos);
     Check(broken.controller->Drained());
 }
+void InputRequirementsAndPreparation() {
+    auto document=Document();document["tasks"]["idle"]["requires"]={
+        {{"op","target"},{"name","Target"}},{{"op","anchor"},{"name","Stage"}},
+        {{"op","choice"},{"name","variant"},{"is","a"}}};
+    Fixture f(document);
+    const auto missing=f.controller->Query({{"test","idle"}});
+    Check(missing.query.availability==TaskAvailability::Unavailable && missing.query.reasons.size()==3);
+    f.defaults.targets["Unused"]=777;
+    f.defaults.targets["Target"]=99;f.defaults.anchors["Stage"]={};f.defaults.choices["variant"]="a";
+    Check(f.controller->Query({{"test","idle"}}).query.availability==TaskAvailability::Available);
+    TaskSelection selected{{"test","idle"}};selected.visual.targets["Target"]=100;
+    selected.query.targets={"Target"}; // caller cannot manufacture owned target availability
+    Check(f.controller->Select(selected).query.availability==TaskAvailability::Unavailable);
+    selected.visual.targets["Target"]=99;
+    Check(f.controller->Select(selected).intent==1);
+    f.controller->Service(3,++f.frame,false);Check(f.plays.empty() && f.controller->Status().pending);
+    f.controller->Service(3,++f.frame,false);Check(f.plays.empty());
+    f.Tick();Check(f.plays.size()==1 && f.captured.targets.at("Target")==99);
+    Fixture changed(document);changed.defaults=f.defaults;changed.Select("idle");
+    changed.defaults.targets["Target"]=0;changed.Tick();
+    Check(changed.plays.empty() && changed.controller->Status().blocked->availability==TaskAvailability::Unavailable);
+    auto branch_document=Document();
+    branch_document["sequences"]["stand"]["entry"]={{"op","serial"},{"children",Json::array({
+        {{"op","wait_frame"}},
+        {{"op","branch"},{"condition",{{"op","choice"},{"name","mode"},{"is","a"}}},
+         {"yes",{{"op","animation"},{"request","branch"},{"participant","body"},{"state","A"}}},
+         {"no",{{"op","animation"},{"request","branch"},{"participant","body"},{"state","B"}}}}
+    })}};
+    Fixture frozen(branch_document);frozen.defaults.choices["mode"]="a";
+    frozen.Select("idle");frozen.Tick();frozen.defaults.choices["mode"]="b";frozen.Tick();
+    Check(frozen.plays.size()==1 && frozen.plays[0].first.state=="A" && frozen.captured.choices.at("mode")=="a");
 }
-void TestTaskCatalog(){Codec();SelectionAndInterrupt();NaturalAndPending();ContextsAndFinish();CloseAndReentrant();}
+}
+void TestTaskCatalog(){Codec();SelectionAndInterrupt();NaturalAndPending();ContextsAndFinish();CloseAndReentrant();InputRequirementsAndPreparation();}

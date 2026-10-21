@@ -32,6 +32,11 @@
       "description": "Read this instance's published actions. POST browse_actions or browse_npc_actions to initiate discovery.",
       "responses": {"200": {"description": "Partial or complete action view", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Actions"}}}}, "404": {"$ref": "#/components/responses/Missing"}, "default": {"$ref": "#/components/responses/Error"}}
     }},
+    "/v1/characters/{id}/tasks": {"get": {
+      "operationId": "getTasks", "parameters": [{"name": "id", "in": "path", "required": true, "schema": {"$ref": "#/components/schemas/Id"}}],
+      "description": "Shared UI/HTTP directory. Backend, availability and source are explicit; configured clips are not full battle abilities. Each entry carries a command accepted by POST /v1/commands.",
+      "responses": {"200": {"description": "Task directory", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Tasks"}}}}, "404": {"$ref": "#/components/responses/Missing"}, "default": {"$ref": "#/components/responses/Error"}}
+    }},
     "/v1/events": {"get": {
       "operationId": "subscribeEvents",
       "description": "SSE reset/update events. Each JSON data payload is Sync; id equals cursor. No header means reset. An expired/different-stream cursor resets; malformed syntax is 400. Use authenticated fetch streaming in browsers. Idle comments every 15s. Closure ends the stream.",
@@ -53,6 +58,35 @@
       "Unavailable": {"description": "Application closing or HTTP stopping", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}}
     },
     "schemas": {
+      "TaskControl": {
+        "type": "object", "additionalProperties": false, "required": ["op","character","creation"],
+        "properties": {
+          "op": {"enum": ["task_query","task_select","task_finish","task_cancel"]},
+          "character": {"$ref": "#/components/schemas/InputId"}, "creation": {"$ref": "#/components/schemas/InputId"},
+          "catalog": {"type": "string", "minLength": 1}, "task": {"type": "string", "minLength": 1},
+          "inputs": {"type": "object", "additionalProperties": {"type": ["boolean","integer","number","string"]}},
+          "slot": {"type": "integer", "minimum": -2147483648, "maximum": 2147483647},
+          "targets": {"type": "object", "additionalProperties": {"$ref": "#/components/schemas/InputId"}},
+          "choices": {"type": "object", "additionalProperties": {"type": "string"}},
+          "anchors": {"type": "object", "additionalProperties": {"type": "object", "required": ["position","rotation"], "additionalProperties": false, "properties": {
+            "position": {"$ref": "#/components/schemas/Vector"}, "rotation": {"$ref": "#/components/schemas/Quaternion"}}}}
+        },
+        "allOf": [
+          {"if": {"properties": {"op": {"const": "task_select"}}}, "then": {"required": ["catalog","task"]}},
+          {"if": {"required": ["task"]}, "then": {"required": ["catalog"], "properties": {"op": {"enum": ["task_query","task_select"]}}},
+           "else": {"not": {"anyOf": [{"required": ["catalog"]},{"required": ["inputs"]},{"required": ["slot"]},{"required": ["targets"]},{"required": ["choices"]},{"required": ["anchors"]}]}}}
+        ]
+      },
+      "Tasks": {"type": "object", "required": ["character","entries"], "properties": {
+        "character": {"$ref": "#/components/schemas/Id"}, "entries": {"type": "array", "items": {"type": "object", "required": ["backend","domain","label","availability","command"], "properties": {
+          "backend": {"enum": ["npc","configured_clip","ready","reaction","program","sequence","idle"]},
+          "domain": {"enum": ["exploration","battle"]}, "label": {"type": "string"}, "detail": {"type": "string"}, "recovery": {"type": "boolean"},
+          "availability": {"enum": ["available","unavailable","unknown"]}, "command": {"$ref": "#/components/schemas/Command"},
+          "inputs": {"type": "object", "additionalProperties": {"type": "object", "required": ["type"], "properties": {"type": {"enum": ["bool","integer","number","text"]}, "default": {"type": ["boolean","integer","number","string"]}}}},
+          "sources": {"type": "array", "items": {"type": "object", "properties": {"document": {"type": "string"}, "field": {"type": "string"}}}},
+          "reasons": {"type": "array", "items": {"type": "object", "properties": {"source": {"type": "string"}, "detail": {"type": "string"}}}}
+        }}}
+      }},
       "Id": {"type": "string", "pattern": "^[0-9]+$", "maxLength": 20, "description": "Unsigned uint64 decimal string. Value must not exceed 18446744073709551615."},
       "InputId": {"oneOf": [{"$ref": "#/components/schemas/Id"}, {"type": "integer", "minimum": 0, "maximum": 9007199254740991}]},
       "Vector": {"type": "object", "additionalProperties": false, "required": ["x","y","z"], "properties": {"x": {"type": "number"}, "y": {"type": "number"}, "z": {"type": "number"}}},
@@ -68,6 +102,7 @@
       "NpcAction": {"type": "object", "additionalProperties": false, "required": ["kind","id"], "properties": {"kind": {"const": "npc"}, "id": {"$ref": "#/components/schemas/InputId", "description": "uint32 motion ID"}}},
       "ProgramAction": {"type": "object", "additionalProperties": false, "required": ["kind","program","action"], "properties": {"kind": {"const": "program"}, "program": {"type": "string", "minLength": 1}, "action": {"type": "string", "minLength": 1}, "choices": {"type": "object", "propertyNames": {"minLength": 1}, "additionalProperties": {"type": "string", "minLength": 1}}}},
       "Command": {"oneOf": [
+        {"$ref": "#/components/schemas/TaskControl"},
         {"type": "object", "additionalProperties": false, "required": ["op","operation"], "properties": {"op": {"const": "layout"}, "operation": {"enum": ["refresh","save","load","delete","retry_current","keep_current"]}, "name": {"type": "string"}, "overwrite": {"type": "boolean", "default": false}, "scene": {"type": "string"}}},
         {"type": "object", "additionalProperties": false, "required": ["op"], "properties": {"op": {"const": "catalog"}, "refresh": {"type": "boolean", "default": false}}},
         {"type": "object", "additionalProperties": false, "required": ["op","source"], "properties": {"op": {"const": "prepare_source"}, "source": {"$ref": "#/components/schemas/Source"}}},

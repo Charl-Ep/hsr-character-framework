@@ -185,6 +185,11 @@ struct HttpControl::State {
             catch(const std::exception& e){Error(r,400,"invalid_request",e.what());}
         });
         server.Post("/v1/commands",[this](const auto& q,auto& r){Submit(q,r);});
+        server.Get(R"(/v1/characters/(\d+)/tasks)",[this](const auto& q,auto& r) {
+            try {Send(r,http::Tasks(application.Snapshot(),http::Id(q.matches[1].str())));}
+            catch(const std::out_of_range& e){Error(r,404,"not_found",e.what());}
+            catch(const std::exception& e){Error(r,400,"invalid_request",e.what());}
+        });
         server.Get(R"(/v1/requests/(\d+))",[this](const auto& q,auto& r){ReadReceipt(q,r);});
         server.Get("/v1/events",[this](const auto& q,auto& r){Events(q,r);});
     }

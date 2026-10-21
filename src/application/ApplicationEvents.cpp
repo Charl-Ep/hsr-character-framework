@@ -31,8 +31,46 @@ bool Equal(const CharacterPackage& a,const CharacterPackage& b) {
                 std::tie(y.template_prefab,y.asset_directory,y.character_config,y.weapon_config,y.shapes);
         });
 }
+bool Equal(const TaskQueryResult& a,const TaskQueryResult& b) {
+    if(a.availability!=b.availability || a.inputs!=b.inputs || a.reasons.size()!=b.reasons.size())return false;
+    for(std::size_t i=0;i<a.reasons.size();++i) {
+        const auto& x=a.reasons[i];const auto& y=b.reasons[i];
+        if(std::tie(x.kind,x.source,x.detail)!=std::tie(y.kind,y.source,y.detail))return false;
+    }
+    return true;
+}
+bool Equal(const TaskControlResult& a,const TaskControlResult& b) {
+    if(!(a.preparing==b.preparing) || a.preparation_error!=b.preparation_error)return false;
+    const auto& x=a.status;const auto& y=b.status;
+    if(std::tie(x.requested,x.started,x.retiring,x.closing,x.error)!=std::tie(y.requested,y.started,y.retiring,y.closing,y.error) ||
+        !(x.current==y.current) || !(x.pending==y.pending))return false;
+    if(!Optional(x.blocked,y.blocked,[](const auto& p,const auto& q){return Equal(p,q);}))return false;
+    if(!Optional(x.execution,y.execution,[](const auto& p,const auto& q){return
+        std::tie(p.token.value,p.phase,p.reason,p.finish_requested,p.retained_requests,p.issues,p.waiting)==
+        std::tie(q.token.value,q.phase,q.reason,q.finish_requested,q.retained_requests,q.issues,q.waiting);}))return false;
+    if(a.catalog.size()!=b.catalog.size() || a.contexts.size()!=b.contexts.size())return false;
+    auto left=a.catalog.begin(),right=b.catalog.begin();
+    for(;left!=a.catalog.end();++left,++right)if(left->first!=right->first || !Equal(left->second,right->second))return false;
+    for(std::size_t i=0;i<a.contexts.size();++i) {
+        const auto& p=a.contexts[i];const auto& q=b.contexts[i];
+        if(p.token.value!=q.token.value || p.name!=q.name || p.values!=q.values || p.phase!=q.phase ||
+            !(p.slots==q.slots) || p.disables.size()!=q.disables.size())return false;
+        for(std::size_t j=0;j<p.disables.size();++j) {
+            const auto& u=p.disables[j];const auto& v=q.disables[j];
+            if(u.reason!=v.reason || u.selector.index()!=v.selector.index())return false;
+            if(!std::visit([&](const auto& selector) {
+                using T=std::decay_t<decltype(selector)>;const auto& other=std::get<T>(v.selector);
+                if constexpr(std::is_same_v<T,TaskKey>)return selector==other;
+                else if constexpr(std::is_same_v<T,TaskSlot>)return selector.value==other.value;
+                else return selector.name==other.name;
+            },u.selector))return false;
+        }
+    }
+    return true;
+}
 bool Equal(const SceneCharacterStatus& a,const SceneCharacterStatus& b) {
     if(a.task_catalog!=b.task_catalog || a.task_catalog_revision!=b.task_catalog_revision)return false;
+    if(bool(a.tasks)!=bool(b.tasks) || (a.tasks && (a.tasks->domain!=b.tasks->domain || !Equal(a.tasks->control,b.tasks->control))))return false;
     if(a.transient!=b.transient)return false;
     if(a.branch_state.phase!=b.branch_state.phase || a.branch_state.values.size()!=b.branch_state.values.size())return false;
     for(std::size_t i=0;i<a.branch_state.values.size();++i) {

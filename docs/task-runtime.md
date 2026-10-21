@@ -1,6 +1,8 @@
 # Task runtime
 
-The `tasks` module provides typed visual tasks, configuration loading, owned-resource execution and per-actor selection. Development commands exercise it through the application queue. User-facing task menus, HTTP endpoints and task-layout persistence are pending.
+The `tasks` module provides typed visual tasks, configuration loading, owned-resource execution and per-actor selection. The menu and HTTP use the same application task directory. Task catalogs currently bind to explicit session-only instances; task-layout persistence and a complete character catalog are pending.
+
+`CharacterTasks` lists NPC motions, configured animation candidates, ready transitions, shared reactions, authored programs, task sequences and idle. Each row retains its backend identity, sources, availability and application command. A configured animation candidate is not a complete battle ability. The menu shows available rows by default; development mode can show unavailable and unknown rows. HTTP retains all rows and their reasons.
 
 Shared reaction rows currently use the existing `VisualState` executor, exposed through the action catalog, menu, HTTP and layout persistence. It handles configured enter/hold/recover body phases, expression and blink ownership. These rows are not compiled `TaskSequence` plans; material, speed and floating behavior are not implemented. See [action API](http-api.md#actions).
 
@@ -19,6 +21,8 @@ Shared reaction rows currently use the existing `VisualState` executor, exposed 
 `BuildTaskSources` consumes `OfficialCatalog::ReadTaskConfig`. It preserves skills without ready poses and reports missing or ambiguous literal group owners. Inventory entries are not execution permissions.
 
 `TaskContext::Query` returns available, unavailable or unknown, with all reasons. Explicit inputs override context values and defaults for that query only. Context values retain their owner. Removing one context restores earlier contributions; repeated removal does nothing. Querying does not execute official predicates or change the game.
+
+Target, spatial-anchor and visual-choice requirements use the visual scene's resolved input view. Target presence is checked against owned entity generations and world identity without engine reads. The caller cannot supply that availability. Inputs are rechecked when a queued task starts, then captured for its branches and resource scope. Resource loading and visual completion remain separate observations.
 
 ## Execution
 
@@ -69,6 +73,8 @@ Visual contexts contribute values, phase, slot replacements and disables only af
 
 `Reset` cancels execution and leaves the visual scene for a domain/action change. `Close` also permanently closes the scene. Keep servicing until drained. A later task can reuse a reset controller.
 
+The character service coordinates model preparation before starting a task. It restores any previous gaze binding through the ordinary domain-handoff path, then prepares the catalog's model domain. No preceding idle/action command is required. Re-selection replaces pending intent; cancel removes it; finish can be queued during gaze preparation. World departure or a battle frame cancels unstarted task intent. Preparation errors are published separately from execution errors.
+
 ## Configuration
 
 `ParseTaskCatalog` reads `hksr.task-catalog`. `visual` uses the resource, context and signal fields of a visual program, without its `format` or `actions`. `sequences` hold compiled plans; `tasks` reference them. A task without `entry` remains queryable as unimplemented.
@@ -114,7 +120,7 @@ State names and resource paths must match the selected model. A sequence may als
 | `repeat` | `child`; `count` and/or `until_finish` |
 | `branch` | `condition`, `yes`, `no` |
 
-Task fields: `sources` (`document`/`field`), `inputs`, `requires`, `tags`, `entry`, and `next` (`task` plus optional `inputs`). Input definitions use `type` (`bool`, `integer`, `number`, `text`) and optional `default`. JSON integer and floating-point types are distinct. Requirements use `op`: `value` (`name`, `is`), `phase` (`is`), `participant` (`name`), or `unresolved` (`source`, `detail`).
+Task fields: `sources` (`document`/`field`), `inputs`, `requires`, `tags`, `entry`, and `next` (`task` plus optional `inputs`). Input definitions use `type` (`bool`, `integer`, `number`, `text`) and optional `default`. JSON integer and floating-point types are distinct. Requirements use `op`: `value` (`name`, `is`), `phase` (`is`), `participant` (`name`), `target` (`name`), `anchor` (`name`), `choice` (`name`, `is`), or `unresolved` (`source`, `detail`).
 
 Top-level `contexts` binds visual-context names to `values`, `phase`, `slots` (`slot`/`task`) and `disables` (one of `task`, `slot`, `tag`, plus `reason`). Task references are local to the catalog. Unsupported fields and broken references are reported during loading.
 
@@ -126,7 +132,7 @@ In a development build, `VISUAL_PROGRAMS.json` accepts `file`, `targets`, `choic
 
 Existing previews retain their original definitions and resources. Subsequent `create_prepared` requests use the new publication; snapshots identify their `task_catalog` and `task_catalog_revision`. Delete an old preview and create another to exercise changed definitions without restarting the game. Publication does not create, rebuild or play characters.
 
-Create a preview with `create_prepared`, a prepared `source_request`, and `task_catalog`. Its source and model domain must match the catalog. One configured visual scene owns its resources; replacing a live resource catalog is not supported. Prepare the catalog's model domain through the ordinary action control before selecting a task.
+Create a preview with `create_prepared`, a prepared `source_request`, and `task_catalog`. Its source and model domain must match the catalog. One configured visual scene owns its resources; replacing a live resource catalog is not supported. Selecting a task prepares its model domain through the existing handoff.
 
 Task previews are session-only. Ordinary `create_prepared` also accepts `transient: true`. These instances appear in snapshots with `transient: true`, but are omitted from automatic saves and named layouts. Loading a layout leaves them untouched. Source replacement preserves their session-only lifetime. Saved actors cannot retain references to session-only targets in gaze or visual contexts. Delete previews through the ordinary character lifecycle.
 
@@ -137,7 +143,7 @@ The existing development command envelope accepts:
 - `task_finish`: finish the selected continuous task at its configured boundary.
 - `task_cancel`: run its interruption and cancel retiring tails.
 
-All require `character` and `creation` from the current snapshot. Selection requires the catalog's model domain to be ready. `body` binds the owned actor, and `partner:<key>` binds a declared visual partner. Commands run through `ApplicationService` on the exploration-world frame; they cannot target official battle actors.
+All require `character` and `creation` from the current snapshot. `body` binds the owned actor, and `partner:<key>` binds a declared visual partner. Commands run through `ApplicationService` on the exploration-world frame; they cannot target official battle actors. HTTP uses the same codec and commands. Snapshots and SSE include task state, context owners, typed values and availability; detailed request receipts are copied only on an explicit query.
 
 Query results include active and retiring request receipts: authored name/source, execution, participant, entity/model generations, submission, acceptance, performance completion, progress and drain. These are copied from existing observations only when queried; reading them does not query the engine or retain execution history.
 

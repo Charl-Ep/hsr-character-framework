@@ -142,7 +142,7 @@ struct TaskPresentation::State {
     }
 };
 TaskPresentation::TaskPresentation(TaskExecutionToken token,std::uint64_t owner,std::shared_ptr<const TaskSequence> plan,
-    std::shared_ptr<VisualProgramPlayer> visual,VisualProgramParameters inputs,TaskPresentationServices services) {
+    std::shared_ptr<VisualProgramPlayer> visual,VisualProgramParameters inputs,TaskPresentationServices services,bool captured) {
     if(!token.value || !owner || !visual || !plan)throw std::invalid_argument("task presentation requires owned actor and visual scene");
     ValidateTaskSequence(*plan);
     auto value=std::make_unique<State>();value->token=token;value->owner=owner;value->visual=std::move(visual);value->services=std::move(services);
@@ -151,7 +151,7 @@ TaskPresentation::TaskPresentation(TaskExecutionToken token,std::uint64_t owner,
     calls.release=[state](const auto& receipt,auto reason){state->Release(receipt,reason);};
     calls.condition=value->services.condition;calls.yield=value->services.yield;
     value->execution=std::make_unique<TaskSequenceExecution>(token,std::move(plan),std::move(calls));
-    value->scope=value->visual->BeginSequence(std::move(inputs));state_=std::move(value);
+    value->scope=value->visual->BeginSequence(std::move(inputs),captured);state_=std::move(value);
 }
 TaskPresentation::~TaskPresentation()=default;
 void TaskPresentation::Service(double seconds,std::uint64_t frame) {
