@@ -122,6 +122,10 @@ Top-level `contexts` binds visual-context names to `values`, `phase`, `slots` (`
 
 In a development build, `VISUAL_PROGRAMS.json` accepts `file`, `targets`, `choices` and `anchors`. Visual programs register source defaults; task catalogs register by catalog ID and do not change those defaults.
 
+`reload_tasks` rereads this manifest and its files on the worker, then publishes the task catalogs through the application queue. Its reply contains `task_catalog_revision`. Invalid or missing input leaves the registry unchanged; an explicit empty list removes the published candidates. Source-default visual programs are not replaced by this command.
+
+Existing previews retain their original definitions and resources. Subsequent `create_prepared` requests use the new publication; snapshots identify their `task_catalog` and `task_catalog_revision`. Delete an old preview and create another to exercise changed definitions without restarting the game. Publication does not create, rebuild or play characters.
+
 Create a preview with `create_prepared`, a prepared `source_request`, and `task_catalog`. Its source and model domain must match the catalog. One configured visual scene owns its resources; replacing a live resource catalog is not supported. Prepare the catalog's model domain through the ordinary action control before selecting a task.
 
 Task previews are session-only. Ordinary `create_prepared` also accepts `transient: true`. These instances appear in snapshots with `transient: true`, but are omitted from automatic saves and named layouts. Loading a layout leaves them untouched. Source replacement preserves their session-only lifetime. Saved actors cannot retain references to session-only targets in gaze or visual contexts. Delete previews through the ordinary character lifecycle.

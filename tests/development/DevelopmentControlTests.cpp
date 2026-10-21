@@ -10,6 +10,28 @@ void Check(bool value){if(!value)throw std::runtime_error("development control t
 }
 void TestDevelopmentControl() {
     using Json=nlohmann::json;
+    {
+        unsigned reads=0,posts=0;bool broken=false;std::vector<CharacterCommand> publications;
+        DevelopmentControl::Services ports;
+        ports.read_task_catalogs=[&] {
+            ++reads;if(broken)throw std::runtime_error("invalid candidate");return TaskCatalogInputs{};
+        };
+        ports.post=[&](CharacterCommand command,auto reply) {
+            ++posts;publications.push_back(std::move(command));CommandReply result;result.accepted=true;result.task_catalog_revision=posts;
+            reply(result);return posts;
+        };
+        DevelopmentControl hot(42,std::move(ports));
+        auto request=[](const char* id){return Json{{"format","hksr.development-commands"},{"process_id",42},
+            {"request_id",id},{"commands",Json::array({{{"op","reload_tasks"}}})}}.dump();};
+        hot.Submit(request("one"));Check(reads==1 && posts==1 && std::holds_alternative<PublishTaskCatalogs>(publications.front()));
+        auto output=hot.Drain();bool acknowledged=false;
+        for(const auto& line:output){const auto row=Json::parse(line);if(row.value("task_catalog_revision",0)==1)acknowledged=true;}
+        Check(acknowledged);
+        hot.Submit(request("one"));Check(reads==1 && posts==1);hot.Drain();
+        broken=true;hot.Submit(request("bad"));Check(reads==2 && posts==1);
+        Check(Json::parse(hot.Drain().front()).at("event")=="command_error");
+        broken=false;hot.Submit(request("two"));Check(reads==3 && posts==2);
+    }
     struct Pending {CharacterCommand command;ApplicationService::ReplySink reply;};
     std::vector<Pending> pending;
     ApplicationSnapshot snapshot;snapshot.prepared=true;

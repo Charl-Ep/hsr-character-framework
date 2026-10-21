@@ -161,6 +161,7 @@ Json Snapshot(const ApplicationSnapshot& source,bool include_catalog,bool includ
             {"retiring",c.retiring},{"pending_inputs",c.pending_inputs},{"error",c.error},{"npc_id",c.package.npc_id},{"scene",c.scene},
             {"position",{{"x",c.placement.position.x},{"y",c.placement.position.y},{"z",c.placement.position.z}}},
             {"rotation",{{"x",c.placement.rotation.x},{"y",c.placement.rotation.y},{"z",c.placement.rotation.z},{"w",c.placement.rotation.w}}}};
+        if(!c.task_catalog.empty()){row["task_catalog"]=c.task_catalog;row["task_catalog_revision"]=c.task_catalog_revision;}
         row["branch_state"]={{"phase",c.branch_state.phase},{"values",Json::array()}};
         for(const auto& value:c.branch_state.values) {
             Json item={{"scope",value.scope},{"name",value.name}};
@@ -348,7 +349,12 @@ void DevelopmentControl::Submit(const std::string& text) {
                     emit({{"request_id",id},{"index",i},{"event","visual_signal_queued"},{"character",character}});continue;
                 }
                 auto queue=replies_;
-                auto command=ParseDevelopmentCommand(commands[i]);
+                auto command=[&]()->CharacterCommand {
+                    if(commands[i].at("op")!="reload_tasks")return ParseDevelopmentCommand(commands[i]);
+                    if(commands[i].size()!=1)throw std::invalid_argument("reload_tasks accepts no extra fields");
+                    if(!services_.read_task_catalogs)throw std::logic_error("task catalog loading unavailable");
+                    return PublishTaskCatalogs{services_.read_task_catalogs()};
+                }();
                 const auto serial=services_.post(std::move(command),[queue,id,i](const CommandReply& reply){
                     // Frame callback copies a typed result; worker encodes it.
                     std::lock_guard<std::mutex> lock(queue->mutex);
@@ -372,6 +378,7 @@ std::vector<std::string> DevelopmentControl::Drain() {
                 {"accepted",reply.accepted},{"character",reply.character},{"source_request",reply.source_request},
                 {"action_intent",reply.action_intent},{"operation",reply.operation},{"error",reply.error}};
             if(reply.task)result["task"]=TaskResult(*reply.task);
+            if(reply.task_catalog_revision)result["task_catalog_revision"]=reply.task_catalog_revision;
             return result.dump();
         }
     },record));

@@ -27,6 +27,7 @@ public:
     // Authored inputs, loaded off the engine thread before Prepare. An empty
     // registry does not install the optional program observation machinery.
     void SetVisualPrograms(VisualProgramLibrary programs) {programs_=std::move(programs);}
+    void EnableTaskDevelopment() {task_development_=true;} // before SDK registration
     void SetObservedCharacter(std::uint64_t id) {observed_character_.store(id);}
     // Optional synchronous observer of the already-validated selected model.
     // Borrowed references are valid only during this callback; never queued to UI.
@@ -68,6 +69,7 @@ private:
     std::shared_ptr<LayoutIo> layout_io_;
     std::shared_ptr<const PresentationProfiles> profiles_;
     VisualProgramLibrary programs_;
+    bool task_development_=false;
     std::vector<std::string> binding_errors_;
     bool closing_=false,types_attempted_=false;
     bool effects_closed_=false;

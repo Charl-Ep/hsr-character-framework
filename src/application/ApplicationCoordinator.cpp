@@ -52,6 +52,7 @@ void ApplicationCoordinator::Execute(CharacterCommand command,CommandReply& repl
             layouts_->Execute(value,scene->key,reply.serial);
         }
         else if constexpr(std::is_same_v<T,RequestCatalog>) RequireCatalog().Request(value.refresh);
+        else if constexpr(std::is_same_v<T,PublishTaskCatalogs>) reply.task_catalog_revision=characters_.PublishTaskCatalogs(std::move(value.catalogs));
         else if constexpr(std::is_same_v<T,PrepareSource>) reply.source_request=RequireCatalog().Prepare(std::move(value.source));
         else if constexpr(std::is_same_v<T,RetrySource>) reply.source_request=RequireCatalog().RetrySource(value.request);
         else if constexpr(std::is_same_v<T,ReleaseSource>) RequireCatalog().ReleaseSource(value.request);

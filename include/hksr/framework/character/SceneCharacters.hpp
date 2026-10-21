@@ -40,7 +40,10 @@ public:
         create_controls_=std::move(create);player_=std::move(player);
     }
     void ConfigureProfiles(std::shared_ptr<const PresentationProfiles> profiles) {profiles_=std::move(profiles);}
-    void ConfigurePrograms(VisualProgramLibrary programs) {programs_=std::move(programs);}
+    void ConfigurePrograms(VisualProgramLibrary programs);
+    // Publish candidates for subsequent previews; existing plans retain their
+    // immutable inputs, resources and original source-default bindings.
+    std::uint64_t PublishTaskCatalogs(TaskCatalogInputs);
     // Select a catalog for a new session-only instance, before any native work.
     void ConfigureTaskPreview(CharacterPlan&,const std::string& catalog) const;
     void ConfigureTiming(api::OperationTrace::Sink sink){timing_=std::move(sink);}
@@ -104,6 +107,7 @@ private:
     api::PresentationContext::PlayerResolver player_;
     std::shared_ptr<const PresentationProfiles> profiles_;
     VisualProgramLibrary programs_;
+    std::uint64_t task_catalog_revision_=0;
     void BindProfile(CharacterPlan& plan,std::uint64_t id) const;
     api::EntityOrigin VisualTarget(std::uint64_t id) const;
     void SubmitAction(Entry&);

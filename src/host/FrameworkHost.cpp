@@ -54,7 +54,7 @@ void FrameworkHost::Prepare(api::RuntimeMetadata& metadata,api::RuntimeCapabilit
     }catch(const std::exception& e){Trace(std::string("event configuration policy unavailable: ")+e.what());}
     official_catalog_=services_->CreateCatalog();
     catalog_metadata_=&metadata;
-    if(!programs_.empty())services_->PrepareVisualPrograms([this](const auto& text){Trace(text);},
+    if(task_development_ || !programs_.empty())services_->PrepareVisualPrograms([this](const auto& text){Trace(text);},
         [this,&metadata](const auto& character,const auto& source) {
             return Measure("catalog.visual-phase",[&]{return official_catalog_->ReadPhaseVisualConfigSources(character,source,metadata);});
         });

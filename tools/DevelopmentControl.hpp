@@ -13,6 +13,7 @@ public:
         std::function<framework::ApplicationSnapshot()> snapshot;
         std::function<void(std::uint64_t,framework::VisualProgramParameters)> visual_inputs;
         std::function<void(std::uint64_t,framework::VisualProgramSignal)> visual_signal;
+        std::function<framework::TaskCatalogInputs()> read_task_catalogs; // worker-only file parsing
     };
     explicit DevelopmentControl(unsigned process,Services services);
     void Submit(const std::string& text); // worker; parses each request id once

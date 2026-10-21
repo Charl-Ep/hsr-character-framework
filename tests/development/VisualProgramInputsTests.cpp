@@ -74,6 +74,22 @@ void TestVisualProgramInputs() {
     Check(task_bound.catalogs.at("tasks")->tasks==task_inputs.catalogs.at("tasks")->tasks);
     overrides->Set(7,spatial);
     Check(task_bound.catalogs.at("tasks")->read_parameters(7).anchors.at("center").position.x==7);
+    const auto reloaded=hksr::research::ReadBoundTaskCatalogs(file,overrides);
+    Check(reloaded.at("tasks")->tasks->tasks.count("idle")==1 && reloaded.at("tasks")->read_parameters(7).anchors.size()==1);
+    // File replacement reparses definitions without mutating earlier readers.
+    std::ofstream(directory/"scene.json") << R"({
+        "format":"hksr.task-catalog","id":"tasks","domain":"battle",
+        "visual":{"id":"scene","source":"character","scope":"test","effects":{}},
+        "sequences":{},"tasks":{"new_candidate":{}}
+    })";
+    const auto updated=hksr::research::ReadBoundTaskCatalogs(file,overrides);
+    Check(updated.at("tasks")->tasks->tasks.count("new_candidate")==1 && reloaded.at("tasks")->tasks->tasks.count("idle")==1);
+    write("{broken");bool rejected=false;
+    try{hksr::research::ReadBoundTaskCatalogs(file,overrides);}catch(const std::exception&){rejected=true;}Check(rejected);
+    Check(updated.at("tasks")->tasks->tasks.count("new_candidate")==1);
+    write(R"({"programs":[]})");Check(hksr::research::ReadBoundTaskCatalogs(file,overrides).empty());
+    fs::remove(file);rejected=false;
+    try{hksr::research::ReadBoundTaskCatalogs(file,overrides);}catch(const std::exception&){rejected=true;}Check(rejected);
     write(R"({"programs":[{"file":"scene.json"},{"file":"scene.json"}]})");
     bool duplicate=false;try{ReadVisualProgramInputs(file);}catch(const std::invalid_argument&){duplicate=true;}
     Check(duplicate);

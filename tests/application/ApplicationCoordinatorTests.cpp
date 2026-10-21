@@ -83,6 +83,10 @@ void TestApplicationCoordinator() {
       "tasks":{"idle":{"entry":"idle"}}})"));
     input->program=input->tasks->visual;
     characters.ConfigurePrograms({{},{{"test-preview",input}}});
+    service.Post(PublishTaskCatalogs{{{"test-preview",input}}});replies=dispatch();
+    Check(replies[0].accepted && replies[0].task_catalog_revision==2 && !replies[0].operation);
+    service.Post(PublishTaskCatalogs{{{"wrong-key",input}}});replies=dispatch();
+    Check(!replies[0].accepted && !replies[0].task_catalog_revision);
     service.Post(PrepareSource{BrowsePlayer{{11,0,0},{}}});replies=dispatch();
     const auto player_source=replies[0].source_request;coordinator.Catalog()->Advance(0);
     Check(snapshot().catalog->Source(player_source)->phase==SourceRequestPhase::Ready);

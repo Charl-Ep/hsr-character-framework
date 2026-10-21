@@ -3,6 +3,7 @@
 #include "VisualTimelines.hpp"
 #include "VisualEntityMotion.hpp"
 #include "VisualPartners.hpp"
+#include "VisualProgramLibrary.hpp"
 #include "PresentationProfile.hpp"
 #include <hksr/presentation/PresentationContext.hpp>
 #include <hksr/presentation/events/AnimationEventConstruction.hpp>
@@ -33,13 +34,7 @@ struct VisualProgramInput {
     // receipts are reported without dispatching into a replacement scene.
     std::function<std::vector<VisualProgramSignal>(std::uint64_t)> take_signals;
     VisualSpatialAnchors anchors;
-};
-// Source defaults and explicitly selected task catalogs are separate namespaces.
-// Registering a task catalog must not replace an existing source's visual scene.
-struct VisualProgramLibrary {
-    std::map<std::string,std::shared_ptr<const VisualProgramInput>> sources;
-    std::map<std::string,std::shared_ptr<const VisualProgramInput>> catalogs;
-    bool empty() const {return sources.empty() && catalogs.empty();}
+    std::uint64_t catalog_revision=0; // publication retained by this instance
 };
 // Prepared with the host, activated before model construction. Owns observers
 // and keeps retiring players until their effects and Timelines drain.

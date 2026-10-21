@@ -166,6 +166,21 @@ void TestSceneLayout() {
     Check(scene.Plan(id).visual_program->program==input->program && !scene.Plan(id).visual_program->tasks);
     scene.ConfigureTaskPreview(plan,"tasks");
     Check(plan.visual_program->tasks==tasks && plan.persistence==CharacterPersistence::Session);
+    const auto pinned_input=plan.visual_program;
+    auto replacement=std::make_shared<TaskCatalog>(*tasks);replacement->id="tasks";
+    auto replacement_input=std::make_shared<VisualProgramInput>(*task_input);replacement_input->tasks=replacement;
+    const auto publication=scene.PublishTaskCatalogs({{"tasks",replacement_input}});
+    auto next_preview=automatic;scene.ConfigureTaskPreview(next_preview,"tasks");
+    Check(next_preview.visual_program->tasks==replacement && next_preview.visual_program->catalog_revision==publication);
+    Check(plan.visual_program==pinned_input && plan.visual_program->tasks==tasks && plan.visual_program->catalog_revision<publication);
+    Reject([&]{scene.PublishTaskCatalogs({{"mismatch",replacement_input}});});
+    auto after_rejection=automatic;scene.ConfigureTaskPreview(after_rejection,"tasks");
+    Check(after_rejection.visual_program==next_preview.visual_program);
+    scene.PublishTaskCatalogs({});
+    auto removed_preview=automatic;Reject([&]{scene.ConfigureTaskPreview(removed_preview,"tasks");});
+    Check(plan.visual_program->tasks==tasks); // removing publication cannot retire a live owner
+    auto default_after=automatic;scene.ReplacePlan(id,default_after);
+    Check(scene.Plan(id).visual_program->program==input->program && !scene.Plan(id).visual_program->tasks);
     auto foreign=automatic;foreign.action_sources.clear();
     Reject([&]{scene.ConfigureTaskPreview(foreign,"tasks");});
     Reject([&]{scene.ConfigureTaskPreview(foreign,"absent");});

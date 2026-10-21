@@ -5,6 +5,21 @@
 #include <chrono>
 
 namespace hksr::framework {
+void SceneCharacters::ConfigurePrograms(VisualProgramLibrary programs) {
+    PublishTaskCatalogs(std::move(programs.catalogs));programs_.sources=std::move(programs.sources);
+}
+std::uint64_t SceneCharacters::PublishTaskCatalogs(TaskCatalogInputs catalogs) {
+    if(closing_)throw std::logic_error("character registry is closing");
+    const auto revision=task_catalog_revision_+1;
+    TaskCatalogInputs published;
+    for(const auto& [name,input]:catalogs) {
+        if(!input || !input->tasks || name!=input->tasks->id || input->program!=input->tasks->visual)
+            throw std::invalid_argument("invalid task catalog publication: "+name);
+        auto copy=std::make_shared<VisualProgramInput>(*input);copy->catalog_revision=revision;
+        published.emplace(name,std::move(copy));
+    }
+    programs_.catalogs=std::move(published);task_catalog_revision_=revision;return revision;
+}
 void SceneCharacters::BindProfile(CharacterPlan& plan,std::uint64_t id) const {
     if(!plan.visual_program)for(const auto& root:plan.action_sources) {
         const auto found=programs_.sources.find(root.source.path);
@@ -387,6 +402,7 @@ SceneCharacterStatus SceneCharacters::Status(std::uint64_t id) const {
     out.package=entry.plan.package;out.placement=entry.placement;out.look=entry.look;
     if(const auto input=entry.plan.visual_program;input && input->program) {
         out.visual_program=input->program->id;
+        if(input->tasks){out.task_catalog=input->tasks->id;out.task_catalog_revision=input->catalog_revision;}
         for(const auto& [key,action]:input->program->actions)out.program_actions.emplace(key,action.state);
     }
     if(entry.plan.alternate && entry.plan.alternate->initial_state.available)

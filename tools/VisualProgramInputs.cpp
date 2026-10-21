@@ -76,6 +76,12 @@ VisualProgramInputs BindVisualProgramOverrides(VisualProgramInputs inputs,std::s
     bind(inputs.sources);bind(inputs.catalogs);
     return inputs;
 }
+framework::TaskCatalogInputs ReadBoundTaskCatalogs(const std::filesystem::path& file,std::shared_ptr<VisualProgramOverrides> overrides) {
+    // A missing/partially saved candidate is an error, not a request to erase
+    // the registry. An explicit {"programs":[]} publishes an empty registry.
+    if(!std::filesystem::exists(file))throw std::runtime_error("task manifest missing: "+file.u8string());
+    return BindVisualProgramOverrides(ReadVisualProgramInputs(file),std::move(overrides)).catalogs;
+}
 void VisualProgramOverrides::Push(std::uint64_t character,framework::VisualProgramSignal signal) {
     if(!character || !signal.generation || !signal.intent || signal.name.empty() || signal.name.find('\0')!=std::string::npos)
         throw std::invalid_argument("visual signal requires instance, generation, intent and name");

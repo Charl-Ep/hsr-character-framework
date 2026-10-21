@@ -4,12 +4,12 @@
 #include <mutex>
 
 namespace hksr::research {
-// Optional development startup file. No engine reads, target creation or
+// Optional development input file. No engine reads, target creation or
 // action submission. Instance IDs resolve later through SceneCharacters.
 using VisualProgramInputs=framework::VisualProgramLibrary;
 VisualProgramInputs ReadVisualProgramInputs(const std::filesystem::path& file);
-// Worker updates, engine-thread snapshots. Definitions stay fixed for the host
-// lifetime; only value inputs can change while a model is running.
+// Worker updates, engine-thread snapshots. Each live instance retains its
+// published definitions; value inputs can change while its model is running.
 class VisualProgramOverrides {
 public:
     void Set(std::uint64_t character,framework::VisualProgramParameters value);
@@ -22,5 +22,7 @@ private:
     std::map<std::uint64_t,std::vector<framework::VisualProgramSignal>> signals_;
 };
 VisualProgramInputs BindVisualProgramOverrides(VisualProgramInputs,
+    std::shared_ptr<VisualProgramOverrides>);
+framework::TaskCatalogInputs ReadBoundTaskCatalogs(const std::filesystem::path&,
     std::shared_ptr<VisualProgramOverrides>);
 }
