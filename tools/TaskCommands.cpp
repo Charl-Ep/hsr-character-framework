@@ -102,6 +102,7 @@ Json TaskResult(const framework::TaskControlResult& result) {
             {"request",r.request},{"entity_generation",r.entity_generation},{"model_generation",r.model},
             {"participant",r.participant.name},{"submitted",s.submitted},{"accepted",s.request_complete},
             {"performance_complete",s.performance_complete},{"drained",s.drained},{"error",s.error}};
+        row["superseded"]=s.superseded;
         if(s.progress)row["progress"]=*s.progress;
         out["requests"].push_back(std::move(row));
     }

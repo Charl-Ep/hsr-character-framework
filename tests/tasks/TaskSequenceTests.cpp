@@ -166,5 +166,28 @@ void Stops() {
     try{ValidateTaskSequence(*cycle);}catch(const std::invalid_argument&){rejected=true;}
     Check(rejected,"structural cycle accepted");
 }
+void SupersededWaits() {
+    for(auto signal:{TaskWaitSignal::Progress,TaskWaitSignal::PerformanceComplete,TaskWaitSignal::RequestComplete}) {
+        Host host;
+        auto ports=host.Services();
+        ports.submit=[&](auto token,auto serial,const auto& node){
+            auto value=host.Services().submit(token,serial,node);
+            value.state.request_complete=false;return value;
+        };
+        auto plan=Plan({Submit("body"),{"wait",TaskWaitRequest{"body",signal,1}},Submit("must-not-run"),
+            {"entry",TaskSerial{{0,1,2}}}},3);
+        TaskSequenceExecution run({42},plan,ports);run.Advance(0,1);
+        TaskRequestState state;state.superseded=true;state.drained=true;state.progress=0.95;
+        run.Observe(host.requests[0].receipt,state);run.Advance(0.1,2);
+        Check(run.Status().reason==TaskExitReason::Failed && host.requests.size()==1,"superseded request satisfied an unmet dependency or hung");
+    }
+    Host host;
+    auto plan=Plan({Submit("body"),{"cue",TaskWaitRequest{"body",TaskWaitSignal::Progress,0.9}},
+        Submit("after"),{"entry",TaskSerial{{0,1,2}}}},3);
+    TaskSequenceExecution run({43},plan,host.Services());run.Advance(0,1);
+    TaskRequestState state;state.superseded=true;state.drained=true;state.progress=0.95;
+    run.Observe(host.requests[0].receipt,state);run.Advance(0.1,2);
+    Check(run.Status().reason==TaskExitReason::Completed && host.requests.size()==2,"handoff erased an already observed cue");
 }
-void TestTaskSequence(){Clocks();Receipts();Loops();TerminalProgress();Stops();}
+}
+void TestTaskSequence(){Clocks();Receipts();Loops();TerminalProgress();Stops();SupersededWaits();}

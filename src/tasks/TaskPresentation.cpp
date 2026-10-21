@@ -42,7 +42,7 @@ struct TaskPresentation::State {
     }
     void Observe(const std::shared_ptr<Request>& request) {
         auto& value=request->value;
-        if(request->animation) {
+        if(request->animation && !value.state.superseded) {
             const auto& state=*request->animation;
             value.receipt.model=state.model_generation;
             value.state.submitted=state.accepted;value.state.request_complete=state.accepted || state.released;
@@ -68,6 +68,32 @@ struct TaskPresentation::State {
             TaskRequestState drained;drained.drained=true;execution->Observe(value.receipt,drained);
         }
     }
+    void Supersede(const std::shared_ptr<Request>& request) {
+        // Freeze the last actual observation before releasing its observer.
+        // Release does not write Animator state or claim a missing final cue.
+        request->value.state.superseded=!request->value.state.performance_complete;
+        request->released=true;
+        if(request->animation)request->endpoint->release(request->animation->serial);
+        request->value.state.drained=true;
+        execution->Observe(request->value.receipt,request->value.state);
+    }
+    bool ClaimAnimationChannel(const std::shared_ptr<Request>& request,const TaskAnimationCommand& command) {
+        std::vector<std::shared_ptr<Request>> prior;
+        for(const auto& [id,other]:requests) {
+            if(other==request || other->released)continue;
+            const auto* animation=std::get_if<TaskAnimationCommand>(&other->operation);
+            if(!animation || animation->participant.name!=command.participant.name || animation->layer!=command.layer)continue;
+            if(id>request->value.receipt.request){Supersede(request);return false;}
+            prior.push_back(other);
+        }
+        for(const auto& other:prior) {
+            Observe(other); // external errors still fail; they are never relabelled
+            if(request->released)return false;
+            if(!other->released)Supersede(other);
+            if(request->released)return false;
+        }
+        return true;
+    }
     void Pump() {
         if(const auto error=visual->SequenceError(scope);!error.empty()) {
             cancel_scope=true;execution->Fail("visual scope: "+error);
@@ -87,6 +113,7 @@ struct TaskPresentation::State {
                                 throw std::runtime_error("incomplete owned animation endpoint");
                             request->endpoint=std::move(endpoint);
                             request->value.receipt.entity_generation=request->endpoint->entity_generation;
+                            if(!ClaimAnimationChannel(request,*command))continue;
                             request->animation=request->endpoint->submit({command->state,command->layer,command->transition});
                             if(!request->animation)throw std::runtime_error("animation endpoint returned no receipt");
                             if(request->animation->entity_generation!=request->value.receipt.entity_generation)

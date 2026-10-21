@@ -6,6 +6,7 @@
 #include <memory>
 #include <stdexcept>
 #include <cstring>
+#include <algorithm>
 
 namespace {
 using namespace hksr;
@@ -367,6 +368,36 @@ void TestActionPlayback() {
     Check(!task.Drained());
     current_time=1.2f;++active_frame.sequence;task_player.Service(active_frame,true,objects);task.Service(0.1,active_frame.sequence);
     task.Service(0,++active_frame.sequence);Check(task.Drained() && state_plays==count+1); // no implicit idle replay
+    // A task may deliberately leave a clip at an observed cue, before its
+    // natural end. Exercise the real request adapter and SDK session together.
+    auto cue_plan=std::make_shared<framework::TaskSequence>();
+    cue_plan->nodes={
+        {"body",framework::TaskSubmit{"body",framework::TaskAnimationCommand{{"body"},"attack_loop"}}},
+        {"cue",framework::TaskWaitRequest{"body",framework::TaskWaitSignal::Progress,0.931}},
+        {"return",framework::TaskSubmit{"return",framework::TaskAnimationCommand{{"body"},"待机"}}},
+        {"return-accepted",framework::TaskWaitRequest{"return",framework::TaskWaitSignal::RequestComplete}},
+        {"observe-handoff",framework::TaskWaitFrame{}},
+        {"entry",framework::TaskSerial{{0,1,2,3,4}}}};cue_plan->entry=5;
+    framework::TaskPresentation cue_task({101},token.generation,cue_plan,task_visual,{},task_services);
+    count=state_plays;current_hash=93;current_time=0;
+    cue_task.Service(0,++active_frame.sequence);task_player.Service(active_frame,true,objects);cue_task.Service(0,active_frame.sequence);
+    current_time=0.95f;++active_frame.sequence;task_player.Service(active_frame,true,objects);cue_task.Service(0.1,active_frame.sequence);
+    const auto cue_requests=cue_task.Requests();
+    const auto old_body=std::find_if(cue_requests.begin(),cue_requests.end(),[](const auto& row){return row.name=="body";});
+    Check(old_body!=cue_requests.end() && old_body->state.superseded && !old_body->state.performance_complete &&
+        old_body->state.progress && *old_body->state.progress>=0.931 && *old_body->state.progress<1);
+    ++active_frame.sequence;task_player.Service(active_frame,true,objects);cue_task.Service(0.1,active_frame.sequence);
+    cue_task.Service(0,++active_frame.sequence);
+    Check(cue_task.Drained() && cue_task.Status().reason==framework::TaskExitReason::Completed &&
+        cue_task.Status().issues.empty() && state_plays==count+2);
+    framework::TaskPresentation interrupted({102},token.generation,sequence,task_visual,{},task_services);
+    current_hash=93;current_time=0.2f;
+    interrupted.Service(0,++active_frame.sequence);task_player.Service(active_frame,true,objects);interrupted.Service(0,active_frame.sequence);
+    auto outside=task_player.QueueAnimation({"待机"});
+    interrupted.Service(0,++active_frame.sequence);
+    Check(interrupted.Status().reason==framework::TaskExitReason::Failed && !interrupted.Status().issues.empty());
+    task_player.Service(active_frame,true,objects);Check(outside->accepted && !outside->released);
+    task_player.ReleaseAnimation(outside->serial);
     auto first=task_player.QueueAnimation({"attack_loop"});
     ++active_frame.sequence;task_player.Service(active_frame,true,objects);Check(first->accepted && !first->entered);
     task_player.ReleaseAnimation(first->serial);auto second=task_player.QueueAnimation({"待机"});

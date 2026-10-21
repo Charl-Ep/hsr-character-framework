@@ -52,7 +52,7 @@ std::vector<VisualInstruction> Instructions(const Json& rows,const VisualProgram
             "partner","target","self_point","target_point","disable_when_invisible","use_target_scale","visibility","visible","mute_collider","mute_triggers","mute_audio",
             "normalized_start","normalized_transition","normalized_end"});
         VisualInstruction instruction;instruction.source=Name(row.at("source"));
-        if(row.contains("context")) {
+        if(row.contains("context") && !row.at("context").is_null()) {
             instruction.context=Name(row.at("context"));
             Need(program.contexts.count(instruction.context)!=0,"unknown visual context: "+instruction.context);
         }

@@ -136,5 +136,22 @@ void NamedContexts() {
     Check(second.Drained() && !f.player->ContextToken("phase") && f.stops==1);
     f.Retire();f.player->End();f.player->Service();Check(f.player->Drained());
 }
+void IndependentTail() {
+    Fixture f;
+    f.program->contexts["phase"].enter={{VisualTimeline{"phase-scene","scene.playable"},"phase.enter"}};
+    auto enter=Plan({Visual("phase",VisualContextOperation{"phase",true})});
+    TaskPresentation start({11},10,enter,f.player,{},f.Services());start.Service(0,1);start.Service(0,2);
+    auto end=Plan({Visual("tail",VisualTimeline{"tail","tail.playable"}),
+        {"tail-accepted",TaskWaitRequest{"tail",TaskWaitSignal::RequestComplete}},
+        Visual("exit",VisualContextOperation{"phase",false}),
+        {"exit-accepted",TaskWaitRequest{"exit",TaskWaitSignal::RequestComplete}},
+        {"entry",TaskSerial{{0,1,2,3}}}},4);
+    TaskPresentation finish({12},10,end,f.player,{},f.Services());
+    for(unsigned frame=3;frame<8;++frame)finish.Service(0,frame);
+    Check(f.stops==1 && f.timelines.at(1)==api::TimelinePlaybackPhase::Stopped &&
+        f.timelines.at(2)==api::TimelinePlaybackPhase::Playing && !finish.Drained());
+    f.timelines[1]=api::TimelinePlaybackPhase::Retired;f.timelines[2]=api::TimelinePlaybackPhase::Retired;
+    finish.Service(0,8);Check(finish.Drained() && finish.Status().issues.empty());
 }
-void TestTaskPresentation(){Scopes();IndependentParticipants();ErrorsAndReentry();NamedContexts();}
+}
+void TestTaskPresentation(){Scopes();IndependentParticipants();ErrorsAndReentry();NamedContexts();IndependentTail();}

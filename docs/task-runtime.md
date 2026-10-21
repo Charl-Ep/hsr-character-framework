@@ -49,9 +49,13 @@ Animation requests do not select an automatic successor. A completed non-loop st
 
 Use a performance wait for animation completion. A progress wait requires that exact threshold to have been observed; if the request finishes below it, execution reports an unsatisfied dependency instead of waiting forever or assuming the missed cue ran.
 
+A later animation on the same participant and layer supersedes this execution's earlier observation. Its last progress is retained and `superseded` is reported separately from natural completion. Already-satisfied waits remain valid; unmet waits fail. External interruption still reports an execution error. Different participants and layers remain independent.
+
 Submissions are asynchronous. Add explicit request waits for dependencies, including before reusing a request name. A visual creation instruction completing means the creation command was accepted, not that its effect finished. Effect controls retain and retry their exact pending receipts.
 
 Each task gets a resource scope using the existing effects, partner and Timeline owners. Natural completion can retain tails; cancellation ends that scope. Named contexts outlive individual tasks until explicitly exited or the scene closes. `TaskPresentation::Drained()` includes scope cleanup even after the sequence kernel has finished. Old scope cleanup cannot detach a newer scope's event producer.
+
+Visual instructions use their execution's resource scope unless `context` names a persistent context. Explicit `"context": null` selects the execution scope. Effects intended to finish naturally after a context exits must belong to a separate scope.
 
 ## Selection
 

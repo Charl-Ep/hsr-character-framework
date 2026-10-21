@@ -76,5 +76,8 @@ struct TaskRequestState {
     bool submitted=false,request_complete=false,performance_complete=false,drained=false;
     std::optional<double> progress;
     std::string error;
+    // This execution deliberately handed the same animation channel to a
+    // later request. Not natural completion and not an external interruption.
+    bool superseded=false;
 };
 }

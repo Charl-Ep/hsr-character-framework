@@ -145,7 +145,7 @@ struct TaskSequenceExecution::State {
                 if(!first)return finish(seconds);
                 if(const auto old=named.find(node.request);old!=named.end()) {
                     auto& request=requests.at(old->second);
-                    if(!request.value.state.performance_complete && !request.cancelled) {
+                    if(!request.value.state.performance_complete && !request.value.state.superseded && !request.cancelled) {
                         Fail(c,"request name is still active: "+node.request);return {};
                     }
                     Release(request,TaskExitReason::Completed);
@@ -178,6 +178,15 @@ struct TaskSequenceExecution::State {
                     node.signal==TaskWaitSignal::PerformanceComplete?value.performance_complete:
                     node.signal==TaskWaitSignal::Drained?value.drained:value.progress && *value.progress>=node.progress;
                 if(done){if(!first)c.progressed=true;return finish(first?seconds:0);} // unknown asynchronous completion time
+                if(value.superseded) {
+                    const auto required=node.signal==TaskWaitSignal::Progress?"progress "+std::to_string(node.progress):
+                        node.signal==TaskWaitSignal::Submitted?std::string("submission"):
+                        node.signal==TaskWaitSignal::RequestComplete?std::string("acceptance"):
+                        node.signal==TaskWaitSignal::PerformanceComplete?std::string("performance completion"):std::string("drain");
+                    Fail(c,"request superseded before "+required+": "+node.request+
+                        "; observed="+(value.progress?std::to_string(*value.progress):std::string("unavailable")));
+                    return {};
+                }
                 if(node.signal==TaskWaitSignal::Progress && value.performance_complete) {
                     Fail(c,"request completed before progress "+std::to_string(node.progress)+": "+node.request+
                         "; observed="+(value.progress?std::to_string(*value.progress):std::string("unavailable")));
@@ -264,6 +273,7 @@ bool TaskSequenceExecution::Observe(const TaskRequestReceipt& receipt,const Task
     auto& value=found->second.value.state;
     value.submitted=value.submitted || update.submitted;value.request_complete=value.request_complete || update.request_complete;
     value.performance_complete=value.performance_complete || update.performance_complete;value.drained=value.drained || update.drained;
+    value.superseded=value.superseded || update.superseded;
     if(update.progress && std::isfinite(*update.progress) && *update.progress>=0 && (!value.progress || *update.progress>*value.progress))value.progress=update.progress;
     if(!update.error.empty()) {
         if(value.error!=update.error)s.status.issues.push_back("request="+std::to_string(receipt.request)+": "+update.error);
