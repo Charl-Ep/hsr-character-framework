@@ -96,8 +96,8 @@ ApplicationEvents::ApplicationEvents(std::size_t retained):retained_(retained) {
 }
 bool ApplicationEvents::Publish(const ApplicationSnapshot& previous,const ApplicationSnapshot& next) {
     ApplicationChange change;
-    change.runtime=std::tie(previous.prepared,previous.closing,previous.closed,previous.map_error,previous.binding_errors)!=
-        std::tie(next.prepared,next.closing,next.closed,next.map_error,next.binding_errors) ||
+    change.runtime=std::tie(previous.prepared,previous.closing,previous.closed,previous.map_error,previous.binding_errors,previous.camera_presentations)!=
+        std::tie(next.prepared,next.closing,next.closed,next.map_error,next.binding_errors,next.camera_presentations) ||
         !Optional(previous.scene,next.scene,[](const auto& a,const auto& b){return a.key==b.key && a.incarnation==b.incarnation;});
     change.runtime=change.runtime || previous.layouts.sequence!=next.layouts.sequence || previous.layouts.available!=next.layouts.available;
     // Published catalog/inspection values are immutable. Their owning readers

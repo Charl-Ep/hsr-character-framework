@@ -12,6 +12,7 @@
   "messages": {
     "WindowTitle": "角色管理 / HKSR",
     "Title": "HKSR 角色管理",
+    "CameraPresentations": "镜头演出",
     "ToggleHint": "Alt+H 显示 / 隐藏",
     "Connecting": "正在连接游戏...",
     "Closing": "正在退出，暂不可操作。",

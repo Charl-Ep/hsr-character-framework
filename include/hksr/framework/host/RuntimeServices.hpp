@@ -22,6 +22,7 @@ public:
     void ActivateIsolation(const api::WorldFrame&);
     void PrepareVisualPrograms(VisualEventRoutes::Trace={},VisualProgramRuntime::PhaseReader={});
     void CollectIsolation();
+    void SetCameraPresentations(bool enabled){context_->SetCameraPresentations(enabled);}
     bool Close();
     std::unique_ptr<api::ManagedRoots> CreateRoots() const {return context_->CreateRoots();}
     api::WorldMapSnapshot ReadMap(const api::WorldFrame& frame) const {return context_->ReadMap(frame);}

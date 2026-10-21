@@ -46,6 +46,9 @@ void TestLocalization() {
     Check(WriteLanguagePreference(file,Language::Chinese) && ReadLanguagePreference(file,Language::English)==Language::Chinese);
     Check(WritePrivateProfileStringW(L"ui",L"language",L"unknown",file.c_str())!=FALSE);
     Check(ReadLanguagePreference(file,Language::English)==Language::English);
+    Check(WriteCameraPresentations(file,true) && ReadCameraPresentations(file));
+    Check(WriteCameraPresentations(file,false) && !ReadCameraPresentations(file));
+    Check(!ReadCameraPresentations(folder/L"missing-presentation-preferences.cfg"));
     wchar_t value[16]{};GetPrivateProfileStringW(L"unrelated",L"preserve",L"",value,16,file.c_str());Check(std::wstring(value)==L"yes");
     Check(!WriteLanguagePreference(folder,Language::English)); // an existing directory is not a writable settings file
     {

@@ -50,9 +50,10 @@ struct PlaceCharacter {std::uint64_t id;CharacterPlacement pose;bool relative=fa
 struct LookCharacter {std::uint64_t id;LookIntent intent;};
 struct ReadCharacterControllerActions {std::uint64_t id;}; // explicit development query
 struct ObserveCharacter {std::uint64_t id;}; // development observation only; zero clears
+struct SetCameraPresentations {bool enabled=false;};
 struct ControlCharacterTask {std::uint64_t id=0,creation=0;TaskControlInput input;};
 using CharacterCommand=std::variant<AddCharacter,SelectCharacterAction,EnableCharacter,RebuildCharacter,
-    RequestCatalog,PrepareSource,RetrySource,ReleaseSource,RefreshActionDocument,RefreshAbilitySource,AddPreparedCharacter,ReplacePreparedCharacter,ReadCharacterNpcActions,BrowseCharacterActions,PlaceCharacter,LookCharacter,ReadCharacterControllerActions,SelectCatalogAction,ObserveCharacter,DeleteCharacter,IdleCharacter,LayoutCommand,ControlCharacterTask>;
+    RequestCatalog,PrepareSource,RetrySource,ReleaseSource,RefreshActionDocument,RefreshAbilitySource,AddPreparedCharacter,ReplacePreparedCharacter,ReadCharacterNpcActions,BrowseCharacterActions,PlaceCharacter,LookCharacter,ReadCharacterControllerActions,SelectCatalogAction,ObserveCharacter,DeleteCharacter,IdleCharacter,LayoutCommand,ControlCharacterTask,SetCameraPresentations>;
 struct CommandReply {std::uint64_t serial=0,character=0;bool accepted=false;std::string error;std::uint64_t source_request=0,action_intent=0,operation=0;std::optional<TaskControlResult> task;};
 struct CharacterNpcActions {std::uint64_t creation=0;api::NpcMotionSources source;};
 struct CharacterControllerActions {
@@ -61,6 +62,8 @@ struct CharacterControllerActions {
 };
 struct ApplicationSnapshot {
     bool prepared=false,closing=false,closed=false;
+    bool camera_presentations=false;
+    std::uint64_t camera_presentations_revision=0;
     std::optional<SceneAddress> scene;
     std::vector<SceneCharacterStatus> characters;
     std::vector<std::string> binding_errors;

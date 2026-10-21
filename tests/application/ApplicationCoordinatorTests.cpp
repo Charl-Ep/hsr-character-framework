@@ -40,6 +40,8 @@ void TestApplicationCoordinator() {
     ports.observe_character=[&](auto){++observations;};
     ports.source_replaced=[&](auto){++invalidations;};
     ports.npc_actions=[](auto,const auto&){throw std::runtime_error("query failure");};
+    bool camera=false,camera_failure=false;
+    ports.camera_presentations=[&](bool enabled){if(camera_failure)throw std::runtime_error("view policy unavailable");camera=enabled;};
     ApplicationCoordinator coordinator(service,characters,std::make_unique<CatalogBrowser>(readers),
         {true,true,false},std::move(ports),[&](const auto&){++diagnostics;throw std::runtime_error("log failure");});
     const api::WorldFrame frame{};
@@ -52,6 +54,11 @@ void TestApplicationCoordinator() {
     auto snapshot=[&](bool closing=false){
         ApplicationSnapshot out;out.closing=closing;coordinator.Populate(out);return out;
     };
+    Check(!snapshot().camera_presentations);
+    service.Post(SetCameraPresentations{true});Check(dispatch().at(0).accepted && camera && snapshot().camera_presentations);
+    camera_failure=true;service.Post(SetCameraPresentations{false});
+    Check(!dispatch().at(0).accepted && snapshot().camera_presentations && snapshot().camera_presentations_revision==1);camera_failure=false;
+    service.Post(SetCameraPresentations{false});Check(dispatch().at(0).accepted && !camera && !snapshot().camera_presentations && snapshot().camera_presentations_revision==2);
     service.Post(PrepareSource{BrowseNpc{77}});
     auto replies=dispatch();const auto source=replies.at(0).source_request;
     Check(source && replies[0].accepted && reads==0 && player_reads==0);

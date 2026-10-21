@@ -30,6 +30,9 @@ void TestApplicationService() {
     service.Publish(current);const auto old=service.Snapshot();
     current.characters[0].id=8;service.Publish(current);
     Check(old.characters[0].id==7 && service.Snapshot().characters[0].id==8);
+    const auto view_cursor=service.ReadUpdates().changes.cursor;
+    current.camera_presentations=true;service.Publish(current);
+    Check(service.Snapshot().camera_presentations && service.WaitForChange(view_cursor,std::chrono::milliseconds(0)));
     // Callback posts belong to the next batch, not the batch being delivered.
     service.Post(RequestCatalog{},[&](const auto&){service.Post(RequestCatalog{});});
     batch=service.TakeCommands(false);Check(batch.size()==1);

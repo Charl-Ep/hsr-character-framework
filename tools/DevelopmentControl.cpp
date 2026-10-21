@@ -82,7 +82,7 @@ const char* Phase(ActionIntentPhase phase) {
     return "unknown";
 }
 Json Snapshot(const ApplicationSnapshot& source,bool include_catalog,bool include_actions) {
-    Json out={{"prepared",source.prepared},{"closing",source.closing},{"closed",source.closed},
+    Json out={{"prepared",source.prepared},{"closing",source.closing},{"closed",source.closed},{"camera_presentations",source.camera_presentations},
         {"map_error",source.map_error},{"binding_errors",source.binding_errors},{"characters",Json::array()}};
     if(source.scene)out["scene"]={{"key",source.scene->key},{"incarnation",source.scene->incarnation}};
     out["layouts"]={{"available",source.layouts.available},{"sequence",source.layouts.sequence},{"maps",Json::object()}};
@@ -182,6 +182,7 @@ CharacterCommand ParseDevelopmentCommand(const Json& input) {
         return LayoutCommand{operation,input.value("name",std::string{}),input.value("overwrite",false),input.value("scene",std::string{})};
     }
     if(op=="catalog")return RequestCatalog{input.value("refresh",false)};
+    if(op=="camera_presentations")return SetCameraPresentations{input.at("enabled").get<bool>()};
     if(op=="source_npc")return PrepareSource{BrowseNpc{U32(input.at("npc_id"))}};
     if(op=="source_player") {
         BrowsePlayer value{{U32(input.at("player_id")),U32(input.value("enhanced",Json(0))),U32(input.value("skin",Json(0)))},{}};

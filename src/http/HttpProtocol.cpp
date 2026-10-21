@@ -96,7 +96,7 @@ Json Operation(const OperationStatus& value) {
         {"terminal",value.Terminal()},{"detail",value.detail}};
 }
 Json Runtime(const ApplicationSnapshot& s) {
-    Json out={{"prepared",s.prepared},{"closing",s.closing},{"closed",s.closed},
+    Json out={{"prepared",s.prepared},{"closing",s.closing},{"closed",s.closed},{"camera_presentations",s.camera_presentations},
         {"map_error",s.map_error},{"binding_errors",s.binding_errors},{"scene",nullptr}};
     if(s.scene)out["scene"]={{"key",s.scene->key},{"incarnation",std::to_string(s.scene->incarnation)}};
     out["layouts"]={{"available",s.layouts.available},{"sequence",std::to_string(s.layouts.sequence)},{"maps",Json::object()}};

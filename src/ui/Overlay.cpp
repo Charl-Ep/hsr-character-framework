@@ -56,6 +56,9 @@ struct Overlay::State {
     std::string error;
     Menu menu;
     std::filesystem::path preferences;
+    bool initial_camera_presentations=false,preferences_applied=false,preferences_ready=false;
+    std::uint64_t preference_revision=0;
+    std::optional<bool> saved_camera_presentations;
     bool Inside(POINT point) const {
         if(!visible || !foreground)return false;
         ImGuiWindow* hovered=nullptr;
@@ -187,22 +190,42 @@ struct Overlay::State {
 Overlay::Overlay():state_(new State){}
 void Overlay::ConfigurePreferences(std::filesystem::path file) {
     const auto language=ReadLanguagePreference(file,DefaultLanguage());
+    const bool camera_presentations=ReadCameraPresentations(file);
     std::lock_guard<std::recursive_mutex> lock(state_->mutex);
     state_->preferences=std::move(file);state_->menu.SetLanguage(language,false);
+    state_->initial_camera_presentations=camera_presentations;
+    state_->saved_camera_presentations=camera_presentations;
 }
 std::string Overlay::FlushPreferences() {
-    std::filesystem::path file;std::optional<Language> language;
-    {std::lock_guard<std::recursive_mutex> lock(state_->mutex);file=state_->preferences;language=state_->menu.TakeLanguageChange();}
-    if(!language || file.empty())return {};
-    const bool saved=WriteLanguagePreference(file,*language);
+    std::filesystem::path file;std::optional<Language> language;std::optional<bool> camera;
+    {std::lock_guard<std::recursive_mutex> lock(state_->mutex);file=state_->preferences;language=state_->menu.TakeLanguageChange();
+        if(state_->host && state_->preferences_ready) {
+            const auto snapshot=state_->host->Application().Snapshot();
+            if(snapshot.prepared && snapshot.camera_presentations_revision>=state_->preference_revision &&
+                state_->saved_camera_presentations!=snapshot.camera_presentations)
+                camera=snapshot.camera_presentations;
+        }}
+    if(file.empty() || (!language && !camera))return {};
+    bool saved=!language || WriteLanguagePreference(file,*language);
+    if(camera) {
+        const bool written=WriteCameraPresentations(file,*camera);saved=saved && written;
+        if(written){std::lock_guard<std::recursive_mutex> lock(state_->mutex);state_->saved_camera_presentations=*camera;}
+    }
     {std::lock_guard<std::recursive_mutex> lock(state_->mutex);state_->menu.SettingsSaved(saved);}
-    return saved?std::string{}:"UI language setting could not be saved: "+file.u8string();
+    return saved?std::string{}:"Preferences could not be saved: "+file.u8string();
 }
 void Overlay::Draw(IDXGISwapChain* chain,FrameworkHost& host) {
     auto& s=*state_;std::lock_guard<std::recursive_mutex> lock(s.mutex);
     s.host=&host;
     if(!chain || s.stopped || s.failed) return;
     try {
+        const auto snapshot=host.Application().Snapshot();
+        if(!s.preferences_applied && snapshot.prepared && !snapshot.closing) {
+            s.preference_revision=snapshot.camera_presentations_revision+1;
+            host.Application().Post(SetCameraPresentations{s.initial_camera_presentations},[state=&s](const CommandReply& reply){
+                std::lock_guard<std::recursive_mutex> lock(state->mutex);state->preferences_ready=reply.accepted;
+            });s.preferences_applied=true;
+        }
         DXGI_SWAP_CHAIN_DESC description{};Require(chain->GetDesc(&description),"swap-chain description");
         if(!description.OutputWindow || !IsWindow(description.OutputWindow)) return;
         if(s.imgui && !s.window) s.Release(); // previous HWND received WM_NCDESTROY

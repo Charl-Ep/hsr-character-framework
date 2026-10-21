@@ -56,6 +56,12 @@ void Menu::Render(ApplicationService& host,const ApplicationSnapshot& snapshot) 
         }
         if(settings_error_)Text(T(UiText::SettingsNotSaved));
         if(ImGui::Button(L(UiText::MapLayouts)))layouts_open_=true;
+        ImGui::SameLine();
+        bool camera_presentations=snapshot.camera_presentations;
+        ImGui::BeginDisabled(!snapshot.prepared || snapshot.closing);
+        if(ImGui::Checkbox(L(UiText::CameraPresentations),&camera_presentations))
+            host.Post(SetCameraPresentations{camera_presentations});
+        ImGui::EndDisabled();
         if(!snapshot.prepared)ImGui::TextUnformatted(T(UiText::Connecting));
         if(snapshot.closing)ImGui::TextUnformatted(T(UiText::Closing));
         if(!message_.empty()) {Text(message_);if(ImGui::SmallButton(L(UiText::ClearError)))message_.clear();}

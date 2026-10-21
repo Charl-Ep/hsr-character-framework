@@ -23,4 +23,10 @@ bool WriteLanguagePreference(const std::filesystem::path& file,Language language
     const std::string code=LanguageCode(language);const std::wstring wide(code.begin(),code.end());
     return WritePrivateProfileStringW(L"ui",L"language",wide.c_str(),file.c_str())!=FALSE;
 }
+bool ReadCameraPresentations(const std::filesystem::path& file) {
+    return GetPrivateProfileIntW(L"presentation",L"camera_presentations",0,file.c_str())!=0;
+}
+bool WriteCameraPresentations(const std::filesystem::path& file,bool enabled) {
+    return WritePrivateProfileStringW(L"presentation",L"camera_presentations",enabled?L"1":L"0",file.c_str())!=FALSE;
+}
 }

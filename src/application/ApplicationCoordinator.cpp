@@ -62,6 +62,10 @@ void ApplicationCoordinator::Execute(CharacterCommand command,CommandReply& repl
             if(value.id)(void)characters_.Plan(value.id);
             reply.character=value.id;runtime_.observe_character(value.id);
         }
+        else if constexpr(std::is_same_v<T,SetCameraPresentations>) {
+            if(!runtime_.camera_presentations)throw std::runtime_error("camera presentation visibility unavailable");
+            runtime_.camera_presentations(value.enabled);camera_presentations_=value.enabled;++camera_presentations_revision_;
+        }
         else if constexpr(std::is_same_v<T,ControlCharacterTask>) {
             reply.character=value.id;reply.task=characters_.ControlTask(value.id,value.creation,std::move(value.input),frame);
         }
@@ -186,6 +190,8 @@ void ApplicationCoordinator::Dispatch(ApplicationService::PendingCommand& pendin
     catch(...) {Trace("command reply receiver failed; command is not retried");}
 }
 void ApplicationCoordinator::Populate(ApplicationSnapshot& out) {
+    out.camera_presentations=camera_presentations_;
+    out.camera_presentations_revision=camera_presentations_revision_;
     out.catalog=catalog_?catalog_->Snapshot():nullptr;
     out.characters.clear();
     for(auto id:characters_.Ids())out.characters.push_back(characters_.Status(id));

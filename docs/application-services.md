@@ -2,6 +2,8 @@
 
 GUI、HTTP和开发控制器向 `ApplicationService` 提交类型化命令。`ApplicationCoordinator` 在官方帧分发，`SceneCharacters` 管理逻辑实例和引擎创建代次。
 
+`SetCameraPresentations{enabled}` 控制附加角色的相机空间和UI效果。`ApplicationSnapshot.camera_presentations`返回当前设置，变更通过SSE的runtime资源发布。它不开放主相机控制或环境写入。
+
 ## 线程与分发
 
 `Post`、`Snapshot`、`ReadUpdates` 可并发调用。命令按入队顺序分配serial，官方帧处理固定批次；回调中追加的命令进入下一批。

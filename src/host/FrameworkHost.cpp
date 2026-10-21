@@ -96,6 +96,7 @@ void FrameworkHost::Prepare(api::RuntimeMetadata& metadata,api::RuntimeCapabilit
                 " action_steps="+std::to_string(work.action_steps));
         });
     PrepareApplication(std::move(browser));
+    application_.Post(SetCameraPresentations{false});
     ApplicationSnapshot snapshot;snapshot.prepared=true;snapshot.binding_errors=binding_errors_;application_.Publish(std::move(snapshot));
 }
 void FrameworkHost::Prepare(api::ManagedObjects& objects,api::PresentationBindings bindings,
@@ -107,6 +108,7 @@ void FrameworkHost::Prepare(api::ManagedObjects& objects,api::PresentationBindin
 }
 void FrameworkHost::PrepareApplication(std::unique_ptr<CatalogBrowser> catalog) {
     ApplicationRuntimePorts runtime;
+    runtime.camera_presentations=[this](bool enabled){services_->SetCameraPresentations(enabled);};
     runtime.player_placement=[this](const api::WorldFrame& frame) {
         const auto player=services_->ReadPlayerPlacement(frame);
         if(!player.ready)throw std::runtime_error(player.error);

@@ -12,6 +12,7 @@
     "WindowTitle": "Character Manager / HKSR",
     "Title": "HKSR Character Manager",
     "ToggleHint": "Alt+H show / hide",
+    "CameraPresentations": "Camera presentations",
     "Connecting": "Connecting to the game...",
     "Closing": "Shutting down. Controls are unavailable.",
     "ClearError": "Clear error",

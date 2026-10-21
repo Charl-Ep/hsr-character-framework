@@ -15,6 +15,7 @@ struct ApplicationRuntimePorts {
     std::function<void(std::uint64_t)> observe_character;
     std::function<void(std::uint64_t)> source_replaced;
     std::function<void(std::uint64_t)> removed;
+    std::function<void(bool)> camera_presentations;
 };
 
 // Official-thread application logic. Owns source preparation and operation
@@ -48,5 +49,7 @@ private:
     std::function<void(const std::string&)> diagnostic_;
     OperationHistory operations_;
     std::unique_ptr<LayoutController> layouts_;
+    bool camera_presentations_=false;
+    std::uint64_t camera_presentations_revision_=0;
 };
 }

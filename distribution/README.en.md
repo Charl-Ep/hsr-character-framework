@@ -28,6 +28,8 @@ Register one copy. Update the injection paths if you move the folder. Layouts, s
 
 ## Runtime behavior
 
+**Camera presentations** toggles additional characters' camera-space and 2D effects. It is off by default and saved automatically.
+
 - **Alt+H** toggles the Chinese/English management menu.
 - NPC sources use NPC appearance and motions. Player sources switch exploration/battle models with the selected action domain.
 - The menu creates/deletes instances and controls actions, placement and gaze.
