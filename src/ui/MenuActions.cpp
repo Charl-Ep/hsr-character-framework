@@ -83,6 +83,9 @@ void Menu::Actions(ApplicationService& host,const ApplicationSnapshot& snapshot,
         }
         ImGui::Separator();
     }
+    if(!npc && current && (show_ready || domain==ActionDomain::Alternate))
+        for(const auto& sources:current->actions.visual_sources)
+            for(const auto* table:{&sources.defaults,&sources.character})for(const auto& issue:table->issues)Text(issue.error);
     if(show_ready && current) {
         if(!selected.battle_idle_state.empty()) {
             ready_names.insert(selected.battle_idle_state);

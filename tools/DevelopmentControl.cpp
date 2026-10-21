@@ -25,6 +25,19 @@ api::Position3 Position(const Json& row) {return {Number(row.at("x")),Number(row
 template<class T> Json Input(const T& value) {return {{"available",value.available},{"value",value.value},{"error",value.error}};}
 Json Actions(const ActionCatalogStatus& source) {
     Json out={{"finished",source.finished},{"proposals",Json::array()},{"ready",Json::array()},{"reactions",Json::array()}};
+    out["reaction_sources"]=Json::array();
+    for(const auto& value:source.visual_sources) {
+        Json issues=Json::array();
+        for(const auto* table:{&value.defaults,&value.character}) {
+            auto append=[&](const auto& rows){for(const auto& issue:rows)
+                issues.push_back({{"source",table->source},{"operation",issue.operation},{"index",issue.index},{"error",issue.error}});};
+            append(table->issues);append(table->behaviors.issues);
+        }
+        out["reaction_sources"].push_back({{"source",value.character_config},{"context_available",value.context_available},
+            {"defaults_loaded",value.defaults.loaded},{"defaults_enumerated",value.defaults.behaviors.enumerated},
+            {"default_rows",value.defaults.behaviors.rows.size()},{"character_loaded",value.character.loaded},
+            {"character_enumerated",value.character.behaviors.enumerated},{"character_rows",value.character.behaviors.rows.size()},{"issues",issues}});
+    }
     for(const auto& row:source.visual_states)if(row.value.flag.available)for(bool recover:{false,true}) {
         const auto query=QueryVisualAction(row,recover);
         out["reactions"].push_back({{"source",row.character_config},{"flag",row.value.flag.value},{"recover",recover},

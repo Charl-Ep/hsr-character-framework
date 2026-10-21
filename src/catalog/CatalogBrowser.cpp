@@ -186,6 +186,13 @@ PlacedAction CatalogBrowser::ResolveAction(std::uint64_t character,const Catalog
     if(found==state_.characters.end())throw std::runtime_error("request this instance's action catalog first");
     return ResolveCatalogAction(*found->second,selection);
 }
+bool CatalogBrowser::InspectVisuals(const std::vector<ActionSourceRoot>& roots) {
+    bool changed=false;
+    for(const auto& root:roots)if(root.source.kind==api::ActionConfigKind::Battle)
+        changed=actions_.RequestVisuals(root.source.path) || changed;
+    if(changed){actions_started_=true;Publish();}
+    return changed;
+}
 void CatalogBrowser::ForgetCharacter(std::uint64_t id) {
     character_sources_.erase(id);character_views_.erase(id);state_.characters.erase(id);RequestActions();Publish();
 }

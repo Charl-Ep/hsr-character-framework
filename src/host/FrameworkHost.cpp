@@ -80,17 +80,17 @@ void FrameworkHost::Prepare(api::RuntimeMetadata& metadata,api::RuntimeCapabilit
     try {
         mouse_=services_->CreateMouseMode();
     }catch(const std::exception& e){Trace(std::string("mouse mode unavailable: ")+e.what());}
-    auto browser=std::make_unique<CatalogBrowser>(CatalogReaders{
-        [this]{return Measure("catalog.tables",[&]{return official_catalog_->ReadCharacters();});},
-        [this](const auto& path){return Measure("catalog.identity:"+path,[&]{return official_catalog_->ReadAdventureIdentity(path);});},
-        [this](auto kind,const auto& path){return Measure("catalog.document:"+path,[&]{return official_catalog_->ReadActionConfig(kind,path);});},
-        {}, // production discovery uses the resumable reader below
-        [this](void* component){return Measure("catalog.npc-motions",[&]{return official_catalog_->ReadNpcMotionsFromComponent(component);});},
-        {}, // body/expression catalog removed from the product UI; do not prepare it implicitly
-        [this]{return Measure("catalog.ready-defaults",[&]{return official_catalog_->ReadReadyAnimationDefaults();});},
-        [this,&metadata](const auto& names)->std::unique_ptr<api::AbilitySourceRead>{
+    CatalogReaders readers;
+    readers.characters=[this]{return Measure("catalog.tables",[&]{return official_catalog_->ReadCharacters();});};
+    readers.identity=[this](const auto& path){return Measure("catalog.identity:"+path,[&]{return official_catalog_->ReadAdventureIdentity(path);});};
+    readers.document=[this](auto kind,const auto& path){return Measure("catalog.document:"+path,[&]{return official_catalog_->ReadActionConfig(kind,path);});};
+    readers.npc_motions=[this](void* component){return Measure("catalog.npc-motions",[&]{return official_catalog_->ReadNpcMotionsFromComponent(component);});};
+    readers.visuals=[this](const auto& path){return Measure("catalog.visual:"+path,[&]{return official_catalog_->ReadVisualConfigSources(path);});};
+    readers.ready_defaults=[this]{return Measure("catalog.ready-defaults",[&]{return official_catalog_->ReadReadyAnimationDefaults();});};
+    readers.begin_abilities=[this,&metadata](const auto& names)->std::unique_ptr<api::AbilitySourceRead>{
             return std::make_unique<TimedAbilityRead>(official_catalog_->BeginAbilitySources(names,metadata),names.size(),
-                [this](const auto& message){Trace(message);});}},[this](const CatalogWork& work){
+                [this](const auto& message){Trace(message);});};
+    auto browser=std::make_unique<CatalogBrowser>(std::move(readers),[this](const CatalogWork& work){
             Trace("catalog completed slices="+std::to_string(work.slices)+" total_us="+std::to_string(work.total_us)+
                 " max_us="+std::to_string(work.max_us)+" source_steps="+std::to_string(work.source_steps)+
                 " action_steps="+std::to_string(work.action_steps));

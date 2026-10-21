@@ -37,6 +37,7 @@ public:
     void RefreshDocument(const ActionSourceKey& source);
     void RefreshAbility(const std::string& ability);
     void InspectActions(std::uint64_t character,std::vector<ActionSourceRoot> roots);
+    bool InspectVisuals(const std::vector<ActionSourceRoot>& roots);
     void ForgetCharacter(std::uint64_t character);
     PlacedAction ResolveAction(std::uint64_t character,const CatalogActionSelection& selection) const;
     CharacterPlan Plan(std::uint64_t request,std::shared_ptr<const ModelAssetInput> payload={},std::string look={}) const;

@@ -76,7 +76,7 @@ NPC motions use `{"kind":"npc","id":"123"}` without a revision. Action completio
 
 Shared reactions use `{"kind":"visual_behavior","source":"<character config>","flag":28,"recover":false}` from the `reactions` array, with the current catalog revision. False enters and holds the configured body/expression; true plays recovery and releases the expression. Identity is the character configuration plus official flag, not the animation name. Layouts save that identity and resolve it again on restoration.
 
-Reaction availability checks the resolved configuration; playback checks the active Animator. The implemented scope is body phases, expression and blink. Material, speed and floating effects are not implemented; entries without animation remain listed with an unavailable reason. A resolved reaction does not wait for unrelated skill discovery.
+`browse_actions` requests reaction data for that character. Restoring a saved reaction also requests its source; ordinary creation and layout restoration do not. The result is cached by source for the process. Reaction availability checks the resolved configuration; playback checks the active Animator. The implemented scope is body phases, expression and blink. Material, speed and floating effects are not implemented; entries without animation remain listed with an unavailable reason. A resolved reaction does not wait for unrelated skill discovery.
 
 Authored program actions use `{"kind":"program","program":"scene","action":"enter","choices":{"variant":"b"}}` without a catalog revision. Use an entry from the action response's `program` array; `choices` is optional. The bound definition supplies the body state. A different program ID or unknown action key is rejected by the character service.
 

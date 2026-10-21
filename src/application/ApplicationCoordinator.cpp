@@ -72,7 +72,10 @@ void ApplicationCoordinator::Execute(CharacterCommand command,CommandReply& repl
         else if constexpr(std::is_same_v<T,ReadCharacterControllerActions>) {
             (void)characters_.Plan(value.id);reply.character=value.id;runtime_.controller_actions(value.id);
         }
-        else if constexpr(std::is_same_v<T,BrowseCharacterActions>) {reply.character=value.id;RequireCatalog().InspectActions(value.id,characters_.Plan(value.id).action_sources);}
+        else if constexpr(std::is_same_v<T,BrowseCharacterActions>) {
+            reply.character=value.id;const auto& roots=characters_.Plan(value.id).action_sources;
+            RequireCatalog().InspectActions(value.id,roots);RequireCatalog().InspectVisuals(roots);
+        }
         else if constexpr(std::is_same_v<T,ReplacePreparedCharacter>) {
             auto plan=RequireCatalog().Plan(value.source_request,std::move(value.payload),std::move(value.npc_look_source));
             if(!capabilities_.entity_lifecycle) throw std::runtime_error("NPC replacement requires its actual entity disposal observer");

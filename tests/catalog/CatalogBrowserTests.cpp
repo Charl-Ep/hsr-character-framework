@@ -239,5 +239,30 @@ void TestCatalogBrowser() {
     Check(requests.Snapshot()==before_throw);requests.Advance();
     Check(requests.Snapshot()->Source(interrupted)); // no stuck batch after exception
     Finish(requests);const auto stable=requests.Snapshot();requests.Advance();Check(requests.Snapshot()==stable);
+    // Source preparation and layout restoration of ordinary actions must not
+    // trigger reaction reads. Browsing opts in once per resolved character.
+    int visual_reads=0;
+    concurrent.visuals=[&](const std::string& path) {
+        ++visual_reads;api::VisualConfigSources out;out.character_config=path;out.context_available=true;
+        out.defaults.source="global";out.defaults.loaded=true;out.defaults.behaviors.enumerated=true;
+        out.expression_transition={true,0.2f,{}};
+        api::VisualBehaviorInput row;row.flag={true,28,{}};row.emotion={true,"Emo_Stun",{}};
+        row.occur.resolved_state={true,"Stagger",{}};row.loop.resolved_state={true,"Stagger_Loop",{}};
+        row.recover.resolved_state={true,"Stagger_Recover",{}};
+        row.occur.transition=row.loop.transition=row.recover.transition={true,0.15f,{}};
+        out.defaults.behaviors.rows.push_back(row);return out;
+    };
+    CatalogBrowser reactions(concurrent);
+    const std::vector<ActionSourceRoot> reaction_roots{{ActionDomain::Alternate,{api::ActionConfigKind::Battle,"Reactions/A"}}};
+    reactions.InspectActions(1,reaction_roots);Finish(reactions);Check(visual_reads==0);
+    Check(reactions.Snapshot()->Actions(1)->actions.finished && reactions.Snapshot()->Actions(1)->actions.visual_states.empty());
+    Check(reactions.InspectVisuals(reaction_roots));
+    Check(!reactions.Snapshot()->Actions(1)->actions.finished && reactions.Snapshot()->Actions(1)->actions.Ready(ActionDomain::Alternate));
+    Finish(reactions);Check(visual_reads==1);
+    const auto reaction_view=reactions.Snapshot()->Actions(1);
+    const auto picked=reactions.ResolveAction(1,{reaction_view->revision,VisualActionKey{"Reactions/A",28,false}});
+    Check(std::get<VisualState>(picked.request).expression.value=="Emo_Stun");
+    reactions.InspectActions(2,reaction_roots);Check(!reactions.InspectVisuals(reaction_roots));Finish(reactions);Check(visual_reads==1);
+    reactions.RefreshDocument({api::ActionConfigKind::Battle,"Reactions/A"});Finish(reactions);Check(visual_reads==2);
     std::cout<<"Catalog browser passed: shared reads, per-instance projections, source revision isolation, production ready defaults, explicit retries and immutable snapshots; no game.\n";
 }

@@ -21,6 +21,7 @@ public:
     ActionCatalog(api::OfficialCatalog& api,api::TypeRelationships& types);
     explicit ActionCatalog(Read read,ReadAbility abilities={},ReadVisual visuals={},ReadReadyDefaults ready={},BeginAbility begin={}):read_(std::move(read)),read_ability_(std::move(abilities)),read_visual_(std::move(visuals)),read_ready_(std::move(ready)),begin_ability_(std::move(begin)){}
     void Request(std::vector<ActionSourceRoot> roots);
+    bool RequestVisuals(const std::string& character_config); // opt-in, shared by source
     void Advance(); // one document or one resumable shared-cache ability slice
     bool CancelPending(); // engine-thread drain; true when no managed reader remains
     bool ReadingAbilities() const {return bool(ability_read_);}
@@ -71,6 +72,7 @@ private:
     std::optional<api::ReadyAnimationDefaults> ready_defaults_;
     bool pending_ready_=false;
     std::map<std::string,api::VisualConfigSources> visual_sources_;
+    std::set<std::string> visual_requests_;
     std::vector<std::string> pending_visuals_;
     std::vector<ActionSourceRoot> requested_;
     std::map<ActionSourceKey,api::ActionConfigInput> documents_;

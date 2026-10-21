@@ -249,6 +249,9 @@ void TestActionCatalog() {
         one.emotion.value="FaceFromCharacter";out.character.behaviors.rows.push_back(one);return out;
     });
     visual_catalog.Request({{ActionDomain::Alternate,{K::Battle,"custom"}}});visual_catalog.Advance();
+    Check(visual_catalog.Status().finished && visual_catalog.Status().visual_states.empty() && visual_reads==0);
+    Check(visual_catalog.RequestVisuals("custom"));
+    Check(visual_catalog.Status().Ready(ActionDomain::Alternate)); // does not gate existing actions
     Check(!visual_catalog.Status().finished && visual_reads==0);
     visual_catalog.Advance();Check(visual_catalog.Status().finished && visual_reads==1);
     const auto& visual_states=visual_catalog.Status().visual_states;

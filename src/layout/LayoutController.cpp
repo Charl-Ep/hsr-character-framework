@@ -53,6 +53,7 @@ void LayoutController::Prepare(Map& map) {
         const auto* configured=saved?std::get_if<SavedConfiguredAction>(&*saved):nullptr;
         const auto* visual=saved?std::get_if<VisualActionKey>(&*saved):nullptr;
         const auto& available=source->actions;
+        if(visual && catalog_.InspectVisuals(map.plans[i].action_sources)){pending=true;continue;}
         // Even a proposal seen early can gain exit tasks during discovery. A
         // configured/ready request waits for its required domain's complete
         // projection, not the other domain's unrelated ability graph.

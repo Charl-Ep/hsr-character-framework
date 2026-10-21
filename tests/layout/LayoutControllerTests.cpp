@@ -52,6 +52,17 @@ void TestLayoutController() {
     };
     bool abilities_ready=false;
     readers.begin_abilities=[&](const auto&){return std::make_unique<DelayedAbilities>(abilities_ready);};
+    int visual_reads=0;
+    readers.visuals=[&](const std::string& path) {
+        ++visual_reads;api::VisualConfigSources out;out.character_config=path;out.context_available=true;
+        out.defaults.source="global";out.defaults.loaded=true;out.defaults.behaviors.enumerated=true;
+        out.expression_transition={true,0.2f,{}};
+        api::VisualBehaviorInput row;row.flag={true,28,{}};row.emotion={true,"Emo_Stun",{}};
+        row.occur.resolved_state={true,"Stagger",{}};row.loop.resolved_state={true,"Stagger_Loop",{}};
+        row.recover.resolved_state={true,"Stagger_Recover",{}};
+        row.occur.transition=row.loop.transition=row.recover.transition={true,0.15f,{}};
+        out.defaults.behaviors.rows.push_back(row);return out;
+    };
     SceneLayout saved;saved.scene="mapA";
     SavedCharacter a;a.key=90;a.source=BrowseNpc{77};a.enabled=false;a.placement={{1,2,3},{0,0,0,1}};a.action=NpcMotion{123};
     auto b=a;b.key=91;b.look={LookMode::Instance,90,{}};b.source=BrowsePlayer{{11,0,0},77};
@@ -201,5 +212,25 @@ void TestLayoutController() {
         Check(restored && restored->domain==ActionDomain::Exploration &&
             std::get<AnimatorState>(restored->request).name=="IdleShow","exploration action was replaced to bypass discovery");
         isolated.Close();isolated_registry.Shutdown();
+    }
+    Check(visual_reads==0,"ordinary layout restoration read unused reaction data");
+    {
+        abilities_ready=false;
+        auto reaction=saved;reaction.scene="reaction-only";reaction.characters={b};
+        reaction.characters[0].look={};reaction.characters[0].visual_state.reset();
+        reaction.characters[0].action=VisualActionKey{"battle/config",28,false};
+        store.SaveCurrent(reaction);
+        auto reaction_io=std::make_shared<LayoutIo>(folder);CatalogBrowser reaction_catalog(readers);
+        SceneCharacters reaction_registry(runtime.Sessions(false),SceneCharacters::Create{});
+        LayoutController reaction_control(reaction_registry,reaction_catalog,reaction_io);
+        const SceneAddress address{reaction.scene,8};
+        for(unsigned i=0;i<32;++i) {
+            reaction_io->Pump();reaction_control.Advance(address);reaction_catalog.Advance(0);
+            reaction_registry.Service({},address,runtime.Appearance(),{});
+        }
+        Check(!abilities_ready && visual_reads==1 && reaction_registry.Ids().size()==1,"reaction restore blocked on unrelated skills or reread source");
+        const auto& restored=reaction_registry.DesiredAction(reaction_registry.Ids()[0]);
+        Check(restored && std::get<VisualState>(restored->request).expression.value=="Emo_Stun","saved reaction identity was not resolved");
+        reaction_control.Close();reaction_registry.Shutdown();
     }
 }

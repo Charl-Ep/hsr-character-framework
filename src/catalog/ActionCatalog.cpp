@@ -29,6 +29,11 @@ void ActionCatalog::Request(std::vector<ActionSourceRoot> roots) {
 const api::ActionConfigInput* ActionCatalog::Document(const ActionSourceKey& source) const {
     const auto found=documents_.find(source); return found==documents_.end()?nullptr:&found->second;
 }
+bool ActionCatalog::RequestVisuals(const std::string& path) {
+    if(!read_visual_)throw std::logic_error("visual configuration reader unavailable");
+    if(!visual_requests_.insert(path).second)return false;
+    InvalidateDocument({api::ActionConfigKind::Battle,path});Rebuild();return true;
+}
 void ActionCatalog::InvalidateDocument(const ActionSourceKey& source) {
     for(auto it=discovery_.begin();it!=discovery_.end();) {
         if(it->second.used_documents.count(source) || it->second.used_visuals.count(source.path))it=discovery_.erase(it);
@@ -226,7 +231,7 @@ ActionCatalog::Projection ActionCatalog::Project(const std::vector<ActionSourceR
         const auto input=queue[i]; // reference traversal may reallocate the queue
         if(!visited.emplace(input.domain,input.source.kind,input.source.path).second) continue;
         result.used_documents.insert(input.source);
-        if(input.source.kind==api::ActionConfigKind::Battle && read_visual_ && seen_visuals.insert(input.source.path).second) {
+        if(input.source.kind==api::ActionConfigKind::Battle && read_visual_ && visual_requests_.count(input.source.path) && seen_visuals.insert(input.source.path).second) {
             result.used_visuals.insert(input.source.path);
             const auto found=visual_sources_.find(input.source.path);
             if(found==visual_sources_.end())pending_visuals.push_back(input.source.path);
@@ -242,8 +247,8 @@ ActionCatalog::Projection ActionCatalog::Project(const std::vector<ActionSourceR
                 }
             }
         }
-        if(input.source.kind==api::ActionConfigKind::Battle && read_visual_ && !visual_sources_.count(input.source.path))
-            status.pending_domains.insert(input.domain);
+        // Reaction data is independent of configured skills and ready poses.
+        // An explicit reaction query must not hold those actions or layouts.
         ActionDocumentStatus document;if(values)document.input=input;
         if(input.source.path.empty()) {
             if(values) {document.attempted=true;document.issues.push_back({-1,"source path","empty configuration path"});
