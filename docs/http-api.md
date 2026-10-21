@@ -36,7 +36,7 @@ HTTP 202 returns `serial` and `request_url`. Poll that URL for queued/dispatched
 | `catalog` | Optional `refresh` |
 | `prepare_source` | `source` |
 | `retry_source`, `release_source` | `source_request` |
-| `create` | `source_request`; optional `scene`, `placement`, `near_player`, `player_world_offset` |
+| `create` | `source_request`; optional `scene`, `placement`, `near_player`, `player_world_offset`, `task_catalog`, `transient` |
 | `replace_source` | `character`, `source_request` |
 | `enable` | `character`, `enabled` |
 | `delete`, `rebuild`, `idle` | `character` |
@@ -86,11 +86,11 @@ Authored program actions use `{"kind":"program","program":"scene","action":"ente
 
 Sequence commands are `task_query`, `task_select`, `task_finish` and `task_cancel`, with the current `character` and `creation`. Selection includes `catalog` and `task`; optional `inputs`, `slot`, `targets`, `choices` and `anchors` are defined in [task runtime](task-runtime.md). Preparation uses the existing model/gaze handoff. A returned command means intent was accepted, not that its task has started or finished.
 
-Task replies and snapshots expose current/pending execution, preparation errors, context owners, typed values and availability. SSE publishes changes without native queries. Only explicit queries include detailed request receipts. Task catalogs currently bind to session-only previews and are not persisted in layouts.
+Task replies and snapshots expose current/pending execution, preparation errors, context owners, typed values and availability. SSE publishes changes without native queries. Only explicit queries include detailed request receipts. `create.task_catalog` binds a registered catalog; its selection and visual contexts are saved unless `transient` is true.
 
 ## Map layouts
 
-The working layout is saved in `Layouts/map-<escaped-key>/current.json`; named snapshots use `snapshots/layout-<name>.json`. Layouts retain official sources, placement, enable state, gaze, selected actions and presentation phases. Restored actions start from the beginning.
+The working layout is saved in `Layouts/map-<escaped-key>/current.json`; named snapshots use `snapshots/layout-<name>.json`. Layouts retain official sources, placement, enable state, gaze, selected actions or tasks, and reconstructable presentation contexts. Restored actions and tasks start from the beginning.
 
 `layout` operations:
 
@@ -109,7 +109,7 @@ Layout replies have operation 0. Read `runtime.layouts.maps[scene]`: command, op
 
 State capture and background writes each run at a 250 ms cadence. Unchanged values are not rewritten. Write failures remain visible until an explicit retry; failed initial restoration preserves the file. `keep_current` can overwrite it with an empty layout.
 
-Instance gaze references are remapped on restoration. Cross-map targets, external packages and independent development animation layers are not supported by layout persistence.
+Instance gaze, task and visual-context targets are remapped on restoration. Cross-map targets, external packages and independent development animation layers are not supported by layout persistence.
 
 ## Queries and events
 

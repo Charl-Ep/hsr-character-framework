@@ -5,6 +5,7 @@
 #include "../appearance/AppearanceTypes.hpp"
 #include "../presentation/PresentationProfile.hpp"
 #include "../presentation/VisualProgramState.hpp"
+#include "../tasks/TaskControlTypes.hpp"
 
 namespace hksr::framework {
 struct VisualProgramInput;
@@ -27,6 +28,7 @@ struct CharacterPlan {
     std::string presentation_phase;
     std::shared_ptr<const VisualProgramInput> visual_program;
     std::optional<VisualProgramSnapshot> visual_state;
+    std::optional<TaskSelection> task_selection;
     CharacterPersistence persistence=CharacterPersistence::Layout;
     static CharacterPlan FromPrepared(const PreparedSource& source,
         std::shared_ptr<const ModelAssetInput> payload={},std::string npc_look_source={});

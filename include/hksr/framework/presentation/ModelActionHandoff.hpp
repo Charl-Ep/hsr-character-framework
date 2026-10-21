@@ -41,6 +41,8 @@ public:
     TaskControlResult ControlTask(TaskControlInput);
     TaskControlResult QueryTasks(const std::optional<TaskSelection>& selection={}) const;
     bool HasTasks() const {return bool(tasks_);}
+    void RestoreTasks(std::optional<TaskSelection>);
+    std::optional<TaskSelection> CaptureTask() const;
     const api::ModelRequestStatus* ModelRequest() const { return transition_->RequestStatus(); }
 private:
     bool Ended() const;
@@ -64,5 +66,7 @@ private:
     std::optional<VisualProgramSnapshot> visual_restore_;
     std::shared_ptr<const TaskCatalog> task_catalog_;
     std::unique_ptr<TaskController> tasks_;
+    bool restoring_tasks_=false;
+    std::optional<TaskSelection> task_restore_;
 };
 }

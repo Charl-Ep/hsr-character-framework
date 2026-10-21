@@ -22,6 +22,7 @@ static_assert(!std::is_copy_constructible_v<hksr::api::ModelProfileInputs>);
 static_assert(!std::is_copy_constructible_v<hksr::api::ModelProfileRequest>);
 
 namespace {
+template<class F> __declspec(noinline) void TestSection(F&& run){run();}
 using namespace hksr;
 struct Value { std::string text; std::vector<void*> items; void* child=nullptr; } baseline_path,baseline_entity_config,baseline_events,baseline_layers,string_type,model,operation;
 struct Consumer { void* unused[3]{}; void* paths=&baseline_events; void* layers=&baseline_layers; } consumer;
@@ -694,26 +695,39 @@ void TestModelProfileInputs() {
         consumer.paths=&baseline_events; consumer.layers=&baseline_layers;
         model.child=&string_type; load_state=5; changing=false; animator_present=true; animator_ready=true;
     };
-    for(bool alternate:{false,true}) {
+    TestSection([&] { for(bool alternate:{false,true}) {
         reset_baseline();framework::CharacterPlan plan;plan.package=package;
         if(alternate)plan.alternate=framework::BattlePresentation{{"battle.prefab",{},{}},{}};
         auto input=std::make_shared<framework::VisualProgramInput>();
         auto task_catalog=std::make_shared<framework::TaskCatalog>(framework::ParseTaskCatalog(R"({
           "format":"hksr.task-catalog","id":"owned","domain":"exploration",
-          "visual":{"id":"owned-visual","source":"test","scope":"task","effects":{}},
+          "visual":{"id":"owned-visual","source":"test","scope":"task","effects":{},
+            "contexts":{"enhanced":{"restore":[]}}},
+          "contexts":{"enhanced":{"phase":"enhanced","values":{"boosted":true}}},
           "sequences":{"play":{"entry":{"op":"serial","children":[
             {"op":"animation","request":"body","participant":"body","state":"SomeState"},
             {"op":"wait_request","request":"body"}]}}},
-          "tasks":{"play":{"entry":"play"}}
+          "tasks":{"play":{"entry":"play"},"in_phase":{"entry":"play","requires":[{"op":"phase","is":"enhanced"},{"op":"target","name":"Target"}]}}
         })"));
         task_catalog->domain=alternate?Domain::Alternate:Domain::Exploration;input->tasks=task_catalog;
         input->program=input->tasks->visual;plan.visual_program=input;
         auto configured=session_services;std::shared_ptr<framework::VisualProgramPlayer> player;
+        bool restored_target_ready=false;
+        bool restored_target_failed=false;
         configured.visual_program=[&](api::EntityOrigin origin,const framework::VisualProgramInput& value,const auto&) {
             Check(origin.token.entity==entity_ptr && origin.world==world_ptr);
             framework::VisualProgramServices callbacks;
             callbacks.effects=std::make_shared<api::PresentationEffects>(api::EffectRequestServices{{},api::EffectAccess({}),{},{},{}});
             callbacks.create=[](auto&,const auto&,const auto&)->framework::VisualEffectId{throw std::logic_error("unexpected effect");};
+            callbacks.restore_inputs_ready=[&](const auto& inputs) {
+                if(!inputs.targets.empty() && restored_target_failed)
+                    return framework::VisualStepResult{framework::VisualStepState::Failed,"target creation failed"};
+                return framework::VisualStepResult{inputs.targets.empty() || restored_target_ready?framework::VisualStepState::Done:
+                    framework::VisualStepState::Pending,"target is still being constructed"};
+            };
+            callbacks.available_targets=[&](const auto&) {
+                return restored_target_ready?std::vector<std::string>{"Target"}:std::vector<std::string>{};
+            };
             player=std::make_shared<framework::VisualProgramPlayer>(value.program,std::move(callbacks));return player;
         };
         framework::SceneCharacters registry(configured,[&](auto& value,const auto&,const auto&){value.Create(create);});
@@ -721,7 +735,8 @@ void TestModelProfileInputs() {
         observed_hash=37;observed_time=0;
         const framework::SceneAddress address{"task-map",1};
         const auto id=registry.Add(address.key,plan); // no preparatory idle/action command
-        auto tick=[&]{++current.sequence;registry.Service(current,address,appearance,types);};
+        auto live_address=address;
+        auto tick=[&]{++current.sequence;registry.Service(current,live_address,appearance,types);};
         tick();const auto epoch=registry.Status(id).creations;
         framework::TaskControlInput select{framework::TaskControlOperation::Select,framework::TaskSelection{{"owned","play"}}};
         const auto before=battle_plays;
@@ -739,8 +754,9 @@ void TestModelProfileInputs() {
         const auto task_requests=registry.ControlTask(id,epoch,{},current).requests;
         Check(task_requests.size()==1 && task_requests[0].name=="body" &&
             task_requests[0].state.submitted && task_requests[0].receipt.model!=0);
-        // These developer tasks must not overwrite the persisted normal action.
+        // Tasks retain their own identity, not a synthetic normal action.
         Check(!registry.DesiredAction(id));
+        Check(registry.CaptureTask(id)->task.name=="play");
         observed_time=1.1f;tick();tick();
         Check(registry.ControlTask(id,epoch,{},current).status.execution->phase==framework::TaskExecutionPhase::Finished);
         Check(battle_plays==before+1); // no implicit idle selection
@@ -762,7 +778,43 @@ void TestModelProfileInputs() {
         registry.ControlTask(id,epoch,select,current);tick();tick();Check(battle_plays==before_battle+1);
         registry.Delete(id);tick();tick();
         Check(registry.Ids().empty() && player->Drained() && roots.empty());
-    }
+        // Restoration uses the same session/model/context path in both domains.
+        // The task's precondition is false until the saved context is rebuilt.
+        reset_baseline();observed_time=0;
+        auto saved_plan=plan;
+        saved_plan.visual_state=framework::VisualProgramSnapshot{"owned-visual",{},{{"enhanced",{},{}}}};
+        saved_plan.task_selection=framework::TaskSelection{{"owned","in_phase"}};
+        saved_plan.task_selection->visual.targets["Target"]=55;
+        const auto restored_id=registry.Add(address.key,saved_plan);
+        const auto prior_plays=battle_plays;
+        tick();tick();tick();
+        Check(battle_plays==prior_plays && registry.Status(restored_id).tasks->control.preparing);
+        restored_target_ready=true;tick();tick();
+        Check(battle_plays==prior_plays+1 && player->ContextToken("enhanced"));
+        Check(registry.CaptureTask(restored_id)->task.name=="in_phase");
+        ++current.sequence;registry.Service(current,framework::SceneAddress{"away",2},appearance,types);
+        Check(!registry.Status(restored_id).active && registry.CaptureTask(restored_id)->task.name=="in_phase");
+        reset_baseline();live_address.incarnation=3;tick();tick();tick();
+        Check(battle_plays==prior_plays+2 && player->ContextToken("enhanced"));
+        registry.Rebuild(restored_id);restored_target_failed=true;reset_baseline();tick();tick();tick();
+        Check(registry.Status(restored_id).tasks->control.preparation_error.find("target creation failed")!=std::string::npos);
+        Check(registry.CaptureTask(restored_id)->task.name=="in_phase");
+        const auto recreated=registry.Status(restored_id).creations;
+        registry.ControlTask(restored_id,recreated,{framework::TaskControlOperation::Cancel,{}},current);
+        Check(!registry.CaptureTask(restored_id));
+        registry.Delete(restored_id);tick();tick();
+        Check(registry.Ids().empty() && player->Drained() && roots.empty());
+        if(alternate) {
+            reset_baseline();restored_target_failed=false;saved_plan.alternate.reset();
+            const auto unavailable=registry.Add(address.key,saved_plan);tick();tick();
+            Check(registry.Status(unavailable).active && !registry.Status(unavailable).tasks->control.preparation_error.empty());
+            Check(registry.CaptureTask(unavailable)->task.name=="in_phase");
+            const auto previous=npc_plays;
+            registry.Select(unavailable,{Domain::Exploration,framework::NpcMotion{18}});tick();
+            Check(npc_plays==previous+1 && !registry.CaptureTask(unavailable));
+            registry.Delete(unavailable);tick();tick();Check(registry.Ids().empty() && roots.empty());
+        }
+    }});
     {
         reset_baseline();
         framework::PreparedSource prepared; prepared.character=package; prepared.finished=true;

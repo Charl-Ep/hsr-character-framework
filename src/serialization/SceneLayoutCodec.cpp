@@ -1,4 +1,5 @@
 #include <hksr/framework/layout/SceneLayout.hpp>
+#include "TaskSelectionCodec.hpp"
 #include <nlohmann/json.hpp>
 #include <algorithm>
 #include <limits>
@@ -40,7 +41,7 @@ LookMode Look(const std::string& text) {
 }
 Json Context(const VisualContextSnapshot& value) {
     Json targets=Json::object(),anchors=Json::object();
-    for(const auto& [name,id]:value.inputs.targets)targets[name]=std::to_string(id);
+    for(const auto& [name,id]:value.inputs.targets)targets[name]=id?Json(std::to_string(id)):Json(nullptr);
     for(const auto& [name,pose]:value.inputs.anchors) {
         const auto q=pose.rotation;
         anchors[name]={{"position",Position(pose.position)},{"rotation",{q.x,q.y,q.z,q.w}}};
@@ -53,7 +54,7 @@ VisualContextSnapshot Context(const Json& value) {
     out.inputs.choices=value.at("choices").get<std::map<std::string,std::string>>();
     out.variables=value.at("variables").get<std::map<std::string,float>>();
     Need(value.at("targets").is_object() && value.at("anchors").is_object(),"invalid visual inputs");
-    for(auto it=value.at("targets").begin();it!=value.at("targets").end();++it)out.inputs.targets[it.key()]=Id(it.value());
+    for(auto it=value.at("targets").begin();it!=value.at("targets").end();++it)out.inputs.targets[it.key()]=it.value().is_null()?0:Id(it.value());
     for(auto it=value.at("anchors").begin();it!=value.at("anchors").end();++it) {
         const auto& row=it.value();const auto& q=row.at("rotation");
         Need(q.is_array() && q.size()==4,"invalid visual anchor rotation");
@@ -92,6 +93,8 @@ std::string EncodeSceneLayout(const SceneLayout& layout) {
             {"look",{{"mode",Look(row.look.mode)},{"target",std::to_string(row.look.target)},{"point",Position(row.look.point)},{"max_distance",row.look.max_distance}}}};
         if(row.placement.snap_to_ground)value["snap_to_ground"]=*row.placement.snap_to_ground;
         if(row.visual_state)value["visual_state"]=ProgramSnapshot(*row.visual_state);
+        if(!row.task_catalog.empty())value["task_catalog"]=row.task_catalog;
+        if(row.task){value["task"]=task_codec::Selection(*row.task);value["task"]["captured"]=row.task->inputs_captured;}
         if(row.action)value["action"]=std::visit([](const auto& action)->Json {
             using T=std::decay_t<decltype(action)>;
             if constexpr(std::is_same_v<T,NpcMotion>)return {{"kind","npc"},{"id",action.id}};
@@ -114,6 +117,10 @@ SceneLayout DecodeSceneLayout(const std::string& text) {
         SavedCharacter row;row.key=Id(item.at("key"));row.enabled=item.at("enabled").get<bool>();
         row.presentation_phase=item.value("presentation_phase",std::string{});
         if(item.contains("visual_state"))row.visual_state=ProgramSnapshot(item.at("visual_state"));
+        row.task_catalog=item.value("task_catalog",std::string{});
+        if(item.contains("task")){
+            row.task=task_codec::ParseSelection(item.at("task"));row.task->inputs_captured=item.at("task").value("captured",false);
+        }
         const auto& source=item.at("source");
         auto number=[](const Json& n) {Need(n.is_number_unsigned() && n.get<std::uint64_t>()<=UINT32_MAX,"invalid source/action ID");return n.get<std::uint32_t>();};
         if(source.at("kind")=="npc")row.source=BrowseNpc{number(source.at("npc_id"))};

@@ -21,6 +21,8 @@ public:
     TaskContext& Context();
     const TaskContext& Context() const;
     const TaskControllerStatus& Status() const;
+    std::optional<TaskSelection> Selection() const;
+    VisualStepResult RestoreInputsReady(const TaskSelection&) const;
     std::vector<TaskRequestSnapshot> Requests() const;
     bool Drained() const;
 private:

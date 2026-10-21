@@ -91,11 +91,18 @@ void TestApplicationCoordinator() {
     const auto player_source=replies[0].source_request;coordinator.Catalog()->Advance(0);
     Check(snapshot().catalog->Source(player_source)->phase==SourceRequestPhase::Ready);
     auto preview=add;preview.source_request=player_source;preview.near_player=false;preview.task_catalog="test-preview";
+    preview.transient=true;
     service.Post(preview);replies=dispatch();
     Check(replies[0].accepted && characters.Plan(replies[0].character).visual_program->tasks==input->tasks);
     Check(characters.Status(replies[0].character).transient && !characters.Status(id).transient &&
         !characters.Plan(id).visual_program);
     const auto preview_id=replies[0].character;
+    auto persistent=preview;persistent.transient=false;
+    service.Post(persistent);replies=dispatch();
+    const auto persistent_id=replies[0].character;
+    Check(replies[0].accepted && !characters.Status(persistent_id).transient &&
+        characters.Plan(persistent_id).visual_program->tasks==input->tasks);
+    service.Post(DeleteCharacter{persistent_id});dispatch();
     preview.task_catalog="missing";const auto count=characters.Ids().size();
     service.Post(preview);replies=dispatch();
     Check(!replies[0].accepted && characters.Ids().size()==count);

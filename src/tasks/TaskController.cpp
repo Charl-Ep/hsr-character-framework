@@ -19,6 +19,7 @@ struct TaskController::State {
     TaskContext context;
     std::map<std::string,Contribution> contributions;
     std::optional<Pending> pending;
+    std::optional<TaskSelection> selected;
     std::shared_ptr<Run> active;
     std::vector<std::shared_ptr<Run>> retiring;
     TaskControllerStatus status;
@@ -26,7 +27,7 @@ struct TaskController::State {
     std::optional<std::uint64_t> frame;
     TaskQuery Inputs(const TaskSelection& selection,bool captured,const std::vector<TaskRequirement>& requirements) const {
         auto query=selection.query;
-        const auto inputs=captured?selection.visual:visual->Parameters(selection.visual);
+        const auto inputs=captured || selection.inputs_captured?selection.visual:visual->Parameters(selection.visual);
         query.targets.clear();query.choices=inputs.choices;query.anchors.clear();
         VisualProgramParameters required;bool needs_target=false;
         for(const auto& requirement:requirements)if(const auto* target=std::get_if<TaskNeedsTarget>(&requirement)) {
@@ -71,7 +72,8 @@ struct TaskController::State {
         if(active){status.current=active->selection.task;status.execution=active->player->Status();}
     }
     void Start(Pending desired) {
-        desired.selection.visual=visual->Parameters(desired.selection.visual);
+        if(!desired.selection.inputs_captured)desired.selection.visual=visual->Parameters(desired.selection.visual);
+        desired.selection.inputs_captured=true;
         auto checked=Query(desired.selection,true);
         if(checked.query.availability!=TaskAvailability::Available) {
             status.blocked=std::move(checked.query);return;
@@ -88,6 +90,7 @@ struct TaskController::State {
             catalog->sequences.at(plan.definition.entry),visual,run->selection.visual,std::move(ports),true);
         if(desired.finish)run->player->RequestFinish();
         active=std::move(run);status.started=desired.intent;status.blocked.reset();status.error.clear();
+        selected=active->selection;selected->query.slot.reset();
     }
     void RetireActive() {
         if(!active)return;
@@ -110,6 +113,7 @@ TaskSelectionResult TaskController::Select(TaskSelection selection) {
     if(result.query.availability!=TaskAvailability::Available)return result; // leave the running task unchanged
     result.intent=++state.status.requested;
     state.pending=State::Pending{result.intent,std::move(selection)};
+    state.selected=state.pending->selection;
     state.status.error.clear();state.status.blocked.reset();state.Publish();return result;
 }
 void TaskController::RequestFinish() {
@@ -117,7 +121,7 @@ void TaskController::RequestFinish() {
     else if(state_->active)state_->active->player->RequestFinish();
 }
 void TaskController::Cancel() {
-    auto& state=*state_;state.pending.reset();
+    auto& state=*state_;state.pending.reset();state.selected.reset();
     if(state.active && !state.active->stopping) {
         state.active->stopping=true;state.active->next.reset();state.active->player->Stop(TaskExitReason::Interrupted);
     }
@@ -127,7 +131,7 @@ void TaskController::Cancel() {
 void TaskController::Close(TaskExitReason reason) {
     if(reason==TaskExitReason::Completed || reason==TaskExitReason::Interrupted || reason==TaskExitReason::Replaced)
         throw std::invalid_argument("controller close requires actor/domain retirement");
-    auto& state=*state_;state.status.closing=true;state.pending.reset();
+    auto& state=*state_;state.status.closing=true;state.pending.reset();state.selected.reset();
     if(state.active){state.active->next.reset();state.active->player->Stop(reason);}
     for(const auto& run:state.retiring)run->player->Stop(reason);
     state.visual->End();state.SyncContexts();state.Publish();
@@ -135,7 +139,7 @@ void TaskController::Close(TaskExitReason reason) {
 void TaskController::Reset(TaskExitReason reason) {
     if(reason==TaskExitReason::Completed || reason==TaskExitReason::Interrupted || reason==TaskExitReason::Replaced)
         throw std::invalid_argument("task reset requires domain/owner invalidation");
-    auto& state=*state_;state.pending.reset();
+    auto& state=*state_;state.pending.reset();state.selected.reset();
     if(state.active){state.active->next.reset();state.active->stopping=true;state.active->player->Stop(reason);}
     for(const auto& run:state.retiring)run->player->Stop(reason);
     state.visual->Leave();state.SyncContexts();state.Publish();
@@ -156,8 +160,10 @@ void TaskController::Service(double seconds,std::uint64_t frame,bool allow_start
             const auto run=state.active;
             if(!state.pending && !state.status.closing && run->next && run->player->Status().reason==TaskExitReason::Completed) {
                 TaskSelection next{run->next->task,run->selection.query,run->selection.visual};
+                next.inputs_captured=true;
                 next.query.inputs=run->next->inputs;next.query.slot.reset();
                 state.pending=State::Pending{++state.status.requested,std::move(next)};
+                state.selected=state.pending->selection;
             }
             state.RetireActive();
         }
@@ -180,6 +186,14 @@ void TaskController::Service(double seconds,std::uint64_t frame,bool allow_start
 TaskContext& TaskController::Context(){return state_->context;}
 const TaskContext& TaskController::Context() const{return state_->context;}
 const TaskControllerStatus& TaskController::Status() const{return state_->status;}
+std::optional<TaskSelection> TaskController::Selection() const{return state_->selected;}
+VisualStepResult TaskController::RestoreInputsReady(const TaskSelection& selection) const {
+    VisualProgramParameters required;
+    const auto& definition=state_->catalog->Resolve(selection.task).definition;
+    for(const auto& requirement:definition.requirements)if(const auto* target=std::get_if<TaskNeedsTarget>(&requirement))
+        if(const auto found=selection.visual.targets.find(target->name);found!=selection.visual.targets.end())required.targets.insert(*found);
+    return state_->visual->RestoreInputsReady(required);
+}
 std::vector<TaskRequestSnapshot> TaskController::Requests() const {
     auto out=state_->active?state_->active->player->Requests():std::vector<TaskRequestSnapshot>{};
     for(const auto& run:state_->retiring) {

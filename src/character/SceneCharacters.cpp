@@ -38,6 +38,16 @@ void SceneCharacters::BindProfile(CharacterPlan& plan,std::uint64_t id) const {
                 throw std::invalid_argument("a saved visual context cannot retain a session-only target");
             return VisualTarget(target);
         };
+        input->restore_target=[this,id](std::uint64_t target) {
+            const auto found=entries_.find(target),owner=entries_.find(id);
+            if(found==entries_.end() || owner==entries_.end() || found->second.status.deleting || !found->second.status.enabled ||
+                found->second.status.scene!=owner->second.status.scene)
+                return VisualStepResult{VisualStepState::Failed,"saved target is unavailable: "+std::to_string(target)};
+            const auto& entry=found->second;
+            if(entry.failed_revision==entry.revision)
+                return VisualStepResult{VisualStepState::Failed,"saved target creation failed: "+entry.creation_error};
+            return VisualStepResult{VisualStepState::Done,{}}; // native readiness is checked by the existing resolver
+        };
         plan.visual_program=std::move(input);
     }
     if(profiles_)for(const auto& root:plan.action_sources)if(root.domain==ActionDomain::Alternate && root.source.kind==api::ActionConfigKind::Battle) {
@@ -48,6 +58,9 @@ void SceneCharacters::BindProfile(CharacterPlan& plan,std::uint64_t id) const {
     plan.presentation_phase=state.Phase();if(!state.Note().empty())plan.source_notes.push_back(state.Note());
 }
 void SceneCharacters::ConfigureTaskPreview(CharacterPlan& plan,const std::string& catalog) const {
+    ConfigureTaskCatalog(plan,catalog);plan.persistence=CharacterPersistence::Session;
+}
+void SceneCharacters::ConfigureTaskCatalog(CharacterPlan& plan,const std::string& catalog) const {
     const auto found=programs_.catalogs.find(catalog);
     if(found==programs_.catalogs.end() || !found->second || !found->second->tasks)
         throw std::invalid_argument("task catalog not registered: "+catalog);
@@ -56,8 +69,7 @@ void SceneCharacters::ConfigureTaskPreview(CharacterPlan& plan,const std::string
     for(const auto& root:plan.action_sources)
         if(root.domain==input->tasks->domain && root.source.path==input->program->source)matches=true;
     if(!matches)throw std::invalid_argument("task catalog source/domain does not match the prepared character: "+catalog);
-    plan.visual_program=input;plan.visual_state.reset();
-    plan.persistence=CharacterPersistence::Session;
+    plan.visual_program=input;plan.visual_state.reset();plan.task_selection.reset();
 }
 api::EntityOrigin SceneCharacters::VisualTarget(std::uint64_t id) const {
     const auto found=entries_.find(id);
@@ -97,6 +109,10 @@ std::uint64_t SceneCharacters::Add(std::string scene,CharacterPlan plan,std::opt
     if(closing_ || scene.empty()) throw std::invalid_argument("scene character needs a scene and an open registry");
     BindProfile(plan,next_+1);
     Entry entry; entry.plan=std::move(plan); entry.action=std::move(action);
+    if(entry.plan.task_selection) {
+        if(entry.action)throw std::invalid_argument("a character cannot restore an action and a task simultaneously");
+        entry.intent_owner=Entry::IntentOwner::Task;
+    }
     if(entry.action)entry.action_intent=++entry.next_action;
     entry.placement=placement;
     entry.status.id=++next_; entry.status.scene=std::move(scene);
@@ -111,6 +127,7 @@ std::uint64_t SceneCharacters::Select(std::uint64_t id,PlacedAction action) {
     }
     entry.action=std::move(action);entry.action_intent=++entry.next_action;
     entry.intent_owner=Entry::IntentOwner::Action;
+    entry.plan.task_selection.reset();
     entry.pending_task.reset();++entry.task_revision;entry.task_preparation_error.clear();
     entry.action_error.clear();entry.visual_restore_error.clear();SubmitAction(entry);
     return entry.action_intent;
@@ -123,9 +140,18 @@ TaskControlResult SceneCharacters::ControlTask(std::uint64_t id,std::uint64_t cr
         throw std::logic_error("task command targets an inactive or replaced creation");
     if(input.operation==TaskControlOperation::Select) {
         if(!input.selection)throw std::invalid_argument("task selection missing");
+        ValidateTaskSelection(*input.selection);
+        if(entry.plan.persistence==CharacterPersistence::Layout)for(const auto& [name,target]:input.selection->visual.targets) {
+            if(!target)continue;
+            const auto found=entries_.find(target);
+            if(found==entries_.end() || found->second.status.deleting || found->second.status.scene!=entry.status.scene ||
+                found->second.plan.persistence!=CharacterPersistence::Layout)
+                throw std::invalid_argument("saved task target must belong to this map layout: "+name);
+        }
         auto queried=entry.active->session->ControlTask({TaskControlOperation::Query,input.selection});
         if(queried.selection->query.availability!=TaskAvailability::Available)return queried;
         entry.pending_task=std::move(input.selection);entry.pending_task_finish=false;
+        if(entry.plan.persistence==CharacterPersistence::Layout){entry.plan.task_selection=entry.pending_task;entry.action.reset();}
         ++entry.task_revision;entry.task_preparation_error.clear();
         entry.intent_owner=Entry::IntentOwner::Task;entry.active->session->SupersedeQueuedAction();
         if(auto submitted=SubmitTask(entry))return *submitted;
@@ -135,10 +161,13 @@ TaskControlResult SceneCharacters::ControlTask(std::uint64_t id,std::uint64_t cr
     if(input.operation==TaskControlOperation::Finish && entry.pending_task) {
         entry.pending_task_finish=true;input.operation=TaskControlOperation::Query;
     }
-    if(input.operation==TaskControlOperation::Cancel){entry.pending_task.reset();++entry.task_revision;entry.task_preparation_error.clear();}
+    if(input.operation==TaskControlOperation::Cancel){entry.pending_task.reset();entry.plan.task_selection.reset();++entry.task_revision;entry.task_preparation_error.clear();}
     auto result=entry.active->session->ControlTask(std::move(input));
     if(entry.pending_task)result.preparing=entry.pending_task->task;
-    result.preparation_error=entry.task_preparation_error;return result;
+    if(!entry.task_preparation_error.empty())result.preparation_error=entry.task_preparation_error;
+    if(result.preparation_error.empty() && entry.intent_owner==Entry::IntentOwner::Task)
+        result.preparation_error=entry.active->session->Status().dispatch_error;
+    return result;
 }
 bool SceneCharacters::PrepareDomain(Entry& entry,ActionDomain domain) {
     if(!entry.active)return false;
@@ -237,6 +266,7 @@ void SceneCharacters::ReplacePlan(std::uint64_t id,CharacterPlan plan) {
     auto& entry=Edit(id);
     plan.persistence=entry.plan.persistence;
     entry.plan=std::move(plan);entry.action.reset();entry.action_intent=0;entry.action_error.clear();entry.visual_restore_error.clear();++entry.revision;
+    entry.pending_task.reset();++entry.task_revision;entry.task_preparation_error.clear();
     entry.intent_owner=Entry::IntentOwner::Action;
     BindProfile(entry.plan,id);
     entry.status.error.clear();
@@ -264,9 +294,9 @@ void SceneCharacters::Shutdown() {
 }
 void SceneCharacters::Retire(Entry& entry) {
     if(!entry.active) return;
-    entry.pending_task.reset();++entry.task_revision;
-    entry.intent_owner=Entry::IntentOwner::Action;
     if(!entry.status.deleting && entry.active->revision==entry.revision)SaveVisualState(entry);
+    entry.pending_task.reset();++entry.task_revision;
+    entry.intent_owner=entry.plan.task_selection?Entry::IntentOwner::Task:Entry::IntentOwner::Action;
     if(entry.active->controls) {
         // Preserve returned gaze receipts, but keep an unapplied saved target
         // waiting across automatic map retirement rather than cancelling it.
@@ -501,7 +531,9 @@ SceneCharacterStatus SceneCharacters::Status(std::uint64_t id) const {
             if(task_view && handoff->HasTasks())task_view->control=handoff->QueryTasks();
             if(task_view) {
                 if(entry.pending_task)task_view->control.preparing=entry.pending_task->task;
-                task_view->control.preparation_error=entry.task_preparation_error;
+                if(!entry.task_preparation_error.empty())task_view->control.preparation_error=entry.task_preparation_error;
+                if(task_view->control.preparation_error.empty() && entry.intent_owner==Entry::IntentOwner::Task)
+                    task_view->control.preparation_error=entry.active->session->Status().dispatch_error;
             }
             // Use the same live phase owner as automatic completion. The plan
             // only supplies the fallback before a battle model becomes active.
@@ -556,8 +588,25 @@ std::optional<VisualProgramSnapshot> SceneCharacters::CaptureVisualProgram(std::
 void SceneCharacters::SaveVisualState(Entry& entry) {
     // An unavailable reconstruction recipe must never prevent removal. Keep
     // the error explicit instead of replaying a continuation with empty state.
-    try {entry.plan.visual_state=CaptureVisualProgram(entry.status.id);entry.visual_restore_error.clear();}
+    try {entry.plan.task_selection=CaptureTask(entry.status.id);entry.plan.visual_state=CaptureVisualProgram(entry.status.id);entry.visual_restore_error.clear();}
     catch(const std::exception& e){entry.plan.visual_state.reset();entry.visual_restore_error=e.what();}
+}
+std::optional<TaskSelection> SceneCharacters::CaptureTask(std::uint64_t id) const {
+    const auto& entry=entries_.at(id);
+    if(entry.plan.persistence==CharacterPersistence::Session || entry.intent_owner!=Entry::IntentOwner::Task)return {};
+    if(entry.pending_task)return entry.pending_task;
+    if(entry.active && !entry.active->session->Status().dispatch_error.empty())return entry.plan.task_selection;
+    if(entry.active && entry.active->revision==entry.revision)
+        if(const auto* handoff=entry.active->session->Handoff();handoff && handoff->HasTasks())return handoff->CaptureTask();
+    return entry.plan.task_selection;
+}
+void SceneCharacters::RestoreTask(std::uint64_t id,TaskSelection selection) {
+    auto& entry=Edit(id);
+    if(entry.active)throw std::logic_error("saved task must be installed before creation");
+    ValidateTaskSelection(selection);
+    if(!entry.plan.visual_program || !entry.plan.visual_program->tasks)throw std::invalid_argument("saved task catalog absent");
+    entry.plan.visual_program->tasks->Resolve(selection.task);
+    entry.plan.task_selection=std::move(selection);entry.action.reset();entry.intent_owner=Entry::IntentOwner::Task;
 }
 void SceneCharacters::RestoreVisualProgram(std::uint64_t id,VisualProgramSnapshot value) {
     auto& entry=Edit(id);

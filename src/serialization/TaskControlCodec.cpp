@@ -62,6 +62,15 @@ ControlCharacterTask ParseTaskCommand(const Json& row) {
     if(row.contains("task")) {
         if(out.input.operation!=TaskControlOperation::Select && out.input.operation!=TaskControlOperation::Query)
             throw std::invalid_argument("task identity only applies to select/query");
+        out.input.selection=ParseSelection(row);
+    } else {
+        if(out.input.operation==TaskControlOperation::Select)throw std::invalid_argument("task selection missing");
+        for(const auto* field:{"catalog","inputs","slot","choices","targets","anchors"})
+            if(row.contains(field))throw std::invalid_argument("task inputs require a task identity");
+    }
+    return out;
+}
+TaskSelection ParseSelection(const Json& row) {
         TaskSelection selection;selection.task={Name(row.at("catalog")),Name(row.at("task"))};
         const auto inputs=row.value("inputs",Json::object());
         if(!inputs.is_object())throw std::invalid_argument("task inputs must be an object");
@@ -86,17 +95,11 @@ ControlCharacterTask ParseTaskCommand(const Json& row) {
         for(auto it=targets.begin();it!=targets.end();++it) {
             const auto name=Name(it.key());
             if(name=="Caster")throw std::invalid_argument("caster cannot be overridden");
-            selection.visual.targets.emplace(name,Id(it.value()));
+            selection.visual.targets.emplace(name,it.value().is_null()?0:Id(it.value()));
         }
         selection.visual.choices=row.value("choices",Json::object()).get<std::map<std::string,std::string>>();
         selection.visual.anchors=ParseVisualSpatialAnchors(row.value("anchors",Json::object()).dump());
-        out.input.selection=std::move(selection);
-    } else {
-        if(out.input.operation==TaskControlOperation::Select)throw std::invalid_argument("task selection missing");
-        for(const auto* field:{"catalog","inputs","slot","choices","targets","anchors"})
-            if(row.contains(field))throw std::invalid_argument("task inputs require a task identity");
-    }
-    return out;
+        ValidateTaskSelection(selection);return selection;
 }
 Json TaskResult(const framework::TaskControlResult& result) {
     const auto& state=result.status;
@@ -148,17 +151,19 @@ Json TaskCommand(const ControlCharacterTask& value) {
         value.input.operation==TaskControlOperation::Finish?"task_finish":
         value.input.operation==TaskControlOperation::Cancel?"task_cancel":"task_query";
     Json out={{"op",operation},{"character",std::to_string(value.id)},{"creation",std::to_string(value.creation)}};
-    if(value.input.selection) {
-        const auto& selection=*value.input.selection;
+    if(value.input.selection)out.update(Selection(*value.input.selection));
+    return out;
+}
+Json Selection(const TaskSelection& selection) {
+        ValidateTaskSelection(selection);Json out=Json::object();
         out["catalog"]=selection.task.catalog;out["task"]=selection.task.name;
         out["inputs"]=Values(selection.query.inputs);
         if(selection.query.slot)out["slot"]=selection.query.slot->value;
         out["choices"]=selection.visual.choices;out["targets"]=Json::object();out["anchors"]=Json::object();
-        for(const auto& [name,id]:selection.visual.targets)out["targets"][name]=std::to_string(id);
+        for(const auto& [name,id]:selection.visual.targets)out["targets"][name]=id?Json(std::to_string(id)):Json(nullptr);
         for(const auto& [name,anchor]:selection.visual.anchors)out["anchors"][name]={
-            {"position",{{"x",anchor.position.x},{"y",anchor.position.y},{"z",anchor.position.z}}},
-            {"rotation",{{"x",anchor.rotation.x},{"y",anchor.rotation.y},{"z",anchor.rotation.z},{"w",anchor.rotation.w}}}};
-    }
+            {"position",{anchor.position.x,anchor.position.y,anchor.position.z}},
+            {"rotation",{anchor.rotation.x,anchor.rotation.y,anchor.rotation.z,anchor.rotation.w}}};
     return out;
 }
 }

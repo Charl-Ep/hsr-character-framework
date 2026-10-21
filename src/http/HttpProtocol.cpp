@@ -151,7 +151,7 @@ CharacterCommand Command(const Json& v) {
     const auto op=Text(v.at("op"));
     if(op=="task_query" || op=="task_select" || op=="task_finish" || op=="task_cancel") {
         (void)Id(v.at("character"));(void)Id(v.at("creation"));
-        if(v.contains("targets"))for(const auto& target:v.at("targets").items())(void)Id(target.value());
+        if(v.contains("targets"))for(const auto& target:v.at("targets").items())if(!target.value().is_null())(void)Id(target.value());
         return task_codec::ParseTaskCommand(v);
     }
     if(op=="layout") {
@@ -182,8 +182,11 @@ CharacterCommand Command(const Json& v) {
         if(op=="retry_source")return RetrySource{id};return ReleaseSource{id};
     }
     if(op=="create") {
-        Fields(v,{"op","source_request","scene","placement","near_player","player_world_offset"});
+        Fields(v,{"op","source_request","scene","placement","near_player","player_world_offset","task_catalog","transient"});
         AddPreparedCharacter out;out.source_request=Id(v.at("source_request"));out.scene=v.value("scene",std::string());
+        out.task_catalog=v.value("task_catalog",std::string());out.transient=v.value("transient",false);
+        if(v.contains("task_catalog") && (out.task_catalog.empty() || out.task_catalog.find('\0')!=std::string::npos))
+            throw std::invalid_argument("task_catalog must be a nonempty catalog ID");
         if(v.contains("placement"))out.placement=Placement(v.at("placement"));out.near_player=v.value("near_player",false);
         if(v.contains("player_world_offset"))out.player_world_offset=Position(v.at("player_world_offset"));return out;
     }

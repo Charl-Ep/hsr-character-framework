@@ -2,6 +2,7 @@
 #include "../presentation/ActionSelection.hpp"
 #include "../catalog/SourceTypes.hpp"
 #include "../presentation/VisualProgramState.hpp"
+#include "../tasks/TaskControlTypes.hpp"
 #include <filesystem>
 
 namespace hksr::framework {
@@ -18,6 +19,8 @@ struct SavedCharacter {
     std::optional<SavedAction> action;
     std::string presentation_phase;
     std::optional<VisualProgramSnapshot> visual_state;
+    std::string task_catalog;
+    std::optional<TaskSelection> task;
 };
 struct SceneLayout {
     std::string scene;

@@ -2,6 +2,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <filesystem>
 
 namespace hksr::framework {
 struct VisualProgramInput;
@@ -13,4 +14,5 @@ struct VisualProgramLibrary {
     TaskCatalogInputs catalogs;
     bool empty() const {return sources.empty() && catalogs.empty();}
 };
+VisualProgramLibrary ReadVisualProgramLibrary(const std::filesystem::path& manifest);
 }

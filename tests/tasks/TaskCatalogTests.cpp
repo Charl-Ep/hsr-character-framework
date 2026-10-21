@@ -132,6 +132,14 @@ void NaturalAndPending() {
     f.plays[1].second->complete=true;f.Tick();
     Check(f.plays.size()==3 && f.plays.back().first.state=="StandBy");
     Check(f.controller->Status().current->name=="idle");
+    Check(f.controller->Selection()->task.name=="idle" &&
+        f.controller->Selection()->visual.targets.at("Target")==99 &&
+        f.controller->Selection()->visual.choices.at("mode")=="explicit");
+    const auto saved=*f.controller->Selection();
+    Fixture restored;restored.defaults.targets["Target"]=100;restored.defaults.choices["mode"]="new-default";
+    restored.controller->Select(saved);restored.Tick();
+    Check(saved.inputs_captured && restored.captured.targets.at("Target")==99 && restored.captured.choices.at("mode")=="explicit");
+    f.controller->Cancel();Check(!f.controller->Selection());
     Fixture delayed;delayed.accept=false;delayed.Select("idle");delayed.Tick();delayed.Tick();
     Check(delayed.plays.size()==1 && !delayed.controller->Drained());
     delayed.plays[0].second->accepted=true;delayed.Tick();delayed.Tick();

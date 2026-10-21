@@ -23,6 +23,11 @@ void ActionPlayback::RestoreVisualProgram(VisualProgramSnapshot value) {
     if(!program_)throw std::runtime_error("saved visual program is not configured");
     program_->Restore(std::move(value));
 }
+bool ActionPlayback::VisualRestoreReady() const {
+    if(!program_ || !program_->Restoring())return true;
+    if(!program_->Status().issues.empty())throw std::runtime_error(program_->Status().issues.front());
+    return false;
+}
 void ActionPlayback::LeaveProgram() {
     program_playback_.reset();program_preparing_=program_intent_=program_return_=0;
     if(program_)program_->Leave();

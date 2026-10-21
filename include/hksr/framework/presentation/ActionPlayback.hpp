@@ -44,6 +44,7 @@ public:
     std::optional<VisualProgramSnapshot> CaptureVisualProgram() const;
     VisualBranchState BranchState() const;
     void RestoreVisualProgram(VisualProgramSnapshot);
+    bool VisualRestoreReady() const;
     void CancelPending(bool interrupt_presentation=true);
     // inputs_ready comes from model/event/appearance handoff, not a UI cache.
     void Service(const api::WorldFrame& frame,bool inputs_ready,api::ManagedObjects& objects);

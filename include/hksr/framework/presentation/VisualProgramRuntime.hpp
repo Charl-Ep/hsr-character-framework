@@ -26,6 +26,7 @@ struct VisualProgramInput {
     // after restoration/creation. Direct targets take precedence.
     std::map<std::string,std::uint64_t> target_characters;
     std::function<api::EntityOrigin(std::uint64_t)> resolve_character;
+    std::function<VisualStepResult(std::uint64_t)> restore_target;
     // Optional value snapshot, read at action selection, not per frame. Values
     // overlay the startup defaults. Existing requests retain their old owners.
     std::uint64_t character=0;

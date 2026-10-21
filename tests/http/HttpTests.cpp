@@ -73,6 +73,10 @@ void Protocol() {
     http::Command({{"op","replace_source"},{"character",1},{"source_request",2}});
     auto create=http::Command({{"op","create"},{"source_request",2},{"near_player",true}});
     Check(std::get<AddPreparedCharacter>(create).near_player,"near player creation");
+    auto bound=http::Command({{"op","create"},{"source_request",2},{"task_catalog","configured-tasks"}});
+    Check(std::get<AddPreparedCharacter>(bound).task_catalog=="configured-tasks" &&
+        !std::get<AddPreparedCharacter>(bound).transient,"task creation should be persistent unless explicitly transient");
+    Reject([]{http::Command({{"op","create"},{"source_request",2},{"task_catalog",""}});});
     http::Command({{"op","action"},{"character",1},{"action",{{"kind","npc"},{"id",9}}}});
     const auto layout=http::Command({{"op","layout"},{"operation","save"},{"name","布置"},{"scene","map-A"},{"overwrite",true}});
     Check(std::get<LayoutCommand>(layout).scene=="map-A" && std::get<LayoutCommand>(layout).overwrite,"map-bound layout command");
@@ -147,6 +151,8 @@ void Protocol() {
         {"inputs",{{"charged",true},{"count",3}}},{"targets",{{"Target","9007199254740999"}}}};
     const auto task_command=std::get<ControlCharacterTask>(http::Command(command));
     Check(task_command.input.selection->visual.targets.at("Target")==9007199254740999ULL,"task target IDs preserve precision");
+    command["targets"]["Target"]=nullptr;
+    Check(std::get<ControlCharacterTask>(http::Command(command)).input.selection->visual.targets.at("Target")==0,"explicit unbound target alias");
     command["targets"]["Target"]=9007199254740999ULL;Reject([&]{http::Command(command);});
     CommandReply task_reply;task_reply.task=actor_tasks.control;
     Check(http::Reply(task_reply)["task"]["catalog"].contains("modifier-followup"),"query response included");

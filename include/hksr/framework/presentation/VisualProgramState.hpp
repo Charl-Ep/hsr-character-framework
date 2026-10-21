@@ -11,7 +11,7 @@ struct VisualSpatialAnchor {api::Position3 position;api::Rotation4 rotation;};
 using VisualSpatialAnchors=std::map<std::string,VisualSpatialAnchor>;
 VisualSpatialAnchors ParseVisualSpatialAnchors(const std::string& json);
 struct VisualProgramParameters {
-    std::map<std::string,std::uint64_t> targets;
+    std::map<std::string,std::uint64_t> targets; // zero explicitly leaves an alias unbound
     std::map<std::string,std::string> choices;
     VisualSpatialAnchors anchors;
 };

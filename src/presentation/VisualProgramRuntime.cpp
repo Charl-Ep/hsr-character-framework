@@ -158,6 +158,10 @@ std::shared_ptr<VisualProgramPlayer> VisualProgramRuntime::Create(api::EntityOri
         const auto scene=current();
         for(const auto& [name,id]:inputs.targets) {
             if(!scene->input.resolve_character)return VisualStepResult{VisualStepState::Failed,"visual target resolver unavailable"};
+            if(scene->input.restore_target) {
+                const auto readiness=scene->input.restore_target(id);
+                if(readiness.state!=VisualStepState::Done)return readiness;
+            }
             const auto origin=scene->input.resolve_character(id);
             if(!Alive(origin))return VisualStepResult{VisualStepState::Pending,"waiting for restored target "+name+" character="+std::to_string(id)};
             if(origin.world!=scene->owner.world)return VisualStepResult{VisualStepState::Failed,"restored visual target belongs to another world: "+name};

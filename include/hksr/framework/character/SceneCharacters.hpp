@@ -26,7 +26,7 @@ public:
     SceneCharacters& operator=(const SceneCharacters&)=delete;
     std::uint64_t Add(std::string scene,CharacterPlan plan,std::optional<PlacedAction> action={},CharacterPlacement placement={});
     std::uint64_t Select(std::uint64_t id,PlacedAction action);
-    // Transient developer control; never rewrites the saved layout intention.
+    // Owned task control; persistent instances retain the current task identity.
     TaskControlResult ControlTask(std::uint64_t id,std::uint64_t creation,TaskControlInput,const api::WorldFrame&);
     void SetEnabled(std::uint64_t id,bool enabled); // explicit suspension, not deletion
     void Delete(std::uint64_t id); // forget intent only after owned resources drain
@@ -46,6 +46,9 @@ public:
     std::uint64_t PublishTaskCatalogs(TaskCatalogInputs);
     // Select a catalog for a new session-only instance, before any native work.
     void ConfigureTaskPreview(CharacterPlan&,const std::string& catalog) const;
+    void ConfigureTaskCatalog(CharacterPlan&,const std::string& catalog) const;
+    std::optional<TaskSelection> CaptureTask(std::uint64_t id) const;
+    void RestoreTask(std::uint64_t id,TaskSelection);
     void ConfigureTiming(api::OperationTrace::Sink sink){timing_=std::move(sink);}
     void EnableTiming(bool enabled){timing_enabled_=enabled;}
     std::shared_ptr<const ControlSubmission> Place(std::uint64_t id,CharacterPlacement pose,bool relative);

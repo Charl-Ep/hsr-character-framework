@@ -158,6 +158,9 @@ public:
     bool Drained() const;
     VisualProgramParameters Parameters(VisualProgramParameters overrides={}) const;
     std::vector<std::string> AvailableTargets(const VisualProgramParameters&) const;
+    VisualStepResult RestoreInputsReady(const VisualProgramParameters& inputs) const {
+        return services_.restore_inputs_ready?services_.restore_inputs_ready(inputs):VisualStepResult{VisualStepState::Done,{}};
+    }
     // Task sequences share the same instruction executor and native resource
     // owners as authored programs, without inventing a body action/clock.
     std::uint64_t BeginSequence(VisualProgramParameters,bool captured=false);

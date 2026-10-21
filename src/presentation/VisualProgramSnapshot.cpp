@@ -10,7 +10,7 @@ void ValidateVisualSnapshot(const VisualProgramSnapshot& value) {
     auto need=[](bool condition){if(!condition)throw std::invalid_argument("invalid visual snapshot value");};
     need(name(value.program));std::set<std::string> names;
     auto context=[&](const VisualContextSnapshot& item) {
-        for(const auto& [key,id]:item.inputs.targets)need(name(key) && id);
+        for(const auto& [key,id]:item.inputs.targets)need(name(key));
         for(const auto& [key,choice]:item.inputs.choices)need(name(key) && name(choice));
         for(const auto& [key,number]:item.variables)need(name(key) && std::isfinite(number));
         for(const auto& [key,pose]:item.inputs.anchors) {
@@ -40,7 +40,7 @@ bool SameVisualSnapshot(const VisualProgramSnapshot& a,const VisualProgramSnapsh
     return true;
 }
 void RemapVisualTargets(VisualProgramSnapshot& value,const std::map<std::uint64_t,std::uint64_t>& keys) {
-    auto remap=[&](auto& context){for(auto& [name,id]:context.inputs.targets)id=keys.at(id);};
+    auto remap=[&](auto& context){for(auto& [name,id]:context.inputs.targets)if(id)id=keys.at(id);};
     if(value.scene)remap(*value.scene);
     for(auto& context:value.contexts)remap(context);
 }

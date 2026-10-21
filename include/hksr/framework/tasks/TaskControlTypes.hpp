@@ -8,7 +8,11 @@ struct TaskSelection {
     TaskKey task;
     TaskQuery query;
     VisualProgramParameters visual;
+    bool inputs_captured=false; // restart a saved request without rereading runtime defaults
 };
+void ValidateTaskSelection(const TaskSelection&);
+bool SameTaskSelection(const TaskSelection&,const TaskSelection&);
+void RemapTaskTargets(TaskSelection&,const std::map<std::uint64_t,std::uint64_t>&);
 struct TaskSelectionResult {
     std::uint64_t intent=0;
     TaskKey resolved;

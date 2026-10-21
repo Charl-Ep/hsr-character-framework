@@ -133,12 +133,17 @@ void Run() {
                 std::shared_ptr<RuntimeClient> client=s.framework;
 #ifdef HKSR_RESEARCH
                 s.framework->EnableTaskDevelopment();
+#endif
                 try {
-                    auto programs=hksr::research::ReadVisualProgramInputs(s.http_settings.parent_path()/L"VISUAL_PROGRAMS.json");
+                    auto programs=hksr::framework::ReadVisualProgramLibrary(s.http_settings.parent_path()/L"VISUAL_PROGRAMS.json");
                     s.Log("visual sources loaded="+std::to_string(programs.sources.size())+
                         " task catalogs="+std::to_string(programs.catalogs.size()));
-                    s.framework->SetVisualPrograms(hksr::research::BindVisualProgramOverrides(std::move(programs),s.visual_inputs));
+#ifdef HKSR_RESEARCH
+                    programs=hksr::research::BindVisualProgramOverrides(std::move(programs),s.visual_inputs);
+#endif
+                    s.framework->SetVisualPrograms(std::move(programs));
                 } catch(const std::exception& e){s.Log(std::string("visual programs unavailable: ")+e.what());}
+#ifdef HKSR_RESEARCH
                 s.framework->SetModelObserver([](auto id,auto generation,auto domain,auto* entity,void* model,void* animator) {
                     hksr::framework::development::ObserveModel(id,generation,static_cast<int>(domain),entity,model,animator);
                     });

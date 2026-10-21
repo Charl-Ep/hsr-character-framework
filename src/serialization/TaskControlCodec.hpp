@@ -1,6 +1,6 @@
 #pragma once
 #include <hksr/framework/application/ApplicationService.hpp>
-#include <nlohmann/json.hpp>
+#include "TaskSelectionCodec.hpp"
 
 namespace hksr::framework::task_codec {
 ControlCharacterTask ParseTaskCommand(const nlohmann::json&);

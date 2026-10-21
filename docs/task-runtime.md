@@ -1,6 +1,6 @@
 # Task runtime
 
-The `tasks` module provides typed visual tasks, configuration loading, owned-resource execution and per-actor selection. The menu and HTTP use the same application task directory. Task catalogs currently bind to explicit session-only instances; task-layout persistence and a complete character catalog are pending.
+The `tasks` module provides typed visual tasks, configuration loading, owned-resource execution and per-actor selection. The menu and HTTP use the same application task directory. An instance can bind one task catalog and retain its selection in map layouts. A complete character catalog and multiple task-catalog domains per instance are not implemented.
 
 `CharacterTasks` lists NPC motions, configured animation candidates, ready transitions, shared reactions, authored programs, task sequences and idle. Each row retains its backend identity, sources, availability and application command. A configured animation candidate is not a complete battle ability. The menu shows available rows by default; development mode can show unavailable and unknown rows. HTTP retains all rows and their reasons.
 
@@ -126,15 +126,17 @@ Top-level `contexts` binds visual-context names to `values`, `phase`, `slots` (`
 
 ## Development control
 
-In a development build, `VISUAL_PROGRAMS.json` accepts `file`, `targets`, `choices` and `anchors`. Visual programs register source defaults; task catalogs register by catalog ID and do not change those defaults.
+Both builds read `VISUAL_PROGRAMS.json` beside the Framework DLL on startup. Its `programs` array accepts `file`, `targets`, `choices` and `anchors`. Visual programs register source defaults; task catalogs register by catalog ID and do not change those defaults. Files are parsed on the worker before runtime initialization.
+
+HTTP `create` and development `create_prepared` accept `task_catalog`. The catalog source and model domain must match the prepared character. Set `transient: true` for a session-only preview. An omitted `transient` creates a layout-persistent instance. One configured visual scene owns its resources; replacing a live resource catalog is not supported.
 
 `reload_tasks` rereads this manifest and its files on the worker, then publishes the task catalogs through the application queue. Its reply contains `task_catalog_revision`. Invalid or missing input leaves the registry unchanged; an explicit empty list removes the published candidates. Source-default visual programs are not replaced by this command.
 
 Existing previews retain their original definitions and resources. Subsequent `create_prepared` requests use the new publication; snapshots identify their `task_catalog` and `task_catalog_revision`. Delete an old preview and create another to exercise changed definitions without restarting the game. Publication does not create, rebuild or play characters.
 
-Create a preview with `create_prepared`, a prepared `source_request`, and `task_catalog`. Its source and model domain must match the catalog. One configured visual scene owns its resources; replacing a live resource catalog is not supported. Selecting a task prepares its model domain through the existing handoff.
+Create a preview with `create_prepared`, a prepared `source_request`, `task_catalog` and `transient: true`. Selecting a task prepares its model domain through the existing handoff.
 
-Task previews are session-only. Ordinary `create_prepared` also accepts `transient: true`. These instances appear in snapshots with `transient: true`, but are omitted from automatic saves and named layouts. Loading a layout leaves them untouched. Source replacement preserves their session-only lifetime. Saved actors cannot retain references to session-only targets in gaze or visual contexts. Delete previews through the ordinary character lifecycle.
+Session-only instances appear in snapshots with `transient: true`, but are omitted from automatic saves and named layouts. Loading a layout leaves them untouched. Source replacement preserves their lifetime. Saved actors cannot retain references to session-only targets in gaze, tasks or visual contexts. Delete previews through the ordinary character lifecycle.
 
 The existing development command envelope accepts:
 
@@ -147,4 +149,14 @@ All require `character` and `creation` from the current snapshot. `body` binds t
 
 Query results include active and retiring request receipts: authored name/source, execution, participant, entity/model generations, submission, acceptance, performance completion, progress and drain. These are copied from existing observations only when queried; reading them does not query the engine or retain execution history.
 
-Transport acceptance is separate from task availability, execution and drain. Full task selection and context persistence are not yet implemented.
+Transport acceptance is separate from task availability, execution and drain.
+
+## Persistence
+
+Layouts retain the catalog ID, selected task, typed inputs, choices, spatial anchors and logical target references. A started task retains its resolved identity and captured inputs; a configured successor replaces the saved selection. Cancellation clears it. Request receipts, native handles and playback clocks are not saved.
+
+Captured inputs do not reread runtime defaults on restoration. A deleted target is saved as an unbound alias (`null`), not a reusable instance ID. Tasks requiring it report the missing target; they do not substitute the caster. Targets still being constructed are awaited, while disabled or failed targets are reported explicitly.
+
+Restoration resolves the catalog before replacing existing actors, remaps targets to the new instance IDs, prepares the catalog's model domain and rebuilds visual contexts before querying the task. Playback restarts at its entry. Context values and slot contributions come from those restored contexts. Persistent resources require explicit `restore` recipes in the visual configuration; missing recipes are reported as save/restore errors.
+
+A missing catalog or task fails layout preparation without removing existing actors. A runtime preparation or execution failure remains visible on the restored instance. Temporary previews remain excluded from persistence.

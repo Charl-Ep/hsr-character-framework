@@ -17,6 +17,7 @@ std::uint64_t ModelActionHandoff::Queue(ActionDomain domain,ActionRequest action
         throw std::invalid_argument("visual program requires its battle model domain");
     if(domain==ActionDomain::Alternate && !transition_->RequestStatus())
         throw std::logic_error("alternate source unavailable; exploration remains usable");
+    if(restoring_tasks_){restoring_tasks_=false;task_restore_.reset();visual_restore_.reset();}
     if(tasks_)tasks_->Reset(TaskExitReason::ActorLost);
     desired_=Intent{++status_.requested,domain,std::move(action)};
     if(domain==ActionDomain::Alternate && initial_state_name_.empty())
@@ -46,18 +47,32 @@ TaskControlResult ModelActionHandoff::ControlTask(TaskControlInput input) {
             throw std::logic_error("alternate source unavailable; exploration remains usable");
         input.selection->query.participants={{"body"}};
         result.selection=tasks_->Select(std::move(*input.selection));
+        if(result.selection->intent){restoring_tasks_=false;task_restore_.reset();}
         if(result.selection->intent && (!desired_ || desired_->domain!=task_catalog_->domain || desired_->action ||
             status_.phase==HandoffPhase::Failed))
             desired_=Intent{++status_.requested,task_catalog_->domain,{}};
     } else if(input.operation==TaskControlOperation::Query) {
         result=QueryTasks(input.selection);result.requests=tasks_->Requests();return result;
     } else if(input.operation==TaskControlOperation::Finish)tasks_->RequestFinish();
-    else tasks_->Cancel();
+    else {restoring_tasks_=false;task_restore_.reset();visual_restore_.reset();tasks_->Cancel();}
     result.status=tasks_->Status();result.contexts=tasks_->Context().Owners();return result;
+}
+void ModelActionHandoff::RestoreTasks(std::optional<TaskSelection> selection) {
+    if(!tasks_)throw std::logic_error("saved task catalog is unavailable");
+    if(selection)task_catalog_->Resolve(selection->task);
+    if(task_catalog_->domain==ActionDomain::Alternate && !transition_->RequestStatus())
+        throw std::logic_error("saved task model source is unavailable");
+    task_restore_=std::move(selection);restoring_tasks_=true;
+    desired_=Intent{++status_.requested,task_catalog_->domain,{}};
+}
+std::optional<TaskSelection> ModelActionHandoff::CaptureTask() const {
+    return restoring_tasks_?task_restore_:tasks_?tasks_->Selection():std::nullopt;
 }
 TaskControlResult ModelActionHandoff::QueryTasks(const std::optional<TaskSelection>& selected) const {
     if(!tasks_)throw std::logic_error("no task catalog configured for this actor");
     TaskControlResult result;
+    if(restoring_tasks_ && task_restore_)result.preparing=task_restore_->task;
+    if(restoring_tasks_ && status_.phase==HandoffPhase::Failed)result.preparation_error=status_.error;
     auto query=[&](TaskSelection selection) {
         selection.query.participants={{"body"}};
         auto value=tasks_->Query(selection);
@@ -124,6 +139,7 @@ void ModelActionHandoff::Service(const api::WorldFrame& frame,AppearanceServices
     // Cancel only this actor's task ownership before another frame can dispatch
     // its leaf operations, including a same-world exploration -> battle change.
     if(tasks_ && (!OwnFrame(frame) || !frame.battle.read.returned || frame.battle.value)) {
+        restoring_tasks_=false;task_restore_.reset();
         tasks_->Reset(TaskExitReason::WorldLeft);
         if(desired_ && !desired_->action && desired_->serial!=status_.servicing)desired_.reset();
     }
@@ -134,6 +150,12 @@ void ModelActionHandoff::Service(const api::WorldFrame& frame,AppearanceServices
     if(!OwnFrame(frame)){
         if(tasks_)tasks_->Service(0,frame.sequence);
         character_.Service(frame,appearance,types);return;
+    }
+    if(restoring_tasks_ && status_.phase==HandoffPhase::Failed) {
+        // Retain the original failure instead of retrying every frame after
+        // Reset has already removed the contexts required by the saved task.
+        character_.Service(frame,appearance,types);
+        tasks_->Service(0,frame.sequence,false);return;
     }
     try {
         if(desired_ && desired_->serial!=status_.servicing) {
@@ -205,7 +227,8 @@ void ModelActionHandoff::Service(const api::WorldFrame& frame,AppearanceServices
                 // Receivers and model consumers must exist before effects and
                 // phase resources can be reconstructed. Never run this during
                 // baseline capture or the model's initialization request.
-                if(active_->domain==ActionDomain::Alternate)actions_.RestoreVisualProgram(std::move(*visual_restore_));
+                if(active_->domain==(task_catalog_?task_catalog_->domain:ActionDomain::Alternate))
+                    actions_.RestoreVisualProgram(std::move(*visual_restore_));
                 visual_restore_.reset();
             }
             if(before!=HandoffPhase::Ready){
@@ -215,7 +238,23 @@ void ModelActionHandoff::Service(const api::WorldFrame& frame,AppearanceServices
             character_.Service(frame,appearance,types);
             if(interrupted())return;
             actions_.Service(frame,status_.ready_domain && VisualReady(*status_.ready_domain),appearance.assets.objects);
-            if(tasks_)tasks_->Service(frame.delta_time,frame.sequence,status_.ready_domain==task_catalog_->domain);
+            const bool task_ready=tasks_ && status_.ready_domain==task_catalog_->domain && actions_.VisualRestoreReady();
+            if(restoring_tasks_ && task_ready) {
+                if(task_restore_) {
+                    auto selection=*task_restore_;selection.query.participants={{"body"}};
+                    const auto inputs=tasks_->RestoreInputsReady(selection);
+                    if(inputs.state==VisualStepState::Failed)throw std::runtime_error(inputs.detail);
+                    if(inputs.state==VisualStepState::Pending){tasks_->Service(0,frame.sequence,false);return;}
+                    const auto result=tasks_->Select(std::move(selection));
+                    if(!result.intent) {
+                        std::string error="saved task is unavailable";
+                        for(const auto& reason:result.query.reasons)error+="; "+reason.source+": "+reason.detail;
+                        throw std::runtime_error(error);
+                    }
+                }
+                restoring_tasks_=false;task_restore_.reset();
+            }
+            if(tasks_)tasks_->Service(frame.delta_time,frame.sequence,task_ready);
             const auto& output=actions_.Status().last;
             if(output && status_.playback_serial && output->serial==status_.playback_serial &&
                 (!status_.output || status_.output->outcome==ActionOutcome::Waiting))status_.output=output;

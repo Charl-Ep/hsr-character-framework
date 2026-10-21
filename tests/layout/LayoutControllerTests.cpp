@@ -3,6 +3,7 @@
 #include <hksr/framework/character/SceneCharacters.hpp>
 #include <hksr/framework/host/RuntimeServices.hpp>
 #include <hksr/framework/presentation/VisualProgramRuntime.hpp>
+#include <hksr/framework/tasks/TaskCatalog.hpp>
 #include "../../src/host/StopDrain.hpp"
 #include <Windows.h>
 #include <fstream>
@@ -214,6 +215,43 @@ void TestLayoutController() {
         isolated.Close();isolated_registry.Shutdown();
     }
     Check(visual_reads==0,"ordinary layout restoration read unused reaction data");
+    {
+        // Authored tasks restore without waiting for unrelated ability discovery.
+        abilities_ready=false;
+        auto tasks=saved;tasks.scene="task-map";
+        tasks.characters[1].action.reset();tasks.characters[1].task_catalog="saved-tasks";
+        tasks.characters[1].task=TaskSelection{{"saved-tasks","continue"}};
+        tasks.characters[1].task->visual.targets["Target"]=90;
+        store.SaveCurrent(tasks);
+        auto input=std::make_shared<VisualProgramInput>();
+        input->tasks=std::make_shared<const TaskCatalog>(ParseTaskCatalog(R"({
+          "format":"hksr.task-catalog","id":"saved-tasks","domain":"battle",
+          "visual":{"id":"saved-program","source":"battle/config","scope":"saved","effects":{},
+            "contexts":{"phase":{"restore":[]}}},
+          "sequences":{"continue":{"entry":{"op":"wait_frame"}}},
+          "tasks":{"continue":{"entry":"continue"}}})"));
+        input->program=input->tasks->visual;
+        auto task_io=std::make_shared<LayoutIo>(folder);CatalogBrowser task_catalog(readers);
+        SceneCharacters task_registry(runtime.Sessions(false),SceneCharacters::Create{});
+        task_registry.ConfigurePrograms({{},{{"saved-tasks",input}}});
+        LayoutController task_control(task_registry,task_catalog,task_io);
+        const SceneAddress address{tasks.scene,9};
+        for(unsigned i=0;i<32;++i){task_io->Pump();task_control.Advance(address);task_catalog.Advance(0);}
+        const auto task_ids=task_registry.Ids();Check(!abilities_ready && task_ids.size()==2,"task layout waited for unrelated ability data");
+        const auto selected=task_registry.CaptureTask(task_ids[1]);
+        Check(selected && selected->task.name=="continue" && selected->visual.targets.at("Target")==task_ids[0],"task selection/target remap missing");
+        Check(task_registry.CaptureVisualProgram(task_ids[1])->contexts[0].inputs.targets.at("Target")==task_ids[0],"task context target remap missing");
+        Check(task_registry.Plan(task_ids[1]).persistence==CharacterPersistence::Layout,"restored task became transient");
+        task_control.Capture(true);task_io->Pump();
+        Check(store.Current(tasks.scene)->characters[1].task->task.name=="continue","restored task was not saved");
+        task_registry.PublishTaskCatalogs({});
+        task_control.Execute({LayoutOperation::Save,"before-missing"},tasks.scene,100);task_io->Pump();task_control.Advance(address);
+        task_control.Execute({LayoutOperation::Load,"before-missing"},tasks.scene,101);
+        for(unsigned i=0;i<32;++i){task_io->Pump();task_control.Advance(address);task_catalog.Advance(0);}
+        Check(task_control.Snapshot().maps.at(tasks.scene).phase=="failed" && task_registry.Ids()==task_ids &&
+            !task_registry.Status(task_ids[1]).deleting,"missing task binding removed old actors");
+        task_control.Close();task_registry.Shutdown();
+    }
     {
         abilities_ready=false;
         auto reaction=saved;reaction.scene="reaction-only";reaction.characters={b};

@@ -41,6 +41,9 @@ void LayoutController::Prepare(Map& map) {
         }
         if(!map.plan_ready[i]) {
             auto plan=catalog_.Plan(source->id);
+            const auto& saved=map.incoming->characters[i];
+            if(!saved.task_catalog.empty())characters_.ConfigureTaskCatalog(plan,saved.task_catalog);
+            if(saved.task)plan.visual_program->tasks->Resolve(saved.task->task);
             plan.presentation_phase=map.incoming->characters[i].presentation_phase;
             if(const auto& visual=map.incoming->characters[i].visual_state)characters_.CheckVisualRestore(plan,*visual);
             if((plan.package.appearance || plan.payload) && !private_models_)
@@ -85,6 +88,9 @@ void LayoutController::Install(Map& map) {
         if(const auto& saved=map.incoming->characters[i].visual_state) {
             auto state=*saved;RemapVisualTargets(state,keys);characters_.RestoreVisualProgram(map.added[i],std::move(state));
         }
+        if(const auto& saved=map.incoming->characters[i].task) {
+            auto task=*saved;RemapTaskTargets(task,keys);characters_.RestoreTask(map.added[i],std::move(task));
+        }
         auto look=map.incoming->characters[i].look;
         if(look.mode==LookMode::Instance)look.target=keys.at(look.target);
         characters_.Look(map.added[i],look);
@@ -103,6 +109,12 @@ void LayoutController::ObserveApplied(Map& map) {
         if(!s.creation_error.empty())throw std::runtime_error("restored character "+std::to_string(id)+": "+s.creation_error);
         if(s.action && s.action->phase==ActionIntentPhase::Failed)
             throw std::runtime_error("restored action "+std::to_string(id)+": "+s.action->detail);
+        if(s.tasks) {
+            const auto& task=s.tasks->control;
+            if(!task.preparation_error.empty() || !task.status.error.empty())
+                throw std::runtime_error("restored task "+std::to_string(id)+": "+task.preparation_error+" "+task.status.error);
+            if(task.preparing || task.status.pending)pending=true;
+        }
         if(!s.creation_ready || (s.action && (s.action->phase==ActionIntentPhase::Waiting || s.action->phase==ActionIntentPhase::Dispatching)))pending=true;
     }
     if(!pending){map.phase=Phase::Ready;map.status.phase="ready";map.status.busy=false;}

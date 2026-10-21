@@ -93,10 +93,12 @@ set(HKSR_RUNTIME_SOURCES
     src/tasks/TaskPresentation.cpp
     src/tasks/TaskCatalog.cpp
     src/tasks/TaskController.cpp
+    src/tasks/TaskSelection.cpp
 
     # src/serialization
     src/serialization/PresentationProfileCodec.cpp
     src/serialization/VisualProgramCodec.cpp
+    src/serialization/VisualProgramLibraryCodec.cpp
     src/serialization/TaskCatalogCodec.cpp
     src/serialization/TaskControlCodec.cpp
     src/serialization/SceneLayoutCodec.cpp

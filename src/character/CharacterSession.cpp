@@ -54,8 +54,10 @@ void CharacterSession::Remove() { removing_=true; desired_.reset(); if(baseline_
 TaskControlResult CharacterSession::ControlTask(TaskControlInput input) {
     if(removing_ || status_.closed || !handoff_)throw std::logic_error("task session is not active");
     const bool select=input.operation==TaskControlOperation::Select;
+    const bool cancel=input.operation==TaskControlOperation::Cancel;
     auto result=handoff_->ControlTask(std::move(input));
-    if(select && result.selection && result.selection->intent)desired_.reset();
+    if(select && result.selection && result.selection->intent){desired_.reset();status_.dispatch_error.clear();}
+    if(cancel)status_.dispatch_error.clear();
     return result;
 }
 bool CharacterSession::Ended() const {
@@ -83,7 +85,15 @@ void CharacterSession::StartHandoff(std::unique_ptr<api::ModelProfileRequest> re
             status_.errors.push_back(e.what());status_.phase=SessionPhase::Failed;Remove();return;
         }
     }
-    if(plan_.visual_state)handoff_->RestoreVisualProgram(*plan_.visual_state);
+    try {
+        if(plan_.visual_state)handoff_->RestoreVisualProgram(*plan_.visual_state);
+        if(plan_.task_selection || (!desired_ && plan_.visual_state && plan_.visual_program && plan_.visual_program->tasks))
+            handoff_->RestoreTasks(plan_.task_selection);
+    }catch(const std::exception& error) {
+        // A missing optional model prevents this saved task, not use of the
+        // actor's independent exploration model or its ordinary controls.
+        status_.dispatch_error=error.what();status_.errors.push_back(error.what());
+    }
     character_.SetExplorationInputsEnabled(true);
     status_.phase=SessionPhase::Active; status_.waiting.clear();
 }
