@@ -61,6 +61,7 @@ void TestCharacterControls() {
     b.actor_control.model_attach_point=M(ModelHead);
     b.scene.transform=M(Transform);b.visual.initialize=M(Initialize);
     Objects objects;framework::RuntimeServices services(objects,b);
+    Check(bool(services.Sessions(false).handoff.sound));
     api::WorldFrame frame;frame.world=reinterpret_cast<api::GameWorld*>(&world);frame.disposing={false,{true,0}};
     auto token=api::TrackedEntities().Track(reinterpret_cast<api::GameEntity*>(&actor));
     api::InstallMovementPlacement(b.actor_control);

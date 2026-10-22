@@ -7,9 +7,10 @@
 namespace hksr::framework {
 using TaskNodeIndex=std::size_t;
 struct TaskAnimationCommand {TaskParticipant participant;std::string state;int layer=0;float transition=0;};
-using TaskLeafOperation=std::variant<TaskAnimationCommand,VisualInstruction>;
+struct TaskSoundCommand {TaskParticipant participant;std::string event;};
+using TaskLeafOperation=std::variant<TaskAnimationCommand,VisualInstruction,TaskSoundCommand>;
 struct TaskSubmit {std::string request;TaskLeafOperation operation;};
-enum class TaskWaitSignal { Submitted,RequestComplete,PerformanceComplete,Progress,Drained };
+enum class TaskWaitSignal { Submitted,RequestComplete,PerformanceComplete,Progress,Drained,Started };
 struct TaskWaitRequest {std::string request;TaskWaitSignal signal=TaskWaitSignal::PerformanceComplete;double progress=1;};
 struct TaskWaitSeconds {double seconds=0;};
 struct TaskWaitFrame {};

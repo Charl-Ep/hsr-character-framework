@@ -153,5 +153,55 @@ void IndependentTail() {
     f.timelines[1]=api::TimelinePlaybackPhase::Retired;f.timelines[2]=api::TimelinePlaybackPhase::Retired;
     finish.Service(0,8);Check(finish.Drained() && finish.Status().issues.empty());
 }
+void Sounds() {
+    Fixture f;auto ports=f.Services();unsigned stops=0;
+    auto status=std::make_shared<api::SoundRequestStatus>();
+    ports.sound=[&](const TaskSoundCommand& command)->std::optional<TaskSoundEndpoint> {
+        Check(command.participant.name=="body" && command.event=="event");status->accepted=true;
+        return TaskSoundEndpoint{10,[]{},[&]{++stops;status->cancelled=true;},[status]{return *status;}};
+    };
+    const auto sound=TaskNode{"sound",TaskSubmit{"sound",TaskSoundCommand{{"body"},"event"}}};
+    auto plan=Plan({sound,{"wait-start",TaskWaitRequest{"sound",TaskWaitSignal::Started}},
+        {"body",TaskSubmit{"body",TaskAnimationCommand{{"body"},"Body"}}},
+        {"wait-end",TaskWaitRequest{"sound"}},{"entry",TaskSerial{{0,1,2,3}}}},4);
+    TaskPresentation run({20},10,plan,f.player,{},ports);run.Service(0,1);
+    Check(f.animations.empty() && !run.Drained()); // queued isn't started
+    status->started=true;run.Service(0,2);Check(f.animations.size()==1 && !run.Drained());
+    auto body=f.animations.at("body");body->accepted=true;body->complete=true;
+    status->ended=true;status->closed=true;run.Service(0,3);run.Service(0,4);
+    Check(run.Drained() && stops==0 && run.Status().issues.empty());
+
+    // Natural finish retains sound tails; a new execution cannot own/stop them.
+    auto tail_status=std::make_shared<api::SoundRequestStatus>();tail_status->accepted=true;
+    ports.sound=[tail_status,&stops](const auto&)->std::optional<TaskSoundEndpoint> {
+        return TaskSoundEndpoint{10,[]{},[tail_status,&stops]{++stops;tail_status->cancelled=true;},[tail_status]{return *tail_status;}};
+    };
+    TaskPresentation tail({21},10,Plan({sound}),f.player,{},ports);tail.Service(0,5);tail.Service(0,6);
+    Check(!tail.Drained() && stops==0);
+    tail.Stop(TaskExitReason::Replaced);tail.Service(0,7);
+    Check(stops==1 && !tail.Drained()); // stop request is not backend drain
+    tail_status->closed=true;tail.Service(0,8);Check(tail.Drained());
+
+    // Cancellation inside the submitting factory retains the returned request.
+    auto pending=std::make_shared<api::SoundRequestStatus>();pending->accepted=true;
+    TaskPresentation* active=nullptr;
+    ports.sound=[&](const auto&)->std::optional<TaskSoundEndpoint> {
+        active->Stop(TaskExitReason::Deleted);
+        return TaskSoundEndpoint{10,[]{},[&]{++stops;pending->cancelled=true;},[pending]{return *pending;}};
+    };
+    TaskPresentation reentrant({22},10,Plan({sound}),f.player,{},ports);active=&reentrant;reentrant.Service(0,9);
+    Check(pending->cancelled && !reentrant.Drained());pending->closed=true;reentrant.Service(0,10);
+    Check(reentrant.Drained());
+
+    // Missing backend and playback failure remain errors, not completed sound.
+    TaskPresentation unavailable({23},10,Plan({sound}),f.player,{},f.Services());unavailable.Service(0,11);unavailable.Service(0,12);
+    Check(unavailable.Drained() && unavailable.Status().reason==TaskExitReason::Failed);
+    auto failed=std::make_shared<api::SoundRequestStatus>();failed->error="bank failed";failed->closed=true;
+    ports.sound=[failed](const auto&)->std::optional<TaskSoundEndpoint> {
+        return TaskSoundEndpoint{10,[]{},[]{},[failed]{return *failed;}};
+    };
+    TaskPresentation failure({24},10,Plan({sound}),f.player,{},ports);failure.Service(0,13);failure.Service(0,14);
+    Check(failure.Drained() && failure.Status().reason==TaskExitReason::Failed);
 }
-void TestTaskPresentation(){Scopes();IndependentParticipants();ErrorsAndReentry();NamedContexts();IndependentTail();}
+}
+void TestTaskPresentation(){Scopes();IndependentParticipants();ErrorsAndReentry();NamedContexts();IndependentTail();Sounds();}

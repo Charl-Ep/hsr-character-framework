@@ -83,6 +83,9 @@ struct SequenceParser {
                 Need(transition>=0 && transition<=std::numeric_limits<float>::max(),"animation transition out of range");
                 operation=TaskSubmit{Name(row.at("request")),TaskAnimationCommand{{Name(row.at("participant"))},Name(row.at("state")),
                     static_cast<int>(layer),static_cast<float>(transition)}};
+            } else if(op=="sound") {
+                Fields(row,{"op","request","participant","event","source"});
+                operation=TaskSubmit{Name(row.at("request")),TaskSoundCommand{{Name(row.at("participant"))},Name(row.at("event"))}};
             } else if(op=="visual") {
                 Fields(row,{"op","request","instruction","source"});
                 auto steps=visual_codec::Instructions(Json::array({row.at("instruction")}),visual);
@@ -92,6 +95,7 @@ struct SequenceParser {
                 const auto signal=row.value("signal",std::string("performance"));
                 TaskWaitRequest wait;wait.request=Name(row.at("request"));
                 if(signal=="submitted")wait.signal=TaskWaitSignal::Submitted;
+                else if(signal=="started")wait.signal=TaskWaitSignal::Started;
                 else if(signal=="accepted")wait.signal=TaskWaitSignal::RequestComplete;
                 else if(signal=="performance")wait.signal=TaskWaitSignal::PerformanceComplete;
                 else if(signal=="drained")wait.signal=TaskWaitSignal::Drained;

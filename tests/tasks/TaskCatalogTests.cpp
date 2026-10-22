@@ -92,6 +92,17 @@ void Codec() {
     Check(parsed.tasks.size()==5 && parsed.visual->actions.empty() && parsed.sequences.size()==3);
     Check(parsed.Resolve({"test","hold"}).definition.sources.at(0).field=="Modifier");
     Check(parsed.contexts.at("enhanced").disables.size()==1);
+    auto sound=input;
+    sound["sequences"]["stand"]["entry"]={{"op","serial"},{"children",Json::array({
+        {{"op","sound"},{"request","voice"},{"participant","body"},{"event","voice_event"}},
+        {{"op","wait_request"},{"request","voice"},{"signal","started"}},
+        {{"op","wait_request"},{"request","voice"},{"signal","performance"}}})}};
+    const auto with_sound=ParseTaskCatalog(sound.dump());
+    const auto& sound_nodes=with_sound.sequences.at("stand")->nodes;
+    Check(std::get<TaskSoundCommand>(std::get<TaskSubmit>(sound_nodes.at(0).operation).operation).event=="voice_event");
+    Check(std::get<TaskWaitRequest>(sound_nodes.at(1).operation).signal==TaskWaitSignal::Started);
+    sound["sequences"]["stand"]["entry"]["children"][0]["event"]="";
+    Reject([&]{ParseTaskCatalog(sound.dump());});
     auto configured=input;
     configured["tasks"]["attack"]["bindings"]={{"targets",{"Target"}},{"anchors",{"Destination"}},
         {"choices",{{"mode",{"low","high"}}}}};

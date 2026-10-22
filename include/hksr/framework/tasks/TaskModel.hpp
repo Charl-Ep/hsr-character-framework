@@ -93,6 +93,7 @@ struct TaskRequestState {
     // This execution deliberately handed the same animation channel to a
     // later request. Not natural completion and not an external interruption.
     bool superseded=false;
+    bool started=false; // actual asynchronous start, distinct from queue acceptance
 };
 struct TaskRequestSnapshot {
     std::string name,source;

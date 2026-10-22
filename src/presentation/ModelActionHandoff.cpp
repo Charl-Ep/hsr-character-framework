@@ -7,7 +7,7 @@ ModelActionHandoff::ModelActionHandoff(CharacterInstance& character,api::EntityT
     :character_(character),owner_(owner),world_(world),
     transition_(services.transition(owner,world,std::move(request))),
     controllers_(std::move(controllers)),actions_(owner,world,services.animations(owner),
-        services.effects,services.text),initial_state_name_(std::move(initial_state)) {
+        services.effects,services.text),sound_(std::move(services.sound)),initial_state_name_(std::move(initial_state)) {
     if(character.Actions() || character.Creation().factory.entity!=owner.entity)
         throw std::invalid_argument("handoff requires its character and exclusive action consumer");
 }
@@ -33,6 +33,13 @@ void ModelActionHandoff::ConfigureTasks(std::shared_ptr<const TaskCatalog> catal
         if(removing_ || Ended())throw std::runtime_error("task actor ended");
         if(status_.phase!=HandoffPhase::Ready || status_.ready_domain!=task_catalog_->domain)return {};
         return BindTaskAnimation(actions_);
+    };
+    services.sound=[this](const TaskSoundCommand& command)->std::optional<TaskSoundEndpoint> {
+        if(command.participant.name!="body")throw std::invalid_argument("unsupported sound participant: "+command.participant.name);
+        if(removing_ || Ended())throw std::runtime_error("task actor ended");
+        if(status_.phase!=HandoffPhase::Ready || status_.ready_domain!=task_catalog_->domain)return {};
+        if(!sound_)throw std::runtime_error("owned sound service unavailable");
+        return BindTaskSound(owner_.generation,sound_(owner_,world_,command.event));
     };
     tasks_=std::make_unique<TaskController>(owner_.generation,catalog,scene,std::move(services));
     task_catalog_=std::move(catalog);actions_.ConfigureVisualProgram(std::move(scene));

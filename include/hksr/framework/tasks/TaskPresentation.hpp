@@ -1,18 +1,27 @@
 #pragma once
 #include "TaskSequence.hpp"
 #include <hksr/framework/presentation/ActionPlayback.hpp>
+#include <hksr/presentation/audio/OwnedSoundRequest.hpp>
 
 namespace hksr::framework {
 using TaskAnimationEndpoint=AnimationRequestEndpoint;
 // The bound ActionPlayback must outlive the task's drain. This never resolves
 // official actors from a global name, target selector or battle registry.
 TaskAnimationEndpoint BindTaskAnimation(ActionPlayback&);
+struct TaskSoundEndpoint {
+    std::uint64_t entity_generation=0;
+    std::function<void()> service,cancel;
+    std::function<api::SoundRequestStatus()> status;
+};
+TaskSoundEndpoint BindTaskSound(std::uint64_t entity_generation,std::unique_ptr<api::OwnedSoundRequest>);
 struct TaskPresentationServices {
     // Empty means a declared owned participant is still being constructed.
     // Throw for unknown participants. First resolution is retained per request.
     std::function<std::optional<TaskAnimationEndpoint>(const TaskParticipant&)> animation;
     std::function<TaskAvailability(const TaskRequirement&)> condition;
     std::function<bool()> yield;
+    // Empty while an owned participant's model is being prepared.
+    std::function<std::optional<TaskSoundEndpoint>(const TaskSoundCommand&)> sound;
 };
 // One task execution over an existing visual scene and owned animation players.
 // Service those animation players on their normal owner frame, then call

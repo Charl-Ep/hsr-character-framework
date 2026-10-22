@@ -40,7 +40,12 @@ void ValidateTaskSequence(const TaskSequence& sequence) {
             if(wait->request.empty() || !requests.count(wait->request) || !std::isfinite(wait->progress) || wait->progress<0)
                 throw std::invalid_argument("invalid or undeclared request wait at "+sequence.nodes[index].source);
         if(const auto* submit=std::get_if<TaskSubmit>(&op))
+        {
             if(submit->request.empty())throw std::invalid_argument("task request name is empty");
+            if(const auto* sound=std::get_if<TaskSoundCommand>(&submit->operation))
+                if(sound->participant.name.empty() || sound->event.empty() || sound->event.find('\0')!=std::string::npos)
+                    throw std::invalid_argument("invalid task sound command");
+        }
         for(auto child:Children(op))visit(child);
         colors[index]=2;
     };
@@ -174,13 +179,18 @@ struct TaskSequenceExecution::State {
                 const auto& value=requests.at(*c.request).value.state;
                 if(!value.error.empty()){Fail(c,value.error);return {};}
                 const bool done=node.signal==TaskWaitSignal::Submitted?value.submitted:
+                    node.signal==TaskWaitSignal::Started?value.started:
                     node.signal==TaskWaitSignal::RequestComplete?value.request_complete:
                     node.signal==TaskWaitSignal::PerformanceComplete?value.performance_complete:
                     node.signal==TaskWaitSignal::Drained?value.drained:value.progress && *value.progress>=node.progress;
                 if(done){if(!first)c.progressed=true;return finish(first?seconds:0);} // unknown asynchronous completion time
+                if(node.signal==TaskWaitSignal::Started && value.performance_complete) {
+                    Fail(c,"request ended without an observed start: "+node.request);return {};
+                }
                 if(value.superseded) {
                     const auto required=node.signal==TaskWaitSignal::Progress?"progress "+std::to_string(node.progress):
                         node.signal==TaskWaitSignal::Submitted?std::string("submission"):
+                        node.signal==TaskWaitSignal::Started?std::string("playback start"):
                         node.signal==TaskWaitSignal::RequestComplete?std::string("acceptance"):
                         node.signal==TaskWaitSignal::PerformanceComplete?std::string("performance completion"):std::string("drain");
                     Fail(c,"request superseded before "+required+": "+node.request+
@@ -274,6 +284,7 @@ bool TaskSequenceExecution::Observe(const TaskRequestReceipt& receipt,const Task
     value.submitted=value.submitted || update.submitted;value.request_complete=value.request_complete || update.request_complete;
     value.performance_complete=value.performance_complete || update.performance_complete;value.drained=value.drained || update.drained;
     value.superseded=value.superseded || update.superseded;
+    value.started=value.started || update.started;
     if(update.progress && std::isfinite(*update.progress) && *update.progress>=0 && (!value.progress || *update.progress>*value.progress))value.progress=update.progress;
     if(!update.error.empty()) {
         if(value.error!=update.error)s.status.issues.push_back("request="+std::to_string(receipt.request)+": "+update.error);

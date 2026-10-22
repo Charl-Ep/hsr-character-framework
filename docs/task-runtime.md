@@ -26,7 +26,7 @@ Target, spatial-anchor and visual-choice requirements use the visual scene's res
 
 ## Execution
 
-Sequences contain submissions, request waits, second/frame waits, serial/parallel groups, branches and finite or finish-requested loops. Leaf operations are animation commands or existing `VisualInstruction` values.
+Sequences contain submissions, request waits, second/frame waits, serial/parallel groups, branches and finite or finish-requested loops. Leaf operations are animation commands, sound commands or existing `VisualInstruction` values.
 
 Create an execution with a unique token, immutable sequence and `TaskSequenceServices`. Call `Advance(delta, frame)` once per engine frame. Sequential waits carry unused time; parallel branches advance independently. Cooperative yields retain cursors and time credits. An asynchronous completion without a timestamp does not supply inferred remaining frame time.
 
@@ -49,6 +49,7 @@ Service animation players on their normal owner frame, then call `TaskPresentati
 | Actor body animation | Existing FreeStyle playback | Current/next state and normalized time |
 | Other animation layer | Animator play or cross-fade | That layer's state and time |
 | Partner body animation | Existing partner idle-animation service | Partner's own Animator state and time |
+| Body sound event | SDK AudioManager request | Separate start and end callbacks |
 | Visual instruction | `VisualProgramPlayer` instruction executor | Instruction acceptance/application |
 
 Animation requests do not select an automatic successor. A completed non-loop state or observed exit completes its wait; looping states remain active. Releasing a receipt stops observation, not the Animator. The next task command owns the next state. Controlled domain changes cancel old requests, while observed Animator changes invalidate their bindings.
@@ -58,6 +59,8 @@ Use a performance wait for animation completion. A progress wait requires that e
 A later animation on the same participant and layer supersedes this execution's earlier observation. Its last progress is retained and `superseded` is reported separately from natural completion. Already-satisfied waits remain valid; unmet waits fail. External interruption still reports an execution error. Different participants and layers remain independent.
 
 Submissions are asynchronous. Add explicit request waits for dependencies, including before reusing a request name. A visual creation instruction completing means the creation command was accepted, not that its effect finished. Effect controls retain and retry their exact pending receipts.
+
+Sound uses `{"op":"sound","request":"voice","participant":"body","event":"event_name"}`. Its `accepted` wait observes queue acceptance, `started` observes the playback-start callback, and `performance` observes a successful end callback. A completed sequence retains a natural sound tail; cancellation stops the owned request. The current host supports the body emitter, not partner or arbitrary world emitters. Stops retain the SDK's logical-ID group semantics. There is no inferred completion or automatic retry for a missing callback.
 
 Each task gets a resource scope using the existing effects, partner and Timeline owners. Natural completion can retain tails; cancellation ends that scope. Named contexts outlive individual tasks until explicitly exited or the scene closes. `TaskPresentation::Drained()` includes scope cleanup even after the sequence kernel has finished. Old scope cleanup cannot detach a newer scope's event producer.
 
