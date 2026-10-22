@@ -82,7 +82,7 @@ Authored program actions use `{"kind":"program","program":"scene","action":"ente
 
 ## Tasks
 
-`GET /v1/characters/{id}/tasks` returns the same directory used by the menu. Entries include `backend`, `domain`, `sources`, `availability`, reasons, input types/defaults and a ready-to-submit `command`. Backends distinguish NPC motions, configured animation clips, ready transitions, reactions, authored programs, sequences and idle. A clip entry is not a complete battle ability.
+`GET /v1/characters/{id}/tasks` returns the same directory used by the menu. Entries include `backend`, `domain`, `sources`, `availability`, reasons, input types/defaults, visual `bindings` and a `command` template. `configurable` means missing or mismatched inputs can be edited; it does not permit execution. Query the completed selection before submitting it. Backends distinguish NPC motions, configured animation clips, ready transitions, reactions, authored programs, sequences and idle. A clip entry is not a complete battle ability.
 
 Sequence commands are `task_query`, `task_select`, `task_finish` and `task_cancel`, with the current `character` and `creation`. Selection includes `catalog` and `task`; optional `inputs`, `slot`, `targets`, `choices` and `anchors` are defined in [task runtime](task-runtime.md). Preparation uses the existing model/gaze handoff. A returned command means intent was accepted, not that its task has started or finished.
 

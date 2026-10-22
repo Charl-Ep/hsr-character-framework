@@ -13,6 +13,7 @@ using Microsoft::WRL::ComPtr;
 void TestMouseMode();
 void TestMenuPreview(ID3D11Device*,ID3D11DeviceContext*);
 void TestLocalization();
+void TestTaskInputDraft();
 namespace {
 void Check(bool value) {if(!value) throw std::runtime_error("overlay isolation test failed");}
 int forwarded=0,mouse_forwarded=0,focus_forwarded=0;
@@ -87,7 +88,7 @@ void PlacementButtons() {
 }
 int main() {
     try {
-        TestLocalization();TestMouseMode();Layout();PlacementButtons();Routing();
+        TestLocalization();TestTaskInputDraft();TestMouseMode();Layout();PlacementButtons();Routing();
         WNDCLASSW klass{};klass.lpfnWndProc=Original;klass.hInstance=GetModuleHandleW(nullptr);klass.lpszClassName=L"HksrHiddenUiTest";
         Check(RegisterClassW(&klass)!=0);
         HWND window=CreateWindowW(klass.lpszClassName,L"hidden",WS_OVERLAPPEDWINDOW,0,0,900,750,nullptr,nullptr,klass.hInstance,nullptr);

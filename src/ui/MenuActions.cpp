@@ -73,7 +73,8 @@ void Menu::Actions(ApplicationService& host,const ApplicationSnapshot& snapshot,
 #endif
         if(!npc && entry.domain!=domain)continue;
         const bool available=entry.query.availability==TaskAvailability::Available;
-        if(!available && !show_unavailable_tasks_)continue;
+        const bool configurable=CanConfigureTask(entry);
+        if(!available && !configurable && !show_unavailable_tasks_)continue;
         auto label=entry.recovery?std::string(T(UiText::RecoverReaction))+" · "+entry.label:entry.label;
         if(entry.kind==CharacterTaskKind::Idle)label=std::string(T(UiText::IdleState))+" · "+label;
         auto detail=entry.detail;
@@ -83,8 +84,11 @@ void Menu::Actions(ApplicationService& host,const ApplicationSnapshot& snapshot,
         if(!SourceMatches(label+" "+detail,action_filter_))continue;
         ImGui::PushID(shown++);
         const float width=std::max(1.0f,ImGui::GetContentRegionAvail().x);
-        ImGui::BeginDisabled(!available);
-        if(ImGui::Selectable(label.c_str(),false,0,{width,ImGui::GetTextLineHeight()+12}))host.Post(entry.command);
+        ImGui::BeginDisabled(!available && !configurable);
+        if(ImGui::Selectable(label.c_str(),false,0,{width,ImGui::GetTextLineHeight()+12})) {
+            if(entry.kind==CharacterTaskKind::Sequence && HasTaskInputs(entry))OpenTaskInputs(entry);
+            else host.Post(entry.command);
+        }
         if(ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled) && (!detail.empty() || ImGui::CalcTextSize(label.c_str()).x>width)) {
             BeginHelp();Text(label);Text(detail);EndHelp();
         }

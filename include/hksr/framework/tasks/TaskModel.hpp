@@ -36,6 +36,12 @@ struct TaskUnresolvedRequirement {std::string source,detail;};
 using TaskRequirement=std::variant<TaskValueEquals,TaskPhaseEquals,TaskNeedsParticipant,TaskUnresolvedRequirement,
     TaskNeedsTarget,TaskNeedsAnchor,TaskChoiceEquals>;
 struct TaskSourceLocation {std::string document,field;};
+// Editable visual parameters. These describe inputs, not execution permission.
+// Required targets/anchors/choices are also exposed by TaskBindings().
+struct TaskBindingSchema {
+    std::vector<std::string> targets,anchors;
+    std::map<std::string,std::vector<std::string>> choices;
+};
 // Authored visual task, not an Animator state or permission to invoke the
 // containing battle ability. The entry identifies a compiled visual sequence.
 struct TaskDefinition {
@@ -45,7 +51,9 @@ struct TaskDefinition {
     std::vector<TaskRequirement> requirements; // conjunction
     std::vector<std::string> tags;
     std::string entry;
+    TaskBindingSchema bindings;
 };
+TaskBindingSchema TaskBindings(const TaskDefinition&);
 enum class TaskAvailability { Available,Unavailable,Unknown };
 enum class TaskReasonKind { Unimplemented,MissingInput,InputType,Condition,Participant,Disabled,Unresolved };
 struct TaskReason {TaskReasonKind kind;std::string source,detail;};

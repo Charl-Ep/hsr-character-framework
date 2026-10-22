@@ -191,7 +191,14 @@
     "LayoutKeepHelp": "Abandon restoration of the existing automatic save and overwrite it with the current layout. An empty current layout is saved as empty.",
     "ShowUnavailableTasks": "Show unavailable tasks",
     "FinishTask": "Finish task",
-    "CancelTask": "Cancel task"
+    "CancelTask": "Cancel task",
+    "TaskInputs": "Task inputs",
+    "TaskDefault": "Default",
+    "TaskUnbound": "Unbound",
+    "TaskTargetMissing": "Target removed",
+    "TaskUseActorPose": "Use character position",
+    "TaskQuaternion": "Rotation (X, Y, Z, W)",
+    "TaskChecking": "Checking inputs…"
   },
   "source_names": {}
 }

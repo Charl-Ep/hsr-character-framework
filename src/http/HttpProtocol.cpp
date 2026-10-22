@@ -341,7 +341,10 @@ Json Tasks(const ApplicationSnapshot& snapshot,std::uint64_t id) {
         }
         entries.push_back({{"backend",kinds[static_cast<int>(entry.kind)]},{"domain",Domain(entry.domain)},
             {"label",entry.label},{"detail",entry.detail},{"recovery",entry.recovery},{"availability",available},
-            {"reasons",std::move(reasons)},{"sources",std::move(sources)},{"inputs",std::move(inputs)},{"command",std::move(command)}});
+            {"reasons",std::move(reasons)},{"sources",std::move(sources)},{"inputs",std::move(inputs)},
+            {"configurable",CanConfigureTask(entry)},
+            {"bindings",{{"targets",entry.bindings.targets},{"anchors",entry.bindings.anchors},{"choices",entry.bindings.choices}}},
+            {"command",std::move(command)}});
     }
     return {{"character",std::to_string(id)},{"entries",std::move(entries)}};
 }

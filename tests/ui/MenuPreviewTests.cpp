@@ -100,6 +100,8 @@ void TestMenuPreview(ID3D11Device* device,ID3D11DeviceContext* context) {
         {"battle-states-en",ui::MenuPage::Actions,false,800,600,ui::Language::English},
         {"tasks",ui::MenuPage::Actions,false,800,600},
         {"tasks-en",ui::MenuPage::Actions,false,800,600,ui::Language::English},
+        {"tasks-inputs",ui::MenuPage::Actions,false,800,600},
+        {"tasks-inputs-en",ui::MenuPage::Actions,false,800,600,ui::Language::English},
         {"status-values",ui::MenuPage::Actions,false,800,600,ui::Language::Chinese},
         {"status-long",ui::MenuPage::Actions,false,800,600,ui::Language::English}}) {
         auto* previous=ImGui::GetCurrentContext();auto* ctx=ImGui::CreateContext();
@@ -121,6 +123,12 @@ void TestMenuPreview(ID3D11Device* device,ID3D11DeviceContext* context) {
             tasks->definitions.emplace(task.key.name,task);tasks->control.catalog.emplace(task.key.name,TaskQueryResult{});
             task.key.name="unmapped";task.entry.clear();tasks->definitions.emplace(task.key.name,task);
             tasks->control.catalog[task.key.name].availability=TaskAvailability::Unknown;
+            task.key.name="needs_target";task.entry="entry";
+            task.inputs={{"power",TaskValueType::Integer,std::int64_t(2)}};
+            task.requirements={TaskNeedsTarget{"Target"}};
+            task.bindings.choices={{"mode",{"ordinary","enhanced"}}};
+            tasks->definitions.emplace(task.key.name,task);
+            tasks->control.catalog[task.key.name]={TaskAvailability::Unavailable,{},{{TaskReasonKind::MissingInput,"Target","owned target is unavailable"}}};
             tasks->control.contexts.push_back({{1},"phase-owner",{{"charged",true},{"remaining",std::int64_t(3)}},"enhanced",{}, {}});
             snapshot.characters[0].task_catalog="preview";snapshot.characters[0].task_catalog_revision=2;
             snapshot.characters[0].tasks=std::move(tasks);snapshot.characters[0].handoff->ready_domain=ActionDomain::Alternate;
@@ -138,6 +146,8 @@ void TestMenuPreview(ID3D11Device* device,ID3D11DeviceContext* context) {
             const bool states=std::string(scenario.name).find("battle-states")==0;
             if(f==1 && states)menu.OpenBattleStates();
             ImGui_ImplDX11_NewFrame();ImGui::NewFrame();
+            if(f==1 && std::string(scenario.name).find("tasks-inputs")==0)
+                for(const auto& entry:CharacterTasks(snapshot,1))if(entry.label=="needs_target")menu.OpenTaskInputs(entry);
             if(f==2)ImGui::LogToBuffer();
             menu.Render(host,snapshot);
             if(f==2) {
@@ -149,6 +159,7 @@ void TestMenuPreview(ID3D11Device* device,ID3D11DeviceContext* context) {
                 if(task_menu) {
                     Require(text.find("enter_phase")!=std::string::npos && text.find("unmapped")==std::string::npos);
                     Require(text.find("charged: true")!=std::string::npos && text.find("remaining: 3")!=std::string::npos);
+                    Require(text.find("needs_target")!=std::string::npos);
                 }
                 if(states) {
 #if HKSR_DEVELOPMENT_UI

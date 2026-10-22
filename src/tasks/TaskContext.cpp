@@ -21,6 +21,21 @@ bool ValidValue(const TaskValue& value) {
 }
 bool ValidKey(const TaskKey& key) {return !key.catalog.empty() && !key.name.empty();}
 }
+TaskBindingSchema TaskBindings(const TaskDefinition& task) {
+    auto out=task.bindings;
+    auto add=[](auto& values,const std::string& name) {
+        if(std::find(values.begin(),values.end(),name)==values.end())values.push_back(name);
+    };
+    for(const auto& requirement:task.requirements)std::visit([&](const auto& item) {
+        using T=std::decay_t<decltype(item)>;
+        if constexpr(std::is_same_v<T,TaskNeedsTarget>) {if(item.name!="Caster")add(out.targets,item.name);}
+        else if constexpr(std::is_same_v<T,TaskNeedsAnchor>)add(out.anchors,item.name);
+        else if constexpr(std::is_same_v<T,TaskChoiceEquals>) {
+            if(!out.choices.count(item.name))out.choices[item.name]={item.value};
+        }
+    },requirement);
+    return out;
+}
 void ValidateTaskDefinition(const TaskDefinition& task) {
     if(!ValidKey(task.key))throw std::invalid_argument("task identity is incomplete");
     std::set<std::string> names;
@@ -31,6 +46,18 @@ void ValidateTaskDefinition(const TaskDefinition& task) {
     }
     for(const auto& condition:task.requirements)if(const auto* value=std::get_if<TaskValueEquals>(&condition))
         if(value->name.empty() || !ValidValue(value->value))throw std::invalid_argument("invalid task value predicate");
+    auto names_valid=[](const auto& values) {
+        std::set<std::string> unique;
+        for(const auto& name:values)if(name.empty() || name.find('\0')!=std::string::npos || !unique.insert(name).second)
+            throw std::invalid_argument("invalid or duplicate task binding");
+    };
+    names_valid(task.bindings.targets);names_valid(task.bindings.anchors);
+    if(std::find(task.bindings.targets.begin(),task.bindings.targets.end(),"Caster")!=task.bindings.targets.end())
+        throw std::invalid_argument("caster cannot be an editable target");
+    for(const auto& [name,options]:task.bindings.choices) {
+        names_valid(std::vector<std::string>{name});names_valid(options);
+        if(options.empty())throw std::invalid_argument("task choice has no options");
+    }
 }
 TaskContextToken TaskContext::Enter(std::string name) {
     if(name.empty())throw std::invalid_argument("context name is empty");
@@ -91,6 +118,9 @@ TaskQueryResult TaskContext::Query(const TaskDefinition& task,const TaskQuery& q
             reason(TaskAvailability::Unavailable,TaskReasonKind::InputType,name,"undeclared task input");
     }
     TaskQuery conditions=query;conditions.inputs=result.inputs;
+    for(const auto& [name,options]:task.bindings.choices)if(const auto choice=query.choices.find(name);choice!=query.choices.end())
+        if(std::find(options.begin(),options.end(),choice->second)==options.end())
+            reason(TaskAvailability::Unavailable,TaskReasonKind::InputType,name,"visual choice is not an allowed option");
     for(const auto& requirement:task.requirements) {
         const auto evaluated=Evaluate(requirement,conditions);
         for(const auto& item:evaluated.reasons)reason(evaluated.availability,item.kind,item.source,item.detail);

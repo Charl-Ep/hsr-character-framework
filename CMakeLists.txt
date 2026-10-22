@@ -110,7 +110,7 @@ if(BUILD_TESTING)
     add_test(NAME framework.present COMMAND CharacterPresentTests)
 
     add_executable(CharacterOverlayTests tests/ui/OverlayTests.cpp tests/ui/MenuPreviewTests.cpp
-        tests/ui/LocalizationTests.cpp tests/ui/MouseModeTests.cpp)
+        tests/ui/LocalizationTests.cpp tests/ui/MouseModeTests.cpp tests/ui/TaskInputDraftTests.cpp)
     framework_target(CharacterOverlayTests)
     target_link_libraries(CharacterOverlayTests PRIVATE CharacterUi windowscodecs ole32)
     add_test(NAME framework.ui COMMAND CharacterOverlayTests)
@@ -136,7 +136,7 @@ install(FILES "${hksr_json_SOURCE_DIR}/LICENSE.MIT" DESTINATION licenses/nlohman
 install(FILES "${hksr_httplib_SOURCE_DIR}/LICENSE" DESTINATION licenses/cpp-httplib)
 install(FILES http-settings.example.cfg DESTINATION .)
 install(DIRECTORY PresentationProfiles/ DESTINATION PresentationProfiles FILES_MATCHING PATTERN "*.json")
-install(FILES docs/http-api.md docs/openapi.json docs/application-services.md docs/source-policy.md docs/presentation-profiles.md docs/visual-programs.md DESTINATION docs)
+install(FILES docs/http-api.md docs/openapi.json docs/application-services.md docs/source-policy.md docs/presentation-profiles.md docs/visual-programs.md docs/task-runtime.md DESTINATION docs)
 install(FILES distribution/README.zh-CN.md distribution/README.en.md DESTINATION .)
 # The imported SDK supplies its own notices; packaging never reaches into its
 # source checkout or assumes that the Framework's dependencies cover the SDK.

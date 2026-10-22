@@ -549,6 +549,14 @@
     },
     "CancelTask": {
       "parameters": {}
+    },
+    "TaskInputs": {"parameters": {}},
+    "TaskDefault": {"parameters": {}},
+    "TaskUnbound": {"parameters": {}},
+    "TaskTargetMissing": {"parameters": {}},
+    "TaskUseActorPose": {"parameters": {}},
+    "TaskQuaternion": {"parameters": {}},
+    "TaskChecking": {"parameters": {}
     }
   }
 }

@@ -14,6 +14,9 @@ struct CharacterTaskEntry {
     std::vector<TaskInputDefinition> inputs;
     CharacterCommand command;
     bool recovery=false;
+    TaskBindingSchema bindings;
 };
+bool HasTaskInputs(const CharacterTaskEntry&);
+bool CanConfigureTask(const CharacterTaskEntry&);
 std::vector<CharacterTaskEntry> CharacterTasks(const ApplicationSnapshot&,std::uint64_t character);
 }

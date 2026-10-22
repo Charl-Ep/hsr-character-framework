@@ -41,7 +41,7 @@ struct TaskController::State {
     TaskSelectionResult Query(const TaskSelection& selection,bool captured=false) const {
         const auto key=selection.query.slot?context.ResolveSlot(*selection.query.slot,selection.task):selection.task;
         const auto& task=catalog->Resolve(key);
-        try {return {0,key,context.Query(task.definition,Inputs(selection,captured,task.definition.requirements))};}
+        try {ValidateTaskSelection(selection);return {0,key,context.Query(task.definition,Inputs(selection,captured,task.definition.requirements))};}
         catch(const std::exception& error) {
             return {0,key,{TaskAvailability::Unknown,{},{{TaskReasonKind::Unresolved,"visual inputs",error.what()}}}};
         }

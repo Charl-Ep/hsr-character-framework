@@ -133,7 +133,8 @@ void Protocol() {
     auto& actor_tasks=*task_view;actor_tasks.domain=ActionDomain::Alternate;
     state.characters[0].task_catalog="full";state.characters[0].task_catalog_revision=7;
     TaskDefinition task;task.key={"full","modifier-followup"};task.entry="followup";
-    task.sources={{"fixture","Modifier.OnExit"}};actor_tasks.definitions.emplace(task.key.name,task);
+    task.sources={{"fixture","Modifier.OnExit"}};task.bindings.choices={{"mode",{"a","b"}}};
+    task.requirements={TaskNeedsTarget{"Target"}};actor_tasks.definitions.emplace(task.key.name,task);
     actor_tasks.control.catalog.emplace(task.key.name,TaskQueryResult{});
     auto unknown=task;unknown.key.name="unmapped";unknown.entry.clear();actor_tasks.definitions.emplace(unknown.key.name,unknown);
     actor_tasks.control.catalog[unknown.key.name]={TaskAvailability::Unknown,{},{{TaskReasonKind::Unimplemented,"fixture","no visual entry"}}};
@@ -144,6 +145,9 @@ void Protocol() {
         if(entry.at("backend")=="sequence") {
             const auto& selected=std::get<ControlCharacterTask>(parsed);
             Check(selected.id==3 && selected.creation==1 && selected.input.selection->task.catalog=="full","task identity roundtrip");
+            Check(entry.at("bindings").at("targets")==Json::array({"Target"}) &&
+                entry.at("bindings").at("choices").at("mode")==Json::array({"a","b"}),"shared input schema");
+            Check(entry.at("configurable")==Json(entry.at("label")=="modifier-followup"),"unknown execution is not enabled by an editable input");
         }
     }
     Check(backends==std::set<std::string>{"npc","configured_clip","ready","reaction","program","sequence","idle"},"complete available backend directory");

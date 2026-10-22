@@ -143,7 +143,7 @@ TaskCatalog ParseTaskCatalog(const std::string& text) {
     }
     const auto& tasks=json.at("tasks");Need(tasks.is_object(),"tasks must be an object");
     for(auto it=tasks.begin();it!=tasks.end();++it) {
-        const auto& row=it.value();Fields(row,{"sources","inputs","requires","tags","entry","next"});
+        const auto& row=it.value();Fields(row,{"sources","inputs","requires","tags","entry","next","bindings"});
         TaskPlan plan;auto& definition=plan.definition;definition.key=Key(it.key(),out.id);
         if(row.contains("entry"))definition.entry=Name(row.at("entry"));
         if(row.contains("sources")) {
@@ -159,6 +159,22 @@ TaskCatalog ParseTaskCatalog(const std::string& text) {
         if(row.contains("requires")) {
             Need(row.at("requires").is_array(),"task prerequisites must be an array");
             for(const auto& condition:row.at("requires"))definition.requirements.push_back(Requirement(condition));
+        }
+        if(row.contains("bindings")) {
+            const auto& bindings=row.at("bindings");Fields(bindings,{"targets","anchors","choices"});
+            for(const auto* key:{"targets","anchors"})if(bindings.contains(key)) {
+                Need(bindings.at(key).is_array(),"task binding names must be an array");
+                auto& names=std::string(key)=="targets"?definition.bindings.targets:definition.bindings.anchors;
+                for(const auto& name:bindings.at(key))names.push_back(Name(name));
+            }
+            if(bindings.contains("choices")) {
+                const auto& choices=bindings.at("choices");Need(choices.is_object(),"task choices must be an object");
+                for(auto choice=choices.begin();choice!=choices.end();++choice) {
+                    Need(choice.value().is_array(),"task choice options must be an array");
+                    auto& options=definition.bindings.choices[Name(choice.key())];
+                    for(const auto& value:choice.value())options.push_back(Name(value));
+                }
+            }
         }
         if(row.contains("tags")) {
             Need(row.at("tags").is_array(),"task tags must be an array");

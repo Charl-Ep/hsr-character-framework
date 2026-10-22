@@ -92,6 +92,24 @@ void Codec() {
     Check(parsed.tasks.size()==5 && parsed.visual->actions.empty() && parsed.sequences.size()==3);
     Check(parsed.Resolve({"test","hold"}).definition.sources.at(0).field=="Modifier");
     Check(parsed.contexts.at("enhanced").disables.size()==1);
+    auto configured=input;
+    configured["tasks"]["attack"]["bindings"]={{"targets",{"Target"}},{"anchors",{"Destination"}},
+        {"choices",{{"mode",{"low","high"}}}}};
+    configured["tasks"]["attack"]["requires"]=Json::array({{{"op","target"},{"name","Target"}},
+        {{"op","target"},{"name","Other"}},{{"op","target"},{"name","Caster"}},
+        {{"op","choice"},{"name","branch"},{"is","yes"}}});
+    const auto binding_catalog=ParseTaskCatalog(configured.dump());
+    const auto& definition=binding_catalog.Resolve({"test","attack"}).definition;
+    const auto bindings=TaskBindings(definition);
+    Check(bindings.targets==std::vector<std::string>({"Target","Other"}) && bindings.anchors.at(0)=="Destination");
+    Check(bindings.choices.at("mode").size()==2 && bindings.choices.at("branch").at(0)=="yes");
+    TaskQuery query;query.targets={"Target","Other","Caster"};query.choices={{"mode","invalid"},{"branch","yes"}};
+    Check(TaskContext{}.Query(definition,query).availability==TaskAvailability::Unavailable);
+    query.choices["mode"]="low";Check(TaskContext{}.Query(definition,query).availability==TaskAvailability::Available);
+    auto invalid_bindings=configured;invalid_bindings["tasks"]["attack"]["bindings"]["targets"]={"Caster"};
+    Reject([&]{ParseTaskCatalog(invalid_bindings.dump());});
+    invalid_bindings=configured;invalid_bindings["tasks"]["attack"]["bindings"]["choices"]["mode"]=Json::array();
+    Reject([&]{ParseTaskCatalog(invalid_bindings.dump());});
     auto bad=input;bad["sequences"]["stand"]["entry"]["layer"]=-1;Reject([&]{ParseTaskCatalog(bad.dump());});
     bad=input;bad["tasks"]["attack"]["inputs"]["power"]["default"]=true;Reject([&]{ParseTaskCatalog(bad.dump());});
     bad=input;bad["tasks"]["attack"]["next"]["task"]="missing";Reject([&]{ParseTaskCatalog(bad.dump());});

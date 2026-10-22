@@ -14,6 +14,7 @@ void Menu::BeginSourceRequest(ApplicationService& host,CharacterCommand command,
 }
 void Menu::Draw(ApplicationService& host) {
     for(const auto& reply:host.TakeReplies()) {
+        if(task_inputs_ && task_inputs_->Reply(reply))continue;
         if(source_replies_.erase(reply.serial)) {
             if(reply.serial==source_serial_) {
                 if(reply.accepted)source_request_=reply.source_request;else message_=reply.error;
@@ -144,6 +145,7 @@ void Menu::Render(ApplicationService& host,const ApplicationSnapshot& snapshot) 
     ImGui::End();
     if(create_open_)Source(host,snapshot);
     if(layouts_open_)Layouts(host,snapshot);
+    if(task_inputs_)TaskInputs(host,snapshot);
     ImGui::PopStyleVar(4);
 }
 void Menu::Diagnostics(ApplicationService& host,const ApplicationSnapshot& snapshot,const SceneCharacterStatus& selected) {

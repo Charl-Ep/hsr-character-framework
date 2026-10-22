@@ -2,7 +2,7 @@
 
 The `tasks` module provides typed visual tasks, configuration loading, owned-resource execution and per-actor selection. The menu and HTTP use the same application task directory. An instance can bind one task catalog and retain its selection in map layouts. A complete character catalog and multiple task-catalog domains per instance are not implemented.
 
-`CharacterTasks` lists NPC motions, configured animation candidates, ready transitions, shared reactions, authored programs, task sequences and idle. Each row retains its backend identity, sources, availability and application command. A configured animation candidate is not a complete battle ability. The menu shows available rows by default; development mode can show unavailable and unknown rows. HTTP retains all rows and their reasons.
+`CharacterTasks` lists NPC motions, configured animation candidates, ready transitions, shared reactions, authored programs, task sequences and idle. Each row retains its backend identity, sources, availability and application command. A configured animation candidate is not a complete battle ability. The menu shows available rows and tasks whose missing inputs can be edited. Development mode can show other unavailable and unknown rows. HTTP retains all rows and their reasons.
 
 Shared reaction rows currently use the existing `VisualState` executor, exposed through the action catalog, menu, HTTP and layout persistence. It handles configured enter/hold/recover body phases, expression and blink ownership. These rows are not compiled `TaskSequence` plans; material, speed and floating behavior are not implemented. See [action API](http-api.md#actions).
 
@@ -121,6 +121,20 @@ State names and resource paths must match the selected model. A sequence may als
 | `branch` | `condition`, `yes`, `no` |
 
 Task fields: `sources` (`document`/`field`), `inputs`, `requires`, `tags`, `entry`, and `next` (`task` plus optional `inputs`). Input definitions use `type` (`bool`, `integer`, `number`, `text`) and optional `default`. JSON integer and floating-point types are distinct. Requirements use `op`: `value` (`name`, `is`), `phase` (`is`), `participant` (`name`), `target` (`name`), `anchor` (`name`), `choice` (`name`, `is`), or `unresolved` (`source`, `detail`).
+
+Optional `bindings` describes editable visual inputs:
+
+```json
+{
+  "targets": ["Target"],
+  "anchors": ["Destination"],
+  "choices": {"mode": ["ordinary", "enhanced"]}
+}
+```
+
+Target and anchor requirements also expose their named input. A choice requirement supplies its single value unless `bindings.choices` declares options. Required inputs and branch-only inputs remain distinct: declaring a binding does not make it required. Supplied choices must belong to their declared options. `Caster` is not editable.
+
+Clicking a task with inputs opens the parameter editor. It queries through the same application command as HTTP, without starting playback. Edits and changes to selected targets or context ownership invalidate the previous result; late replies cannot enable an edited selection. Play submits the typed selection and rechecks current conditions on the official frame. Default removes an explicit override. The editor does not write context values or gameplay state.
 
 Top-level `contexts` binds visual-context names to `values`, `phase`, `slots` (`slot`/`task`) and `disables` (one of `task`, `slot`, `tag`, plus `reason`). Task references are local to the catalog. Unsupported fields and broken references are reported during loading.
 

@@ -110,6 +110,7 @@ set(HKSR_UI_SOURCES
     src/ui/Localization.cpp
     src/ui/Menu.cpp
     src/ui/MenuActions.cpp
+    src/ui/MenuTaskInputs.cpp
     src/ui/MenuControls.cpp
     src/ui/MenuLayouts.cpp
     src/ui/MenuSource.cpp

@@ -192,7 +192,14 @@
     "LayoutKeepHelp": "放弃恢复原自动存档，以当前布置覆盖它。当前没有角色时会保存空布局。",
     "ShowUnavailableTasks": "显示当前不可执行的任务",
     "FinishTask": "结束任务",
-    "CancelTask": "取消任务"
+    "CancelTask": "取消任务",
+    "TaskInputs": "任务参数",
+    "TaskDefault": "默认",
+    "TaskUnbound": "未绑定",
+    "TaskTargetMissing": "目标已移除",
+    "TaskUseActorPose": "使用角色位置",
+    "TaskQuaternion": "旋转（X、Y、Z、W）",
+    "TaskChecking": "正在检查参数…"
   },
   "source_names": {
     "family:tingyun": "停云",

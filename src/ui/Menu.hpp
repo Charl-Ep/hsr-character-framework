@@ -3,6 +3,7 @@
 #include <mutex>
 #include <set>
 #include "Localization.hpp"
+#include "TaskInputDraft.hpp"
 
 namespace hksr::framework::ui {
 enum class MenuPage { Actions, Controls, Diagnostics };
@@ -19,6 +20,7 @@ public:
     void OpenCreation(std::uint64_t source_request=0) {create_open_=true;source_request_=source_request;}
     void OpenLayouts() {layouts_open_=true;}
     void OpenBattleStates() {page_=MenuPage::Actions;action_kind_=1;}
+    void OpenTaskInputs(CharacterTaskEntry entry) {task_inputs_.emplace(std::move(entry));}
 private:
     struct PackageJob {
         std::mutex mutex;
@@ -29,6 +31,7 @@ private:
     };
     void Source(ApplicationService& host,const ApplicationSnapshot& snapshot);
     void Actions(ApplicationService& host,const ApplicationSnapshot& snapshot,const SceneCharacterStatus& selected);
+    void TaskInputs(ApplicationService& host,const ApplicationSnapshot& snapshot);
     void Diagnostics(ApplicationService& host,const ApplicationSnapshot& snapshot,const SceneCharacterStatus& selected);
     void Controls(ApplicationService& host,const ApplicationSnapshot& snapshot,const SceneCharacterStatus& selected);
     void SelectActor(ApplicationService& host,std::uint64_t id);
@@ -55,6 +58,7 @@ private:
     std::set<std::uint64_t> source_replies_;
     bool requested_=false;
     bool show_unavailable_tasks_=false;
+    std::optional<TaskInputDraft> task_inputs_;
     std::shared_ptr<PackageJob> package_job_;
     std::shared_ptr<const ModelAssetInput> payload_;
     std::string message_;

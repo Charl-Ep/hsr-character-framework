@@ -3,6 +3,20 @@
 #include <stdexcept>
 
 namespace hksr::framework {
+bool HasTaskInputs(const CharacterTaskEntry& entry) {
+    return !entry.inputs.empty() || !entry.bindings.targets.empty() || !entry.bindings.anchors.empty() || !entry.bindings.choices.empty();
+}
+bool CanConfigureTask(const CharacterTaskEntry& entry) {
+    if(entry.kind!=CharacterTaskKind::Sequence || !HasTaskInputs(entry))return false;
+    if(entry.query.availability==TaskAvailability::Available)return true;
+    if(entry.query.reasons.empty())return false;
+    return std::all_of(entry.query.reasons.begin(),entry.query.reasons.end(),[&](const auto& reason) {
+        if(reason.kind==TaskReasonKind::MissingInput || reason.kind==TaskReasonKind::InputType)return true;
+        if(reason.kind!=TaskReasonKind::Condition)return false;
+        return entry.bindings.choices.count(reason.source) ||
+            std::any_of(entry.inputs.begin(),entry.inputs.end(),[&](const auto& input){return input.name==reason.source;});
+    });
+}
 std::vector<CharacterTaskEntry> CharacterTasks(const ApplicationSnapshot& snapshot,std::uint64_t id) {
     const SceneCharacterStatus* actor=nullptr;
     for(const auto& row:snapshot.characters)if(row.id==id){actor=&row;break;}
@@ -68,7 +82,7 @@ std::vector<CharacterTaskEntry> CharacterTasks(const ApplicationSnapshot& snapsh
         TaskSelection selection{{actor->task_catalog,name}};
         auto& entry=add(CharacterTaskKind::Sequence,actor->tasks->domain,name,
             ControlCharacterTask{id,actor->creations,{TaskControlOperation::Select,std::move(selection)}});
-        entry.sources=definition.sources;entry.inputs=definition.inputs;
+        entry.sources=definition.sources;entry.inputs=definition.inputs;entry.bindings=TaskBindings(definition);
         const auto found=actor->tasks->control.catalog.find(name);
         if(found==actor->tasks->control.catalog.end()) {
             entry.query.availability=TaskAvailability::Unknown;
