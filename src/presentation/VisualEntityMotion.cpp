@@ -136,6 +136,7 @@ api::EffectControlResult VisualEntityMotion::Bind(api::EffectReference ref,api::
             const auto native=s.services.target(t.token.entity);
             if(!Applied(native.result))return native.result;
             if(native.attached)throw std::runtime_error("target already has official attached motion outside this binding");
+            if(native.animation_motion || native.other_motion)throw std::runtime_error("target movement channel is occupied");
         }
         const auto observed=s.services.read(ref);
         if(!Applied(observed.result))return observed.result;

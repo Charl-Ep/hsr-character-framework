@@ -4,6 +4,7 @@
 #include <hksr/entity/LifecycleHooks.hpp>
 #include <hksr/entity/EntityAccess.hpp>
 #include <hksr/entity/EntityOwner.hpp>
+#include <hksr/world/WorldPlacement.hpp>
 #include <stdexcept>
 #include <sstream>
 #include "VisualProgramCallbacks.hpp"
@@ -25,6 +26,7 @@ struct VisualProgramRuntime::Scene {
         VisualSpatialAnchors anchors;
         std::map<std::string,api::EntityOrigin> resolved;
         bool restored=false;
+        std::optional<api::Position3> movement_origin;
     };
     std::map<VisualEffectContext*,Inputs> context_inputs;
     struct Channel {std::vector<VisualEventRoutes::RuleId> rules;api::ManagedRootId receiver=0;};
@@ -191,6 +193,29 @@ std::shared_ptr<VisualProgramPlayer> VisualProgramRuntime::Create(api::EntityOri
             result.state==api::EffectControlState::NotLoaded?VisualStepState::Pending:VisualStepState::Failed,result.detail};
     };
     services.attach=[this,current](auto context){Attach(*current(),std::move(context));};
+    services.movement=[this,current](VisualEffectContext& context,const VisualMovement& command)->std::optional<MovementRequestEndpoint> {
+        const auto scene=current();
+        if(closing_ || !Alive(scene->owner))throw std::runtime_error("movement scene ended");
+        if(!api_.ReadAnimator(scene->owner.token))return {};
+        const auto from=api_.ReadEntityPlacement(scene->owner.token,scene->owner.world);
+        if(!from.ready)throw std::runtime_error("movement origin unreadable: "+from.error);
+        auto found=scene->context_inputs.find(&context);
+        if(found==scene->context_inputs.end())throw std::logic_error("movement scope inputs not captured");
+        auto& inputs=found->second;
+        if(!inputs.movement_origin)inputs.movement_origin=from.position;
+        const auto plan=ResolveVisualMovement(command,from.position,*inputs.movement_origin,[&](auto kind,const std::string& name) {
+            if(kind==MovementDestination::Anchor) {
+                const auto anchor=inputs.anchors.find(name);
+                if(anchor==inputs.anchors.end())throw std::runtime_error("explicit movement anchor missing: "+name);
+                return anchor->second.position;
+            }
+            const auto target=ResolveTarget(*scene,context,name);
+            const auto position=api_.ReadEntityPlacement(target.token,target.world);
+            if(!position.ready)throw std::runtime_error("movement target unreadable: "+name+"; "+position.error);
+            return position.position;
+        });
+        return BindMovementRequest(scene->owner.token.generation,api_.StartMovement(scene->owner.token,scene->owner.world,command.state,plan));
+    };
     services.detach=[this,current]{Detach(*current());};
     services.remove_in_flight=[this](auto context,const auto& key,auto options){return routes_.RemoveInFlight(std::move(context),key,options);};
     const auto trace=trace_;

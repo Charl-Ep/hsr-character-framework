@@ -29,6 +29,36 @@ double Number(const Json& value) {
     Need(value.is_number(),"task number expected");const auto number=value.get<double>();
     Need(std::isfinite(number),"nonfinite task number");return number;
 }
+float Float(const Json& value) {
+    const auto number=Number(value);
+    Need(std::abs(number)<=std::numeric_limits<float>::max(),"movement number out of range");return static_cast<float>(number);
+}
+VisualMovement Movement(const Json& row) {
+    VisualMovement move;const auto clock=row.value("clock",std::string("animation"));
+    if(clock=="animation")move.clock=api::MovementClock::Animation;
+    else if(clock=="speed")move.clock=api::MovementClock::DistanceSpeed;
+    else throw std::invalid_argument("unknown movement clock: "+clock);
+    move.force_start=row.value("force_start",false);
+    Need(row.at("segments").is_array(),"movement segments must be an array");
+    for(const auto& part:row.at("segments")) {
+        Fields(part,{"destination","name","offset","preserve_height","stop_distance","start","end","speed","exit_time"});
+        VisualMovementSegment segment;const auto destination=Name(part.at("destination"));
+        if(destination=="origin")segment.destination=MovementDestination::Origin;
+        else if(destination=="anchor")segment.destination=MovementDestination::Anchor;
+        else if(destination=="target")segment.destination=MovementDestination::Target;
+        else throw std::invalid_argument("unknown movement destination: "+destination);
+        if(part.contains("name"))segment.name=Name(part.at("name"));
+        if(part.contains("offset")) {
+            const auto& offset=part.at("offset");Need(offset.is_array()&&offset.size()==3,"movement offset requires [x,y,z]");
+            segment.offset={Float(offset[0]),Float(offset[1]),Float(offset[2])};
+        }
+        segment.preserve_height=part.value("preserve_height",true);segment.stop_distance=Float(part.value("stop_distance",Json(0)));
+        segment.start=Float(part.value("start",Json(0)));segment.end=Float(part.value("end",Json(1)));
+        segment.speed=Float(part.value("speed",Json(1)));segment.exit_time=Float(part.value("exit_time",Json(-1)));
+        move.segments.push_back(std::move(segment));
+    }
+    return move;
+}
 TaskValue Value(const Json& value) {
     if(value.is_boolean())return value.get<bool>();
     if(value.is_number_integer())return Integer(value);
@@ -86,6 +116,9 @@ struct SequenceParser {
             } else if(op=="sound") {
                 Fields(row,{"op","request","participant","event","source"});
                 operation=TaskSubmit{Name(row.at("request")),TaskSoundCommand{{Name(row.at("participant"))},Name(row.at("event"))}};
+            } else if(op=="movement") {
+                Fields(row,{"op","request","animation","clock","force_start","segments","source"});
+                operation=TaskSubmit{Name(row.at("request")),TaskMovementCommand{Name(row.at("animation")),Movement(row)}};
             } else if(op=="visual") {
                 Fields(row,{"op","request","instruction","source"});
                 auto steps=visual_codec::Instructions(Json::array({row.at("instruction")}),visual);

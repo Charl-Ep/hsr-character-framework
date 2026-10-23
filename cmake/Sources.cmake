@@ -85,6 +85,7 @@ set(HKSR_RUNTIME_SOURCES
     src/presentation/VisualTimelines.cpp
     src/presentation/VisualPartners.cpp
     src/presentation/VisualProgramRuntime.cpp
+    src/presentation/VisualMovement.cpp
 
     # src/tasks
     src/tasks/TaskContext.cpp

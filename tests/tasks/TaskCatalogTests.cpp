@@ -103,6 +103,25 @@ void Codec() {
     Check(std::get<TaskWaitRequest>(sound_nodes.at(1).operation).signal==TaskWaitSignal::Started);
     sound["sequences"]["stand"]["entry"]["children"][0]["event"]="";
     Reject([&]{ParseTaskCatalog(sound.dump());});
+    auto movement=input;
+    movement["sequences"]["stand"]["entry"]={{"op","serial"},{"children",Json::array({
+        {{"op","animation"},{"request","body"},{"participant","body"},{"state","Attack"}},
+        {{"op","movement"},{"request","move"},{"animation","body"},{"clock","animation"},{"segments",Json::array({
+            {{"destination","target"},{"name","Target"},{"stop_distance",1.5},{"start",0},{"end",0.4}},
+            {{"destination","anchor"},{"name","Return"},{"offset",{0,0,1}},{"start",0.8},{"end",1.2}}
+        })}}
+    })}};
+    const auto with_move=ParseTaskCatalog(movement.dump());
+    const auto& move=std::get<TaskMovementCommand>(std::get<TaskSubmit>(with_move.sequences.at("stand")->nodes[1].operation).operation);
+    Check(move.animation=="body"&&move.movement.state.empty()&&move.movement.segments[1].destination==MovementDestination::Anchor);
+    auto missing=movement;missing["sequences"]["stand"]["entry"]["children"][1]["animation"]="not-declared";
+    Reject([&]{ParseTaskCatalog(missing.dump());});
+    missing=movement;missing["sequences"]["stand"]["entry"]["children"][0]["layer"]=3;
+    Reject([&]{ParseTaskCatalog(missing.dump());});
+    missing=movement;missing["sequences"]["stand"]["entry"]["children"][1]["segments"][0]["end"]=0;
+    Reject([&]{ParseTaskCatalog(missing.dump());});
+    missing=movement;missing["sequences"]["stand"]["entry"]["children"][1]["segments"][0]["destination"]="origin";
+    Reject([&]{ParseTaskCatalog(missing.dump());});
     auto configured=input;
     configured["tasks"]["attack"]["bindings"]={{"targets",{"Target"}},{"anchors",{"Destination"}},
         {"choices",{{"mode",{"low","high"}}}}};

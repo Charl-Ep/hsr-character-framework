@@ -3,6 +3,7 @@
 #include "VisualProgramState.hpp"
 #include "VisualPartnerTypes.hpp"
 #include "AnimationRequests.hpp"
+#include "VisualMovement.hpp"
 #include <functional>
 #include <deque>
 #include <optional>
@@ -108,6 +109,7 @@ struct VisualProgramServices {
     std::function<bool()> partners_drained;
     std::function<bool(std::shared_ptr<VisualEffectContext>)> partner_scope_drained;
     std::function<std::optional<AnimationRequestEndpoint>(const std::string&)> partner_animation;
+    std::function<std::optional<MovementRequestEndpoint>(VisualEffectContext&,const VisualMovement&)> movement;
 };
 struct VisualInstructionStatus {
     bool complete=false,cancelled=false;
@@ -171,6 +173,7 @@ public:
     std::string SequenceError(std::uint64_t) const;
     void ForgetSequence(std::uint64_t); // only after drain
     std::optional<AnimationRequestEndpoint> PartnerAnimation(const std::string& key) const;
+    std::optional<MovementRequestEndpoint> StartSequenceMovement(std::uint64_t,const VisualMovement&);
 private:
     struct Cursor {
         std::size_t cue=0,instruction=0;

@@ -18,11 +18,12 @@ void TestVisualEntityMotion() {
     const api::EffectReference first{1,0,&first_storage},second{2,0,&second_storage};
     std::map<void*,std::vector<void*>> lists;
     std::map<void*,bool> attached;
+    bool animation_motion=false,other_motion=false;
     unsigned binds=0,clears=0;bool loading=false,partial=false,deny_reads=false;
     std::vector<std::string> errors;
     VisualEntityMotionServices services;
     services.eligible=[&](auto origin){return origin.world==world && origin.token.entity!=nullptr;};
-    services.target=[&](void* entity){return api::EffectMotionTargetObservation{{api::EffectControlState::Applied},attached[entity]};};
+    services.target=[&](void* entity){return api::EffectMotionTargetObservation{{api::EffectControlState::Applied},attached[entity],animation_motion,other_motion};};
     services.read=[&](auto ref){Check(!deny_reads);return api::EffectEntityFollowObservation{{loading?api::EffectControlState::NotLoaded:api::EffectControlState::Applied},lists[ref.parameters]};};
     services.set=[&](auto ref,const auto& expected,const auto& desired,auto current) {
         Check(current());
@@ -37,6 +38,8 @@ void TestVisualEntityMotion() {
     auto ok=[](const auto& result){return result.state==api::EffectControlState::Applied;};
     loading=true;Check(motion.Bind(first,owner,{a}).state==api::EffectControlState::NotLoaded && motion.Empty());loading=false;
     attached[a.token.entity]=true;Check(!ok(motion.Bind(first,owner,{a})) && binds==0);attached[a.token.entity]=false;
+    animation_motion=true;Check(!ok(motion.Bind(first,owner,{a})) && binds==0);animation_motion=false;
+    other_motion=true;Check(!ok(motion.Bind(first,owner,{a})) && binds==0);other_motion=false;
     auto wrong_world=a;wrong_world.world=reinterpret_cast<api::GameWorld*>(&other_world_storage);
     Check(!ok(motion.Bind(first,owner,{wrong_world})) && !ok(motion.Bind(first,owner,{a,a})) && motion.Empty());
     Check(ok(motion.Bind(first,owner,{a,b})) && binds==1);

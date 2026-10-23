@@ -45,6 +45,17 @@ void ValidateTaskSequence(const TaskSequence& sequence) {
             if(const auto* sound=std::get_if<TaskSoundCommand>(&submit->operation))
                 if(sound->participant.name.empty() || sound->event.empty() || sound->event.find('\0')!=std::string::npos)
                     throw std::invalid_argument("invalid task sound command");
+            if(const auto* move=std::get_if<TaskMovementCommand>(&submit->operation)) {
+                bool found=false;
+                for(const auto& candidate:sequence.nodes)if(const auto* reference=std::get_if<TaskSubmit>(&candidate.operation))
+                    if(reference->request==move->animation) {
+                        const auto* animation=std::get_if<TaskAnimationCommand>(&reference->operation);
+                        if(!animation || animation->participant.name!="body" || animation->layer!=0)
+                            throw std::invalid_argument("movement must reference an owned body base-layer animation request");
+                        auto motion=move->movement;motion.state=animation->state;ValidateVisualMovement(motion);found=true;
+                    }
+                if(!found)throw std::invalid_argument("movement animation request is undeclared");
+            }
         }
         for(auto child:Children(op))visit(child);
         colors[index]=2;

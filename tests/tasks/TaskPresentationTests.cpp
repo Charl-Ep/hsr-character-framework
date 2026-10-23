@@ -19,6 +19,7 @@ struct Fixture {
     std::shared_ptr<VisualProgram> program=std::make_shared<VisualProgram>();
     std::shared_ptr<VisualProgramPlayer> player;
     std::function<void()> on_start,on_attach;
+    std::function<std::optional<MovementRequestEndpoint>(VisualEffectContext&,const VisualMovement&)> movement;
     std::map<std::string,std::shared_ptr<AnimationRequestStatus>> animations;
     std::map<std::string,std::uint64_t> generations{{"body",10},{"partner",20}};
     std::vector<std::pair<std::string,std::uint64_t>> released;
@@ -29,6 +30,9 @@ struct Fixture {
         services.create=[](auto&,const auto&,const auto&)->VisualEffectId{throw std::runtime_error("unexpected effect create");};
         services.attach=[&](auto){++attached;if(on_attach)on_attach();};
         services.detach=[&]{++detached;};
+        services.movement=[&](auto& context,const auto& command)->std::optional<MovementRequestEndpoint> {
+            if(!movement)throw std::runtime_error("test movement unavailable");return movement(context,command);
+        };
         ConnectVisualTimelines(services,std::make_shared<VisualTimelines>([&] {
             const int id=static_cast<int>(++starts);api::TimelineRequestServices native;
             native.start=[&,id](const auto&,int,double){
@@ -203,5 +207,92 @@ void Sounds() {
     TaskPresentation failure({24},10,Plan({sound}),f.player,{},ports);failure.Service(0,13);failure.Service(0,14);
     Check(failure.Drained() && failure.Status().reason==TaskExitReason::Failed);
 }
+void Movements() {
+    VisualMovement movement;movement.segments.push_back({});
+    const TaskNode body{"body",TaskSubmit{"body",TaskAnimationCommand{{"body"},"Attack"}}};
+    const TaskNode moving{"movement",TaskSubmit{"move",TaskMovementCommand{"body",movement}}};
+    auto plan=Plan({body,moving,{"wait",TaskWaitRequest{"move"}},{"entry",TaskSerial{{0,1,2}}}},3);
+    Fixture f;unsigned starts=0,stops=0;auto status=std::make_shared<api::MovementRequestStatus>();status->accepted=true;
+    f.movement=[&](auto&,const auto& command)->std::optional<MovementRequestEndpoint> {
+        Check(command.state=="Attack");++starts;
+        return MovementRequestEndpoint{10,[]{},[&]{++stops;status->cancelled=true;},[status]{return *status;}};
+    };
+    TaskPresentation run({30},10,plan,f.player,{},f.Services());run.Service(0,1);
+    Check(starts==0&&f.animations.size()==1);
+    auto animation=f.animations.at("body");animation->accepted=true;run.Service(0,2);Check(starts==0); // not the old same-name state
+    animation->entered=true;animation->model_generation=201;run.Service(0,3);Check(starts==1&&!run.Drained());
+    status->started=true;status->movement_time=0.5f;run.Service(0,4);
+    bool progress=false;for(const auto& request:run.Requests())if(request.receipt.participant.name=="body"&&request.state.progress==0.5)progress=true;
+    Check(progress);
+    status->completed=true;status->closed=true;run.Service(0,5);run.Service(0,6);
+    Check(run.Drained()&&stops==0&&run.Status().issues.empty());
+
+    // Bare leaves must still be delivered; finishing the sequence cannot release
+    // the animation observation before the current playback actually enters.
+    Fixture tail;auto tail_status=std::make_shared<api::MovementRequestStatus>();tail_status->accepted=true;
+    tail.movement=[&](auto&,const auto&)->std::optional<MovementRequestEndpoint> {
+        ++starts;return MovementRequestEndpoint{10,[]{},[&]{++stops;tail_status->cancelled=true;},[tail_status]{return *tail_status;}};
+    };
+    TaskPresentation finishing({31},10,Plan({body,moving,{"entry",TaskSerial{{0,1}}}},2),tail.player,{},tail.Services());
+    finishing.Service(0,1);tail.animations.at("body")->accepted=true;finishing.Service(0,2);
+    Check(starts==1&&!tail.animations.at("body")->released);
+    tail.animations.at("body")->entered=true;finishing.Service(0,3);Check(starts==2&&!finishing.Drained());
+    finishing.Stop(TaskExitReason::WorldLeft);finishing.Service(0,4);Check(stops==1&&!finishing.Drained());
+    tail_status->closed=true;finishing.Service(0,5);Check(finishing.Drained());
+
+    // A same-execution animation change first detaches its old motion request.
+    Fixture change;auto old=std::make_shared<api::MovementRequestStatus>();old->accepted=true;
+    change.movement=[old](auto&,const auto&)->std::optional<MovementRequestEndpoint> {
+        return MovementRequestEndpoint{10,[]{},[old]{old->cancelled=true;},[old]{return *old;}};
+    };
+    auto switching=Plan({body,moving,{"accept",TaskWaitRequest{"move",TaskWaitSignal::RequestComplete}},
+        {"return",TaskSubmit{"return",TaskAnimationCommand{{"body"},"StandBy"}}},
+        {"entry",TaskSerial{{0,1,2,3}}}},4);
+    TaskPresentation switcher({32},10,switching,change.player,{},change.Services());switcher.Service(0,1);
+    const auto initial=change.animations.at("body");initial->accepted=true;initial->entered=true;switcher.Service(0,2);switcher.Service(0,3);
+    Check(old->cancelled && change.animations.at("body")==initial && !initial->released);
+    old->closed=true;switcher.Service(0,4);Check(change.animations.at("body")!=initial&&initial->released);
+    change.animations.at("body")->accepted=true;switcher.Service(0,5);switcher.Service(0,6);Check(switcher.Drained());
+
+    Fixture nested;TaskPresentation* active=nullptr;auto pending=std::make_shared<api::MovementRequestStatus>();pending->accepted=true;
+    nested.movement=[&](auto&,const auto&)->std::optional<MovementRequestEndpoint> {
+        active->Stop(TaskExitReason::Deleted);
+        return MovementRequestEndpoint{10,[]{},[pending]{pending->cancelled=true;},[pending]{return *pending;}};
+    };
+    TaskPresentation reentrant({33},10,plan,nested.player,{},nested.Services());active=&reentrant;reentrant.Service(0,1);
+    nested.animations.at("body")->accepted=true;nested.animations.at("body")->entered=true;reentrant.Service(0,2);
+    if(!pending->cancelled || reentrant.Drained()) {
+        std::string detail="movement reentry: cancelled="+std::to_string(pending->cancelled)+" drained="+std::to_string(reentrant.Drained());
+        for(const auto& issue:reentrant.Status().issues)detail+="; "+issue;
+        throw std::runtime_error(detail);
+    }
+    pending->closed=true;reentrant.Service(0,3);
+    if(!reentrant.Drained()) {
+        std::string detail="movement reentry finish phase="+std::to_string(static_cast<int>(reentrant.Status().phase));
+        for(const auto& request:reentrant.Requests())detail+="; "+request.name+" drained="+std::to_string(request.state.drained)+" gen="+std::to_string(request.receipt.entity_generation)+" model="+std::to_string(request.receipt.model);
+        for(const auto& issue:reentrant.Status().issues)detail+="; "+issue;
+        throw std::runtime_error(detail);
+    }
+
+    // Named request identity is required, not a matching state name elsewhere.
+    Fixture order;TaskPresentation missing({34},10,Plan({moving,body,{"entry",TaskSerial{{0,1}}}},2),order.player,{},order.Services());
+    missing.Service(0,1);missing.Service(0,2);Check(missing.Drained()&&missing.Status().reason==TaskExitReason::Failed);
 }
-void TestTaskPresentation(){Scopes();IndependentParticipants();ErrorsAndReentry();NamedContexts();IndependentTail();Sounds();}
+void MovementInputs() {
+    VisualMovement command;command.state="Attack";
+    VisualMovementSegment attack;attack.destination=MovementDestination::Target;attack.name="target";attack.stop_distance=2;attack.end=0.4f;
+    VisualMovementSegment back;back.start=0.8f;back.end=1.2f;back.preserve_height=false;
+    command.segments={attack,back};int reads=0;
+    const auto resolve=[&](auto kind,const std::string& name){Check(kind==MovementDestination::Target&&name=="target");++reads;return api::Position3{10,99,0};};
+    const auto plan=ResolveVisualMovement(command,{0,2,0},{1,3,1},resolve);
+    Check(reads==1&&plan.segments[0].target.x==8&&plan.segments[0].target.y==2&&plan.segments[1].target.y==3);
+    Check(plan.segments[1].target.x==1&&plan.segments[1].target.z==1&&plan.segments[1].end>1);
+    command.segments[0].offset={0,1,0};command.segments[0].stop_distance=0;
+    const auto offset=ResolveVisualMovement(command,{0,2,0},{0,2,0},resolve);Check(offset.segments[0].target.y==3);
+    command.clock=api::MovementClock::DistanceSpeed;command.segments[0].speed=4;command.segments[1].speed=2;
+    Check(api::CompileAnimationMove(ResolveVisualMovement(command,{0,2,0},{0,2,0},resolve)).duration>0);
+    command.segments[0].stop_distance=100;
+    bool invalid=false;try{ResolveVisualMovement(command,{0,2,0},{0,2,0},resolve);}catch(const std::invalid_argument&){invalid=true;}Check(invalid);
+}
+}
+void TestTaskPresentation(){Scopes();IndependentParticipants();ErrorsAndReentry();NamedContexts();IndependentTail();Sounds();Movements();MovementInputs();}

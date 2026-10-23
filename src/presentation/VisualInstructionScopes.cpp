@@ -18,6 +18,15 @@ std::optional<AnimationRequestEndpoint> VisualProgramPlayer::PartnerAnimation(co
         throw std::runtime_error("owned partner animation service unavailable");
     return services_.partner_animation(key);
 }
+std::optional<MovementRequestEndpoint> VisualProgramPlayer::StartSequenceMovement(std::uint64_t token,const VisualMovement& command) {
+    const auto found=instruction_scopes_.find(token);
+    if(found==instruction_scopes_.end() || found->second->ending || status_.closing || end_pending_)
+        throw std::logic_error("movement instruction scope ended");
+    if(!services_.movement)throw std::runtime_error("owned movement service unavailable");
+    if(!found->second->error.empty())throw std::runtime_error(found->second->error);
+    if(!found->second->prepared)return {};
+    return services_.movement(*found->second->lifetime->effects,command);
+}
 std::uint64_t VisualProgramPlayer::BeginSequence(VisualProgramParameters inputs,bool captured) {
     if(status_.closing || end_pending_)throw std::logic_error("visual scene closing");
     if(context_ || pending_ || action_)InterruptAction();

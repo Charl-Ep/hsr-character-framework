@@ -26,7 +26,7 @@ Target, spatial-anchor and visual-choice requirements use the visual scene's res
 
 ## Execution
 
-Sequences contain submissions, request waits, second/frame waits, serial/parallel groups, branches and finite or finish-requested loops. Leaf operations are animation commands, sound commands or existing `VisualInstruction` values.
+Sequences contain submissions, request waits, second/frame waits, serial/parallel groups, branches and finite or finish-requested loops. Leaf operations are animation, movement, sound or existing `VisualInstruction` values.
 
 Create an execution with a unique token, immutable sequence and `TaskSequenceServices`. Call `Advance(delta, frame)` once per engine frame. Sequential waits carry unused time; parallel branches advance independently. Cooperative yields retain cursors and time credits. An asynchronous completion without a timestamp does not supply inferred remaining frame time.
 
@@ -50,6 +50,7 @@ Service animation players on their normal owner frame, then call `TaskPresentati
 | Other animation layer | Animator play or cross-fade | That layer's state and time |
 | Partner body animation | Existing partner idle-animation service | Partner's own Animator state and time |
 | Body sound event | SDK AudioManager request | Separate start and end callbacks |
+| Body movement | SDK owned animation-movement request | Official evaluator progress and completion |
 | Visual instruction | `VisualProgramPlayer` instruction executor | Instruction acceptance/application |
 
 Animation requests do not select an automatic successor. A completed non-loop state or observed exit completes its wait; looping states remain active. Releasing a receipt stops observation, not the Animator. The next task command owns the next state. Controlled domain changes cancel old requests, while observed Animator changes invalidate their bindings.
@@ -61,6 +62,20 @@ A later animation on the same participant and layer supersedes this execution's 
 Submissions are asynchronous. Add explicit request waits for dependencies, including before reusing a request name. A visual creation instruction completing means the creation command was accepted, not that its effect finished. Effect controls retain and retry their exact pending receipts.
 
 Sound uses `{"op":"sound","request":"voice","participant":"body","event":"event_name"}`. Its `accepted` wait observes queue acceptance, `started` observes the playback-start callback, and `performance` observes a successful end callback. A completed sequence retains a natural sound tail; cancellation selects the owned request by its callback and emitter, not its logical ID alone. The current host supports the body emitter, not partner or arbitrary world emitters. A waiting request dropped by the engine reports an error; missing callbacks do not imply successful completion or trigger automatic replay.
+
+Movement references a preceding base-layer body animation request in the same execution. It waits for that playback to enter, then resolves its endpoints once and submits to the official movement component. Animation `started` waits also report actual entry. A later animation first cancels and drains its previous movement; a natural sequence finish retains movement until completion. Effect-follow motion and animation movement cannot occupy the same entity channel simultaneously.
+
+```json
+{"op":"movement","request":"approach","animation":"body",
+ "segments":[
+   {"destination":"target","name":"Target","stop_distance":1.5,"start":0,"end":0.3},
+   {"destination":"origin","start":0.8,"end":1}
+ ]}
+```
+
+`clock` is `animation` (normalized times) or `speed` (distance/speed intervals). Each segment accepts `start`, `end`, `speed`, `exit_time`, `offset` as world-space `[x,y,z]`, `preserve_height` (default true) and `stop_distance` (default zero). `destination` is `target`, `anchor` or unnamed `origin`. Targets and anchors use the captured sequence inputs. Origin is the body's position at the first movement in that sequence; an explicit anchor can provide another return point. `force_start` defaults to false. Targets are position snapshots; automatic radius lookup, expression evaluation, moving-target tracking, curve-resource loading and partner movement are not provided.
+
+Movement `accepted` means adoption, `started` means evaluation began, `progress` uses the movement clock and `performance` requires an observed natural completion. A graph disappearing without that receipt reports interruption. Cancellation leaves the current position and clears only the request's own graph.
 
 Each task gets a resource scope using the existing effects, partner and Timeline owners. Natural completion can retain tails; cancellation ends that scope. Named contexts outlive individual tasks until explicitly exited or the scene closes. `TaskPresentation::Drained()` includes scope cleanup even after the sequence kernel has finished. Old scope cleanup cannot detach a newer scope's event producer.
 
@@ -116,8 +131,10 @@ State names and resource paths must match the selected model. A sequence may als
 |---|---|
 | `serial`, `parallel` | `children` |
 | `animation` | `request`, `participant`, `state`; optional `layer`, `transition` |
+| `movement` | `request`, `animation`, `segments`; optional `clock`, `force_start` |
+| `sound` | `request`, `participant`, `event` |
 | `visual` | `request`, `instruction` using the existing visual instruction schema |
-| `wait_request` | `request`; optional `signal`: `submitted`, `accepted`, `performance` (default), `progress`, `drained`; `progress` requires its numeric value |
+| `wait_request` | `request`; optional `signal`: `submitted`, `accepted`, `started`, `performance` (default), `progress`, `drained`; `progress` requires its numeric value |
 | `wait_seconds` | `seconds` |
 | `wait_frame` | No additional fields |
 | `repeat` | `child`; `count` and/or `until_finish` |
