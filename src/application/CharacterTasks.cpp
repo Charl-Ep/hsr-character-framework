@@ -7,7 +7,7 @@ bool HasTaskInputs(const CharacterTaskEntry& entry) {
     return !entry.inputs.empty() || !entry.bindings.targets.empty() || !entry.bindings.anchors.empty() || !entry.bindings.choices.empty();
 }
 bool CanConfigureTask(const CharacterTaskEntry& entry) {
-    if(entry.kind!=CharacterTaskKind::Sequence || !HasTaskInputs(entry))return false;
+    if((entry.kind!=CharacterTaskKind::Sequence && entry.kind!=CharacterTaskKind::Control) || !HasTaskInputs(entry))return false;
     if(entry.query.availability==TaskAvailability::Available)return true;
     if(entry.query.reasons.empty())return false;
     return std::all_of(entry.query.reasons.begin(),entry.query.reasons.end(),[&](const auto& reason) {
@@ -23,8 +23,11 @@ std::vector<CharacterTaskEntry> CharacterTasks(const ApplicationSnapshot& snapsh
     if(!actor)throw std::out_of_range("character not found");
     std::vector<CharacterTaskEntry> result;
     const auto* catalog=snapshot.catalog?snapshot.catalog->Actions(id):nullptr;
+    const bool controlled=actor->tasks && std::any_of(actor->tasks->definitions.begin(),actor->tasks->definitions.end(),
+        [](const auto& row){return bool(row.second.control);});
     auto add=[&](CharacterTaskKind kind,ActionDomain domain,std::string label,CharacterCommand command)->CharacterTaskEntry& {
         CharacterTaskEntry entry;entry.kind=kind;entry.domain=domain;entry.label=std::move(label);entry.command=std::move(command);
+        entry.diagnostic=controlled && domain==ActionDomain::Alternate && kind!=CharacterTaskKind::Control;
         if(!actor->active || !actor->enabled || actor->deleting) {
             entry.query.availability=TaskAvailability::Unavailable;
             entry.query.reasons.push_back({TaskReasonKind::Participant,"body","character is not active"});
@@ -79,10 +82,14 @@ std::vector<CharacterTaskEntry> CharacterTasks(const ApplicationSnapshot& snapsh
         entry.detail=state;
     }
     if(actor->tasks)for(const auto& [name,definition]:actor->tasks->definitions) {
+        if(definition.control && definition.control->trigger==ControlTrigger::Automatic)continue;
         TaskSelection selection{{actor->task_catalog,name}};
-        auto& entry=add(CharacterTaskKind::Sequence,actor->tasks->domain,name,
+        if(definition.control)selection.trigger=definition.control->trigger;
+        auto& entry=add(definition.control?CharacterTaskKind::Control:CharacterTaskKind::Sequence,actor->tasks->domain,
+            definition.control && !definition.control->label.empty()?definition.control->label:name,
             ControlCharacterTask{id,actor->creations,{TaskControlOperation::Select,std::move(selection)}});
         entry.sources=definition.sources;entry.inputs=definition.inputs;entry.bindings=TaskBindings(definition);
+        if(definition.control)entry.sources.insert(entry.sources.end(),definition.control->sources.begin(),definition.control->sources.end());
         const auto found=actor->tasks->control.catalog.find(name);
         if(found==actor->tasks->control.catalog.end()) {
             entry.query.availability=TaskAvailability::Unknown;
@@ -96,7 +103,7 @@ std::vector<CharacterTaskEntry> CharacterTasks(const ApplicationSnapshot& snapsh
     }
     auto order=[](CharacterTaskKind kind) {
         switch(kind) {
-        case CharacterTaskKind::Sequence:case CharacterTaskKind::Npc:return 0;
+        case CharacterTaskKind::Control:case CharacterTaskKind::Sequence:case CharacterTaskKind::Npc:return 0;
         case CharacterTaskKind::Program:return 1;
         case CharacterTaskKind::Idle:return 2;
         case CharacterTaskKind::Ready:return 3;

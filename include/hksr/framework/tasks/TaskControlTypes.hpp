@@ -1,5 +1,6 @@
 #pragma once
 #include "TaskContext.hpp"
+#include "BattleControl.hpp"
 #include "../presentation/ActionTypes.hpp"
 #include "../presentation/VisualProgramState.hpp"
 
@@ -9,6 +10,7 @@ struct TaskSelection {
     TaskQuery query;
     VisualProgramParameters visual;
     bool inputs_captured=false; // restart a saved request without rereading runtime defaults
+    ControlTrigger trigger=ControlTrigger::User;
 };
 void ValidateTaskSelection(const TaskSelection&);
 bool SameTaskSelection(const TaskSelection&,const TaskSelection&);
@@ -26,6 +28,7 @@ struct TaskControllerStatus {
     std::size_t retiring=0;
     bool closing=false;
     std::string error;
+    BattleControlSnapshot control;
 };
 enum class TaskControlOperation { Query,Select,Finish,Cancel };
 struct TaskControlInput {

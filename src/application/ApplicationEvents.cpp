@@ -32,6 +32,8 @@ bool Equal(const CharacterPackage& a,const CharacterPackage& b) {
         });
 }
 bool Equal(const TaskQueryResult& a,const TaskQueryResult& b) {
+    if(!Optional(a.facets,b.facets,[](const auto& x,const auto& y){return
+        std::tie(x.path,x.inputs,x.binding)==std::tie(y.path,y.inputs,y.binding);}))return false;
     if(a.availability!=b.availability || a.inputs!=b.inputs || a.reasons.size()!=b.reasons.size())return false;
     for(std::size_t i=0;i<a.reasons.size();++i) {
         const auto& x=a.reasons[i];const auto& y=b.reasons[i];
@@ -42,6 +44,7 @@ bool Equal(const TaskQueryResult& a,const TaskQueryResult& b) {
 bool Equal(const TaskControlResult& a,const TaskControlResult& b) {
     if(!(a.preparing==b.preparing) || a.preparation_error!=b.preparation_error)return false;
     const auto& x=a.status;const auto& y=b.status;
+    if(!(x.control==y.control))return false;
     if(std::tie(x.requested,x.started,x.retiring,x.closing,x.error)!=std::tie(y.requested,y.started,y.retiring,y.closing,y.error) ||
         !(x.current==y.current) || !(x.pending==y.pending))return false;
     if(!Optional(x.blocked,y.blocked,[](const auto& p,const auto& q){return Equal(p,q);}))return false;

@@ -1,4 +1,5 @@
 #include <hksr/framework/tasks/TaskContext.hpp>
+#include <hksr/framework/tasks/BattleControl.hpp>
 #include <algorithm>
 #include <cmath>
 #include <set>
@@ -37,6 +38,7 @@ TaskBindingSchema TaskBindings(const TaskDefinition& task) {
     return out;
 }
 void ValidateTaskDefinition(const TaskDefinition& task) {
+    if(task.control)ValidateControlRelation(*task.control);
     if(!ValidKey(task.key))throw std::invalid_argument("task identity is incomplete");
     std::set<std::string> names;
     for(const auto& input:task.inputs) {
@@ -102,7 +104,8 @@ TaskQueryResult TaskContext::Query(const TaskDefinition& task,const TaskQuery& q
         if(state==TaskAvailability::Unavailable || result.availability==TaskAvailability::Available)result.availability=state;
         result.reasons.push_back({kind,std::move(source),std::move(detail)});
     };
-    if(task.entry.empty())reason(TaskAvailability::Unknown,TaskReasonKind::Unimplemented,task.key.name,"no visual task entry");
+    if(task.entry.empty() && (!task.control || task.control->presentation))
+        reason(TaskAvailability::Unknown,TaskReasonKind::Unimplemented,task.key.name,"no visual task entry");
     for(const auto& input:task.inputs) {
         const auto explicit_value=query.inputs.find(input.name);
         const auto inherited=values.find(input.name);

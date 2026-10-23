@@ -306,7 +306,7 @@ Json Actions(const ApplicationSnapshot& s,std::uint64_t character) {
 Json Tasks(const ApplicationSnapshot& snapshot,std::uint64_t id) {
     Json entries=Json::array();
     for(const auto& entry:CharacterTasks(snapshot,id)) {
-        static const char* kinds[]={"npc","configured_clip","ready","reaction","program","sequence","idle"};
+        static const char* kinds[]={"npc","configured_clip","ready","reaction","program","sequence","idle","control"};
         Json command=std::visit([](const auto& value)->Json {
             using T=std::decay_t<decltype(value)>;
             if constexpr(std::is_same_v<T,ControlCharacterTask>)return task_codec::TaskCommand(value);
@@ -343,8 +343,13 @@ Json Tasks(const ApplicationSnapshot& snapshot,std::uint64_t id) {
             {"label",entry.label},{"detail",entry.detail},{"recovery",entry.recovery},{"availability",available},
             {"reasons",std::move(reasons)},{"sources",std::move(sources)},{"inputs",std::move(inputs)},
             {"configurable",CanConfigureTask(entry)},
+            {"diagnostic",entry.diagnostic},
             {"bindings",{{"targets",entry.bindings.targets},{"anchors",entry.bindings.anchors},{"choices",entry.bindings.choices}}},
             {"command",std::move(command)}});
+        if(entry.query.facets) {
+            auto name=[](auto value){return value==TaskAvailability::Available?"available":value==TaskAvailability::Unavailable?"unavailable":"unknown";};
+            entries.back()["facets"]={{"path",name(entry.query.facets->path)},{"inputs",name(entry.query.facets->inputs)},{"binding",name(entry.query.facets->binding)}};
+        }
     }
     return {{"character",std::to_string(id)},{"entries",std::move(entries)}};
 }

@@ -95,6 +95,8 @@
     "ReactionScope": "支持身体、表情和眨眼。材质、变速、浮空尚未接入。",
     "ConfiguredActions": "配置动作",
     "BattleStates": "战斗状态",
+    "BattleControls": "战斗控制",
+    "ActionPreviews": "动作预览",
     "BodyFace": "身体与表情",
     "RawStates": "控制器状态（高级）",
     "NpcMotions": "NPC编号动作",

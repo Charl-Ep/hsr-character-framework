@@ -97,6 +97,7 @@ void TestTaskModel();
 void TestTaskSequence();
 void TestTaskPresentation();
 void TestTaskCatalog();
+void TestBattleControl();
 void TestReadyPlayback();
 void TestSourceCatalog();
 void TestActionCatalog();
@@ -136,6 +137,7 @@ int main(int argc,char** argv) try {
     TestTaskSequence();
     TestTaskPresentation();
     TestTaskCatalog();
+    TestBattleControl();
     TestReadyPlayback();
     TestModelProfileInputs();
     TestOperationHistory();

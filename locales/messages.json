@@ -256,6 +256,12 @@
     "BattleStates": {
       "parameters": {}
     },
+    "BattleControls": {
+      "parameters": {}
+    },
+    "ActionPreviews": {
+      "parameters": {}
+    },
     "BodyFace": {
       "parameters": {}
     },

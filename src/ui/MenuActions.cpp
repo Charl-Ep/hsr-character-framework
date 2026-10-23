@@ -6,6 +6,12 @@
 namespace hksr::framework::ui {
 void Menu::Actions(ApplicationService& host,const ApplicationSnapshot& snapshot,const SceneCharacterStatus& selected) {
     const bool npc=PureNpc(selected.package);
+    const bool controlled=selected.tasks && std::any_of(selected.tasks->definitions.begin(),selected.tasks->definitions.end(),
+        [](const auto& row){return bool(row.second.control);});
+    bool diagnostic=false;
+#if HKSR_DEVELOPMENT_UI
+    diagnostic=controlled && action_kind_==1;
+#endif
     if(action_actor_!=actor_ || action_generation_!=selected.creations) {
         action_actor_=actor_;action_generation_=selected.creations;action_kind_=0;
         action_domain_=!npc && selected.handoff && selected.handoff->ready_domain==ActionDomain::Alternate?1:0;
@@ -18,12 +24,14 @@ void Menu::Actions(ApplicationService& host,const ApplicationSnapshot& snapshot,
     }
     if(!npc) {
 #if HKSR_DEVELOPMENT_UI
-        const UiText kinds[]={UiText::ConfiguredActions,UiText::BattleStates};
+        const UiText kinds[]={controlled?UiText::BattleControls:UiText::ConfiguredActions,
+            controlled?UiText::ActionPreviews:UiText::BattleStates};
         ImGui::SetNextItemWidth(230);
         if(BeginChoices(L(UiText::ActionCategory),T(kinds[action_kind_]))) {
             for(int i=0;i<2;++i)if(ImGui::Selectable(L(kinds[i]),i==action_kind_))action_kind_=i;
             ImGui::EndCombo();
         }
+        diagnostic=controlled && action_kind_==1;
         if(action_kind_==0)
 #endif
         {
@@ -52,11 +60,13 @@ void Menu::Actions(ApplicationService& host,const ApplicationSnapshot& snapshot,
         }
         if(!control.status.error.empty())Text(control.status.error);
         if(!control.preparation_error.empty())Text(control.preparation_error);
-        ImGui::BeginDisabled(!selected.active);
-        if(ImGui::Button(L(UiText::FinishTask)))host.Post(ControlCharacterTask{actor_,selected.creations,{TaskControlOperation::Finish,{}}});
-        ImGui::SameLine();
-        if(ImGui::Button(L(UiText::CancelTask)))host.Post(ControlCharacterTask{actor_,selected.creations,{TaskControlOperation::Cancel,{}}});
-        ImGui::EndDisabled();
+        if(!controlled || diagnostic) {
+            ImGui::BeginDisabled(!selected.active);
+            if(ImGui::Button(L(UiText::FinishTask)))host.Post(ControlCharacterTask{actor_,selected.creations,{TaskControlOperation::Finish,{}}});
+            ImGui::SameLine();
+            if(ImGui::Button(L(UiText::CancelTask)))host.Post(ControlCharacterTask{actor_,selected.creations,{TaskControlOperation::Cancel,{}}});
+            ImGui::EndDisabled();
+        }
     }
     ImGui::SetNextItemWidth(-1);
     ImGui::InputTextWithHint("##action-filter",T(UiText::SearchActions),action_filter_,sizeof(action_filter_));
@@ -68,10 +78,11 @@ void Menu::Actions(ApplicationService& host,const ApplicationSnapshot& snapshot,
         if(npc && entry.kind!=CharacterTaskKind::Npc)continue;
 #if HKSR_DEVELOPMENT_UI
         if(!npc && action_kind_==1) {
-            if(entry.kind!=CharacterTaskKind::Ready && entry.kind!=CharacterTaskKind::Idle && entry.kind!=CharacterTaskKind::Reaction)continue;
+            if(entry.domain!=ActionDomain::Alternate)continue;
         } else
 #endif
         if(!npc && entry.domain!=domain)continue;
+        if(controlled && entry.domain==ActionDomain::Alternate && entry.diagnostic!=diagnostic)continue;
         const bool available=entry.query.availability==TaskAvailability::Available;
         const bool configurable=CanConfigureTask(entry);
         if(!available && !configurable && !show_unavailable_tasks_)continue;
@@ -86,7 +97,7 @@ void Menu::Actions(ApplicationService& host,const ApplicationSnapshot& snapshot,
         const float width=std::max(1.0f,ImGui::GetContentRegionAvail().x);
         ImGui::BeginDisabled(!available && !configurable);
         if(ImGui::Selectable(label.c_str(),false,0,{width,ImGui::GetTextLineHeight()+12})) {
-            if(entry.kind==CharacterTaskKind::Sequence && HasTaskInputs(entry))OpenTaskInputs(entry);
+            if((entry.kind==CharacterTaskKind::Sequence || entry.kind==CharacterTaskKind::Control) && HasTaskInputs(entry))OpenTaskInputs(entry);
             else host.Post(entry.command);
         }
         if(ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled) && (!detail.empty() || ImGui::CalcTextSize(label.c_str()).x>width)) {

@@ -150,6 +150,9 @@ TaskControlResult SceneCharacters::ControlTask(std::uint64_t id,std::uint64_t cr
         }
         auto queried=entry.active->session->ControlTask({TaskControlOperation::Query,input.selection});
         if(queried.selection->query.availability!=TaskAvailability::Available)return queried;
+        const auto& definition=entry.plan.visual_program->tasks->Resolve(queried.selection->resolved).definition;
+        if(definition.control && !definition.control->presentation)
+            return entry.active->session->ControlTask(std::move(input));
         entry.pending_task=std::move(input.selection);entry.pending_task_finish=false;
         if(entry.plan.persistence==CharacterPersistence::Layout){entry.plan.task_selection=entry.pending_task;entry.action.reset();}
         ++entry.task_revision;entry.task_preparation_error.clear();

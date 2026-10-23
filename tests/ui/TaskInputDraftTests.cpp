@@ -32,4 +32,9 @@ void TestTaskInputDraft() {
     reply.accepted=false;reply.error="target no longer exists";check(draft.Reply(reply) && !draft.Ready() && !draft.error.empty());
     check(std::get<std::int64_t>(draft.Selection().query.inputs.at("count"))==2);
     check(!draft.Selection().inputs_captured); // effective defaults remain the engine-frame query's responsibility
+    auto tasks=std::make_shared<CharacterTaskStatus>();actor.tasks=tasks;draft.Observe(snapshot,actor);
+    const auto before_control=draft.revision;
+    auto changed=std::make_shared<CharacterTaskStatus>(*tasks);actor.tasks=changed;
+    changed->control.status.control.performance=ControlPerformance::Working;
+    draft.Observe(snapshot,actor);check(draft.revision>before_control);
 }

@@ -1,4 +1,5 @@
 #include "TaskControlCodec.hpp"
+#include "BattleControlCodec.hpp"
 #include <charconv>
 #include <nlohmann/json.hpp>
 #include <cmath>
@@ -34,7 +35,12 @@ Json Query(const TaskQueryResult& query) {
         query.availability==TaskAvailability::Unavailable?"unavailable":"unknown";
     Json reasons=Json::array();for(const auto& reason:query.reasons)
         reasons.push_back({{"kind",static_cast<int>(reason.kind)},{"source",reason.source},{"detail",reason.detail}});
-    return {{"availability",availability},{"inputs",Values(query.inputs)},{"reasons",reasons}};
+    Json out={{"availability",availability},{"inputs",Values(query.inputs)},{"reasons",reasons}};
+    if(query.facets) {
+        auto name=[](auto value){return value==TaskAvailability::Available?"available":value==TaskAvailability::Unavailable?"unavailable":"unknown";};
+        out["facets"]={{"path",name(query.facets->path)},{"inputs",name(query.facets->inputs)},{"binding",name(query.facets->binding)}};
+    }
+    return out;
 }
 const char* Phase(TaskExecutionPhase phase) {
     switch(phase) {
@@ -50,7 +56,7 @@ ControlCharacterTask ParseTaskCommand(const Json& row) {
     for(auto it=row.begin();it!=row.end();++it)
         if(it.key()!="op" && it.key()!="character" && it.key()!="creation" && it.key()!="catalog" &&
             it.key()!="task" && it.key()!="inputs" && it.key()!="slot" && it.key()!="choices" &&
-            it.key()!="targets" && it.key()!="anchors")
+            it.key()!="targets" && it.key()!="anchors" && it.key()!="trigger")
             throw std::invalid_argument("unknown task command field: "+it.key());
     out.id=Id(row.at("character"));out.creation=Id(row.at("creation"));
     const auto op=Name(row.at("op"));
@@ -65,13 +71,17 @@ ControlCharacterTask ParseTaskCommand(const Json& row) {
         out.input.selection=ParseSelection(row);
     } else {
         if(out.input.operation==TaskControlOperation::Select)throw std::invalid_argument("task selection missing");
-        for(const auto* field:{"catalog","inputs","slot","choices","targets","anchors"})
+        for(const auto* field:{"catalog","inputs","slot","choices","targets","anchors","trigger"})
             if(row.contains(field))throw std::invalid_argument("task inputs require a task identity");
     }
     return out;
 }
 TaskSelection ParseSelection(const Json& row) {
         TaskSelection selection;selection.task={Name(row.at("catalog")),Name(row.at("task"))};
+        const auto trigger=row.value("trigger",std::string("user"));
+        if(trigger=="event")selection.trigger=ControlTrigger::Event;
+        else if(trigger=="automatic")selection.trigger=ControlTrigger::Automatic;
+        else if(trigger!="user")throw std::invalid_argument("unknown control trigger");
         const auto inputs=row.value("inputs",Json::object());
         if(!inputs.is_object())throw std::invalid_argument("task inputs must be an object");
         for(auto it=inputs.begin();it!=inputs.end();++it) {
@@ -106,6 +116,7 @@ Json TaskResult(const framework::TaskControlResult& result) {
     Json out={{"requested",state.requested},{"started",state.started},{"retiring",state.retiring},
         {"closing",state.closing},{"error",state.error},{"contexts",Json::array()},{"catalog",Json::object()},
         {"requests",Json::array()}};
+    out["control"]=control_codec::Snapshot(state.control);
     for(const auto& request:result.requests) {
         const auto& r=request.receipt;const auto& s=request.state;
         Json row={{"name",request.name},{"source",request.source},{"execution",r.execution.value},
@@ -158,6 +169,7 @@ Json TaskCommand(const ControlCharacterTask& value) {
 Json Selection(const TaskSelection& selection) {
         ValidateTaskSelection(selection);Json out=Json::object();
         out["catalog"]=selection.task.catalog;out["task"]=selection.task.name;
+        out["trigger"]=ControlName(selection.trigger);
         out["inputs"]=Values(selection.query.inputs);
         if(selection.query.slot)out["slot"]=selection.query.slot->value;
         out["choices"]=selection.visual.choices;out["targets"]=Json::object();out["anchors"]=Json::object();

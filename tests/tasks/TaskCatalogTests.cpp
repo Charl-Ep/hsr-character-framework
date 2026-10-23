@@ -263,5 +263,68 @@ void InputRequirementsAndPreparation() {
     frozen.Select("idle");frozen.Tick();frozen.defaults.choices["mode"]="b";frozen.Tick();
     Check(frozen.plays.size()==1 && frozen.plays[0].first.state=="A" && frozen.captured.choices.at("mode")=="a");
 }
+Json ControlPath(const char* trigger="user",bool presentation=true) {
+    return {{"trigger",trigger},{"presentation",presentation},
+        {"sources",Json::array({{{"document","fixture"},{"field","control consumer"}}})}};
 }
-void TestTaskCatalog(){Codec();SelectionAndInterrupt();NaturalAndPending();ContextsAndFinish();CloseAndReentrant();InputRequirementsAndPreparation();}
+void ControlAdmissionAndPresentation() {
+    auto document=Document();const Json skill={{"source","character/config"},{"index",6},{"slot",2}};
+    auto ready=ControlPath();ready["accepted"]=Json::array({{{"op","select"},{"skill",skill}}});
+    ready["requires"]=Json::array({{{"op","performance"},{"in",{"ready"}}}});
+    document["tasks"]["idle"]["control"]=ready;
+    auto attack=ControlPath();attack["requires"]=Json::array({{{"op","selected"},{"skill",skill}},
+        {{"op","performance"},{"in",{"ready"}}}});
+    attack["accepted"]=Json::array({{{"op","performance"},{"phase","accepted"}}});
+    attack["started"]=Json::array({{{"op","performance"},{"phase","working"}}});
+    attack["completed"]=Json::array({{{"op","performance"},{"phase","finished"}}});
+    attack["failed"]=Json::array({{{"op","performance"},{"phase","failed"}}});
+    document["tasks"]["attack"]["control"]=attack;
+    document["tasks"]["attack"].erase("next");
+    auto queue=ControlPath("user",false);queue["accepted"]=Json::array({{{"op","queue"},{"id","ultra"},{"skill",skill}}});
+    document["tasks"]["insert"]={{"control",queue}};
+    document["tasks"]["unmapped"]["control"]=ControlPath();
+    Fixture f(document);f.ready=false;
+    Check(f.controller->Query({{"test","attack"}}).query.facets->path==TaskAvailability::Unavailable);
+    const auto missing=f.controller->Query({{"test","unmapped"}});
+    Check(missing.query.facets->path==TaskAvailability::Unknown && missing.query.facets->binding==TaskAvailability::Unknown);
+    Check(f.Select("idle").intent==1);
+    Check(f.controller->Status().control.selection->index==6 && f.plays.empty());
+    f.Tick();Check(f.plays.empty());
+    Check(f.Select("attack").intent==2);
+    Check(f.controller->Status().control.performance==ControlPerformance::Accepted);
+    Check(f.controller->Query({{"test","idle"}}).query.facets->path==TaskAvailability::Unavailable);
+    f.ready=true;f.Tick();f.Tick();
+    Check(f.plays.size()==2 && f.controller->Status().current->name=="attack");
+    Check(f.Select("insert").intent==3);f.Tick();
+    Check(f.controller->Status().control.pending.size()==1 && f.controller->Status().current->name=="attack");
+    Check(f.controller->Selection()->task.name=="attack");
+    f.plays[0].second->entered=true;f.Tick();
+    Check(f.controller->Status().control.performance==ControlPerformance::Working);
+    f.plays[0].second->complete=true;f.plays[1].second->complete=true;f.Tick();
+    Check(f.controller->Status().control.performance==ControlPerformance::Finished);
+    Check(f.plays.size()==2); // no inferred StandBy or reset
+    auto direct_auto=TaskSelection{{"test","attack"}};direct_auto.trigger=ControlTrigger::Automatic;
+    Check(!f.controller->Select(direct_auto).intent);
+    auto invalid=document;invalid["tasks"]["insert"]["entry"]="stand";Reject([&]{ParseTaskCatalog(invalid.dump());});
+    invalid=document;invalid["tasks"]["idle"]["control"]["requires"][0]["in"]={"invented"};Reject([&]{ParseTaskCatalog(invalid.dump());});
+    invalid=document;invalid["tasks"]["idle"]["control"]["accepted"][0]["skill"]["index"]=-1;Reject([&]{ParseTaskCatalog(invalid.dump());});
+    auto automatic=ControlPath("automatic",false);
+    automatic["requires"]=Json::array({{{"op","performance"},{"in",{"finished"}}}});
+    automatic["accepted"]=Json::array({{{"op","performance"},{"phase","ready"}}});
+    document["tasks"]["reset"]={{"control",automatic}};
+    document["tasks"]["attack"]["next"]={{"task","reset"}};
+    Fixture successor(document);successor.Select("idle");successor.Tick();successor.Select("attack");successor.Tick();successor.Tick();
+    successor.plays[1].second->complete=true;successor.plays[2].second->complete=true;successor.Tick();
+    Check(successor.controller->Status().control.performance==ControlPerformance::Ready);
+    Check(successor.controller->Status().error.empty() && successor.plays.size()==3);
+    document["tasks"]["attack"].erase("next");document["automatic"]={"reset"};
+    Fixture automatic_reset(document);automatic_reset.Select("idle");automatic_reset.Tick();automatic_reset.Select("attack");automatic_reset.Tick();automatic_reset.Tick();
+    automatic_reset.plays[1].second->complete=true;automatic_reset.plays[2].second->complete=true;automatic_reset.Tick();
+    Check(automatic_reset.controller->Status().control.performance==ControlPerformance::Finished);
+    automatic_reset.Tick();Check(automatic_reset.controller->Status().control.performance==ControlPerformance::Ready);
+    const auto accepted=automatic_reset.controller->Status().requested;automatic_reset.Tick();
+    Check(automatic_reset.controller->Status().requested==accepted); // condition changed, no repeated reset
+    invalid=document;invalid["automatic"]={"attack"};Reject([&]{ParseTaskCatalog(invalid.dump());});
+}
+}
+void TestTaskCatalog(){Codec();SelectionAndInterrupt();NaturalAndPending();ContextsAndFinish();CloseAndReentrant();InputRequirementsAndPreparation();ControlAdmissionAndPresentation();}

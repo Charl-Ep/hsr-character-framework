@@ -17,6 +17,7 @@ Shared reaction rows currently use the existing `VisualState` executor, exposed 
 | `TaskPresentation` | A sequence bound to owned animation players and a visual resource scope |
 | `TaskCatalog` | Authored tasks, sequences and shared visual resources for one model domain |
 | `TaskController` | Selection, configured successors, interruption and persistent context contributions |
+| `BattleControl` | Logical selection, performance, insertion queue and source-owned reaction candidates |
 
 `BuildTaskSources` consumes `OfficialCatalog::ReadTaskConfig`. It preserves skills without ready poses and reports missing or ambiguous literal group owners. Inventory entries are not execution permissions.
 
@@ -94,6 +95,31 @@ Visual contexts contribute values, phase, slot replacements and disables only af
 `Reset` cancels execution and leaves the visual scene for a domain/action change. `Close` also permanently closes the scene. Keep servicing until drained. A later task can reuse a reset controller.
 
 The character service coordinates model preparation before starting a task. It restores any previous gaze binding through the ordinary domain-handoff path, then prepares the catalog's model domain. No preceding idle/action command is required. Re-selection replaces pending intent; cancel removes it; finish can be queued during gaze preparation. World departure or a battle frame cancels unstarted task intent. Preparation errors are published separately from execution errors.
+
+## Control relations
+
+A task may declare `control` independently of its sequence. The relation contains `label`, `trigger` (`user`, `event`, or `automatic`), `sources` and `requires`. Conditions are conjunctive. `event` identifies an explicit local visual-event input; it does not broadcast a game event. Automatic entries are successors, not selectable menu items.
+
+Top-level `automatic` lists automatic task keys in authored priority order. On a prepared model-domain frame, the first eligible entry is accepted if no request is pending, with at most one admission per frame. Its conditions and changes must describe when it becomes eligible and stops being eligible. A controlled `next` destination must also use `trigger: automatic`.
+
+| Condition `op` | Fields |
+|---|---|
+| `selected` | `skill`: `{source, index, slot?}` or `null` |
+| `performance` | `in`: array of `ready`, `accepted`, `working`, `finished`, `resetting`, `failed` |
+| `source` | `id`, optional `present` (default true) |
+| `queued` | `id`, optional `present` (default true) |
+| `insertion` | `phase`: `preparing`, `waiting`, `executing`, `finishing`, or `null` |
+| `unresolved` | `source`, `detail` |
+
+Relations declare changes in `accepted`, `started`, `completed`, `interrupted`, `replaced` and `failed` arrays. Supported changes are `select` (`skill`), `performance` (`phase`), `add_source` (`id`, `flag`, `priority`), `remove_source` (`id`), `queue` (`id`, `skill`), `enter_insertion` (`id`), `insertion` (`phase`), `leave_insertion`, and `withdraw` (`id`). Each exit uses only its declared changes.
+
+Accepted changes commit before presentation starts. A presentation receipt drives `started`; sequence completion drives `completed`. Each logical channel retains its revision, so an old completion cannot overwrite a newer selection or renewed source. World/domain reset invalidates outstanding receipts. Visual resources remain owned by the existing presentation scopes.
+
+`presentation: false` defines a value-only operation without `entry` or `next`. It does not interrupt playback, switch model domains or replace the saved action. Queue insertion, entry, withdrawal and return are distinct operations. A relation selects the pending request to enter; this module does not infer scheduling priority. Entry saves selection/performance for logical return, not a suspended animation clock. Body-reaction candidates use lower numeric priority first, preserving source order on ties. Filtering eligible candidates and selecting their visual plans belong to the authored relations; speed and forbid arbitration are not implemented.
+
+For controlled catalogs, queries include separate `facets.path`, `facets.inputs` and `facets.binding`. A known path can have an unimplemented visual binding. Menu and HTTP dispatch recheck the same query. Normal controls and diagnostic previews are separate directory entries; the development menu exposes the latter as **Action previews**.
+
+Control relations currently require authored configuration. Full character bindings, automatic event delivery and persistence of the logical queue/source state are not supplied by this module. Existing layout persistence retains task selection and visual context recipes only.
 
 ## Configuration
 
@@ -177,7 +203,7 @@ Session-only instances appear in snapshots with `transient: true`, but are omitt
 The existing development command envelope accepts:
 
 - `task_query`: return current execution, context values and task availability; optional `catalog`/`task` queries one task.
-- `task_select`: requires `catalog` and `task`; accepts `inputs`, `slot`, `targets`, `choices`, `anchors`.
+- `task_select`: requires `catalog` and `task`; accepts `inputs`, `slot`, `targets`, `choices`, `anchors`, and `trigger` (`user` or `event`).
 - `task_finish`: finish the selected continuous task at its configured boundary.
 - `task_cancel`: run its interruption and cancel retiring tails.
 

@@ -30,7 +30,7 @@ struct TaskPresentation::State {
     TaskPresentationServices services;
     std::unique_ptr<TaskSequenceExecution> execution;
     std::map<std::uint64_t,std::shared_ptr<Request>> requests;
-    bool servicing=false,forgotten=false,cancel_scope=false;
+    bool servicing=false,forgotten=false,cancel_scope=false,started=false;
     TaskSubmission Submit(TaskExecutionToken actual,std::uint64_t serial,const TaskSubmit& input) {
         auto request=std::make_shared<Request>();request->operation=input.operation;request->name=input.request;
         const auto* animation=std::get_if<TaskAnimationCommand>(&input.operation);
@@ -112,6 +112,7 @@ struct TaskPresentation::State {
             const auto& state=*request->visual;
             value.state.submitted=state.complete;value.state.request_complete=state.complete || state.cancelled;
             value.state.performance_complete=state.complete;
+            value.state.started=state.complete && state.issues.empty() && !state.cancelled;
             // Resources belong to the sequence scope, not to each instruction.
             // Keep that scope until its effects, partners and Timelines drain.
             value.state.drained=state.complete || state.cancelled;
@@ -120,6 +121,7 @@ struct TaskPresentation::State {
         }
         if(request->released && !request->sound && !request->movement && !request->submitting)value.state.drained=true;
         if(request->finishing && (request->sound || request->movement?value.state.drained:value.state.request_complete))Release(value.receipt,TaskExitReason::Completed);
+        started=started || value.state.started;
         execution->Observe(value.receipt,value.state);
         // An error observation can synchronously cancel this request through
         // release. Publish that drain before dropping our adapter record.
@@ -286,6 +288,7 @@ void TaskPresentation::RequestFinish(){state_->execution->RequestFinish();}
 const TaskExecutionStatus& TaskPresentation::Status() const{return state_->execution->Status();}
 std::vector<TaskRequestSnapshot> TaskPresentation::Requests() const{return state_->execution->Requests();}
 bool TaskPresentation::Drained() const{return state_->execution->Drained() && state_->forgotten;}
+bool TaskPresentation::Started() const{return state_->started;}
 bool TaskPresentation::YieldedControl() const {
     const auto phase=Status().phase;
     if(phase!=TaskExecutionPhase::Draining && phase!=TaskExecutionPhase::Finished)return false;

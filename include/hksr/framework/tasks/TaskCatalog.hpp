@@ -24,6 +24,7 @@ struct TaskCatalog {
     std::map<std::string,std::shared_ptr<const TaskSequence>> sequences;
     std::map<std::string,TaskPlan> tasks;
     std::map<std::string,TaskContextDefinition> contexts;
+    std::vector<std::string> automatic;
     const TaskPlan& Resolve(const TaskKey&) const;
 };
 TaskCatalog ParseTaskCatalog(const std::string& text);

@@ -166,6 +166,26 @@ void Protocol() {
     state.characters[0].tasks=updated_tasks;
     app.Publish(state);const auto task_update=http::Updates(app.ReadUpdates(task_cursor));
     Check(task_update["characters"]["3"]["tasks"]["control"]["contexts"].size()==1,"task-only context update published over SSE");
+    auto control=std::make_shared<ControlRelation>();control->label="Confirm selected skill";control->trigger=ControlTrigger::Event;
+    control->sources={{"fixture","event consumer"}};
+    updated_tasks->definitions.at("modifier-followup").control=control;
+    updated_tasks->control.catalog.at("modifier-followup").facets=TaskQueryResult::Facets{};
+    const auto control_directory=http::Tasks(state,3);
+    bool found_control=false;
+    for(const auto& entry:control_directory["entries"])if(entry["backend"]=="control") {
+        found_control=true;Check(entry["diagnostic"]==false && entry["facets"]["path"]=="available","control path fields");
+        const auto parsed=std::get<ControlCharacterTask>(http::Command(entry["command"]));
+        Check(parsed.input.selection->trigger==ControlTrigger::Event,"manual event trigger roundtrip");
+    }
+    Check(found_control,"shared control directory");
+    app.Publish(state);const auto control_cursor=app.ReadUpdates().changes.cursor;
+    auto changed=std::make_shared<CharacterTaskStatus>(*updated_tasks);
+    changed->control.status.control.selection=ControlSkill{"config",12,2};
+    changed->control.status.control.performance=ControlPerformance::Working;
+    state.characters[0].tasks=changed;app.Publish(state);
+    const auto control_update=http::Updates(app.ReadUpdates(control_cursor));
+    Check(control_update["characters"]["3"]["tasks"]["control"]["control"]["selection"]["index"]==12,
+        "logical selection changes publish without visual context changes");
 }
 void Configuration() {
     auto path=std::filesystem::temp_directory_path()/("hksr-http-"+std::to_string(GetCurrentProcessId())+".cfg");

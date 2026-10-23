@@ -1,5 +1,7 @@
 #include <hksr/framework/tasks/TaskCatalog.hpp>
+#include <hksr/framework/tasks/BattleControl.hpp>
 #include <stdexcept>
+#include <set>
 
 namespace hksr::framework {
 const TaskPlan& TaskCatalog::Resolve(const TaskKey& key) const {
@@ -20,8 +22,12 @@ void ValidateTaskCatalog(const TaskCatalog& catalog) {
             throw std::invalid_argument("task catalog identity mismatch: "+key);
         if(!task.definition.entry.empty() && !catalog.sequences.count(task.definition.entry))
             throw std::invalid_argument("unknown task sequence: "+task.definition.entry);
+        if(task.definition.control && !task.definition.control->presentation &&
+            (!task.definition.entry.empty() || task.next))throw std::invalid_argument("control-only operation cannot own a sequence or successor");
         if(task.next) {
             const auto& successor=catalog.Resolve(task.next->task).definition;
+            if(successor.control && successor.control->trigger!=ControlTrigger::Automatic)
+                throw std::invalid_argument("task successor requires an automatic control relation: "+task.next->task.name);
             // Query also reports dynamic prerequisites. Only static argument
             // errors are rejected here; missing values may come from context.
             TaskContext context;const auto query=context.Query(successor,{task.next->inputs});
@@ -36,6 +42,12 @@ void ValidateTaskCatalog(const TaskCatalog& catalog) {
             if(const auto* key=std::get_if<TaskKey>(&disable.selector))catalog.Resolve(*key);
         TaskContext checked;auto token=checked.Enter(name);
         for(const auto& [key,value]:context.values)checked.SetValue(token,key,value);
+    }
+    std::set<std::string> automatic;
+    for(const auto& name:catalog.automatic) {
+        const auto& definition=catalog.Resolve({catalog.id,name}).definition;
+        if(!automatic.insert(name).second || !definition.control || definition.control->trigger!=ControlTrigger::Automatic)
+            throw std::invalid_argument("invalid automatic control entry: "+name);
     }
 }
 }

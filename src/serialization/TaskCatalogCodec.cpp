@@ -1,5 +1,6 @@
 #include <hksr/framework/tasks/TaskCatalog.hpp>
 #include "VisualCodec.hpp"
+#include "BattleControlCodec.hpp"
 #include <nlohmann/json.hpp>
 #include <cmath>
 #include <limits>
@@ -162,7 +163,7 @@ struct SequenceParser {
 }
 TaskCatalog ParseTaskCatalog(const std::string& text) {
     const auto json=Json::parse(text);
-    Fields(json,{"format","id","domain","visual","sequences","tasks","contexts"});
+    Fields(json,{"format","id","domain","visual","sequences","tasks","contexts","automatic"});
     Need(json.at("format")=="hksr.task-catalog","unsupported task catalog format");
     TaskCatalog out;out.id=Name(json.at("id"));
     const auto domain=Name(json.at("domain"));
@@ -180,8 +181,9 @@ TaskCatalog ParseTaskCatalog(const std::string& text) {
     }
     const auto& tasks=json.at("tasks");Need(tasks.is_object(),"tasks must be an object");
     for(auto it=tasks.begin();it!=tasks.end();++it) {
-        const auto& row=it.value();Fields(row,{"sources","inputs","requires","tags","entry","next","bindings"});
+        const auto& row=it.value();Fields(row,{"sources","inputs","requires","tags","entry","next","bindings","control"});
         TaskPlan plan;auto& definition=plan.definition;definition.key=Key(it.key(),out.id);
+        if(row.contains("control"))definition.control=std::make_shared<const ControlRelation>(control_codec::Parse(row.at("control")));
         if(row.contains("entry"))definition.entry=Name(row.at("entry"));
         if(row.contains("sources")) {
             Need(row.at("sources").is_array(),"task sources must be an array");
@@ -255,6 +257,7 @@ TaskCatalog ParseTaskCatalog(const std::string& text) {
             out.contexts.emplace(Name(it.key()),std::move(definition));
         }
     }
+    if(json.contains("automatic"))for(const auto& name:json.at("automatic").get<std::vector<Json>>())out.automatic.push_back(Name(name));
     ValidateTaskCatalog(out);return out;
 }
 }

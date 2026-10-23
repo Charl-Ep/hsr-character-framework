@@ -15,10 +15,13 @@ struct TaskInputDraft {
     bool dirty=true;
     std::vector<std::tuple<std::uint64_t,std::uint64_t,bool,bool,bool,std::string>> targets;
     std::vector<std::uint64_t> contexts;
+    std::optional<BattleControlSnapshot> control;
     explicit TaskInputDraft(CharacterTaskEntry value):entry(std::move(value)),command(std::get<ControlCharacterTask>(entry.command)){}
     TaskSelection& Selection(){return *command.input.selection;}
     void Changed(){++revision;dirty=true;result.reset();error.clear();}
     void Observe(const ApplicationSnapshot& snapshot,const SceneCharacterStatus& actor) {
+        const auto current=actor.tasks?std::optional<BattleControlSnapshot>(actor.tasks->control.status.control):std::nullopt;
+        if(!(control==current)){control=current;Changed();}
         decltype(contexts) next_contexts;
         if(actor.tasks)for(const auto& context:actor.tasks->control.contexts)next_contexts.push_back(context.token.value);
         decltype(targets) next_targets;

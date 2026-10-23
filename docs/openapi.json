@@ -64,6 +64,7 @@
           "op": {"enum": ["task_query","task_select","task_finish","task_cancel"]},
           "character": {"$ref": "#/components/schemas/InputId"}, "creation": {"$ref": "#/components/schemas/InputId"},
           "catalog": {"type": "string", "minLength": 1}, "task": {"type": "string", "minLength": 1},
+          "trigger": {"enum": ["user","event"], "default": "user"},
           "inputs": {"type": "object", "additionalProperties": {"type": ["boolean","integer","number","string"]}},
           "slot": {"type": "integer", "minimum": -2147483648, "maximum": 2147483647},
           "targets": {"type": "object", "additionalProperties": {"$ref": "#/components/schemas/InputId"}},
@@ -74,12 +75,18 @@
         "allOf": [
           {"if": {"properties": {"op": {"const": "task_select"}}}, "then": {"required": ["catalog","task"]}},
           {"if": {"required": ["task"]}, "then": {"required": ["catalog"], "properties": {"op": {"enum": ["task_query","task_select"]}}},
-           "else": {"not": {"anyOf": [{"required": ["catalog"]},{"required": ["inputs"]},{"required": ["slot"]},{"required": ["targets"]},{"required": ["choices"]},{"required": ["anchors"]}]}}}
+           "else": {"not": {"anyOf": [{"required": ["catalog"]},{"required": ["inputs"]},{"required": ["slot"]},{"required": ["targets"]},{"required": ["choices"]},{"required": ["anchors"]},{"required": ["trigger"]}]}}}
         ]
       },
       "Tasks": {"type": "object", "required": ["character","entries"], "properties": {
         "character": {"$ref": "#/components/schemas/Id"}, "entries": {"type": "array", "items": {"type": "object", "required": ["backend","domain","label","availability","command"], "properties": {
-          "backend": {"enum": ["npc","configured_clip","ready","reaction","program","sequence","idle"]},
+          "backend": {"enum": ["npc","configured_clip","ready","reaction","program","sequence","idle","control"]},
+          "diagnostic": {"type": "boolean"},
+          "facets": {"type": "object", "properties": {
+            "path": {"enum": ["available","unavailable","unknown"]},
+            "inputs": {"enum": ["available","unavailable","unknown"]},
+            "binding": {"enum": ["available","unavailable","unknown"]}
+          }},
           "domain": {"enum": ["exploration","battle"]}, "label": {"type": "string"}, "detail": {"type": "string"}, "recovery": {"type": "boolean"},
           "availability": {"enum": ["available","unavailable","unknown"]}, "command": {"$ref": "#/components/schemas/Command"},
           "inputs": {"type": "object", "additionalProperties": {"type": "object", "required": ["type"], "properties": {"type": {"enum": ["bool","integer","number","text"]}, "default": {"type": ["boolean","integer","number","string"]}}}},

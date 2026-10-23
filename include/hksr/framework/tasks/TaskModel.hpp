@@ -1,6 +1,7 @@
 #pragma once
 #include <cstdint>
 #include <map>
+#include <memory>
 #include <optional>
 #include <string>
 #include <tuple>
@@ -8,6 +9,7 @@
 #include <vector>
 
 namespace hksr::framework {
+struct ControlRelation;
 struct TaskKey {
     std::string catalog,name;
     bool operator==(const TaskKey& other) const {return catalog==other.catalog && name==other.name;}
@@ -52,6 +54,7 @@ struct TaskDefinition {
     std::vector<std::string> tags;
     std::string entry;
     TaskBindingSchema bindings;
+    std::shared_ptr<const ControlRelation> control;
 };
 TaskBindingSchema TaskBindings(const TaskDefinition&);
 enum class TaskAvailability { Available,Unavailable,Unknown };
@@ -61,6 +64,12 @@ struct TaskQueryResult {
     TaskAvailability availability=TaskAvailability::Available;
     TaskValues inputs;
     std::vector<TaskReason> reasons;
+    struct Facets {
+        TaskAvailability path=TaskAvailability::Available;
+        TaskAvailability inputs=TaskAvailability::Available;
+        TaskAvailability binding=TaskAvailability::Available;
+    };
+    std::optional<Facets> facets;
 };
 struct TaskQuery {
     TaskValues inputs;

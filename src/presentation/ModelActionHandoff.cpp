@@ -51,12 +51,15 @@ TaskControlResult ModelActionHandoff::ControlTask(TaskControlInput input) {
     TaskControlResult result;
     if(input.operation==TaskControlOperation::Select) {
         if(!input.selection)throw std::invalid_argument("task selection missing");
-        if(task_catalog_->domain==ActionDomain::Alternate && !transition_->RequestStatus())
-            throw std::logic_error("alternate source unavailable; exploration remains usable");
         input.selection->query.participants={{"body"}};
+        const auto selected=tasks_->Query(*input.selection).resolved;
+        const auto& definition=task_catalog_->Resolve(selected).definition;
+        const bool presentation=!definition.control || definition.control->presentation;
+        if(presentation && task_catalog_->domain==ActionDomain::Alternate && !transition_->RequestStatus())
+            throw std::logic_error("alternate source unavailable; exploration remains usable");
         result.selection=tasks_->Select(std::move(*input.selection));
-        if(result.selection->intent){restoring_tasks_=false;task_restore_.reset();}
-        if(result.selection->intent && (!desired_ || desired_->domain!=task_catalog_->domain || desired_->action ||
+        if(presentation && result.selection->intent){restoring_tasks_=false;task_restore_.reset();}
+        if(presentation && result.selection->intent && (!desired_ || desired_->domain!=task_catalog_->domain || desired_->action ||
             status_.phase==HandoffPhase::Failed))
             desired_=Intent{++status_.requested,task_catalog_->domain,{}};
     } else if(input.operation==TaskControlOperation::Query) {
@@ -84,16 +87,21 @@ TaskControlResult ModelActionHandoff::QueryTasks(const std::optional<TaskSelecti
     auto query=[&](TaskSelection selection) {
         selection.query.participants={{"body"}};
         auto value=tasks_->Query(selection);
+        const auto& definition=task_catalog_->Resolve(value.resolved).definition;
+        const bool presentation=!definition.control || definition.control->presentation;
         if(removing_ || Ended() || status_.closed ||
-            (task_catalog_->domain==ActionDomain::Alternate && !transition_->RequestStatus())) {
+            (presentation && task_catalog_->domain==ActionDomain::Alternate && !transition_->RequestStatus())) {
             value.query.availability=TaskAvailability::Unavailable;
+            if(value.query.facets)value.query.facets->binding=TaskAvailability::Unavailable;
             value.query.reasons.push_back({TaskReasonKind::Unresolved,"model","owned model source is unavailable"});
         }
         return value;
     };
     if(selected)result.selection=query(*selected);
     else for(const auto& [name,plan]:task_catalog_->tasks) {
-        (void)plan;result.catalog.emplace(name,query({{task_catalog_->id,name}}).query);
+        TaskSelection candidate{{task_catalog_->id,name}};
+        if(plan.definition.control)candidate.trigger=plan.definition.control->trigger;
+        result.catalog.emplace(name,query(candidate).query);
     }
     result.status=tasks_->Status();result.contexts=tasks_->Context().Owners();return result;
 }

@@ -19,7 +19,7 @@ void ValidateTaskSelection(const TaskSelection& value) {
     ValidateVisualSnapshot(Inputs(value));
 }
 bool SameTaskSelection(const TaskSelection& a,const TaskSelection& b) {
-    return a.task==b.task && a.inputs_captured==b.inputs_captured && a.query.inputs==b.query.inputs &&
+    return a.task==b.task && a.trigger==b.trigger && a.inputs_captured==b.inputs_captured && a.query.inputs==b.query.inputs &&
         bool(a.query.slot)==bool(b.query.slot) && (!a.query.slot || a.query.slot->value==b.query.slot->value) &&
         SameVisualSnapshot(Inputs(a),Inputs(b));
 }

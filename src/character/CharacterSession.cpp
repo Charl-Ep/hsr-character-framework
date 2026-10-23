@@ -53,7 +53,12 @@ void CharacterSession::Create(const api::StoryCreateInput& input) {
 void CharacterSession::Remove() { removing_=true; desired_.reset(); if(baseline_)baseline_->Cancel(); }
 TaskControlResult CharacterSession::ControlTask(TaskControlInput input) {
     if(removing_ || status_.closed || !handoff_)throw std::logic_error("task session is not active");
-    const bool select=input.operation==TaskControlOperation::Select;
+    bool select=input.operation==TaskControlOperation::Select;
+    if(select && input.selection && plan_.visual_program && plan_.visual_program->tasks) {
+        const auto query=handoff_->QueryTasks(input.selection);
+        const auto& definition=plan_.visual_program->tasks->Resolve(query.selection->resolved).definition;
+        if(definition.control && !definition.control->presentation)select=false;
+    }
     const bool cancel=input.operation==TaskControlOperation::Cancel;
     auto result=handoff_->ControlTask(std::move(input));
     if(select && result.selection && result.selection->intent){desired_.reset();status_.dispatch_error.clear();}

@@ -1,0 +1,105 @@
+#include "BattleControlCodec.hpp"
+#include <nlohmann/json.hpp>
+#include <limits>
+#include <stdexcept>
+
+namespace hksr::framework::control_codec {
+namespace {
+using Json=nlohmann::json;
+void Fields(const Json& row,std::initializer_list<const char*> names) {
+    if(!row.is_object())throw std::invalid_argument("control object expected");
+    for(auto it=row.begin();it!=row.end();++it) {
+        bool known=false;for(auto name:names)known=known || it.key()==name;
+        if(!known)throw std::invalid_argument("unknown control field: "+it.key());
+    }
+}
+std::string Name(const Json& row) {
+    auto out=row.get<std::string>();
+    if(out.empty() || out.find('\0')!=std::string::npos)throw std::invalid_argument("empty control name");
+    return out;
+}
+std::int32_t Int(const Json& row) {
+    if(!row.is_number_integer() || (row.is_number_unsigned() && row.get<std::uint64_t>()>INT32_MAX) ||
+        row.get<std::int64_t>()<INT32_MIN || row.get<std::int64_t>()>INT32_MAX)
+        throw std::invalid_argument("control integer out of range");
+    return row.get<std::int32_t>();
+}
+template<class T> T Enum(const Json& row,std::initializer_list<T> values) {
+    const auto name=Name(row);for(auto value:values)if(name==ControlName(value))return value;
+    throw std::invalid_argument("unknown control value: "+name);
+}
+ControlPerformance Performance(const Json& row) {
+    return Enum<ControlPerformance>(row,{ControlPerformance::Ready,ControlPerformance::Accepted,ControlPerformance::Working,
+        ControlPerformance::Finished,ControlPerformance::Resetting,ControlPerformance::Failed});
+}
+ControlInsertionPhase Phase(const Json& row) {
+    return Enum<ControlInsertionPhase>(row,{ControlInsertionPhase::Preparing,ControlInsertionPhase::Waiting,
+        ControlInsertionPhase::Executing,ControlInsertionPhase::Finishing});
+}
+ControlSkill Skill(const Json& row) {
+    Fields(row,{"source","index","slot"});ControlSkill out{Name(row.at("source")),Int(row.at("index"))};
+    if(row.contains("slot"))out.slot=Int(row.at("slot"));return out;
+}
+std::optional<ControlSkill> Selection(const Json& row) {return row.is_null()?std::nullopt:std::optional<ControlSkill>(Skill(row));}
+ControlRequirement Requirement(const Json& row) {
+    const auto op=Name(row.at("op"));
+    if(op=="selected") {Fields(row,{"op","skill"});return ControlSelected{Selection(row.at("skill"))};}
+    if(op=="performance") {
+        Fields(row,{"op","in"});ControlPerforming out;
+        for(const auto& phase:row.at("in").get<std::vector<Json>>())out.phases.push_back(Performance(phase));return out;
+    }
+    if(op=="source") {Fields(row,{"op","id","present"});return ControlSourcePresent{Name(row.at("id")),row.value("present",true)};}
+    if(op=="queued") {Fields(row,{"op","id","present"});return ControlQueued{Name(row.at("id")),row.value("present",true)};}
+    if(op=="insertion") {
+        Fields(row,{"op","phase"});return ControlInsertionAt{row.at("phase").is_null()?std::nullopt:std::optional<ControlInsertionPhase>(Phase(row.at("phase")))};
+    }
+    if(op=="unresolved") {Fields(row,{"op","source","detail"});return TaskUnresolvedRequirement{Name(row.at("source")),Name(row.at("detail"))};}
+    throw std::invalid_argument("unknown control condition: "+op);
+}
+ControlChange Change(const Json& row) {
+    const auto op=Name(row.at("op"));
+    if(op=="select") {Fields(row,{"op","skill"});return ControlSelect{Selection(row.at("skill"))};}
+    if(op=="performance") {Fields(row,{"op","phase"});return ControlSetPerformance{Performance(row.at("phase"))};}
+    if(op=="add_source") {
+        Fields(row,{"op","id","flag","priority"});return ControlAddSource{{Name(row.at("id")),Int(row.at("flag")),Int(row.at("priority"))}};
+    }
+    if(op=="remove_source") {Fields(row,{"op","id"});return ControlRemoveSource{Name(row.at("id"))};}
+    if(op=="queue") {Fields(row,{"op","id","skill"});return ControlQueueInsertion{Name(row.at("id")),Skill(row.at("skill"))};}
+    if(op=="enter_insertion") {Fields(row,{"op","id"});return ControlEnterInsertion{Name(row.at("id"))};}
+    if(op=="insertion") {Fields(row,{"op","phase"});return ControlAdvanceInsertion{Phase(row.at("phase"))};}
+    if(op=="leave_insertion") {Fields(row,{"op"});return ControlLeaveInsertion{};}
+    if(op=="withdraw") {Fields(row,{"op","id"});return ControlWithdrawInsertion{Name(row.at("id"))};}
+    throw std::invalid_argument("unknown control change: "+op);
+}
+Json SkillValue(const ControlSkill& skill) {
+    Json out={{"source",skill.source},{"index",skill.index}};if(skill.slot)out["slot"]=*skill.slot;return out;
+}
+Json SelectionValue(const std::optional<ControlSkill>& skill){return skill?SkillValue(*skill):Json(nullptr);}
+Json InsertionValue(const ControlInsertion& value) {
+    return {{"id",value.id},{"skill",SkillValue(value.skill)},{"phase",ControlName(value.phase)},
+        {"return_selection",SelectionValue(value.return_selection)},{"return_performance",ControlName(value.return_performance)}};
+}
+Json SourceValue(const ControlSource& value){return {{"id",value.id},{"flag",value.flag},{"priority",value.priority},{"order",value.order}};}
+}
+ControlRelation Parse(const Json& row) {
+    Fields(row,{"label","trigger","presentation","sources","requires","accepted","started","completed","interrupted","replaced","failed"});
+    ControlRelation out;out.label=row.value("label",std::string{});out.presentation=row.value("presentation",true);
+    out.trigger=Enum<ControlTrigger>(row.at("trigger"),{ControlTrigger::User,ControlTrigger::Event,ControlTrigger::Automatic});
+    for(const auto& source:row.at("sources").get<std::vector<Json>>()) {
+        Fields(source,{"document","field"});out.sources.push_back({Name(source.at("document")),Name(source.at("field"))});
+    }
+    if(row.contains("requires"))for(const auto& condition:row.at("requires").get<std::vector<Json>>())out.conditions.push_back(Requirement(condition));
+    for(const auto& [name,changes]:std::initializer_list<std::pair<const char*,std::vector<ControlChange>*>>{
+        {"accepted",&out.accepted},{"started",&out.started},{"completed",&out.completed},
+        {"interrupted",&out.interrupted},{"replaced",&out.replaced},{"failed",&out.failed}})
+        if(row.contains(name))for(const auto& change:row.at(name).get<std::vector<Json>>())changes->push_back(Change(change));
+    ValidateControlRelation(out);return out;
+}
+Json Snapshot(const BattleControlSnapshot& value) {
+    Json out={{"selection",SelectionValue(value.selection)},{"performance",ControlName(value.performance)},
+        {"pending",Json::array()},{"insertion",value.insertion?InsertionValue(*value.insertion):Json(nullptr)},
+        {"sources",Json::array()},{"dominant_source",value.dominant_source?SourceValue(*value.dominant_source):Json(nullptr)}};
+    for(const auto& pending:value.pending)out["pending"].push_back(InsertionValue(pending));
+    for(const auto& source:value.sources)out["sources"].push_back(SourceValue(source));return out;
+}
+}

@@ -2,7 +2,7 @@
 #include "ApplicationService.hpp"
 
 namespace hksr::framework {
-enum class CharacterTaskKind { Npc,Configured,Ready,Reaction,Program,Sequence,Idle };
+enum class CharacterTaskKind { Npc,Configured,Ready,Reaction,Program,Sequence,Idle,Control };
 // Value-only directory shared by UI and HTTP. Backend identities are retained:
 // a configured animation candidate is not a complete battle ability.
 struct CharacterTaskEntry {
@@ -15,6 +15,7 @@ struct CharacterTaskEntry {
     CharacterCommand command;
     bool recovery=false;
     TaskBindingSchema bindings;
+    bool diagnostic=false;
 };
 bool HasTaskInputs(const CharacterTaskEntry&);
 bool CanConfigureTask(const CharacterTaskEntry&);

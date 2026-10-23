@@ -102,6 +102,8 @@ void TestMenuPreview(ID3D11Device* device,ID3D11DeviceContext* context) {
         {"tasks-en",ui::MenuPage::Actions,false,800,600,ui::Language::English},
         {"tasks-inputs",ui::MenuPage::Actions,false,800,600},
         {"tasks-inputs-en",ui::MenuPage::Actions,false,800,600,ui::Language::English},
+        {"control-paths",ui::MenuPage::Actions,false,800,600},
+        {"control-paths-en",ui::MenuPage::Actions,false,800,600,ui::Language::English},
         {"status-values",ui::MenuPage::Actions,false,800,600,ui::Language::Chinese},
         {"status-long",ui::MenuPage::Actions,false,800,600,ui::Language::English}}) {
         auto* previous=ImGui::GetCurrentContext();auto* ctx=ImGui::CreateContext();
@@ -133,6 +135,17 @@ void TestMenuPreview(ID3D11Device* device,ID3D11DeviceContext* context) {
             snapshot.characters[0].task_catalog="preview";snapshot.characters[0].task_catalog_revision=2;
             snapshot.characters[0].tasks=std::move(tasks);snapshot.characters[0].handoff->ready_domain=ActionDomain::Alternate;
         }
+        const bool control_menu=std::string(scenario.name).find("control-paths")==0;
+        if(control_menu) {
+            auto tasks=std::make_shared<CharacterTaskStatus>();tasks->domain=ActionDomain::Alternate;
+            auto relation=std::make_shared<ControlRelation>();relation->label="Skill selection";relation->sources={{"fixture","consumer"}};
+            TaskDefinition task;task.key={"control-preview","select"};task.entry="entry";task.control=relation;
+            tasks->definitions.emplace("select",task);tasks->control.catalog["select"]={};
+            auto automatic=std::make_shared<ControlRelation>(*relation);automatic->trigger=ControlTrigger::Automatic;
+            task.key.name="automatic_reset";task.control=automatic;tasks->definitions.emplace(task.key.name,task);tasks->control.catalog[task.key.name]={};
+            snapshot.characters[0].task_catalog="control-preview";snapshot.characters[0].tasks=tasks;
+            snapshot.characters[0].handoff->ready_domain=ActionDomain::Alternate;
+        }
         if(std::string(scenario.name).find("status-")==0) {
             snapshot.characters[0].branch_state.phase="enhanced";
             snapshot.characters[0].branch_state.values={{"","item",std::string("missile")},
@@ -160,6 +173,11 @@ void TestMenuPreview(ID3D11Device* device,ID3D11DeviceContext* context) {
                     Require(text.find("enter_phase")!=std::string::npos && text.find("unmapped")==std::string::npos);
                     Require(text.find("charged: true")!=std::string::npos && text.find("remaining: 3")!=std::string::npos);
                     Require(text.find("needs_target")!=std::string::npos);
+                }
+                if(control_menu) {
+                    Require(text.find("Skill selection")!=std::string::npos && text.find("automatic_reset")==std::string::npos);
+                    Require(text.find("Stagger")==std::string::npos && text.find("Skill01Ready")==std::string::npos);
+                    Require(text.find(ui::Translate(ui::UiText::FinishTask,menu.GetLanguage()))==std::string::npos);
                 }
                 if(states) {
 #if HKSR_DEVELOPMENT_UI

@@ -88,6 +88,7 @@ set(HKSR_RUNTIME_SOURCES
     src/presentation/VisualMovement.cpp
 
     # src/tasks
+    src/tasks/BattleControl.cpp
     src/tasks/TaskContext.cpp
     src/tasks/TaskSources.cpp
     src/tasks/TaskSequence.cpp
@@ -102,6 +103,7 @@ set(HKSR_RUNTIME_SOURCES
     src/serialization/VisualProgramLibraryCodec.cpp
     src/serialization/TaskCatalogCodec.cpp
     src/serialization/TaskControlCodec.cpp
+    src/serialization/BattleControlCodec.cpp
     src/serialization/SceneLayoutCodec.cpp
 )
 
@@ -171,6 +173,7 @@ set(HKSR_RUNTIME_TEST_SOURCES
     tests/presentation/VisualPlaybackTests.cpp
 
     # tests/tasks
+    tests/tasks/BattleControlTests.cpp
     tests/tasks/TaskModelTests.cpp
     tests/tasks/TaskSequenceTests.cpp
     tests/tasks/TaskPresentationTests.cpp
