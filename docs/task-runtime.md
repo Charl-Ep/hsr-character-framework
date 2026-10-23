@@ -65,6 +65,8 @@ Sound uses `{"op":"sound","request":"voice","participant":"body","event":"event_
 
 Movement references a preceding base-layer body animation request in the same execution. It waits for that playback to enter, then resolves its endpoints once and submits to the official movement component. Animation `started` waits also report actual entry. A later animation first cancels and drains its previous movement; a natural sequence finish retains movement until completion. Effect-follow motion and animation movement cannot occupy the same entity channel simultaneously.
 
+The current Story actor constructor does not provide the native animation-movement component required by this leaf. Movement on those actors reports an unavailable component; selecting the battle model alone does not satisfy this prerequisite.
+
 ```json
 {"op":"movement","request":"approach","animation":"body",
  "segments":[
