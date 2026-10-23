@@ -34,6 +34,9 @@ public:
     bool Contains(api::EffectReference) const;
     bool Empty() const;
     void Collect();
+    // Before this exact actor changes model/controller. Includes bindings
+    // owned by other scenes that move it; a different generation is unrelated.
+    bool ReleaseParticipant(api::EntityOrigin);
 private:
     struct State;std::shared_ptr<State> state_;
 };

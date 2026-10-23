@@ -325,6 +325,7 @@ VisualEffectId VisualProgramRuntime::CreateEffect(Scene& scene,VisualEffectConte
     return id;
 }
 void VisualProgramRuntime::Collect() {
+    if(motion_)motion_->Collect();
     sequences_->Collect();routes_.Collect();
     std::map<std::uint64_t,Scene*> readers;
     for(const auto& scene:scenes_)if(scene->input.take_signals)readers[scene->input.character]=scene.get();
@@ -379,6 +380,9 @@ void VisualProgramRuntime::Collect() {
         }
         ++it;
     }
+}
+bool VisualProgramRuntime::PrepareModelChange(api::EntityOrigin origin) {
+    return !motion_ || motion_->ReleaseParticipant(origin);
 }
 bool VisualProgramRuntime::Close() {
     closing_=true;Collect();if(!scenes_.empty())return false;

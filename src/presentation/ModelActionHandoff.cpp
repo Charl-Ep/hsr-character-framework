@@ -7,7 +7,8 @@ ModelActionHandoff::ModelActionHandoff(CharacterInstance& character,api::EntityT
     :character_(character),owner_(owner),world_(world),
     transition_(services.transition(owner,world,std::move(request))),
     controllers_(std::move(controllers)),actions_(owner,world,services.animations(owner),
-        services.effects,services.text),sound_(std::move(services.sound)),initial_state_name_(std::move(initial_state)) {
+        services.effects,services.text),sound_(std::move(services.sound)),
+    prepare_model_change_(std::move(services.prepare_model_change)),initial_state_name_(std::move(initial_state)) {
     if(character.Actions() || character.Creation().factory.entity!=owner.entity)
         throw std::invalid_argument("handoff requires its character and exclusive action consumer");
 }
@@ -226,6 +227,16 @@ void ModelActionHandoff::Service(const api::WorldFrame& frame,AppearanceServices
             return api::InitialOutput{api::InitialOutputPhase::Failed};
         };
         const auto before=transition_->Status().phase;
+        // Foreign visual scenes can own a movement binding on this actor.
+        // Drain those consumers before controller detach as well as Art reload.
+        if(before!=HandoffPhase::Ready && prepare_model_change_) {
+            const bool ready=prepare_model_change_({owner_,world_});
+            if(interrupted())return;
+            if(!ready) {
+                if(tasks_)tasks_->Service(0,frame.sequence,false);
+                return;
+            }
+        }
         transition_->Service(frame,appearance.assets.objects,types,consumer);
         UpdateTransitionStatus();
         if(interrupted())return;

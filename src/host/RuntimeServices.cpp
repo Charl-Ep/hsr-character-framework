@@ -30,7 +30,8 @@ CharacterSessionServices RuntimeServices::Sessions(bool event_tracking) const {
         {context_->Entities(),context_->Models(),context_->Outfits(),context_->NpcInputs()},
         std::move(npc_events),
         {context_->Animations(),context_->ModelTransitions(),context_->EffectServices(),&r.Components(),
-            [this](auto entity,auto* world,const auto& event){return context_->StartSound(entity,world,event);}},
+            [this](auto entity,auto* world,const auto& event){return context_->StartSound(entity,world,event);},
+            [this](auto origin){return !programs_ || programs_->PrepareModelChange(origin);}},
         context_->Baselines(),
         [this](auto origin,const auto& input,const auto& profile){
             if(!programs_)throw std::logic_error("visual program runtime was not prepared");

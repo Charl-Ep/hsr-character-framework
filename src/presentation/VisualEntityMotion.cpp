@@ -213,8 +213,31 @@ void VisualEntityMotion::RequestEnded(api::EffectReference ref) {
 bool VisualEntityMotion::Contains(api::EffectReference ref) const{return state_->bindings.count(KeyOf(ref))!=0;}
 bool VisualEntityMotion::Empty() const{return state_->bindings.empty();}
 void VisualEntityMotion::Collect() {
-    std::vector<Key> ended;
-    for(const auto& [key,binding]:state_->bindings)if(binding->detached && !binding->changing)ended.push_back(key);
+    std::vector<Key> ended;std::vector<api::EffectReference> invalidated;
+    for(const auto& [key,binding]:state_->bindings) {
+        if(binding->changing)continue;
+        if(binding->detached){ended.push_back(key);continue;}
+        for(const auto& host:binding->hosts)if(!host->Ready() && !host->Status().waiting) {
+            state_->Report(*binding,"movement target model or policy changed: "+host->Status().error);
+            invalidated.push_back(binding->effect);break;
+        }
+    }
+    for(const auto& ref:invalidated)state_->Release(ref);
     for(const auto& key:ended)state_->Forget(key);
+}
+bool VisualEntityMotion::ReleaseParticipant(api::EntityOrigin origin) {
+    std::vector<api::EffectReference> affected;
+    const auto matches=[&](api::EntityOrigin value){return KeyOf(value.token)==KeyOf(origin.token) && value.world==origin.world;};
+    for(const auto& [key,binding]:state_->bindings) {
+        (void)key;
+        if(matches(binding->owner) || std::any_of(binding->targets.begin(),binding->targets.end(),matches))
+            affected.push_back(binding->effect);
+    }
+    bool drained=true;
+    for(const auto& ref:affected) {
+        state_->Release(ref);
+        drained=drained && !Contains(ref);
+    }
+    return drained;
 }
 }

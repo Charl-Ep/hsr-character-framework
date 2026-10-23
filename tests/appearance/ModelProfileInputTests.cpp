@@ -580,6 +580,11 @@ void TestModelProfileInputs() {
     auto animations=[=](api::EntityToken owner){return std::make_unique<api::ActorAnimationSession>(owner,references,entities,
         api::ModelAccess(model_methods),animation,api::ProfileInputs(input_methods));};
     framework::HandoffServices handoff_services{animations,transition};
+    bool motion_drained=true;unsigned model_quiesces=0;
+    handoff_services.prepare_model_change=[&](api::EntityOrigin origin) {
+        Check(origin.token.entity==entity_ptr && origin.world==world_ptr);
+        ++model_quiesces;return motion_drained;
+    };
     auto create_npc=[=]{return std::make_unique<api::EntityCreationSession>(api::EntityOwner{},M(Create),entity_methods,references);};
     framework::CharacterMethods character_methods{create_npc,TestModelServices(references,{}, {},entity_methods,api::ModelAccess(model_methods))};
     framework::CharacterPackage package; package.id="test.npc";
@@ -609,6 +614,10 @@ void TestModelProfileInputs() {
     Check(npc_plays==1 && controller_sets==1 && controller_installed && begins==original_begins && restores==original_restores);
     Check(handoff.Status().output && handoff.Status().output->outcome==framework::ActionOutcome::Returned);
     load_state=4; handoff.Queue(Domain::Alternate,framework::FreeStyleState{"SomeState"});
+    motion_drained=false;const auto before_quiesce=model_quiesces;
+    handoff.Service(frame,appearance,types);
+    Check(model_quiesces==before_quiesce+1 && begins==original_begins && controller_clears==0 && controller_installed);
+    motion_drained=true;
     handoff.Service(frame,appearance,types);
     Check(handoff.Status().phase==Handoff::Loading && begins==original_begins+1 && controller_clears==1 && !controller_installed && battle_plays==0);
     Check(!handoff.Status().output && !handoff.Status().playback_serial); // no prior NPC receipt for the new command

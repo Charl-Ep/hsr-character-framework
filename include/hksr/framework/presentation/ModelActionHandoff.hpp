@@ -13,6 +13,7 @@ struct HandoffServices {
     std::shared_ptr<const api::PresentationEffects> effects;
     const api::ComponentConfig* text=nullptr;
     std::function<std::unique_ptr<api::OwnedSoundRequest>(api::EntityToken,api::GameWorld*,const std::string&)> sound;
+    std::function<bool(api::EntityOrigin)> prepare_model_change;
 };
 // Coordinates actual consumers, not a visual/gameplay state-machine emulator.
 // One retained exploration baseline + an optional alternate profile. Sources/catalog
@@ -60,6 +61,7 @@ private:
     DomainControllers controllers_;
     ActionPlayback actions_;
     decltype(HandoffServices::sound) sound_;
+    decltype(HandoffServices::prepare_model_change) prepare_model_change_;
     std::optional<Intent> desired_,active_;
     bool busy_=false,removing_=false;
     std::string initial_state_name_;

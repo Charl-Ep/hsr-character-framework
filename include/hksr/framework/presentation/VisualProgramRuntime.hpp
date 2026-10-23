@@ -50,6 +50,7 @@ public:
     std::shared_ptr<VisualProgramPlayer> Create(api::EntityOrigin,const VisualProgramInput&,
         const std::shared_ptr<const PresentationProfile>&);
     void Collect();
+    bool PrepareModelChange(api::EntityOrigin);
     bool Close(); // after sessions close; no early detachment of producers
 private:
     struct Scene;

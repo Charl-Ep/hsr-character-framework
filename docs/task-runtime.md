@@ -65,7 +65,7 @@ Sound uses `{"op":"sound","request":"voice","participant":"body","event":"event_
 
 Movement references a preceding base-layer body animation request in the same execution. It waits for that playback to enter, then resolves its endpoints once and submits to the official movement component. Animation `started` waits also report actual entry. A later animation first cancels and drains its previous movement; a natural sequence finish retains movement until completion. Effect-follow motion and animation movement cannot occupy the same entity channel simultaneously.
 
-The current Story actor constructor does not provide the native animation-movement component required by this leaf. Movement on those actors reports an unavailable component; selecting the battle model alone does not satisfy this prerequisite.
+The SDK acquires an exclusive native movement host on demand. It registers the required component on Story actors, pauses ordinary root translation, and waits for previously submitted movement to drain before starting the graph. Effect-follow uses the same lease. Cancellation and model handoff detach request-owned motion, restore the previous policy and remove only a component added by the lease.
 
 ```json
 {"op":"movement","request":"approach","animation":"body",

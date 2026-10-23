@@ -78,11 +78,11 @@ void TestVisualEntityMotion() {
     // neither a repeated Bind nor cancellation creates a second component.
     const api::EntityOrigin new_owner{lifecycle.Track(owner.token.entity),world};
     const api::EntityOrigin target{lifecycle.Track(a.token.entity),world};
-    bool root=true,callback=true,pending=true;int acquisitions=0;int native_component=0;
+    bool root=true,callback=true,pending=true,model_current=true;int acquisitions=0;int native_component=0;
     services.acquire=[&](api::EntityOrigin t) {
         ++acquisitions;api::MovementHostServices h;
         h.references={MotionMethod(MotionKeep),MotionMethod(MotionTarget),MotionMethod(MotionFree),{}, {}};
-        h.current=[&]{return !lifecycle.IsRetiring(target.token);};h.alive=[&]{return !lifecycle.IsDisposed(target.token);};
+        h.current=[&]{return model_current && !lifecycle.IsRetiring(target.token);};h.alive=[&]{return !lifecycle.IsDisposed(target.token);};
         h.lookup=[&]{return api::ObjectResult{{true,0},&native_component};};
         h.create=[]()->api::ObjectResult{throw std::runtime_error("unexpected duplicate movement component");};
         h.initialize=[](void*){return api::CallResult{true,0};};h.remove=[](void*){Check(false);return api::CallResult{};};
@@ -103,6 +103,18 @@ void TestVisualEntityMotion() {
     Check(ok(leased.Bind(first,new_owner,{target})) && acquisitions==2);
     attached[target.token.entity]=false;lists[first.parameters].clear();deny_reads=true;
     leased.RequestEnded(first);Check(leased.Empty() && root && callback && motion_roots.empty());deny_reads=false;
+    Check(ok(leased.Bind(first,new_owner,{target})));
+    auto wrong_generation=target;++wrong_generation.token.generation;
+    auto wrong_map=target;wrong_map.world=reinterpret_cast<api::GameWorld*>(&other_world_storage);
+    Check(leased.ReleaseParticipant(wrong_generation) && leased.ReleaseParticipant(wrong_map));
+    Check(!leased.Empty() && !root && attached[target.token.entity]);
+    Check(leased.ReleaseParticipant(target) && leased.Empty() && root && callback && motion_roots.empty());
+    Check(ok(leased.Bind(first,new_owner,{target})));
+    deny_reads=true;Check(!leased.ReleaseParticipant(new_owner) && !leased.Empty() && !root);deny_reads=false;
+    Check(leased.ReleaseParticipant(new_owner) && leased.Empty() && root && callback && motion_roots.empty());
+    Check(ok(leased.Bind(first,new_owner,{target})));
+    model_current=false;leased.Collect();model_current=true;
+    Check(leased.Empty() && root && callback && motion_roots.empty());
     pending=true;Check(leased.Bind(first,new_owner,{target}).state==api::EffectControlState::Pending);
     const auto pending_retirement=lifecycle.DisposalStarting(target.token);
     Check(pending_retirement.invoked==1 && pending_retirement.failed==0 && leased.Empty() && root && callback && motion_roots.empty());
