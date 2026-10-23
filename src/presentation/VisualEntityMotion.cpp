@@ -17,7 +17,8 @@ struct VisualEntityMotion::State:std::enable_shared_from_this<State> {
     struct Binding {
         api::EffectReference effect;api::EntityOrigin owner;std::vector<api::EntityOrigin> targets;
         std::vector<api::EntityDisposalSubscription> subscriptions;
-        bool changing=false;std::string last_error;
+        std::vector<std::shared_ptr<api::OwnedMovementHost>> hosts;
+        bool changing=false,bound=false,detached=false;std::string last_error;
     };
     api::EntityLifecycle& lifecycle;VisualEntityMotionServices services;
     std::map<Key,std::shared_ptr<Binding>> bindings;
@@ -44,15 +45,20 @@ struct VisualEntityMotion::State:std::enable_shared_from_this<State> {
     void Report(Binding& b,const std::string& detail) noexcept {
         try {if(detail!=b.last_error){b.last_error=detail;Log(b,"failed",detail);}}catch(...){}
     }
-    void Forget(Key key) {
-        const auto found=bindings.find(key);if(found==bindings.end())return;
+    bool Forget(Key key) {
+        const auto found=bindings.find(key);if(found==bindings.end())return true;
         const auto binding=found->second;
+        binding->detached=true;
+        bool closed=true;
+        for(const auto& host:binding->hosts)if(!host->Close()){closed=false;Report(*binding,host->Status().error);}
+        if(!closed)return false;
         for(auto id:binding->subscriptions)lifecycle.CancelBeforeDispose(id);
         for(const auto& t:binding->targets) {
             const auto taken=occupied.find(KeyOf(t.token));
             if(taken!=occupied.end() && taken->second==key)occupied.erase(taken);
         }
         bindings.erase(found);
+        return true;
     }
     api::EffectControlResult Release(api::EffectReference ref) {
         const auto key=KeyOf(ref);const auto found=bindings.find(key);
@@ -64,10 +70,12 @@ struct VisualEntityMotion::State:std::enable_shared_from_this<State> {
         }
         binding->changing=true;struct Exit{bool& flag;~Exit(){flag=false;}} exit{binding->changing};
         try {
+            if(binding->detached)return Forget(key)?Result(api::EffectControlState::Applied):
+                Result(api::EffectControlState::Pending,"movement host cleanup pending");
             const auto observed=services.read(ref);
-            if(observed.result.state==api::EffectControlState::Ended){Log(*binding,"ended");Forget(key);return observed.result;}
+            if(observed.result.state==api::EffectControlState::Ended){Log(*binding,"ended");return Forget(key)?observed.result:Result(api::EffectControlState::Pending,"movement host cleanup pending");}
             if(!Applied(observed.result)){Report(*binding,observed.result.detail);return observed.result;}
-            if(observed.targets.empty()){Log(*binding,"already-cleared");Forget(key);return Result(api::EffectControlState::Applied);}
+            if(observed.targets.empty()){Log(*binding,"already-cleared");return Result(Forget(key)?api::EffectControlState::Applied:api::EffectControlState::Pending);}
             const auto allowed=Targets(*binding);
             for(auto* target:observed.targets)if(std::find(allowed.begin(),allowed.end(),target)==allowed.end())
                 throw std::runtime_error("effect target list replaced by another owner; not clearing it");
@@ -79,10 +87,48 @@ struct VisualEntityMotion::State:std::enable_shared_from_this<State> {
                 for(const auto& t:binding->targets)if(!Live(t,true))return false;
                 return true;
             });
-            if(Applied(cleared.result) && cleared.targets.empty()) {Log(*binding,"cleared");Forget(key);return cleared.result;}
-            if(cleared.result.state==api::EffectControlState::Ended){Forget(key);return cleared.result;}
+            if((Applied(cleared.result) && cleared.targets.empty()) || cleared.result.state==api::EffectControlState::Ended) {
+                Log(*binding,"cleared");return Forget(key)?cleared.result:Result(api::EffectControlState::Pending,"movement host cleanup pending");
+            }
             Report(*binding,cleared.result.detail);return cleared.result;
         }catch(const std::exception& e){Report(*binding,e.what());return Result(api::EffectControlState::Failed,e.what());}
+    }
+    api::EffectControlResult Continue(const std::shared_ptr<Binding>& binding) {
+        if(binding->detached || binding->changing)return Result(api::EffectControlState::Failed,"motion binding is closing or changing");
+        auto valid=[this,binding] {
+            if(!Live(binding->owner))return false;
+            for(const auto& t:binding->targets)if(!Live(t))return false;
+            return true;
+        };
+        try {
+            if(!valid())throw std::runtime_error("effect motion target retired during preparation");
+            for(const auto& host:binding->hosts) {
+                if(!host->Status().prepared)throw std::runtime_error(host->Status().error);
+                if(!host->Ready()) {
+                    if(host->Status().waiting)return Result(api::EffectControlState::Pending,"waiting for Adventure movement to drain");
+                    throw std::runtime_error(host->Status().error);
+                }
+            }
+            const auto observed=services.read(binding->effect);
+            if(!Applied(observed.result))return observed.result;
+            if(binding->bound) {
+                if(observed.targets!=Targets(*binding))throw std::runtime_error("effect motion binding no longer matches its receipt");
+                return observed.result;
+            }
+            if(!observed.targets.empty())throw std::runtime_error("effect acquired targets outside this binding");
+            for(const auto& t:binding->targets) {
+                const auto native=services.target(t.token.entity);
+                if(!Applied(native.result))throw std::runtime_error(native.result.detail);
+                if(native.attached || native.animation_motion || native.other_motion)throw std::runtime_error("target movement channel is occupied");
+            }
+            binding->changing=true;
+            api::EffectEntityFollowObservation result;
+            try{result=services.set(binding->effect,{},Targets(*binding),valid);}catch(...){binding->changing=false;throw;}
+            binding->changing=false;
+            if(Applied(result.result) && valid()){binding->bound=true;Log(*binding,"bound");return result.result;}
+            if(Applied(result.result))result.result=Result(api::EffectControlState::Failed,"effect motion target retired during write");
+            Release(binding->effect);return result.result;
+        }catch(const std::exception& e){Release(binding->effect);return Result(api::EffectControlState::Failed,e.what());}
     }
     void Watch(const std::shared_ptr<Binding>& binding,api::EntityToken token) {
         const auto ref=binding->effect;std::weak_ptr<State> weak=shared_from_this();
@@ -119,10 +165,7 @@ api::EffectControlResult VisualEntityMotion::Bind(api::EffectReference ref,api::
         for(std::size_t i=0;same && i<targets.size();++i)
             same=KeyOf(current.targets[i].token)==KeyOf(targets[i].token) && current.targets[i].world==targets[i].world;
         if(!same)return Result(api::EffectControlState::Failed,"release previous motion binding before selecting different targets");
-        const auto observed=s.services.read(ref);
-        if(Applied(observed.result) && observed.targets!=State::Targets(current))
-            return Result(api::EffectControlState::Failed,"effect motion binding no longer matches its receipt");
-        return observed.result; // unchanged binding never resets its accumulator
+        return s.Continue(retained); // pending preparation or an unchanged binding
     }
     std::shared_ptr<State::Binding> binding;bool registered=false;
     try {
@@ -133,10 +176,6 @@ api::EffectControlResult VisualEntityMotion::Bind(api::EffectReference ref,api::
                 throw std::runtime_error("effect motion target is not a loaded owned entity in this world");
             if(!unique.insert(KeyOf(t.token)).second)throw std::runtime_error("duplicate effect motion target");
             if(s.occupied.count(KeyOf(t.token)))throw std::runtime_error("target motion is controlled by another effect");
-            const auto native=s.services.target(t.token.entity);
-            if(!Applied(native.result))return native.result;
-            if(native.attached)throw std::runtime_error("target already has official attached motion outside this binding");
-            if(native.animation_motion || native.other_motion)throw std::runtime_error("target movement channel is occupied");
         }
         const auto observed=s.services.read(ref);
         if(!Applied(observed.result))return observed.result;
@@ -149,22 +188,12 @@ api::EffectControlResult VisualEntityMotion::Bind(api::EffectReference ref,api::
             throw std::runtime_error("target motion acquired during preparation");
         binding->subscriptions.reserve(targets.size()+1);s.Watch(binding,owner.token);
         for(const auto& t:targets)if(KeyOf(t.token)!=KeyOf(owner.token))s.Watch(binding,t.token);
-        if(!s.Live(owner))throw std::runtime_error("effect motion owner retired during preparation");
-        for(const auto& t:targets)if(!s.Live(t))throw std::runtime_error("effect motion target retired during preparation");
-        binding->changing=true;
-        api::EffectEntityFollowObservation result;
-        auto valid=[&s,binding] {
-            if(!s.Live(binding->owner))return false;
-            for(const auto& t:binding->targets)if(!s.Live(t))return false;
-            return true;
-        };
-        try{result=s.services.set(ref,{},State::Targets(*binding),valid);}catch(...){binding->changing=false;throw;}
-        binding->changing=false;
-        if(Applied(result.result) && valid()){s.Log(*binding,"bound");return result.result;}
-        if(Applied(result.result))result.result=Result(api::EffectControlState::Failed,"effect motion target retired during the native write");
-        // A failed native call may have written some targets. The exact
-        // readback is used to clear only those this attempt reserved.
-        s.Release(ref);return result.result;
+        if(s.services.acquire)for(const auto& t:targets) {
+            auto host=s.services.acquire(t);
+            if(!host)throw std::runtime_error("movement host acquisition returned no lease");
+            binding->hosts.push_back(std::move(host));
+        }
+        return s.Continue(binding);
     }catch(const std::exception& e) {
         if(registered){binding->changing=false;s.Release(ref);}
         return Result(api::EffectControlState::Failed,e.what());
@@ -183,4 +212,9 @@ void VisualEntityMotion::RequestEnded(api::EffectReference ref) {
 }
 bool VisualEntityMotion::Contains(api::EffectReference ref) const{return state_->bindings.count(KeyOf(ref))!=0;}
 bool VisualEntityMotion::Empty() const{return state_->bindings.empty();}
+void VisualEntityMotion::Collect() {
+    std::vector<Key> ended;
+    for(const auto& [key,binding]:state_->bindings)if(binding->detached && !binding->changing)ended.push_back(key);
+    for(const auto& key:ended)state_->Forget(key);
+}
 }

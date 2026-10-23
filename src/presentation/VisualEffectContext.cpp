@@ -70,6 +70,7 @@ void VisualEffectContext::End(bool fade) {
 void VisualEffectContext::Service() {
     if(servicing_ || operations_)return;
     servicing_=true;struct Exit{bool& flag;~Exit(){flag=false;}} exit{servicing_};
+    if(motion_)motion_->Collect();
     // New requests created reentrantly are serviced at the next boundary.
     const auto last=next_;
     for(auto it=requests_.begin();it!=requests_.end() && it->first<=last;) {

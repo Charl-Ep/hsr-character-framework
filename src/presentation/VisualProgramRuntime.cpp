@@ -190,7 +190,7 @@ std::shared_ptr<VisualProgramPlayer> VisualProgramRuntime::Create(api::EntityOri
         context.UseEntityMotion(Motion(),scene->owner);
         const auto result=context.BindTargets(id,targets);
         return VisualStepResult{result.state==api::EffectControlState::Applied?VisualStepState::Done:
-            result.state==api::EffectControlState::NotLoaded?VisualStepState::Pending:VisualStepState::Failed,result.detail};
+            (result.state==api::EffectControlState::NotLoaded || result.state==api::EffectControlState::Pending)?VisualStepState::Pending:VisualStepState::Failed,result.detail};
     };
     services.attach=[this,current](auto context){Attach(*current(),std::move(context));};
     services.movement=[this,current](VisualEffectContext& context,const VisualMovement& command)->std::optional<MovementRequestEndpoint> {
@@ -286,6 +286,7 @@ std::shared_ptr<VisualEntityMotion> VisualProgramRuntime::Motion() {
     services.read=[this](auto ref){return entity_follow_->Read(ref);};
     services.set=[this](auto ref,const auto& expected,const auto& desired,auto current){return entity_follow_->Set(ref,expected,desired,std::move(current));};
     services.target=[this](void* entity){return entity_follow_->ReadTarget(entity);};
+    services.acquire=[this](api::EntityOrigin origin){return api_.AcquireMovementHost(origin.token,origin.world);};
     services.eligible=[this](api::EntityOrigin origin) {
         if(!Alive(origin) || api_.Owner().OwnedToken(origin.token.entity).generation!=origin.token.generation)return false;
         const auto state=api_.Models()->Entities().Read(origin.token.entity);
@@ -383,7 +384,7 @@ bool VisualProgramRuntime::Close() {
     closing_=true;Collect();if(!scenes_.empty())return false;
     constructions_->Stop();effects_->Stop();
     if(!sequences_->Close())return false;
-    if(motion_ && !motion_->Empty())return false;
+    if(motion_){motion_->Collect();if(!motion_->Empty())return false;}
     if(entity_follow_ && !entity_follow_->Close())return false;
     routes_.Clear();return true;
 }

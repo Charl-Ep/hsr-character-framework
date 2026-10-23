@@ -6,6 +6,11 @@
 namespace {
 void CheckAt(bool ok,int line){if(!ok)throw std::runtime_error("visual entity motion test failed at "+std::to_string(line));}
 #define Check(x) CheckAt((x),__LINE__)
+std::map<int,void*> motion_roots;int motion_root_id=0;
+int __fastcall MotionKeep(void* value,int,int,void*){motion_roots[++motion_root_id]=value;return motion_root_id;}
+void* __fastcall MotionTarget(int id,void*){return motion_roots.at(id);}
+void __fastcall MotionFree(int id,void*){motion_roots.erase(id);}
+template<class F>hksr::api::Method MotionMethod(F f){return {reinterpret_cast<void*>(f),nullptr};}
 }
 void TestVisualEntityMotion() {
     using namespace hksr;using namespace hksr::framework;
@@ -68,6 +73,40 @@ void TestVisualEntityMotion() {
     const auto owner_notice=lifecycle.DisposalStarting(owner.token);
     Check(owner_notice.invoked==1 && motion.Empty() && !attached[b.token.entity]);
     lifecycle.Forget(owner.token);lifecycle.Forget(a.token);lifecycle.Forget(b.token);
+
+    // The shared SDK motion lease is retained while ordinary motion drains;
+    // neither a repeated Bind nor cancellation creates a second component.
+    const api::EntityOrigin new_owner{lifecycle.Track(owner.token.entity),world};
+    const api::EntityOrigin target{lifecycle.Track(a.token.entity),world};
+    bool root=true,callback=true,pending=true;int acquisitions=0;int native_component=0;
+    services.acquire=[&](api::EntityOrigin t) {
+        ++acquisitions;api::MovementHostServices h;
+        h.references={MotionMethod(MotionKeep),MotionMethod(MotionTarget),MotionMethod(MotionFree),{}, {}};
+        h.current=[&]{return !lifecycle.IsRetiring(target.token);};h.alive=[&]{return !lifecycle.IsDisposed(target.token);};
+        h.lookup=[&]{return api::ObjectResult{{true,0},&native_component};};
+        h.create=[]()->api::ObjectResult{throw std::runtime_error("unexpected duplicate movement component");};
+        h.initialize=[](void*){return api::CallResult{true,0};};h.remove=[](void*){Check(false);return api::CallResult{};};
+        h.observe=[&,t](void*){api::AnimationMovementObservation o;o.read.returned=true;o.owner=t.token.entity;
+            o.transform=&world_storage;o.animator_source=&owner_storage;o.attached=attached[t.token.entity];return o;};
+        h.read_root_motion=[&]{return api::Observed<bool>{root,{true,0}};};
+        h.write_root_motion=[&](bool v){root=v;return api::CallResult{true,0};};
+        h.read_pending_motion=[&]{return api::Observed<bool>{pending,{true,0}};};
+        h.read_callback=[&](void*){return api::Observed<bool>{callback,{true,0}};};
+        h.write_callback=[&](void*,bool v){callback=v;return api::CallResult{true,0};};
+        auto lease=std::make_shared<api::OwnedMovementHost>(h,t.token);Check(lease->Prepare());return lease;
+    };
+    VisualEntityMotion leased(lifecycle,services);
+    Check(leased.Bind(first,new_owner,{target}).state==api::EffectControlState::Pending && !root && acquisitions==1);
+    Check(leased.Bind(first,new_owner,{target}).state==api::EffectControlState::Pending && acquisitions==1);
+    Check(ok(leased.Release(first)) && root && callback && leased.Empty() && motion_roots.empty());
+    pending=false;Check(ok(leased.Bind(first,new_owner,{target})) && acquisitions==2);
+    Check(ok(leased.Bind(first,new_owner,{target})) && acquisitions==2);
+    attached[target.token.entity]=false;lists[first.parameters].clear();deny_reads=true;
+    leased.RequestEnded(first);Check(leased.Empty() && root && callback && motion_roots.empty());deny_reads=false;
+    pending=true;Check(leased.Bind(first,new_owner,{target}).state==api::EffectControlState::Pending);
+    const auto pending_retirement=lifecycle.DisposalStarting(target.token);
+    Check(pending_retirement.invoked==1 && pending_retirement.failed==0 && leased.Empty() && root && callback && motion_roots.empty());
+    lifecycle.Forget(new_owner.token);lifecycle.Forget(target.token);
 
     const auto program=ParseVisualProgram(R"({"format":"hksr.visual-program","id":"motion","source":"config","scope":"scene",
       "effects":{},"actions":{"leave":{"state":"Leave","enter":[
