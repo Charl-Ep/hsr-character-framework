@@ -163,9 +163,10 @@ struct SequenceParser {
 }
 TaskCatalog ParseTaskCatalog(const std::string& text) {
     const auto json=Json::parse(text);
-    Fields(json,{"format","id","domain","visual","sequences","tasks","contexts","automatic"});
+    Fields(json,{"format","id","domain","visual","sequences","tasks","contexts","automatic","control_slots"});
     Need(json.at("format")=="hksr.task-catalog","unsupported task catalog format");
     TaskCatalog out;out.id=Name(json.at("id"));
+    if(json.contains("control_slots"))out.control_slots=control_codec::Slots(json.at("control_slots"));
     const auto domain=Name(json.at("domain"));
     if(domain=="exploration")out.domain=ActionDomain::Exploration;
     else Need(domain=="battle","unknown task catalog domain: "+domain);

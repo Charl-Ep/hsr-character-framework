@@ -1,16 +1,9 @@
 #pragma once
 #include "TaskModel.hpp"
+#include "SkillSlots.hpp"
 #include <deque>
 
 namespace hksr::framework {
-struct ControlSkill {
-    std::string source;
-    std::int32_t index=0;
-    std::optional<std::int32_t> slot;
-    bool operator==(const ControlSkill& other) const {
-        return source==other.source && index==other.index && slot==other.slot;
-    }
-};
 enum class ControlTrigger { User,Event,Automatic };
 enum class ControlPerformance { Ready,Accepted,Working,Finished,Resetting,Failed };
 enum class ControlInsertionPhase { Preparing,Waiting,Executing,Finishing };
@@ -32,6 +25,7 @@ struct ControlInsertion {
     }
 };
 struct BattleControlSnapshot {
+    SkillSlotsSnapshot slots;
     std::optional<ControlSkill> selection;
     ControlPerformance performance=ControlPerformance::Ready;
     std::deque<ControlInsertion> pending;
@@ -39,7 +33,7 @@ struct BattleControlSnapshot {
     std::vector<ControlSource> sources;
     std::optional<ControlSource> dominant_source;
     bool operator==(const BattleControlSnapshot& other) const {
-        return selection==other.selection && performance==other.performance && pending==other.pending &&
+        return slots==other.slots && selection==other.selection && performance==other.performance && pending==other.pending &&
             insertion==other.insertion && sources==other.sources && dominant_source==other.dominant_source;
     }
 };
@@ -49,8 +43,10 @@ struct ControlPerforming {std::vector<ControlPerformance> phases;};
 struct ControlSourcePresent {std::string source;bool present=true;};
 struct ControlInsertionAt {std::optional<ControlInsertionPhase> phase;};
 struct ControlQueued {std::string id;bool present=true;};
+struct ControlSlotMatches {std::int32_t slot;ControlSkill skill;std::optional<std::size_t> child;};
+struct ControlSlotAvailable {std::int32_t slot;};
 using ControlRequirement=std::variant<ControlSelected,ControlPerforming,ControlSourcePresent,
-    ControlInsertionAt,ControlQueued,TaskUnresolvedRequirement>;
+    ControlInsertionAt,ControlQueued,ControlSlotMatches,ControlSlotAvailable,TaskUnresolvedRequirement>;
 
 struct ControlSelect {std::optional<ControlSkill> skill;};
 struct ControlSetPerformance {ControlPerformance phase;};
@@ -61,8 +57,9 @@ struct ControlEnterInsertion {std::string id;};
 struct ControlAdvanceInsertion {ControlInsertionPhase phase;};
 struct ControlLeaveInsertion {};
 struct ControlWithdrawInsertion {std::string id;};
+struct ControlChangeSlot {SkillSlotChange operation;};
 using ControlChange=std::variant<ControlSelect,ControlSetPerformance,ControlAddSource,ControlRemoveSource,
-    ControlQueueInsertion,ControlEnterInsertion,ControlAdvanceInsertion,ControlLeaveInsertion,ControlWithdrawInsertion>;
+    ControlQueueInsertion,ControlEnterInsertion,ControlAdvanceInsertion,ControlLeaveInsertion,ControlWithdrawInsertion,ControlChangeSlot>;
 
 // Authored control paths refer to official skill identities and producers.
 // Presentation plans do not supply permission or infer these transitions.
@@ -86,6 +83,7 @@ struct ControlTicket {
 // their lifecycle using the existing presentation owner's receipts.
 class BattleControl {
 public:
+    explicit BattleControl(SkillSlotSetup={});
     TaskQueryResult Query(const ControlRelation&,ControlTrigger) const;
     ControlTicket Accept(const ControlRelation&,ControlTrigger,std::uint64_t intent);
     void Started(ControlTicket&);
@@ -93,6 +91,7 @@ public:
     const BattleControlSnapshot& Snapshot() const {return state_;}
     void Reset();
 private:
+    SkillSlots slots_;
     BattleControlSnapshot state_;
     std::map<std::string,std::uint64_t> versions_;
     std::uint64_t revision_=0,source_order_=0,epoch_=1;

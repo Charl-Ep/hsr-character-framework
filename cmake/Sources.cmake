@@ -89,6 +89,7 @@ set(HKSR_RUNTIME_SOURCES
 
     # src/tasks
     src/tasks/BattleControl.cpp
+    src/tasks/SkillSlots.cpp
     src/tasks/TaskContext.cpp
     src/tasks/TaskSources.cpp
     src/tasks/TaskSequence.cpp

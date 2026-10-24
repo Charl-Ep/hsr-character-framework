@@ -41,9 +41,15 @@ ControlSkill Skill(const Json& row) {
     if(row.contains("slot"))out.slot=Int(row.at("slot"));return out;
 }
 std::optional<ControlSkill> Selection(const Json& row) {return row.is_null()?std::nullopt:std::optional<ControlSkill>(Skill(row));}
+std::optional<std::string> Key(const Json& row){return row.is_null()?std::nullopt:std::optional<std::string>(Name(row));}
 ControlRequirement Requirement(const Json& row) {
     const auto op=Name(row.at("op"));
     if(op=="selected") {Fields(row,{"op","skill"});return ControlSelected{Selection(row.at("skill"))};}
+    if(op=="slot_skill") {
+        Fields(row,{"op","slot","skill","child"});ControlSlotMatches out{Int(row.at("slot")),Skill(row.at("skill"))};
+        if(row.contains("child")){const auto child=Int(row.at("child"));if(child<0)throw std::invalid_argument("negative child index");out.child=static_cast<std::size_t>(child);}return out;
+    }
+    if(op=="slot_available") {Fields(row,{"op","slot"});return ControlSlotAvailable{Int(row.at("slot"))};}
     if(op=="performance") {
         Fields(row,{"op","in"});ControlPerforming out;
         for(const auto& phase:row.at("in").get<std::vector<Json>>())out.phases.push_back(Performance(phase));return out;
@@ -58,6 +64,11 @@ ControlRequirement Requirement(const Json& row) {
 }
 ControlChange Change(const Json& row) {
     const auto op=Name(row.at("op"));
+    if(op=="map_slot") {Fields(row,{"op","slot","key"});return ControlChangeSlot{MapControlSlot{Int(row.at("slot")),Key(row.at("key"))}};}
+    if(op=="replace_skill") {Fields(row,{"op","owner","from","to"});return ControlChangeSlot{ReplaceSkillKey{Name(row.at("owner")),Name(row.at("from")),Key(row.at("to"))}};}
+    if(op=="occupy_slot") {Fields(row,{"op","slot","owner"});return ControlChangeSlot{OccupyControlSlot{Int(row.at("slot")),Name(row.at("owner"))}};}
+    if(op=="release_slot") {Fields(row,{"op","slot","owner"});return ControlChangeSlot{ReleaseControlSlot{Int(row.at("slot")),Name(row.at("owner"))}};}
+    if(op=="disable_slot") {Fields(row,{"op","slot","owner","disabled"});return ControlChangeSlot{DisableControlSlot{Int(row.at("slot")),Name(row.at("owner")),row.value("disabled",true)}};}
     if(op=="select") {Fields(row,{"op","skill"});return ControlSelect{Selection(row.at("skill"))};}
     if(op=="performance") {Fields(row,{"op","phase"});return ControlSetPerformance{Performance(row.at("phase"))};}
     if(op=="add_source") {
@@ -80,6 +91,34 @@ Json InsertionValue(const ControlInsertion& value) {
         {"return_selection",SelectionValue(value.return_selection)},{"return_performance",ControlName(value.return_performance)}};
 }
 Json SourceValue(const ControlSource& value){return {{"id",value.id},{"flag",value.flag},{"priority",value.priority},{"order",value.order}};}
+Json KeyValue(const std::optional<std::string>& value){return value?Json(*value):Json(nullptr);}
+Json SlotsValue(const SkillSlotsSnapshot& state) {
+    Json out={{"slots",Json::array()},{"mappings",Json::array()},{"bindings",state.bindings}};
+    for(const auto& [index,slot]:state.slots) {
+        Json occupation=nullptr;
+        if(slot.occupation) {
+            const auto& value=*slot.occupation;
+            occupation={{"owner",value.owner},{"previous",KeyValue(value.previous)},{"deferred",KeyValue(value.deferred)},{"changed",value.changed}};
+        }
+        out["slots"].push_back({{"slot",index},{"default",KeyValue(slot.default_key)},{"key",KeyValue(slot.key)},
+            {"current",KeyValue(slot.current)},{"occupation",std::move(occupation)},{"disables",slot.disables}});
+    }
+    for(const auto& value:state.mappings)out["mappings"].push_back({{"owner",value.owner},{"from",value.from},{"to",value.to}});
+    return out;
+}
+}
+SkillSlotSetup Slots(const Json& row) {
+    Fields(row,{"skills","defaults"});SkillSlotSetup out;
+    for(const auto& skill:row.at("skills").get<std::vector<Json>>()) {
+        Fields(skill,{"skill","key","children"});SlotSkillDefinition definition{Skill(skill.at("skill")),Name(skill.at("key"))};
+        if(skill.contains("children"))for(const auto& child:skill.at("children").get<std::vector<Json>>())definition.children.push_back(Name(child));
+        out.skills.push_back(std::move(definition));
+    }
+    for(const auto& entry:row.at("defaults").get<std::vector<Json>>()) {
+        Fields(entry,{"slot","key"});if(!out.defaults.emplace(Int(entry.at("slot")),Key(entry.at("key"))).second)
+            throw std::invalid_argument("duplicate default control slot");
+    }
+    ValidateSkillSlots(out);return out;
 }
 ControlRelation Parse(const Json& row) {
     Fields(row,{"label","trigger","presentation","sources","requires","accepted","started","completed","interrupted","replaced","failed"});
@@ -96,7 +135,7 @@ ControlRelation Parse(const Json& row) {
     ValidateControlRelation(out);return out;
 }
 Json Snapshot(const BattleControlSnapshot& value) {
-    Json out={{"selection",SelectionValue(value.selection)},{"performance",ControlName(value.performance)},
+    Json out={{"slots",SlotsValue(value.slots)},{"selection",SelectionValue(value.selection)},{"performance",ControlName(value.performance)},
         {"pending",Json::array()},{"insertion",value.insertion?InsertionValue(*value.insertion):Json(nullptr)},
         {"sources",Json::array()},{"dominant_source",value.dominant_source?SourceValue(*value.dominant_source):Json(nullptr)}};
     for(const auto& pending:value.pending)out["pending"].push_back(InsertionValue(pending));

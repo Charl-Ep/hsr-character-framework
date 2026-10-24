@@ -1,6 +1,7 @@
 #pragma once
 #include "TaskContext.hpp"
 #include "TaskSequence.hpp"
+#include "SkillSlots.hpp"
 #include <hksr/framework/presentation/ActionTypes.hpp>
 
 namespace hksr::framework {
@@ -25,6 +26,7 @@ struct TaskCatalog {
     std::map<std::string,TaskPlan> tasks;
     std::map<std::string,TaskContextDefinition> contexts;
     std::vector<std::string> automatic;
+    SkillSlotSetup control_slots;
     const TaskPlan& Resolve(const TaskKey&) const;
 };
 TaskCatalog ParseTaskCatalog(const std::string& text);

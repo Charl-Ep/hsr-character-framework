@@ -326,5 +326,29 @@ void ControlAdmissionAndPresentation() {
     Check(automatic_reset.controller->Status().requested==accepted); // condition changed, no repeated reset
     invalid=document;invalid["automatic"]={"attack"};Reject([&]{ParseTaskCatalog(invalid.dump());});
 }
+void ControlSlotsReachDispatch() {
+    auto document=Document();
+    document["control_slots"]={{"skills",Json::array({
+        {{"skill",{{"source","fixture"},{"index",4}}},{"key","basic"}},
+        {{"skill",{{"source","fixture"},{"index",9}}},{"key","enhanced"}}})},
+        {"defaults",Json::array({{{"slot",1},{"key","basic"}}})}};
+    auto control=ControlPath();control["requires"]=Json::array({
+        {{"op","slot_skill"},{"slot",1},{"skill",{{"source","fixture"},{"index",4},{"slot",1}}}},
+        {{"op","slot_available"},{"slot",1}}});
+    document["tasks"]["attack"]["control"]=control;document["tasks"]["attack"].erase("next");
+    auto map=ControlPath("event",false);map["accepted"]=Json::array({{{"op","map_slot"},{"slot",1},{"key","enhanced"}}});
+    document["tasks"]["phase"]={{"control",map}};
+    Fixture f(document);Check(f.controller->Status().control.slots.slots.at(1).current=="basic");
+    Check(f.controller->Query({{"test","attack"}}).query.availability==TaskAvailability::Available);
+    f.Select("idle");f.Tick();
+    TaskSelection phase{{"test","phase"}};phase.trigger=ControlTrigger::Event;
+    Check(f.controller->Select(phase).intent!=0);f.Tick();
+    const auto blocked=f.controller->Query({{"test","attack"}});
+    Check(blocked.query.facets->path==TaskAvailability::Unavailable && blocked.query.facets->binding==TaskAvailability::Available);
+    Check(f.Select("attack").intent==0 && f.plays.size()==1); // dispatch uses the same current-slot check
+    Check(f.controller->Selection()->task.name=="idle");
+    f.controller->Reset(TaskExitReason::WorldLeft);f.Tick();
+    Check(f.controller->Query({{"test","attack"}}).query.availability==TaskAvailability::Available);
 }
-void TestTaskCatalog(){Codec();SelectionAndInterrupt();NaturalAndPending();ContextsAndFinish();CloseAndReentrant();InputRequirementsAndPreparation();ControlAdmissionAndPresentation();}
+}
+void TestTaskCatalog(){Codec();SelectionAndInterrupt();NaturalAndPending();ContextsAndFinish();CloseAndReentrant();InputRequirementsAndPreparation();ControlAdmissionAndPresentation();ControlSlotsReachDispatch();}

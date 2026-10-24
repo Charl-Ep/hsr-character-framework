@@ -4,5 +4,6 @@
 
 namespace hksr::framework::control_codec {
 ControlRelation Parse(const nlohmann::json&);
+SkillSlotSetup Slots(const nlohmann::json&);
 nlohmann::json Snapshot(const BattleControlSnapshot&);
 }

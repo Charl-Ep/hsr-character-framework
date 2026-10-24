@@ -174,6 +174,7 @@ TaskController::TaskController(std::uint64_t owner,std::shared_ptr<const TaskCat
     if(!owner || !catalog || !visual)throw std::invalid_argument("task controller requires owned actor, catalog and scene");
     ValidateTaskCatalog(*catalog);state_=std::make_unique<State>();
     state_->owner=owner;state_->catalog=std::move(catalog);state_->visual=std::move(visual);state_->services=std::move(services);
+    state_->control=BattleControl(state_->catalog->control_slots);state_->Publish();
 }
 TaskController::~TaskController()=default;
 TaskSelectionResult TaskController::Query(const TaskSelection& selection) const {

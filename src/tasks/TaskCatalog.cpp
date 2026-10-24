@@ -11,6 +11,7 @@ const TaskPlan& TaskCatalog::Resolve(const TaskKey& key) const {
     return found->second;
 }
 void ValidateTaskCatalog(const TaskCatalog& catalog) {
+    ValidateSkillSlots(catalog.control_slots);
     if(catalog.id.empty() || !catalog.visual)throw std::invalid_argument("task catalog requires identity and visual resources");
     for(const auto& [key,sequence]:catalog.sequences) {
         if(key.empty() || !sequence)throw std::invalid_argument("empty task sequence");

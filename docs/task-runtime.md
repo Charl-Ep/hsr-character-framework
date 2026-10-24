@@ -18,6 +18,7 @@ Shared reaction rows currently use the existing `VisualState` executor, exposed 
 | `TaskCatalog` | Authored tasks, sequences and shared visual resources for one model domain |
 | `TaskController` | Selection, configured successors, interruption and persistent context contributions |
 | `BattleControl` | Logical selection, performance, insertion queue and source-owned reaction candidates |
+| `SkillSlots` | Default/current skills, parent-child selection, source-key replacements and owned slot occupation |
 
 `BuildTaskSources` consumes `OfficialCatalog::ReadTaskConfig`. It preserves skills without ready poses and reports missing or ambiguous literal group owners. Inventory entries are not execution permissions.
 
@@ -105,6 +106,8 @@ Top-level `automatic` lists automatic task keys in authored priority order. On a
 | Condition `op` | Fields |
 |---|---|
 | `selected` | `skill`: `{source, index, slot?}` or `null` |
+| `slot_skill` | `slot`, `skill`: `{source, index, slot}`, optional `child` index |
+| `slot_available` | `slot` |
 | `performance` | `in`: array of `ready`, `accepted`, `working`, `finished`, `resetting`, `failed` |
 | `source` | `id`, optional `present` (default true) |
 | `queued` | `id`, optional `present` (default true) |
@@ -120,6 +123,30 @@ Accepted changes commit before presentation starts. A presentation receipt drive
 For controlled catalogs, queries include separate `facets.path`, `facets.inputs` and `facets.binding`. A known path can have an unimplemented visual binding. Menu and HTTP dispatch recheck the same query. Normal controls and diagnostic previews are separate directory entries; the development menu exposes the latter as **Action previews**.
 
 Control relations currently require authored configuration. Full character bindings, automatic event delivery and persistence of the logical queue/source state are not supplied by this module. Existing layout persistence retains task selection and visual context recipes only.
+
+### Skill slots
+
+Optional `control_slots` defines exact skill keys and initial slots. Skill identities contain the configuration source and original index; `children` contains keys in parent-list order. A child index does not index the complete skill list.
+
+```json
+{"skills":[
+  {"skill":{"source":"character/config","index":7},"key":"Skill01","children":[]}
+],"defaults":[{"slot":0,"key":"Skill01"},{"slot":1,"key":null}]}
+```
+
+Control changes support:
+
+| `op` | Fields | Result |
+|---|---|---|
+| `map_slot` | `slot`, `key` (string or null) | Change the requested slot key; defer while occupied |
+| `replace_skill` | `owner`, `from`, `to` (string or null) | Add/update one owned key replacement; null removes it |
+| `occupy_slot` | `slot`, `owner` | Save the requested key and acquire occupation |
+| `release_slot` | `slot`, `owner` | Release that owner and apply the deferred or saved key |
+| `disable_slot` | `slot`, `owner`, `disabled` (default true) | Add/remove one owned disable contribution |
+
+Key lookup uses the newest matching replacement once, not recursive alias expansion. Updating an existing owner does not change its precedence. Key replacement updates matching slots even while occupied. Direct slot remapping is deferred instead. A missing resolved key falls back to that slot's default. Assigning a skill clears the previous bound slot, including a binding inherited from its parent; it does not restore the other slot's default.
+
+`slot_available` checks that a defined slot has a current skill and no owned disables. Other eligibility conditions remain in the relation. Snapshot `control.slots` exposes requested, default and current keys, mappings, occupation and disable owners. Reset restores the configured initial slots.
 
 ## Configuration
 

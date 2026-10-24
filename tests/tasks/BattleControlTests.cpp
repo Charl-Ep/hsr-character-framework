@@ -1,4 +1,5 @@
 #include <hksr/framework/tasks/BattleControl.hpp>
+#include <hksr/framework/tasks/TaskCatalog.hpp>
 #include <stdexcept>
 
 namespace {
@@ -75,5 +76,78 @@ void SourceOwnership() {
     state.End(old,TaskExitReason::Completed);
     Check(state.Snapshot().dominant_source->flag==50); // old completion cannot remove a renewed source
 }
+SkillSlotSetup SlotSetup() {
+    return {{{{"config",4},"ordinary",{}},{{"config",7},"enhanced",{}},{{"config",9},"third",{}},
+        {{"config",2},"parent",{"third","enhanced"}}},{{0,"ordinary"},{1,"parent"},{2,std::nullopt}}};
 }
-void TestBattleControl(){ChoicesAndCompletion();QueueAndReturn();SourceOwnership();}
+void SlotsAndMappingLifetime() {
+    SkillSlots slots(SlotSetup());
+    Check(slots.Resolve(0)==std::optional<ControlSkill>({"config",4,0}));
+    Check(slots.Resolve(1,0)==std::optional<ControlSkill>({"config",9,1}));
+    Check(!slots.Resolve(1,2)); // child position is not a global skill index
+    slots.Apply(ReplaceSkillKey{"phase-a","ordinary","enhanced"});
+    slots.Apply(ReplaceSkillKey{"phase-b","ordinary","third"});
+    slots.Apply(ReplaceSkillKey{"phase-a","ordinary","parent"});
+    Check(slots.Resolve(0)->index==9); // updating older owner does not reorder it
+    slots.Apply(ReplaceSkillKey{"phase-b","ordinary",std::nullopt});
+    Check(slots.Resolve(0)->index==2 && !slots.Resolve(1)); // one current slot per skill
+    slots.Apply(ReplaceSkillKey{"phase-a","ordinary",std::nullopt});
+    Check(slots.Resolve(0)->index==4 && !slots.Resolve(1)); // not implicit default restoration of moved-from slot
+    slots.Apply(MapControlSlot{1,"parent"});
+    slots.Apply(ReplaceSkillKey{"phase-a","ordinary","enhanced"});
+    slots.Apply(ReplaceSkillKey{"phase-b","enhanced","third"});
+    Check(slots.Resolve(0)->index==7); // key mapping is one hop
+    slots.Apply(OccupyControlSlot{0,"hold"});
+    slots.Apply(MapControlSlot{0,"third"});
+    Check(slots.Resolve(0)->index==7 && slots.Snapshot().slots.at(0).occupation->changed);
+    slots.Apply(ReplaceSkillKey{"phase-a","ordinary","parent"});
+    Check(slots.Resolve(0)->index==2); // unlike MapControlSlot, key map updates occupied slots
+    slots.Apply(ReleaseControlSlot{0,"unrelated"});Check(slots.Snapshot().slots.at(0).occupation.has_value());
+    slots.Apply(ReleaseControlSlot{0,"hold"});Check(slots.Resolve(0)->index==9);
+    slots.Apply(OccupyControlSlot{0,"hold"});slots.Apply(MapControlSlot{0,std::nullopt});slots.Apply(ReleaseControlSlot{0,"hold"});
+    Check(slots.Resolve(0)->index==4 && !slots.Snapshot().slots.at(0).key); // explicit null is a deferred update too
+    slots.Apply(DisableControlSlot{0,"first"});slots.Apply(DisableControlSlot{0,"second"});
+    slots.Apply(DisableControlSlot{0,"first",false});Check(slots.Available(0)==TaskAvailability::Unavailable);
+    slots.Apply(DisableControlSlot{0,"second",false});Check(slots.Available(0)==TaskAvailability::Available);
+    Check(slots.Available(100)==TaskAvailability::Unknown);
+    slots.Reset();Check(slots.Resolve(1)->index==2 && slots.Snapshot().mappings.empty());
+    slots.Apply(MapControlSlot{2,"third"});
+    Check(slots.Resolve(2)->index==9 && !slots.Resolve(1)); // child takes its parent's bound slot away
+    slots.Reset();slots.Apply(ReplaceSkillKey{"phase","ordinary","third"});
+    slots.Apply(MapControlSlot{2,"third"});Check(!slots.Resolve(0));
+    slots.Apply(ReplaceSkillKey{"phase","ordinary","third"});Check(!slots.Resolve(0)); // unchanged alias must not steal it back
+    slots.Reset();slots.Apply(ReplaceSkillKey{"phase","ordinary","third"});
+    slots.Apply(OccupyControlSlot{0,"held"});slots.Apply(MapControlSlot{0,"third"});slots.Apply(ReleaseControlSlot{0,"held"});
+    Check(slots.Snapshot().slots.at(0).key=="ordinary"); // release compares current identity, not requested key
+    auto cyclic=SlotSetup();cyclic.skills[2].children={"parent"};Reject([&]{SkillSlots invalid(cyclic);});
+}
+void SlotControlAdmission() {
+    BattleControl state(SlotSetup());auto choose=Path({ControlSelect{ControlSkill{"config",4,0}}});
+    choose.conditions={ControlSlotMatches{0,{"config",4}},ControlSlotAvailable{0}};
+    Check(state.Query(choose,ControlTrigger::User).availability==TaskAvailability::Available);
+    auto hold=Path({ControlChangeSlot{OccupyControlSlot{0,"held"}}});
+    hold.completed={ControlChangeSlot{ReleaseControlSlot{0,"held"}}};
+    auto receipt=state.Accept(hold,ControlTrigger::User,1);
+    state.Accept(Path({ControlChangeSlot{MapControlSlot{0,"enhanced"}}}),ControlTrigger::User,2);
+    Check(state.Query(choose,ControlTrigger::User).availability==TaskAvailability::Available);
+    state.End(receipt,TaskExitReason::Completed); // deferred mapping must not invalidate its occupation release
+    Check(state.Snapshot().slots.slots.at(0).current=="enhanced");
+    Check(state.Query(choose,ControlTrigger::User).availability==TaskAvailability::Unavailable);
+    auto invalid=Path({ControlSelect{ControlSkill{"config",7,0}},ControlChangeSlot{MapControlSlot{99,"third"}}});
+    Reject([&]{state.Accept(invalid,ControlTrigger::User,3);});Check(!state.Snapshot().selection);
+    state.Reset();Check(state.Query(choose,ControlTrigger::User).availability==TaskAvailability::Available);
+}
+void SlotCatalogParsing() {
+    const auto catalog=ParseTaskCatalog(R"({"format":"hksr.task-catalog","id":"slots","domain":"battle",
+      "visual":{"id":"slots","source":"config","scope":"battle","effects":{}},"sequences":{},
+      "control_slots":{"skills":[{"skill":{"source":"config","index":7},"key":"enhanced"}],"defaults":[{"slot":0,"key":"enhanced"}]},
+      "tasks":{"select":{"control":{"trigger":"user","presentation":false,"sources":[{"document":"fixture","field":"select"}],
+        "requires":[{"op":"slot_available","slot":0},{"op":"slot_skill","slot":0,"skill":{"source":"config","index":7,"slot":0}}],
+        "accepted":[{"op":"occupy_slot","slot":0,"owner":"preview"},{"op":"map_slot","slot":0,"key":null}],
+        "completed":[{"op":"release_slot","slot":0,"owner":"preview"},{"op":"disable_slot","slot":0,"owner":"source","disabled":false}]}}}})");
+    BattleControl state(catalog.control_slots);const auto& path=*catalog.tasks.at("select").definition.control;
+    auto ticket=state.Accept(path,ControlTrigger::User,1);state.End(ticket,TaskExitReason::Completed);
+    Check(state.Snapshot().slots.slots.at(0).current=="enhanced");
+}
+}
+void TestBattleControl(){ChoicesAndCompletion();QueueAndReturn();SourceOwnership();SlotsAndMappingLifetime();SlotControlAdmission();SlotCatalogParsing();}

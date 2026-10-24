@@ -18,6 +18,7 @@ std::vector<std::string> Channels(const ControlChange& change) {
             return {"selection","performance","insertion","queue"};
         else if constexpr(std::is_same_v<T,ControlLeaveInsertion>)return {"selection","performance","insertion"};
         else if constexpr(std::is_same_v<T,ControlAdvanceInsertion>)return {"insertion"};
+        else if constexpr(std::is_same_v<T,ControlChangeSlot>)return {SkillSlotChannel(value.operation)};
         else return {"queue"};
     },change);
 }
@@ -29,6 +30,7 @@ void ValidateChange(const ControlChange& change) {
         else if constexpr(std::is_same_v<T,ControlRemoveSource>)Need(!value.source.empty(),"empty control source identity");
         else if constexpr(std::is_same_v<T,ControlQueueInsertion>) {Need(!value.id.empty(),"empty insertion identity");Skill(value.skill);}
         else if constexpr(std::is_same_v<T,ControlEnterInsertion> || std::is_same_v<T,ControlWithdrawInsertion>)Need(!value.id.empty(),"empty insertion identity");
+        else if constexpr(std::is_same_v<T,ControlChangeSlot>)ValidateSkillSlotChange(value.operation);
     },change);
 }
 }
@@ -53,6 +55,11 @@ void ValidateControlRelation(const ControlRelation& relation) {
         else if constexpr(std::is_same_v<T,ControlPerforming>)Need(!value.phases.empty(),"empty performance condition");
         else if constexpr(std::is_same_v<T,ControlSourcePresent>)Need(!value.source.empty(),"empty source condition");
         else if constexpr(std::is_same_v<T,ControlQueued>)Need(!value.id.empty(),"empty queue condition");
+        else if constexpr(std::is_same_v<T,ControlSlotMatches>) {
+            Need(value.slot>=0,"negative control slot");Skill(value.skill);
+            Need(!value.skill.slot || *value.skill.slot==value.slot,"conflicting control slot condition");
+        }
+        else if constexpr(std::is_same_v<T,ControlSlotAvailable>)Need(value.slot>=0,"negative control slot");
         else if constexpr(std::is_same_v<T,TaskUnresolvedRequirement>)Need(!value.source.empty() && !value.detail.empty(),"empty unresolved condition");
     },condition);
     for(const auto* changes:{&relation.accepted,&relation.started,&relation.completed,&relation.interrupted,&relation.replaced,&relation.failed})
@@ -76,6 +83,13 @@ TaskQueryResult BattleControl::Query(const ControlRelation& relation,ControlTrig
             matches=std::any_of(state_.pending.begin(),state_.pending.end(),[&](const auto& row){return row.id==value.id;})==value.present;name="queue";
         } else if constexpr(std::is_same_v<T,ControlInsertionAt>) {
             matches=value.phase?(state_.insertion && state_.insertion->phase==*value.phase):!state_.insertion;name="insertion";
+        } else if constexpr(std::is_same_v<T,ControlSlotMatches>) {
+            auto expected=value.skill;expected.slot=value.slot;
+            matches=slots_.Resolve(value.slot,value.child)==std::optional<ControlSkill>(expected);name="slot skill";
+        } else if constexpr(std::is_same_v<T,ControlSlotAvailable>) {
+            const auto availability=slots_.Available(value.slot);
+            if(availability==TaskAvailability::Unknown)reject(availability,TaskReasonKind::Unresolved,"control slot","slot definition is unavailable");
+            else {matches=availability==TaskAvailability::Available;name="control slot";}
         } else reject(TaskAvailability::Unknown,TaskReasonKind::Unresolved,value.source,value.detail);
         if(!matches)reject(TaskAvailability::Unavailable,TaskReasonKind::Condition,name,"control condition is false");
     },condition);
@@ -122,11 +136,14 @@ void BattleControl::Apply(const std::vector<ControlChange>& changes,ControlTicke
             } else if constexpr(std::is_same_v<T,ControlWithdrawInsertion>) {
                 const auto found=std::find_if(state_.pending.begin(),state_.pending.end(),[&](const auto& row){return row.id==value.id;});
                 Need(found!=state_.pending.end(),"insertion is not pending");state_.pending.erase(found);
+            } else if constexpr(std::is_same_v<T,ControlChangeSlot>) {
+                slots_.Apply(value.operation);
             }
         },change);
         for(const auto& channel:channels){versions_[channel]=++revision_;if(ticket)ticket->versions[channel]=versions_[channel];}
     }
     state_.dominant_source.reset();
+    state_.slots=slots_.Snapshot();
     for(const auto& source:state_.sources)
         if(!state_.dominant_source || source.priority<state_.dominant_source->priority)state_.dominant_source=source;
 }
@@ -154,5 +171,6 @@ void BattleControl::End(ControlTicket& ticket,TaskExitReason reason) {
     else if(reason==TaskExitReason::Failed)next.Apply(ticket.relation.failed,&updated,false);
     updated.ended=true;*this=std::move(next);ticket=std::move(updated);
 }
-void BattleControl::Reset(){state_={};versions_.clear();++epoch_;++revision_;}
+BattleControl::BattleControl(SkillSlotSetup setup):slots_(std::move(setup)){state_.slots=slots_.Snapshot();}
+void BattleControl::Reset(){state_={};slots_.Reset();state_.slots=slots_.Snapshot();versions_.clear();++epoch_;++revision_;}
 }
