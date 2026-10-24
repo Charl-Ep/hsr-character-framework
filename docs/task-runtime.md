@@ -188,6 +188,7 @@ State names and resource paths must match the selected model. A sequence may als
 | `animation` | `request`, `participant`, `state`; optional `layer`, `transition` |
 | `movement` | `request`, `animation`, `segments`; optional `clock`, `force_start` |
 | `sound` | `request`, `participant`, `event` |
+| `control` | `request`, `changes` using control-relation changes |
 | `visual` | `request`, `instruction` using the existing visual instruction schema |
 | `wait_request` | `request`; optional `signal`: `submitted`, `accepted`, `started`, `performance` (default), `progress`, `drained`; `progress` requires its numeric value |
 | `wait_seconds` | `seconds` |
@@ -212,6 +213,8 @@ Target and anchor requirements also expose their named input. A choice requireme
 Clicking a task with inputs opens the parameter editor. It queries through the same application command as HTTP, without starting playback. Edits and changes to selected targets or context ownership invalidate the previous result; late replies cannot enable an edited selection. Play submits the typed selection and rechecks current conditions on the official frame. Default removes an explicit override. The editor does not write context values or gameplay state.
 
 Top-level `contexts` binds visual-context names to `values`, `phase`, `slots` (`slot`/`task`) and `disables` (one of `task`, `slot`, `tag`, plus `reason`). Task references are local to the catalog. Unsupported fields and broken references are reported during loading.
+
+A `control` step commits value-only changes on the accepted operation's control ticket. It can follow animation progress, a request completion, a branch or an interruption step. All writes in one step commit together. Changes to channels replaced by a newer operation are not applied. The containing task must declare a control relation; the step does not invoke native battle tasks or broadcast game events.
 
 ## Development control
 

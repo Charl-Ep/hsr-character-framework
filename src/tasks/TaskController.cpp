@@ -96,13 +96,21 @@ struct TaskController::State {
         status.retiring=retiring.size();
         if(active){status.current=active->selection.task;status.execution=active->player->Status();}
     }
+    std::vector<ControlChange> SequenceChanges(const TaskDefinition& definition) const {
+        std::vector<ControlChange> out;
+        if(!definition.entry.empty())for(const auto& node:catalog->sequences.at(definition.entry)->nodes)
+            if(const auto* submit=std::get_if<TaskSubmit>(&node.operation))
+                if(const auto* change=std::get_if<TaskControlCommand>(&submit->operation))
+                    out.insert(out.end(),change->changes.begin(),change->changes.end());
+        return out;
+    }
     TaskSelectionResult Accept(TaskSelection selection,TaskSelectionResult result) {
         if(result.query.availability!=TaskAvailability::Available)return result;
         result.intent=++status.requested;
         const auto& definition=catalog->Resolve(result.resolved).definition;
         std::optional<ControlTicket> receipt;
         if(definition.control) {
-            receipt=control.Accept(*definition.control,selection.trigger,result.intent);
+            receipt=control.Accept(*definition.control,selection.trigger,result.intent,SequenceChanges(definition));
             selection.task=result.resolved;selection.query.slot.reset();
             if(!definition.control->presentation) {
                 control.End(*receipt,TaskExitReason::Completed);
@@ -142,12 +150,20 @@ struct TaskController::State {
         const auto& plan=catalog->Resolve(run->selection.task);run->next=plan.next;
         run->control=std::move(desired.control);
         if(plan.definition.control && !run->control)
-            run->control=control.Accept(*plan.definition.control,run->selection.trigger,desired.intent);
+            run->control=control.Accept(*plan.definition.control,run->selection.trigger,desired.intent,SequenceChanges(plan.definition));
         if(plan.definition.control && !plan.definition.control->presentation) {
             control.End(*run->control,TaskExitReason::Completed);
             status.started=desired.intent;status.blocked.reset();status.error.clear();return;
         }
         auto ports=services;
+        ports.control=[this,weak=std::weak_ptr<Run>(run)](const auto& changes) {
+            const auto owner=weak.lock();
+            // A step reached after a start/progress wait must not later be
+            // overwritten by the frame's delayed started notification.
+            if(owner && owner->control && owner->player && owner->player->Started())control.Started(*owner->control);
+            if(!owner || !owner->control || !control.Advance(*owner->control,changes))
+                throw std::logic_error("task control operation was superseded or retired");
+        };
         const auto selection=run->selection;
         ports.condition=[this,selection](const auto& requirement) {
             SyncContexts();return context.Evaluate(requirement,Inputs(selection,true,{requirement})).availability;

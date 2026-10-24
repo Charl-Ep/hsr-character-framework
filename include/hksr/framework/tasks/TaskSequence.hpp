@@ -1,5 +1,6 @@
 #pragma once
 #include "TaskModel.hpp"
+#include "BattleControl.hpp"
 #include <hksr/framework/presentation/VisualProgram.hpp>
 #include <functional>
 #include <memory>
@@ -9,7 +10,8 @@ using TaskNodeIndex=std::size_t;
 struct TaskAnimationCommand {TaskParticipant participant;std::string state;int layer=0;float transition=0;};
 struct TaskSoundCommand {TaskParticipant participant;std::string event;};
 struct TaskMovementCommand {std::string animation;VisualMovement movement;}; // state comes from this request
-using TaskLeafOperation=std::variant<TaskAnimationCommand,VisualInstruction,TaskSoundCommand,TaskMovementCommand>;
+struct TaskControlCommand {std::vector<ControlChange> changes;};
+using TaskLeafOperation=std::variant<TaskAnimationCommand,VisualInstruction,TaskSoundCommand,TaskMovementCommand,TaskControlCommand>;
 struct TaskSubmit {std::string request;TaskLeafOperation operation;};
 enum class TaskWaitSignal { Submitted,RequestComplete,PerformanceComplete,Progress,Drained,Started };
 struct TaskWaitRequest {std::string request;TaskWaitSignal signal=TaskWaitSignal::PerformanceComplete;double progress=1;};

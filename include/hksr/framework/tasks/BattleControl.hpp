@@ -85,7 +85,11 @@ class BattleControl {
 public:
     explicit BattleControl(SkillSlotSetup={});
     TaskQueryResult Query(const ControlRelation&,ControlTrigger) const;
-    ControlTicket Accept(const ControlRelation&,ControlTrigger,std::uint64_t intent);
+    ControlTicket Accept(const ControlRelation&,ControlTrigger,std::uint64_t intent,
+        const std::vector<ControlChange>& sequence_changes={});
+    // Sequence changes share the accepted operation's channel ownership. False
+    // means this operation ended or another operation replaced one of its writes.
+    bool Advance(ControlTicket&,const std::vector<ControlChange>&);
     void Started(ControlTicket&);
     void End(ControlTicket&,TaskExitReason);
     const BattleControlSnapshot& Snapshot() const {return state_;}
@@ -98,6 +102,7 @@ private:
     void Apply(const std::vector<ControlChange>&,ControlTicket*,bool accepting);
 };
 void ValidateControlRelation(const ControlRelation&);
+void ValidateControlChanges(const std::vector<ControlChange>&);
 const char* ControlName(ControlPerformance);
 const char* ControlName(ControlInsertionPhase);
 const char* ControlName(ControlTrigger);

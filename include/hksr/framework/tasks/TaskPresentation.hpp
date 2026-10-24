@@ -22,6 +22,9 @@ struct TaskPresentationServices {
     std::function<bool()> yield;
     // Empty while an owned participant's model is being prepared.
     std::function<std::optional<TaskSoundEndpoint>(const TaskSoundCommand&)> sound;
+    // Synchronous, value-only changes on this execution's accepted control
+    // ticket. No native battle entity, task factory or event broadcast.
+    std::function<void(const std::vector<ControlChange>&)> control;
 };
 // One task execution over an existing visual scene and owned animation players.
 // Service those animation players on their normal owner frame, then call

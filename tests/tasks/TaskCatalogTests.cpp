@@ -1,5 +1,6 @@
 #include <hksr/framework/tasks/TaskController.hpp>
 #include <nlohmann/json.hpp>
+#include <algorithm>
 #include <limits>
 #include <stdexcept>
 
@@ -350,5 +351,41 @@ void ControlSlotsReachDispatch() {
     f.controller->Reset(TaskExitReason::WorldLeft);f.Tick();
     Check(f.controller->Query({{"test","attack"}}).query.availability==TaskAvailability::Available);
 }
+void ControlAtSequenceBoundaries() {
+    auto document=Document();
+    auto path=ControlPath();
+    path["started"]=Json::array({{{"op","performance"},{"phase","working"}}});
+    path["completed"]=Json::array({{{"op","remove_source"},{"id","sequence-phase"}}});
+    path["replaced"]=path["completed"];
+    document["tasks"]["attack"]["control"]=path;document["tasks"]["attack"].erase("next");
+    document["sequences"]["attack"]={{"entry",{{"op","serial"},{"children",Json::array({
+        {{"op","animation"},{"request","body"},{"participant","body"},{"state","Attack"}},
+        {{"op","wait_request"},{"request","body"},{"signal","progress"},{"progress",0.5}},
+        {{"op","control"},{"request","phase-change"},{"changes",Json::array({
+            {{"op","add_source"},{"id","sequence-phase"},{"flag",17},{"priority",2}},
+            {{"op","performance"},{"phase","finished"}}})}},
+        {{"op","wait_frame"}},
+        {{"op","wait_request"},{"request","body"},{"signal","performance"}}
+    })}}}};
+    auto conditional=ControlPath("event",false);
+    conditional["requires"]=Json::array({{{"op","source"},{"id","sequence-phase"}}});
+    document["tasks"]["during"]={{"control",conditional}};
+    Fixture f(document);TaskSelection during{{"test","during"}};during.trigger=ControlTrigger::Event;
+    f.Select("attack");f.Tick();
+    Check(f.controller->Query(during).query.availability==TaskAvailability::Unavailable);
+    f.plays[0].second->progress=0.49;f.Tick();Check(f.controller->Status().control.sources.empty());
+    f.plays[0].second->entered=true;f.plays[0].second->progress=0.5;f.Tick();
+    Check(f.controller->Status().control.performance==ControlPerformance::Finished); // started did not rewind the explicit step
+    Check(f.controller->Query(during).query.availability==TaskAvailability::Available);
+    Check(f.plays.size()==1 && f.controller->Selection()->task.name=="attack");
+    const auto requests=f.controller->Requests();
+    const auto update=std::find_if(requests.begin(),requests.end(),[](const auto& row){return row.name=="phase-change";});
+    Check(update!=requests.end() && update->receipt.participant.name=="control" && update->state.drained);
+    f.plays[0].second->complete=true;f.Tick();f.Tick();
+    Check(f.controller->Status().control.sources.empty());
+    Check(f.controller->Status().error.empty());
+    auto invalid=document;invalid["tasks"]["attack"].erase("control");
+    Reject([&]{ParseTaskCatalog(invalid.dump());});
 }
-void TestTaskCatalog(){Codec();SelectionAndInterrupt();NaturalAndPending();ContextsAndFinish();CloseAndReentrant();InputRequirementsAndPreparation();ControlAdmissionAndPresentation();ControlSlotsReachDispatch();}
+}
+void TestTaskCatalog(){Codec();SelectionAndInterrupt();NaturalAndPending();ContextsAndFinish();CloseAndReentrant();InputRequirementsAndPreparation();ControlAdmissionAndPresentation();ControlSlotsReachDispatch();ControlAtSequenceBoundaries();}

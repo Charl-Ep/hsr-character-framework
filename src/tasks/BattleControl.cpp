@@ -46,6 +46,9 @@ const char* ControlName(ControlInsertionPhase value) {
 const char* ControlName(ControlTrigger value) {
     switch(value){case ControlTrigger::User:return "user";case ControlTrigger::Event:return "event";default:return "automatic";}
 }
+void ValidateControlChanges(const std::vector<ControlChange>& changes) {
+    for(const auto& change:changes)ValidateChange(change);
+}
 void ValidateControlRelation(const ControlRelation& relation) {
     Need(!relation.sources.empty(),"control relation requires provenance");
     for(const auto& source:relation.sources)Need(!source.document.empty() && !source.field.empty(),"incomplete control provenance");
@@ -147,14 +150,29 @@ void BattleControl::Apply(const std::vector<ControlChange>& changes,ControlTicke
     for(const auto& source:state_.sources)
         if(!state_.dominant_source || source.priority<state_.dominant_source->priority)state_.dominant_source=source;
 }
-ControlTicket BattleControl::Accept(const ControlRelation& relation,ControlTrigger trigger,std::uint64_t intent) {
+ControlTicket BattleControl::Accept(const ControlRelation& relation,ControlTrigger trigger,std::uint64_t intent,
+    const std::vector<ControlChange>& sequence_changes) {
     const auto query=Query(relation,trigger);
     if(query.availability!=TaskAvailability::Available)throw std::logic_error("control path was not accepted");
     Need(intent!=0,"control intent is zero");
+    ValidateControlChanges(sequence_changes);
     auto next=*this;ControlTicket ticket;ticket.intent=intent;ticket.epoch=epoch_;ticket.relation=relation;
     for(const auto* changes:{&relation.accepted,&relation.started,&relation.completed,&relation.interrupted,&relation.replaced,&relation.failed})
         for(const auto& change:*changes)for(const auto& channel:Channels(change))ticket.versions[channel]=next.versions_[channel];
+    for(const auto& change:sequence_changes)for(const auto& channel:Channels(change))ticket.versions[channel]=next.versions_[channel];
     next.Apply(relation.accepted,&ticket,true);*this=std::move(next);return ticket;
+}
+bool BattleControl::Advance(ControlTicket& ticket,const std::vector<ControlChange>& changes) {
+    if(ticket.epoch!=epoch_ || ticket.ended)return false;
+    ValidateControlChanges(changes);
+    for(const auto& change:changes)for(const auto& channel:Channels(change)) {
+        const auto held=ticket.versions.find(channel);
+        if(held==ticket.versions.end())throw std::logic_error("sequence control channel was not declared: "+channel);
+        const auto current=versions_.find(channel);
+        if(held->second!=(current==versions_.end()?0:current->second))return false;
+    }
+    auto next=*this;auto updated=ticket;
+    next.Apply(changes,&updated,false);*this=std::move(next);ticket=std::move(updated);return true;
 }
 void BattleControl::Started(ControlTicket& ticket) {
     if(ticket.epoch!=epoch_ || ticket.started || ticket.ended)return;

@@ -42,6 +42,7 @@ void ValidateTaskSequence(const TaskSequence& sequence) {
         if(const auto* submit=std::get_if<TaskSubmit>(&op))
         {
             if(submit->request.empty())throw std::invalid_argument("task request name is empty");
+            if(const auto* control=std::get_if<TaskControlCommand>(&submit->operation))ValidateControlChanges(control->changes);
             if(const auto* sound=std::get_if<TaskSoundCommand>(&submit->operation))
                 if(sound->participant.name.empty() || sound->event.empty() || sound->event.find('\0')!=std::string::npos)
                     throw std::invalid_argument("invalid task sound command");

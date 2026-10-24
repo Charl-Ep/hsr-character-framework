@@ -120,6 +120,11 @@ SkillSlotSetup Slots(const Json& row) {
     }
     ValidateSkillSlots(out);return out;
 }
+std::vector<ControlChange> Changes(const Json& row) {
+    std::vector<ControlChange> out;
+    for(const auto& value:row.get<std::vector<Json>>())out.push_back(Change(value));
+    ValidateControlChanges(out);return out;
+}
 ControlRelation Parse(const Json& row) {
     Fields(row,{"label","trigger","presentation","sources","requires","accepted","started","completed","interrupted","replaced","failed"});
     ControlRelation out;out.label=row.value("label",std::string{});out.presentation=row.value("presentation",true);
@@ -131,7 +136,7 @@ ControlRelation Parse(const Json& row) {
     for(const auto& [name,changes]:std::initializer_list<std::pair<const char*,std::vector<ControlChange>*>>{
         {"accepted",&out.accepted},{"started",&out.started},{"completed",&out.completed},
         {"interrupted",&out.interrupted},{"replaced",&out.replaced},{"failed",&out.failed}})
-        if(row.contains(name))for(const auto& change:row.at(name).get<std::vector<Json>>())changes->push_back(Change(change));
+        if(row.contains(name))*changes=Changes(row.at(name));
     ValidateControlRelation(out);return out;
 }
 Json Snapshot(const BattleControlSnapshot& value) {

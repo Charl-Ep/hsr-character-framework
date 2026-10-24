@@ -149,5 +149,28 @@ void SlotCatalogParsing() {
     auto ticket=state.Accept(path,ControlTrigger::User,1);state.End(ticket,TaskExitReason::Completed);
     Check(state.Snapshot().slots.slots.at(0).current=="enhanced");
 }
+void SequenceControlOwnership() {
+    BattleControl state(SlotSetup());
+    const std::vector<ControlChange> steps={ControlChangeSlot{MapControlSlot{0,"enhanced"}},
+        ControlAddSource{{"phase",10,2}},ControlSetPerformance{ControlPerformance::Finished}};
+    auto path=Path();path.completed={ControlRemoveSource{"phase"}};
+    auto run=state.Accept(path,ControlTrigger::User,1,steps);
+    Check(state.Snapshot().slots.slots.at(0).current=="ordinary"); // reserve is not a write
+    Check(state.Advance(run,steps));
+    Check(state.Snapshot().slots.slots.at(0).current=="enhanced" && state.Snapshot().sources.size()==1);
+    const auto before=state.Snapshot();
+    Reject([&]{state.Advance(run,{ControlSelect{ControlSkill{"config",4}}});});
+    Check(state.Snapshot()==before); // undeclared channel cannot be acquired late
+    Reject([&]{state.Advance(run,{ControlChangeSlot{MapControlSlot{0,"third"}},ControlRemoveSource{"phase"},ControlRemoveSource{"phase"}});});
+    Check(state.Snapshot()==before); // whole step is atomic, including its ownership receipt
+    state.Accept(Path({ControlChangeSlot{MapControlSlot{0,"third"}}}),ControlTrigger::User,2);
+    const auto newer=state.Snapshot();
+    Check(!state.Advance(run,{ControlSetPerformance{ControlPerformance::Ready},steps[0]}));
+    Check(state.Snapshot()==newer); // a stale write cancels the whole step
+    state.End(run,TaskExitReason::Completed);Check(state.Snapshot().sources.empty());
+    Check(!state.Advance(run,steps));
+    auto next=state.Accept(Path(),ControlTrigger::User,3,steps);
+    state.Reset();Check(!state.Advance(next,steps));
 }
-void TestBattleControl(){ChoicesAndCompletion();QueueAndReturn();SourceOwnership();SlotsAndMappingLifetime();SlotControlAdmission();SlotCatalogParsing();}
+}
+void TestBattleControl(){ChoicesAndCompletion();QueueAndReturn();SourceOwnership();SlotsAndMappingLifetime();SlotControlAdmission();SlotCatalogParsing();SequenceControlOwnership();}

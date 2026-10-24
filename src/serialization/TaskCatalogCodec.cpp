@@ -114,6 +114,9 @@ struct SequenceParser {
                 Need(transition>=0 && transition<=std::numeric_limits<float>::max(),"animation transition out of range");
                 operation=TaskSubmit{Name(row.at("request")),TaskAnimationCommand{{Name(row.at("participant"))},Name(row.at("state")),
                     static_cast<int>(layer),static_cast<float>(transition)}};
+            } else if(op=="control") {
+                Fields(row,{"op","request","changes","source"});
+                operation=TaskSubmit{Name(row.at("request")),TaskControlCommand{control_codec::Changes(row.at("changes"))}};
             } else if(op=="sound") {
                 Fields(row,{"op","request","participant","event","source"});
                 operation=TaskSubmit{Name(row.at("request")),TaskSoundCommand{{Name(row.at("participant"))},Name(row.at("event"))}};

@@ -33,6 +33,15 @@ struct TaskPresentation::State {
     bool servicing=false,forgotten=false,cancel_scope=false,started=false;
     TaskSubmission Submit(TaskExecutionToken actual,std::uint64_t serial,const TaskSubmit& input) {
         auto request=std::make_shared<Request>();request->operation=input.operation;request->name=input.request;
+        if(const auto* control=std::get_if<TaskControlCommand>(&input.operation)) {
+            if(!services.control)throw std::logic_error("task control owner is unavailable");
+            services.control(control->changes);
+            request->value.receipt={actual,serial,0,{"control"},owner};
+            request->value.state.submitted=request->value.state.request_complete=request->value.state.performance_complete=true;
+            request->value.state.drained=true;
+            request->released=true;
+            requests.emplace(serial,request);return request->value;
+        }
         const auto* animation=std::get_if<TaskAnimationCommand>(&input.operation);
         const auto* sound=std::get_if<TaskSoundCommand>(&input.operation);
         const auto* movement=std::get_if<TaskMovementCommand>(&input.operation);
