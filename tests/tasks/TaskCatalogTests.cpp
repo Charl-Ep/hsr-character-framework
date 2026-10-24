@@ -178,6 +178,16 @@ void SelectionAndInterrupt() {
     Check(f.plays[2].first.state=="Exit" && f.plays[3].first.state=="StandBy");
     Check(f.controller->Status().started==3);f.Tick();Check(f.controller->Status().retiring==0);
 }
+void AnimationOffsets() {
+    auto document=Document();
+    auto& command=document["sequences"]["stand"]["entry"];
+    command["start"]=0.375;command["transition"]=0.2;
+    Fixture f(document);f.Select("idle");f.Tick();
+    Check(f.plays.size()==1 && f.plays[0].first.normalized_start==0.375f && f.plays[0].first.transition==0.2f);
+    Check(!f.plays[0].second->entered && !f.plays[0].second->progress);
+    command["start"]="0.375";Reject([&]{ParseTaskCatalog(document.dump());});
+    command["start"]=1e100;Reject([&]{ParseTaskCatalog(document.dump());});
+}
 void NaturalAndPending() {
     Fixture f;f.defaults.targets["Target"]=99;f.defaults.choices["mode"]="base";
     TaskSelection override_input{{"test","attack"}};override_input.visual.choices["mode"]="explicit";
@@ -395,7 +405,7 @@ void ControlAtSequenceBoundaries() {
 }
 }
 void TestTaskCatalog(){
-    Codec();SelectionAndInterrupt();NaturalAndPending();ContextsAndFinish();CloseAndReentrant();InputRequirementsAndPreparation();ControlAdmissionAndPresentation();ControlSlotsReachDispatch();ControlAtSequenceBoundaries();
+    Codec();SelectionAndInterrupt();AnimationOffsets();NaturalAndPending();ContextsAndFinish();CloseAndReentrant();InputRequirementsAndPreparation();ControlAdmissionAndPresentation();ControlSlotsReachDispatch();ControlAtSequenceBoundaries();
     auto input=Document();
     input["sequences"]["stand"]["entry"]={{"op","serial"},{"children",Json::array({
         {{"op","visual"},{"request","turn"},{"instruction",{{"op","face_target"},{"source","LookAt"},

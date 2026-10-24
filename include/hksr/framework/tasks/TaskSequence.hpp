@@ -7,7 +7,7 @@
 
 namespace hksr::framework {
 using TaskNodeIndex=std::size_t;
-struct TaskAnimationCommand {TaskParticipant participant;std::string state;int layer=0;float transition=0;};
+struct TaskAnimationCommand {TaskParticipant participant;std::string state;int layer=0;float transition=0;float normalized_start=0;};
 struct TaskSoundCommand {TaskParticipant participant;std::string event;};
 struct TaskMovementCommand {std::string animation;VisualMovement movement;}; // state comes from this request
 struct TaskControlCommand {std::vector<ControlChange> changes;};

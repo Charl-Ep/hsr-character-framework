@@ -20,6 +20,7 @@ GameEntity* E(Actor& a){return reinterpret_cast<GameEntity*>(&a);}
 unsigned factories=0,kills=0,names=0,attachments=0,animations=0,visibilities=0;
 int root_id=0;std::map<int,void*> roots;std::array<int,6> types{};
 unsigned idle_requests=0;
+float expected_start=0;
 std::function<void()> on_create,on_name;
 bool delay_disposal=false;
 std::vector<EntityToken> disposals;
@@ -62,7 +63,7 @@ void __fastcall Anim(void*,GameEntity*,void*){++animations;}
 void __fastcall Follow(void*,GameEntity*,VisibilityFollow,void*){++visibilities;}
 void __fastcall Visible(void*,bool,const void*,void*){++visibilities;}
 void __fastcall Idle(void*,int logic,void* state,float start,float transition,float end,int extra,unsigned request,bool flag,void*) {
-    Check(logic==1 && *static_cast<std::string*>(state)=="Loop" && start==0 && transition==0.25f && end==1 && !extra && !request && !flag);
+    Check(logic==1 && *static_cast<std::string*>(state)=="Loop" && start==expected_start && transition==0.25f && end==1 && !extra && !request && !flag);
     ++idle_requests;
 }
 void* __fastcall Animator(Group* model,void*){return model->owner;}
@@ -138,11 +139,12 @@ void TestVisualPartners() {
     Check(partners.Execute(context,{"helper",PartnerVisibility{"show",false,true,false,false}}).state==VisualStepState::Done && visibilities==1);
     Check(partners.Execute(context,{"helper",PartnerIdleAnimation{"Loop",0,0.25f,1}}).state==VisualStepState::Done && idle_requests==1);
     auto endpoint=partners.Animation("helper");Check(endpoint && endpoint->entity_generation==partners.Resolve("helper").token.generation);
-    auto playback=endpoint->submit({"Loop",0,0.25f});Check(!playback->accepted);
+    expected_start=0.25f;
+    auto playback=endpoint->submit({"Loop",0,0.25f,expected_start});Check(!playback->accepted);
     ++frame.sequence;partners.Service(frame);Check(playback->accepted && !playback->entered && idle_requests==2);
     actors[0]->progress=0.4f;++frame.sequence;partners.Service(frame);Check(playback->entered && !playback->complete);
     actors[0]->progress=1.2f;++frame.sequence;partners.Service(frame);Check(playback->complete);
-    endpoint->release(playback->serial);Check(playback->released);
+    endpoint->release(playback->serial);Check(playback->released);expected_start=0;
     delay_disposal=true;partners.End(context);partners.Service(frame);Check(kills==2 && !partners.Drained());
     Check(!partners.Drained(context) && partners.Drained(other));
     partners.Service(frame);Check(kills==2);for(auto token:disposals)Dispose(token);disposals.clear();

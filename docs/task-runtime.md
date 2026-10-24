@@ -57,6 +57,8 @@ Service animation players on their normal owner frame, then call `TaskPresentati
 
 Animation requests do not select an automatic successor. A completed non-loop state or observed exit completes its wait; looping states remain active. Releasing a receipt stops observation, not the Animator. The next task command owns the next state. Controlled domain changes cancel old requests, while observed Animator changes invalidate their bindings.
 
+An animation submission accepts `start` (normalized playback offset, default `0`) and `transition` (normalized blend duration, default `0`). Body, partner and layer playback preserve the offset. Progress waits use the observed absolute animation time, not elapsed time since submission. A start offset does not itself count as observed entry or progress.
+
 Use a performance wait for animation completion. A progress wait requires that exact threshold to have been observed; if the request finishes below it, execution reports an unsatisfied dependency instead of waiting forever or assuming the missed cue ran.
 
 A later animation on the same participant and layer supersedes this execution's earlier observation. Its last progress is retained and `superseded` is reported separately from natural completion. Already-satisfied waits remain valid; unmet waits fail. External interruption still reports an execution error. Different participants and layers remain independent.

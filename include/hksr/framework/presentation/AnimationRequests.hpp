@@ -8,7 +8,7 @@
 #include <functional>
 
 namespace hksr::framework {
-struct AnimationCommand {std::string state;int layer=0;float transition=0;};
+struct AnimationCommand {std::string state;int layer=0;float transition=0;float normalized_start=0;};
 struct AnimationRequestStatus {
     std::uint64_t serial=0,entity_generation=0,model_generation=0;
     bool accepted=false,entered=false,complete=false,cancelled=false,released=false;

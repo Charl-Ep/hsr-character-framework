@@ -108,12 +108,12 @@ struct SequenceParser {
                 for(std::size_t i=0;i<children.size();++i)compiled.push_back(Node(children[i],path+"/children/"+std::to_string(i)));
                 if(op=="serial")operation=TaskSerial{std::move(compiled)};else operation=TaskParallel{std::move(compiled)};
             } else if(op=="animation") {
-                Fields(row,{"op","request","participant","state","layer","transition","source"});
+                Fields(row,{"op","request","participant","state","layer","transition","start","source"});
                 const auto layer=Integer(row.value("layer",Json(0)));Need(layer>=0 && layer<=INT_MAX,"animation layer out of range");
                 const auto transition=Number(row.value("transition",Json(0)));
                 Need(transition>=0 && transition<=std::numeric_limits<float>::max(),"animation transition out of range");
                 operation=TaskSubmit{Name(row.at("request")),TaskAnimationCommand{{Name(row.at("participant"))},Name(row.at("state")),
-                    static_cast<int>(layer),static_cast<float>(transition)}};
+                    static_cast<int>(layer),static_cast<float>(transition),Float(row.value("start",Json(0)))}};
             } else if(op=="control") {
                 Fields(row,{"op","request","changes","source"});
                 operation=TaskSubmit{Name(row.at("request")),TaskControlCommand{control_codec::Changes(row.at("changes"))}};

@@ -202,7 +202,7 @@ struct TaskPresentation::State {
                             request->endpoint=std::move(endpoint);
                             request->value.receipt.entity_generation=request->endpoint->entity_generation;
                             if(!ClaimAnimationChannel(request,*command))continue;
-                            request->animation=request->endpoint->submit({command->state,command->layer,command->transition});
+                            request->animation=request->endpoint->submit({command->state,command->layer,command->transition,command->normalized_start});
                             if(!request->animation)throw std::runtime_error("animation endpoint returned no receipt");
                             if(request->animation->entity_generation!=request->value.receipt.entity_generation)
                                 throw std::runtime_error("animation endpoint returned another entity generation");

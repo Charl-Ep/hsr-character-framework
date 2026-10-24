@@ -7,6 +7,8 @@
 #include <stdexcept>
 #include <cstring>
 #include <algorithm>
+#include <limits>
+#include <cmath>
 
 namespace {
 using namespace hksr;
@@ -22,6 +24,7 @@ int current_hash=93,current_full_hash=0;float current_time=0;bool looping=false,
 float face_time=0;
 std::string successor_name="OtherPhaseIdle";bool cancel_on_resolve=false;
 int expected_layer=0;
+float expected_start=0,expected_blend=0;
 framework::ActionPlayback* active=nullptr;
 api::WorldFrame active_frame;
 api::ManagedObjects* active_objects=nullptr;
@@ -57,7 +60,7 @@ bool __fastcall Has(void* value,int layer,int hash,void*) {
     return exists;
 }
 void __fastcall Play(void* value,int hash,int layer,float time,void*) {
-    Check(value==&animator && (hash==71 || hash==93) && layer==expected_layer && time==0); ++plays;
+    Check(value==&animator && (hash==71 || hash==93) && layer==expected_layer && time==expected_start); ++plays;
     if(requeue) {
         requeue=false; active->Queue(framework::NpcMotion{912});
         active->Service(active_frame,true,*active_objects); // must not recurse
@@ -65,7 +68,12 @@ void __fastcall Play(void* value,int hash,int layer,float time,void*) {
     if(fault) RaiseException(0xE0680001,0,0,nullptr);
 }
 void __fastcall Npc(void* value,unsigned id,void*) { Check(value==&style && id==912); ++npc_plays; }
-void __fastcall State(void* value,int hash,float first,float second,void*) { Check(value==&style && (hash==93 || hash==71 || hash==94) && first==0 && second==0); ++state_plays; }
+void __fastcall State(void* value,int hash,float first,float second,void*) {
+    Check(value==&style && (hash==93 || hash==71 || hash==94) && first==expected_blend && second==expected_start); ++state_plays;
+}
+void __fastcall CrossFade(void* value,int hash,float blend,int layer,float start,float progress,void*) {
+    Check(value==&animator && hash==93 && layer==expected_layer && blend==expected_blend && start==expected_start && progress==0); ++plays;
+}
 void __fastcall StateInfo(void* value,int layer,int index,unsigned char* bytes,void*) {
     Check(value==&animator && (layer==0 || layer==3) && index==0);std::memset(bytes,0,36);
     std::memcpy(bytes+8,&current_full_hash,4);
@@ -90,6 +98,7 @@ void TestActionPlayback() {
     api::ModelAccessMethods model_methods; model_methods.animator=M(Animator); model_methods.changing=M(Changing);
     api::AnimationControlMethods actions; actions.hash=M(Hash); actions.has_state=M(Has); actions.play=M(Play);
     actions.npc_motion=M(Npc); actions.free_style_state=M(State);
+    actions.cross_fade=M(CrossFade);
     actions.state_info=M(StateInfo);actions.in_transition=M(Transition);
     api::ProfileInputMethods profile; profile.animator_initialized=M(Initialized);
     Objects objects; active_objects=&objects;
@@ -418,6 +427,28 @@ void TestActionPlayback() {
     Check(body_ticket->complete && face_ticket->entered && !face_ticket->complete);
     face_time=1.1f;++active_frame.sequence;task_player.Service(active_frame,true,objects);Check(face_ticket->complete);
     task_player.ReleaseAnimation(body_ticket->serial);task_player.ReleaseAnimation(face_ticket->serial);
+    // Authored offsets reach each actual writer, but do not manufacture entry
+    // or progress before the Animator reports it. Completion never queues idle.
+    expected_start=0.45f;expected_blend=0.125f;current_time=0.46f;
+    auto offset_body=task_player.QueueAnimation({"attack_loop",0,expected_blend,expected_start});
+    count=state_plays;++active_frame.sequence;task_player.Service(active_frame,true,objects);
+    Check(offset_body->accepted && !offset_body->entered && !offset_body->progress && state_plays==count+1);
+    ++active_frame.sequence;task_player.Service(active_frame,true,objects);
+    Check(offset_body->entered && offset_body->progress && std::abs(*offset_body->progress-0.46)<0.00001);
+    bool invalid_start=false;
+    try { task_player.QueueAnimation({"attack_loop",0,0,std::numeric_limits<float>::quiet_NaN()}); }
+    catch(const std::invalid_argument&) { invalid_start=true; }
+    Check(invalid_start && !offset_body->released); // rejected input cannot cancel current playback
+    task_player.ReleaseAnimation(offset_body->serial);
+    expected_layer=3;
+    auto offset_fade=task_player.QueueAnimation({"attack_loop",3,expected_blend,expected_start});
+    ++active_frame.sequence;task_player.Service(active_frame,true,objects);Check(offset_fade->accepted);
+    task_player.ReleaseAnimation(offset_fade->serial);
+    expected_blend=0;
+    auto offset_play=task_player.QueueAnimation({"attack_loop",3,0,expected_start});
+    ++active_frame.sequence;task_player.Service(active_frame,true,objects);Check(offset_play->accepted);
+    task_player.ReleaseAnimation(offset_play->serial);
+    expected_layer=0;expected_start=0;
     // Cancellation during a managed read cannot reach the playback write.
     const auto before_cancel=state_plays;
     auto cancelled=task_player.QueueAnimation({"attack_loop"});cancel_on_has=true;

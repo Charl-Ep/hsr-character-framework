@@ -195,7 +195,7 @@ std::optional<AnimationRequestEndpoint> VisualPartners::Animation(const std::str
             [this,weak](const auto& command) {
                 const auto current=weak.lock();
                 if(!current || !Current(current) || !Live(current->token))throw std::runtime_error("partner animation owner ended");
-                const auto result=current->controls->PlayIdle({command.state,0,command.transition,1});
+                const auto result=current->controls->PlayIdle({command.state,command.normalized_start,command.transition,1});
                 if(!result.returned)throw std::runtime_error("partner animation: "+result.error);
                 return api::CallResult{result.returned,0};
             });

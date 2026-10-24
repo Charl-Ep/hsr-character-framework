@@ -33,7 +33,8 @@ void AnimationRequests::Finish(const std::shared_ptr<Entry>& entry,const std::st
 }
 std::shared_ptr<const AnimationRequestStatus> AnimationRequests::Submit(AnimationCommand command) {
     if(command.state.empty() || command.state.find('\0')!=std::string::npos || command.layer<0 ||
-        !std::isfinite(command.transition) || command.transition<0)throw std::invalid_argument("invalid animation command");
+        !std::isfinite(command.transition) || command.transition<0 || !std::isfinite(command.normalized_start))
+        throw std::invalid_argument("invalid animation command");
     Cancel(command.layer);
     auto entry=std::make_shared<Entry>();entry->command=std::move(command);
     entry->status=std::make_shared<AnimationRequestStatus>();
@@ -116,10 +117,10 @@ void AnimationRequests::Service(const api::WorldFrame& frame,bool ready,api::Man
                     if(!Live(entry))continue;
                     if(!final_model.animator.read.returned || !final_model.changing.read.returned ||
                         final_model.changing.value || final_model.animator.value!=entry->animator)continue;
-                    call=control.PlayFreeStyleState(style.object,entry->hash,entry->command.transition,0);
+                    call=control.PlayFreeStyleState(style.object,entry->hash,entry->command.transition,entry->command.normalized_start);
                 } else if(entry->command.transition>0)
-                    call=control.CrossFade(entry->animator,entry->hash,entry->command.transition,entry->command.layer,0);
-                else call=control.PlayAnimator(entry->animator,entry->hash,entry->command.layer,0);
+                    call=control.CrossFade(entry->animator,entry->hash,entry->command.transition,entry->command.layer,entry->command.normalized_start);
+                else call=control.PlayAnimator(entry->animator,entry->hash,entry->command.layer,entry->command.normalized_start);
                 status.accepted=call.returned;
                 if(!Live(entry))continue;
                 if(!call.returned)throw std::runtime_error("animation call failed");
