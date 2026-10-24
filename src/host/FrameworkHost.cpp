@@ -58,7 +58,9 @@ void FrameworkHost::Prepare(api::RuntimeMetadata& metadata,api::RuntimeCapabilit
         [this,&metadata](const auto& character,const auto& source) {
             return Measure("catalog.visual-phase",[&]{return official_catalog_->ReadPhaseVisualConfigSources(character,source,metadata);});
         });
-    characters_=std::make_unique<SceneCharacters>(services_->Sessions(capabilities.event_record_lifetime));
+    auto sessions=services_->Sessions(capabilities.event_record_lifetime);
+    sessions.pose=[this](const auto& roots,const auto& selection){return Browser().ResolvePose(roots,selection);};
+    characters_=std::make_unique<SceneCharacters>(std::move(sessions));
     characters_->ConfigureProfiles(profiles_);
     characters_->ConfigurePrograms(programs_);
     characters_->ConfigureControls(services_->Controls(),services_->Player());
@@ -102,7 +104,9 @@ void FrameworkHost::Prepare(api::RuntimeMetadata& metadata,api::RuntimeCapabilit
 void FrameworkHost::Prepare(api::ManagedObjects& objects,api::PresentationBindings bindings,
     api::RuntimeCapabilities capabilities,SceneCharacters::Create create,CatalogReaders catalog) {
     Assemble(objects,std::make_unique<RuntimeServices>(objects,std::move(bindings)),capabilities);
-    characters_=std::make_unique<SceneCharacters>(services_->Sessions(capabilities.event_record_lifetime),std::move(create));
+    auto sessions=services_->Sessions(capabilities.event_record_lifetime);
+    sessions.pose=[this](const auto& roots,const auto& selection){return Browser().ResolvePose(roots,selection);};
+    characters_=std::make_unique<SceneCharacters>(std::move(sessions),std::move(create));
     PrepareApplication(catalog.characters?std::make_unique<CatalogBrowser>(std::move(catalog)):nullptr);
     ApplicationSnapshot snapshot;snapshot.prepared=true;snapshot.binding_errors=binding_errors_;application_.Publish(std::move(snapshot));
 }

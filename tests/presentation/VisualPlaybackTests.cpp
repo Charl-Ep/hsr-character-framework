@@ -146,6 +146,22 @@ void TestVisualPlayback() {
     player.Queue(framework::NpcMotion{99});tick();
     emotion.mask=nullptr;before=blink_writes;enter();Check(blink_writes==before && player.Status().blink_note=="blink source snapshot unavailable");
     emotion.mask=&blink_mask;
+    player.Queue(framework::NpcMotion{99});tick();
+    layers[2]={100,0,0.6f,false,false};
+    const auto held=player.QueuePose(Recipe());tick();
+    Check(held->accepted && !held->entered);
+    layers[0].time=1.2f;tick();tick();Check(held->entered && !held->complete);
+    const auto held_body=body_writes;player.Queue(framework::AnimatorState{"OtherFace",2,0});tick();tick();
+    Check(!held->released && !held->complete && body_writes==held_body && layers[0].current==2);
+    player.ReleasePose(held->serial);
+    const auto recovered=player.QueuePose(exit);tick();
+    Check(recovered->accepted && !recovered->complete && blink_mask.enabled[3] && layers[2].current==6);
+    before=body_writes;layers[0].time=1.2f;tick();
+    Check(recovered->complete && recovered->error.empty() && layers[0].current==3 && body_writes==before);
+    Check(!player.Status().successor); // task controller, not this player, chooses the next state
+    player.ReleasePose(recovered->serial);
+    const auto stopped=player.QueuePose(Recipe());tick();player.ReleasePose(stopped->serial,true);tick();
+    Check(stopped->released && blink_mask.enabled[3]);
     api::TrackedEntities().Disposed(token);before=writes;tick();Check(writes==before);
     Check(player.Close(frame) && roots.empty());api::TrackedEntities().Forget(token);
     std::cout<<"Visual row playback: entry/hold/recovery, official successor, transition-target cleanup, NPC interruption, model replacement, partial write and owner end passed; no game acceptance.\n";

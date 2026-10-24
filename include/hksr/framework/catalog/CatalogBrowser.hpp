@@ -4,6 +4,7 @@
 #include "ActionCatalog.hpp"
 #include "../character/CharacterPlan.hpp"
 #include "../presentation/ActionSelection.hpp"
+#include "../presentation/PoseRequests.hpp"
 #include <deque>
 
 namespace hksr::framework {
@@ -40,6 +41,7 @@ public:
     bool InspectVisuals(const std::vector<ActionSourceRoot>& roots);
     void ForgetCharacter(std::uint64_t character);
     PlacedAction ResolveAction(std::uint64_t character,const CatalogActionSelection& selection) const;
+    std::optional<PoseCommand> ResolvePose(const std::vector<ActionSourceRoot>&,const PoseSelection&);
     CharacterPlan Plan(std::uint64_t request,std::shared_ptr<const ModelAssetInput> payload={},std::string look={}) const;
     std::shared_ptr<const CatalogSnapshot> Snapshot() const { return snapshot_; }
     api::NpcMotionSources NpcMotions(void* owned_component) const;
@@ -52,6 +54,7 @@ private:
     struct CharacterSources {std::uint64_t revision;std::vector<ActionSourceRoot> roots;};
     std::map<std::uint64_t,CharacterSources> character_sources_;
     std::map<std::uint64_t,std::vector<ActionSourceRoot>> source_roots_;
+    std::set<std::string> pose_sources_;
     std::map<std::uint64_t,std::shared_ptr<const ActionCatalogStatus>> source_views_,character_views_;
     std::deque<std::uint64_t> pending_sources_;
     std::uint64_t revision_=0,next_source_=0;

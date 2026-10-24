@@ -68,6 +68,7 @@ set(HKSR_RUNTIME_SOURCES
     src/presentation/ActionEffects.cpp
     src/presentation/ActionPlayback.cpp
     src/presentation/AnimationRequests.cpp
+    src/presentation/PoseRequests.cpp
     src/presentation/ActionVisualProgram.cpp
     src/presentation/ModelActionHandoff.cpp
     src/presentation/PresentationProfile.cpp

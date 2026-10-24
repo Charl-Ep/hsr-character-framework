@@ -25,10 +25,17 @@ std::uint64_t ModelActionHandoff::Queue(ActionDomain domain,ActionRequest action
         status_.initialization_note="battle config has no readable initial state; automatic completion destination unavailable";
     return status_.requested;
 }
-void ModelActionHandoff::ConfigureTasks(std::shared_ptr<const TaskCatalog> catalog,std::shared_ptr<VisualProgramPlayer> scene) {
+void ModelActionHandoff::ConfigureTasks(std::shared_ptr<const TaskCatalog> catalog,std::shared_ptr<VisualProgramPlayer> scene,PoseResolver pose) {
     if(tasks_)throw std::logic_error("task catalog already configured");
     if(!catalog || !scene)throw std::invalid_argument("task catalog and scene required");
     TaskPresentationServices services;
+    services.pose=BindTaskPose(actions_,[this,resolve=std::move(pose)](const auto& selection)->std::optional<PoseCommand> {
+        if(removing_ || Ended())throw std::runtime_error("task actor ended");
+        if(status_.phase!=HandoffPhase::Ready || status_.ready_domain!=task_catalog_->domain)return {};
+        if(task_catalog_->domain!=ActionDomain::Alternate)throw std::runtime_error("configured poses require battle domain");
+        if(!resolve)throw std::runtime_error("pose source resolver unavailable");
+        return resolve(selection);
+    });
     services.animation=[this](const auto& participant)->std::optional<TaskAnimationEndpoint> {
         if(participant.name!="body")throw std::invalid_argument("unknown owned task participant: "+participant.name);
         if(removing_ || Ended())throw std::runtime_error("task actor ended");

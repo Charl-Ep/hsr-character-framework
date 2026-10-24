@@ -31,7 +31,7 @@ void TestCatalogBrowser() {
     rows.npcs.rows={{91,"Npc/A","Model/A"}};
     rows.players.rows={{11,91,0,0,"Player/A","Player.prefab"},{11,91,0,1,"Player/Skin","Skin.prefab"}};
     rows.avatars.rows={{91,"Battle/A","Battle.prefab"}};
-    int table_reads=0,identity_reads=0,ability_reads=0,npc_reads=0,ready_reads=0;
+    int table_reads=0,identity_reads=0,ability_reads=0,npc_reads=0,ready_reads=0,pose_visual_reads=0;
     std::map<std::string,int> document_reads;
     bool broken_battle=false,broken_tables=false;
     CatalogReaders readers{
@@ -66,6 +66,12 @@ void TestCatalogBrowser() {
         edge.state={true,"DefaultReadyEdge",{}};defaults.transitions.push_back(edge);
         return defaults;
     };
+    readers.visuals=[&](const auto& source) {
+        ++pose_visual_reads;api::VisualConfigSources out;out.character_config=source;out.context_available=true;
+        out.defaults.loaded=true;out.defaults.behaviors.enumerated=true;out.defaults.source="Shared";
+        api::VisualBehaviorInput row;row.flag={true,99,{}};row.emotion={true,"Emo_Hit",{}};
+        row.recover.resolved_state={true,"Recover",{}};out.defaults.behaviors.rows.push_back(row);return out;
+    };
     CatalogBrowser browser(readers);Check(table_reads==0 && ready_reads==0 && !browser.Snapshot()->requested);
     auto selection=browser.Prepare(BrowsePlayer{{11,0,1},{}});Check(table_reads==0 && identity_reads==0);
     Finish(browser);auto view=browser.Snapshot();
@@ -82,6 +88,18 @@ void TestCatalogBrowser() {
     Check(defaults.hit_additive_layer.value=="HitAdditive" && defaults.hit_override_layer.value=="HitOverride");
     Check(defaults.empty_layer_state.value=="Empty" && defaults.transition_in.value==0.17f);
     Check(defaults.transitions.size()==1 && defaults.transitions.front().state.value=="DefaultReadyEdge");
+    const auto roots=browser.Plan(selection).action_sources;
+    const auto ready_pose=browser.ResolvePose(roots,ReadyPoseSelection{"Battle/A",0,-1});
+    Check(ready_pose && std::get<ReadyState>(*ready_pose).actions->defaults.transition_in.value==0.17f);
+    Check(document_reads["Battle/A"]==1 && ready_reads==1); // resolver uses the shared cache
+    bool foreign_pose=false,missing_pose=false;
+    try{browser.ResolvePose(roots,ReadyPoseSelection{"Battle/Other",0,-1});}catch(const std::invalid_argument&){foreign_pose=true;}
+    try{browser.ResolvePose(roots,ReadyPoseSelection{"Battle/A",44,-1});}catch(const std::runtime_error&){missing_pose=true;}
+    Check(foreign_pose && missing_pose && document_reads.count("Battle/Other")==0);
+    Check(!browser.ResolvePose(roots,ReactionSelection{"Battle/A",99,true}) && pose_visual_reads==0);
+    Finish(browser);const auto recovery_pose=browser.ResolvePose(roots,ReactionSelection{"Battle/A",99,true});
+    Check(recovery_pose && std::get<VisualState>(*recovery_pose).recover && std::get<VisualState>(*recovery_pose).expression.value=="Emo_Hit");
+    Check(pose_visual_reads==1 && document_reads["Battle/A"]==1);
     const auto immutable=view;const auto current=browser.Prepare(BrowseNpc{91});
     Check(browser.Plan(selection).package.appearance.has_value()); // another client cannot invalidate it
     Finish(browser);Check(browser.Plan(current).package.npc_id==91 && !browser.Plan(current).package.appearance);

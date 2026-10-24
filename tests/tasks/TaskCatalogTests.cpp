@@ -407,6 +407,21 @@ void ControlAtSequenceBoundaries() {
 void TestTaskCatalog(){
     Codec();SelectionAndInterrupt();AnimationOffsets();NaturalAndPending();ContextsAndFinish();CloseAndReentrant();InputRequirementsAndPreparation();ControlAdmissionAndPresentation();ControlSlotsReachDispatch();ControlAtSequenceBoundaries();
     auto input=Document();
+    {
+        auto poses=Document();poses["sequences"]["stand"]["entry"]={{"op","ready_pose"},{"request","ready"},{"config","Battle/A"},{"skill",8},{"variant",4}};
+        auto parsed=ParseTaskCatalog(poses.dump());
+        const auto& ready=std::get<ReadyPoseSelection>(std::get<TaskPoseCommand>(std::get<TaskSubmit>(parsed.sequences.at("stand")->nodes[0].operation).operation).selection);
+        Check(ready.source=="Battle/A" && ready.skill==8 && ready.variant==4);
+        auto progress=poses;progress["sequences"]["stand"]["entry"]={{"op","serial"},{"children",Json::array({
+            poses["sequences"]["stand"]["entry"],{{"op","wait_request"},{"request","ready"},{"signal","progress"},{"progress",0.5}}})}};
+        Reject([&]{ParseTaskCatalog(progress.dump());});
+        poses["sequences"]["stand"]["entry"]["skill"]=-1;Reject([&]{ParseTaskCatalog(poses.dump());});
+        poses["sequences"]["stand"]["entry"]={{"op","reaction"},{"request","recover"},{"config","Battle/A"},{"flag",99},{"recover",true}};
+        parsed=ParseTaskCatalog(poses.dump());
+        const auto& recovery=std::get<ReactionSelection>(std::get<TaskPoseCommand>(std::get<TaskSubmit>(parsed.sequences.at("stand")->nodes[0].operation).operation).selection);
+        Check(recovery.flag==99 && recovery.recover && recovery.source=="Battle/A");
+        poses["sequences"]["stand"]["entry"]["participant"]="official-player";Reject([&]{ParseTaskCatalog(poses.dump());});
+    }
     input["sequences"]["stand"]["entry"]={{"op","serial"},{"children",Json::array({
         {{"op","visual"},{"request","turn"},{"instruction",{{"op","face_target"},{"source","LookAt"},
             {"target","AbilityTargetEntity"},{"ratio",0.5},{"angle_offset",10},{"duration",1}}}},

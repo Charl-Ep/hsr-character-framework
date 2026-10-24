@@ -39,7 +39,7 @@ public:
     void RestoreVisualProgram(VisualProgramSnapshot value) {visual_restore_=std::move(value);}
     void ConfigurePresentation(std::shared_ptr<const PresentationProfile> profile,const std::string& phase={}) {actions_.ConfigurePresentation(std::move(profile),phase);}
     void ConfigureVisualProgram(std::shared_ptr<VisualProgramPlayer> program){actions_.ConfigureVisualProgram(std::move(program));}
-    void ConfigureTasks(std::shared_ptr<const TaskCatalog>,std::shared_ptr<VisualProgramPlayer>);
+    void ConfigureTasks(std::shared_ptr<const TaskCatalog>,std::shared_ptr<VisualProgramPlayer>,PoseResolver={});
     TaskControlResult ControlTask(TaskControlInput);
     TaskControlResult QueryTasks(const std::optional<TaskSelection>& selection={}) const;
     bool HasTasks() const {return bool(tasks_);}

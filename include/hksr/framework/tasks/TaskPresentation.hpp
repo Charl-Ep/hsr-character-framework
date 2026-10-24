@@ -8,6 +8,7 @@ using TaskAnimationEndpoint=AnimationRequestEndpoint;
 // The bound ActionPlayback must outlive the task's drain. This never resolves
 // official actors from a global name, target selector or battle registry.
 TaskAnimationEndpoint BindTaskAnimation(ActionPlayback&);
+PoseRequestEndpoint BindTaskPose(ActionPlayback&,PoseResolver);
 struct TaskSoundEndpoint {
     std::uint64_t entity_generation=0;
     std::function<void()> service,cancel;
@@ -25,6 +26,7 @@ struct TaskPresentationServices {
     // Synchronous, value-only changes on this execution's accepted control
     // ticket. No native battle entity, task factory or event broadcast.
     std::function<void(const std::vector<ControlChange>&)> control;
+    std::optional<PoseRequestEndpoint> pose;
 };
 // One task execution over an existing visual scene and owned animation players.
 // Service those animation players on their normal owner frame, then call

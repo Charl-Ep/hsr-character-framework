@@ -55,6 +55,7 @@ void ActionPlayback::StartReady(const ReadyState& request,void* animator,void* s
             // If reversing back to a previous selection, the effect belongs
             // to that selection too. An unchanged selection does not respawn.
             if(changing_back)ReplaceReadyEffect(target,objects);
+            old.serial=receipt.serial;
             ready_cancelled_=false;receipt.outcome=ActionOutcome::Returned;
             status_.ready_note="same ready pose retained; progress not restarted";return;
         }
@@ -63,7 +64,7 @@ void ActionPlayback::StartReady(const ReadyState& request,void* animator,void* s
             receipt.call=old.speed->Apply(-1,live).call;
             if(!receipt.call.returned){ReleaseReady(animator);receipt.outcome=ActionOutcome::CallFailed;return;}
             if(!live()){receipt.outcome=ActionOutcome::Cancelled;return;}
-            old.reversing=true;old.pending=request;ready_cancelled_=false;
+            old.serial=receipt.serial;old.reversing=true;old.pending=request;ready_cancelled_=false;
             ReplaceReadyEffect(target,objects);
             receipt.outcome=ActionOutcome::Returned;status_.ready_note="authored transition reversing; newest destination queued";return;
         }
@@ -89,6 +90,7 @@ void ActionPlayback::StartReady(const ReadyState& request,void* animator,void* s
         receipt.detail="ready entry changed entity/model/intent; remaining writes cancelled";return;
     }
     ReadyPlayback next;next.request=request;next.animator=animator;next.from=from;
+    next.serial=receipt.serial;
     next.pose_hash=hash;next.edge_hash=edge_hash;next.reverse_until=edge.reverse_until;next.boundary=frame.sequence;
     ready_=next;ready_cancelled_=false;
     // Only the specific float parameter used by the official ready consumer.
@@ -118,16 +120,19 @@ void ActionPlayback::TickReady(void* animator,void* style,const api::WorldFrame&
     if(Ended() || revision!=intent_revision_ || !ready_)return;
     if(!now.read.returned)throw std::runtime_error("ready effective state unread");
     if(ready_->reversing && ready_->pending && (!Matches(now,ready_->edge_hash) || now.normalized_time<=0 || now.normalized_time>=1)) {
-        auto request=*ready_->pending;ActionReceipt receipt;receipt.request=request;
+        auto request=*ready_->pending;ActionReceipt receipt;receipt.request=request;receipt.serial=ready_->serial;
         StartReady(request,animator,style,frame,objects,receipt);
+        PoseResult(receipt,animator);
         if(receipt.outcome!=ActionOutcome::Returned){ReleaseReady(animator);status_.ready_note="queued ready destination failed: "+receipt.detail;}
         return;
     }
     if(Matches(now,ready_->pose_hash)) {
         if(!ready_->pose_seen)status_.ready_note+="; target observed";
+        ObservePose(ready_->serial,!ready_->reversing);
         ready_->pose_seen=true;return;
     }
     if(Matches(now,ready_->edge_hash)) {
+        ObservePose(ready_->serial);
         ready_->edge_seen=true;
         if(transition.value || ready_->reversing || !std::isfinite(now.normalized_time) || now.normalized_time<1)return;
         const auto target_hash=ready_->pose_hash;
@@ -145,5 +150,6 @@ void ActionPlayback::TickReady(void* animator,void* style,const api::WorldFrame&
         ready_->successor_seen=true;
         status_.ready_note+="; controller successor retained; selected skill unchanged";
     }
+    if(ready_->successor_seen)ObservePose(ready_->serial,true);
 }
 }

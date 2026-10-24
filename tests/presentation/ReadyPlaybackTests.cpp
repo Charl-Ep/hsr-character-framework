@@ -1,4 +1,5 @@
 #include <hksr/framework/presentation/ActionPlayback.hpp>
+#include <hksr/framework/tasks/TaskPresentation.hpp>
 #include <Windows.h>
 #include <map>
 #include <memory>
@@ -217,6 +218,44 @@ void TestReadyPlayback() {
     set->defaults.hit_additive_layer.value="NoSuchLayer";hit_weight=0;presentation_calls.clear();select(0);
     Check(presentation_calls==std::vector<std::string>{"weight3","fade2","body"});
     Check(playback.Status().ready_note.find("NoSuchLayer absent")!=std::string::npos);
+    // Task receipts reuse this exact transition player, not raw PoseB playback.
+    presentation=false;playback.Queue(NpcMotion{5});step();current=11;time=0;
+    const auto first=playback.QueuePose(ReadyState{set,0});step();
+    Check(first->accepted && !first->entered && !first->complete);
+    step();Check(first->entered && first->complete && !first->progress);
+    playback.ReleasePose(first->serial);
+    const auto second=playback.QueuePose(ReadyState{set,1});step();
+    Check(last_play==21 && second->accepted && !second->complete);
+    current=21;time=0.3f;step();Check(second->entered && !second->complete);
+    playback.ReleasePose(second->serial); // task replacement retains reverse context
+    const auto reverse=playback.QueuePose(ReadyState{set,0});step();Check(speed==-1 && !reverse->complete);
+    playback.ReleasePose(second->serial,true); // stale task cannot cancel its replacement
+    time=0;step();Check(last_play==11 && !reverse->complete);
+    current=11;step();Check(reverse->accepted && reverse->complete && reverse->error.empty());
+    const auto lost=playback.QueuePose(ReadyState{set,1});step();changing=true;step();changing=false;
+    Check(lost->cancelled && lost->released && !lost->error.empty());
+    {
+        auto data=std::make_shared<VisualProgram>();VisualProgramServices services;
+        services.effects=std::make_shared<api::PresentationEffects>(api::EffectRequestServices{{},api::EffectAccess({}),{},{},{}});
+        services.create=[](auto&,const auto&,const auto&)->VisualEffectId{throw std::logic_error("unexpected fixture effect");};
+        auto scene=std::make_shared<VisualProgramPlayer>(data,std::move(services));
+        auto sequence=std::make_shared<TaskSequence>();
+        sequence->nodes={{"ready",TaskSubmit{"ready",TaskPoseCommand{ReadyPoseSelection{"base",8,-1}}}},
+            {"observed",TaskWaitRequest{"ready"}},{"entry",TaskSerial{{0,1}}}};sequence->entry=2;
+        TaskPresentationServices ports;
+        ports.pose=BindTaskPose(playback,[&](const auto& selection)->std::optional<PoseCommand> {
+            Check(std::get<ReadyPoseSelection>(selection).source=="base");return ReadyState{set,1};
+        });
+        playback.Queue(NpcMotion{5});step();select(0);current=11;step();
+        TaskPresentation task({97},token.generation,sequence,scene,{},ports);
+        task.Service(0,frame.sequence);step();task.Service(0,frame.sequence);
+        Check(last_play==21 && !task.Drained());current=21;time=1.1f;step();task.Service(0,frame.sequence);
+        Check(last_play==12 && !task.Drained());current=12;step();task.Service(0,frame.sequence);
+        step();task.Service(0,frame.sequence);Check(task.Drained() && task.Status().issues.empty());
+        // Task release must leave the logical source for the next ready edge.
+        playback.QueuePose(ReadyState{set,0});step();Check(last_play==22);
+        scene->End();scene->Service();Check(scene->Drained());
+    }
     Check(playback.Close(frame) && roots.empty());
     {
         // Whole ready consumer + real SDK call wrappers, not string/source checks.

@@ -2,6 +2,7 @@
 #include "TaskModel.hpp"
 #include "BattleControl.hpp"
 #include <hksr/framework/presentation/VisualProgram.hpp>
+#include <hksr/framework/presentation/PoseRequests.hpp>
 #include <functional>
 #include <memory>
 
@@ -11,7 +12,8 @@ struct TaskAnimationCommand {TaskParticipant participant;std::string state;int l
 struct TaskSoundCommand {TaskParticipant participant;std::string event;};
 struct TaskMovementCommand {std::string animation;VisualMovement movement;}; // state comes from this request
 struct TaskControlCommand {std::vector<ControlChange> changes;};
-using TaskLeafOperation=std::variant<TaskAnimationCommand,VisualInstruction,TaskSoundCommand,TaskMovementCommand,TaskControlCommand>;
+struct TaskPoseCommand {PoseSelection selection;}; // always this controller's owned body
+using TaskLeafOperation=std::variant<TaskAnimationCommand,VisualInstruction,TaskSoundCommand,TaskMovementCommand,TaskControlCommand,TaskPoseCommand>;
 struct TaskSubmit {std::string request;TaskLeafOperation operation;};
 enum class TaskWaitSignal { Submitted,RequestComplete,PerformanceComplete,Progress,Drained,Started };
 struct TaskWaitRequest {std::string request;TaskWaitSignal signal=TaskWaitSignal::PerformanceComplete;double progress=1;};

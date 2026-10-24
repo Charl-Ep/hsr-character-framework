@@ -34,6 +34,7 @@ void CatalogBrowser::RequestActions() {
     std::vector<ActionSourceRoot> roots;
     for(const auto& entry:source_roots_)roots.insert(roots.end(),entry.second.begin(),entry.second.end());
     for(const auto& entry:character_sources_)roots.insert(roots.end(),entry.second.roots.begin(),entry.second.roots.end());
+    for(const auto& source:pose_sources_)roots.push_back({ActionDomain::Alternate,{api::ActionConfigKind::Battle,source}});
     actions_.Request(std::move(roots));actions_started_=true;
 }
 void CatalogBrowser::BatchSources(const std::function<void()>& update) {
@@ -185,6 +186,39 @@ PlacedAction CatalogBrowser::ResolveAction(std::uint64_t character,const Catalog
     const auto found=state_.characters.find(character);
     if(found==state_.characters.end())throw std::runtime_error("request this instance's action catalog first");
     return ResolveCatalogAction(*found->second,selection);
+}
+std::optional<PoseCommand> CatalogBrowser::ResolvePose(const std::vector<ActionSourceRoot>& roots,const PoseSelection& selection) {
+    const auto source=std::visit([](const auto& key){return key.source;},selection);
+    const std::vector<ActionSourceRoot> selected{{ActionDomain::Alternate,{api::ActionConfigKind::Battle,source}}};
+    if(!std::any_of(roots.begin(),roots.end(),[&](const auto& root) {
+        return root.domain==ActionDomain::Alternate && root.source.kind==api::ActionConfigKind::Battle && root.source.path==source;
+    }))throw std::invalid_argument("pose configuration does not belong to this actor: "+source);
+    if(pose_sources_.insert(source).second)RequestActions();
+    if(std::holds_alternative<ReactionSelection>(selection))InspectVisuals(selected);
+    // Read the existing per-source value cache. No engine calls or roster scan
+    // here; Advance owns pending reads and shares them with ordinary menus.
+    const auto view=actions_.Snapshot(selected);
+    if(const auto* ready=std::get_if<ReadyPoseSelection>(&selection)) {
+        if(!view->Ready(ActionDomain::Alternate))return {};
+        std::optional<PoseCommand> result;
+        for(const auto& set:view->ready_actions)if(set->source==source)
+            for(std::size_t i=0;i<set->poses.size();++i) {
+                const auto& pose=set->poses[i];
+                if(pose.skill_index!=ready->skill || pose.variant_index!=ready->variant)continue;
+                if(result)throw std::runtime_error("ambiguous ready pose source");
+                result=ReadyState{set,i};
+            }
+        if(!result)throw std::runtime_error("ready pose absent from bound source");
+        return result;
+    }
+    const auto& reaction=std::get<ReactionSelection>(selection);
+    for(const auto& values:view->visual_sources)if(values.character_config==source) {
+        const auto resolved=ResolveVisualState(values,reaction.flag,reaction.recover);
+        if(!resolved)throw std::runtime_error("reaction absent from bound source");
+        return *resolved;
+    }
+    if(!view->finished)return {};
+    throw std::runtime_error("reaction configuration unavailable");
 }
 bool CatalogBrowser::InspectVisuals(const std::vector<ActionSourceRoot>& roots) {
     bool changed=false;

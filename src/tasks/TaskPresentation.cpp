@@ -6,6 +6,13 @@ TaskAnimationEndpoint BindTaskAnimation(ActionPlayback& player) {
     return {player.Owner().generation,[&player](const auto& command){return player.QueueAnimation(command);},
         [&player](auto serial){player.ReleaseAnimation(serial);}};
 }
+PoseRequestEndpoint BindTaskPose(ActionPlayback& player,PoseResolver resolve) {
+    return {player.Owner().generation,[&player,resolve=std::move(resolve)](const auto& selection) {
+        if(!resolve)throw std::runtime_error("pose source resolver unavailable");
+        const auto command=resolve(selection);
+        return command?player.QueuePose(*command):std::shared_ptr<const AnimationRequestStatus>{};
+    },[&player](auto serial,bool cancel){player.ReleasePose(serial,cancel);}};
+}
 TaskSoundEndpoint BindTaskSound(std::uint64_t generation,std::unique_ptr<api::OwnedSoundRequest> request) {
     if(!generation || !request)throw std::invalid_argument("sound endpoint requires owned request");
     auto shared=std::shared_ptr<api::OwnedSoundRequest>(std::move(request));
@@ -18,6 +25,7 @@ struct TaskPresentation::State {
         TaskLeafOperation operation;
         std::shared_ptr<Request> animation_dependency;
         std::optional<TaskAnimationEndpoint> endpoint;
+        std::optional<PoseRequestEndpoint> pose_endpoint;
         std::shared_ptr<const AnimationRequestStatus> animation;
         std::shared_ptr<const VisualInstructionStatus> visual;
         std::optional<TaskSoundEndpoint> sound;
@@ -45,7 +53,8 @@ struct TaskPresentation::State {
         const auto* animation=std::get_if<TaskAnimationCommand>(&input.operation);
         const auto* sound=std::get_if<TaskSoundCommand>(&input.operation);
         const auto* movement=std::get_if<TaskMovementCommand>(&input.operation);
-        request->value.receipt={actual,serial,0,animation?animation->participant:sound?sound->participant:TaskParticipant{movement?"body":"visual"},animation || sound || movement?0:owner};
+        const bool pose=std::holds_alternative<TaskPoseCommand>(input.operation);
+        request->value.receipt={actual,serial,0,animation?animation->participant:sound?sound->participant:TaskParticipant{movement || pose?"body":"visual"},animation || sound || movement || pose?0:owner};
         if(movement) {
             for(const auto& [id,prior]:requests)if(id<serial && prior->name==movement->animation)request->animation_dependency=prior;
             if(!request->animation_dependency)request->value.state.error="movement animation request has not been submitted";
@@ -89,7 +98,10 @@ struct TaskPresentation::State {
             request->finishing=true;return; // a queued command must still be delivered
         }
         request->released=true;
-        if(request->animation)request->endpoint->release(request->animation->serial);
+        if(request->animation) {
+            if(request->pose_endpoint)request->pose_endpoint->release(request->animation->serial,reason!=TaskExitReason::Completed && reason!=TaskExitReason::Replaced);
+            else request->endpoint->release(request->animation->serial);
+        }
         if(request->visual)visual->CancelInstruction(scope,request->visual);
         request->value.state.drained=true;
     }
@@ -143,7 +155,10 @@ struct TaskPresentation::State {
         // Release does not write Animator state or claim a missing final cue.
         request->value.state.superseded=!request->value.state.performance_complete;
         request->released=true;
-        if(request->animation)request->endpoint->release(request->animation->serial);
+        if(request->animation) {
+            if(request->pose_endpoint)request->pose_endpoint->release(request->animation->serial,false);
+            else request->endpoint->release(request->animation->serial);
+        }
         request->value.state.drained=true;
         execution->Observe(request->value.receipt,request->value.state);
     }
@@ -160,7 +175,9 @@ struct TaskPresentation::State {
         for(const auto& [id,other]:requests) {
             if(other==request || other->released)continue;
             const auto* animation=std::get_if<TaskAnimationCommand>(&other->operation);
-            if(!animation || animation->participant.name!=command.participant.name || animation->layer!=command.layer)continue;
+            const bool pose=std::holds_alternative<TaskPoseCommand>(other->operation);
+            if(pose?(command.participant.name!="body" || command.layer!=0):
+                (!animation || animation->participant.name!=command.participant.name || animation->layer!=command.layer))continue;
             if(id>request->value.receipt.request){Supersede(request);return false;}
             prior.push_back(other);
         }
@@ -208,6 +225,15 @@ struct TaskPresentation::State {
                                 throw std::runtime_error("animation endpoint returned another entity generation");
                             if(request->released)request->endpoint->release(request->animation->serial);
                         }
+                    } else if(const auto* pose=std::get_if<TaskPoseCommand>(&request->operation)) {
+                        if(!services.pose || services.pose->entity_generation!=owner || !services.pose->submit || !services.pose->release)
+                            throw std::runtime_error("owned pose endpoint unavailable");
+                        request->pose_endpoint=services.pose;request->value.receipt.entity_generation=owner;
+                        if(!ClaimAnimationChannel(request,TaskAnimationCommand{{"body"}}))continue;
+                        request->animation=request->pose_endpoint->submit(pose->selection);
+                        if(request->animation && request->animation->entity_generation!=owner)
+                            throw std::runtime_error("pose endpoint returned another entity generation");
+                        if(request->released && request->animation)request->pose_endpoint->release(request->animation->serial,true);
                     } else if(const auto* sound=std::get_if<TaskSoundCommand>(&request->operation)) {
                         if(!services.sound)throw std::runtime_error("task sound service unavailable");
                         request->submitting=true;

@@ -114,6 +114,15 @@ struct SequenceParser {
                 Need(transition>=0 && transition<=std::numeric_limits<float>::max(),"animation transition out of range");
                 operation=TaskSubmit{Name(row.at("request")),TaskAnimationCommand{{Name(row.at("participant"))},Name(row.at("state")),
                     static_cast<int>(layer),static_cast<float>(transition),Float(row.value("start",Json(0)))}};
+            } else if(op=="ready_pose") {
+                Fields(row,{"op","request","config","skill","variant","source"});
+                const auto skill=Integer(row.at("skill")),variant=Integer(row.value("variant",Json(-1)));
+                Need(skill>=0 && skill<=INT_MAX && variant>=-1 && variant<=INT_MAX,"ready pose index out of range");
+                operation=TaskSubmit{Name(row.at("request")),TaskPoseCommand{ReadyPoseSelection{Name(row.at("config")),static_cast<int>(skill),static_cast<int>(variant)}}};
+            } else if(op=="reaction") {
+                Fields(row,{"op","request","config","flag","recover","source"});
+                const auto flag=Integer(row.at("flag"));Need(flag>=INT32_MIN && flag<=INT32_MAX,"reaction flag out of range");
+                operation=TaskSubmit{Name(row.at("request")),TaskPoseCommand{ReactionSelection{Name(row.at("config")),static_cast<std::int32_t>(flag),row.value("recover",false)}}};
             } else if(op=="control") {
                 Fields(row,{"op","request","changes","source"});
                 operation=TaskSubmit{Name(row.at("request")),TaskControlCommand{control_codec::Changes(row.at("changes"))}};

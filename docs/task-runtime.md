@@ -4,7 +4,7 @@ The `tasks` module provides typed visual tasks, configuration loading, owned-res
 
 `CharacterTasks` lists NPC motions, configured animation candidates, ready transitions, shared reactions, authored programs, task sequences and idle. Each row retains its backend identity, sources, availability and application command. A configured animation candidate is not a complete battle ability. The menu shows available rows and tasks whose missing inputs can be edited. Development mode can show other unavailable and unknown rows. HTTP retains all rows and their reasons.
 
-Shared reaction rows currently use the existing `VisualState` executor, exposed through the action catalog, menu, HTTP and layout persistence. It handles configured enter/hold/recover body phases, expression and blink ownership. These rows are not compiled `TaskSequence` plans; material, speed and floating behavior are not implemented. See [action API](http-api.md#actions).
+Shared reactions use the `VisualState` executor for configured enter/hold/recover body phases, expression and blink ownership. Task sequences can reference this executor through `reaction`; material, speed and floating behavior are not implemented. See [action API](http-api.md#actions).
 
 ## Model
 
@@ -58,6 +58,10 @@ Service animation players on their normal owner frame, then call `TaskPresentati
 Animation requests do not select an automatic successor. A completed non-loop state or observed exit completes its wait; looping states remain active. Releasing a receipt stops observation, not the Animator. The next task command owns the next state. Controlled domain changes cancel old requests, while observed Animator changes invalidate their bindings.
 
 An animation submission accepts `start` (normalized playback offset, default `0`) and `transition` (normalized blend duration, default `0`). Body, partner and layer playback preserve the offset. Progress waits use the observed absolute animation time, not elapsed time since submission. A start offset does not itself count as observed entry or progress.
+
+`ready_pose` selects `{config, skill, variant}` by configuration path and original skill/variant indices (`variant` defaults to `-1`). `reaction` selects `{config, flag, recover}` (`recover` defaults to `false`). Both require a request name, operate on this task controller's body and use cached sources bound to that actor. `BindTaskPose` reuses `ActionPlayback` transitions, expression and blink ownership; it does not grant control permission.
+
+A ready performance wait completes when the destination or its controller successor is observed. A reaction occurrence remains active through its hold; recovery completes without scheduling an implicit idle. These composite operations have no normalized progress clock. Natural completion/replacement releases observation while retaining the selected pose for the next transition. Cancellation retires the owned pose; a stale receipt cannot cancel a newer one.
 
 Use a performance wait for animation completion. A progress wait requires that exact threshold to have been observed; if the request finishes below it, execution reports an unsatisfied dependency instead of waiting forever or assuming the missed cue ran.
 

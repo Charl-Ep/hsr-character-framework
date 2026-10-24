@@ -21,6 +21,7 @@ ActionPlayback::ActionPlayback(api::EntityToken owner,api::GameWorld* world,std:
 std::uint64_t ActionPlayback::Queue(ActionRequest request) {
     if(status_.closing) throw std::logic_error("action playback already closing");
     const auto* layer=std::get_if<AnimatorState>(&request);
+    if(!layer || layer->layer==0 || (pending_ && pending_->task_owned))CancelPose("pose request superseded");
     animation_requests_.Cancel(layer?layer->layer:0);
     ++intent_revision_;
     completion_.reset();status_.completion_pending=false;status_.completion_note.clear();
@@ -33,6 +34,7 @@ std::shared_ptr<const AnimationRequestStatus> ActionPlayback::QueueAnimation(Ani
     if(status_.closing)throw std::logic_error("action playback already closing");
     auto ticket=animation_requests_.Submit(command);
     if(command.layer==0) {
+        CancelPose("pose replaced by animation request");
         ++intent_revision_;
         if(pending_){pending_->outcome=ActionOutcome::Cancelled;status_.last=std::move(pending_);pending_.reset();}
         status_.pending=false;completion_.reset();status_.completion_pending=false;status_.successor.reset();
@@ -44,6 +46,7 @@ std::shared_ptr<const AnimationRequestStatus> ActionPlayback::QueueAnimation(Ani
     return ticket;
 }
 void ActionPlayback::CancelPending(bool interrupt_presentation) {
+    CancelPose("pose request cancelled");pose_animator_=nullptr;
     animation_requests_.Cancel();
     ++intent_revision_;
     if(interrupt_presentation){presentation_.Interrupt();LeaveProgram();SyncPresentation();}
@@ -135,11 +138,12 @@ void ActionPlayback::Service(const api::WorldFrame& frame,bool ready,api::Manage
     if(servicing_ || status_.closing || status_.closed) return;
     ServiceEffects(frame);
     if(Ended()) {
+        CancelPose("pose owner ended");
         animation_requests_.Cancel({},"animation owner ended");
         if(pending_) { pending_->outcome=ActionOutcome::OwnerEnded; status_.last=std::move(pending_); pending_.reset(); }
         status_.pending=false; return;
     }
-    if(!OwnFrame(frame)) {animation_requests_.Cancel({},"animation owner world left");return;}
+    if(!OwnFrame(frame)) {CancelPose("pose owner world left");animation_requests_.Cancel({},"animation owner world left");return;}
     resources_.Drain();
     if(!ready) return;
     servicing_=true;
@@ -159,13 +163,15 @@ void ActionPlayback::Service(const api::WorldFrame& frame,bool ready,api::Manage
             const auto model=models_.Read(static_cast<api::CharacterModelComponent*>(component.object));
             if(Ended()){ready_.reset();return;}
             if(!model.animator.read.returned || !model.changing.read.returned)throw std::runtime_error("ready model unread");
-            if(model.changing.value || model.animator.value!=ready_->animator || ready_cancelled_)ReleaseReady(model.animator.value);
+            if(model.changing.value || model.animator.value!=ready_->animator || ready_cancelled_) {
+                CancelPose("ready pose model changed or cancelled");ReleaseReady(model.animator.value);
+            }
             else {
                 const auto style=resources_.Component(api::AnimationComponent::FreeStyle,objects);
                 if(!style.call.returned || !style.object)throw std::runtime_error("ready FreeStyle unavailable");
                 if(!Ended())TickReady(model.animator.value,style.object,frame,objects);
             }
-        }catch(const std::exception& e){status_.ready_note=e.what();ready_cancelled_=true;}
+        }catch(const std::exception& e){CancelPose(e.what());status_.ready_note=e.what();ready_cancelled_=true;}
     }
     if(visual_ && !pending_) {
         try {
@@ -175,6 +181,7 @@ void ActionPlayback::Service(const api::WorldFrame& frame,bool ready,api::Manage
             if(Ended()) {visual_.reset();return;}
             if(!model.animator.read.returned || !model.changing.read.returned) throw std::runtime_error("visual model read failed");
             if(model.changing.value || model.animator.value!=visual_->animator) {
+                CancelPose("reaction model changed");
                 ReleaseVisual(model.animator.value);status_.visual_note="model changed; visual ownership ended";
             } else if(visual_cancelled_) ReleaseVisual(model.animator.value);
             else {
@@ -182,13 +189,14 @@ void ActionPlayback::Service(const api::WorldFrame& frame,bool ready,api::Manage
                 if(!style.call.returned || !style.object)throw std::runtime_error("visual FreeStyle unavailable");
                 if(!Ended()) TickVisual(model.animator.value,style.object,frame,objects);
             }
-        }catch(const std::exception& e){status_.visual_note=e.what();visual_cancelled_=true;}
+        }catch(const std::exception& e){CancelPose(e.what());status_.visual_note=e.what();visual_cancelled_=true;}
     }
     animation_requests_.Service(frame,ready,objects);
     if(!pending_ && completion_) {Complete(frame,objects);status_.completion_pending=completion_.has_value();}
     if(!pending_) return;
     auto receipt=std::move(*pending_); pending_.reset(); status_.pending=false;
     const auto revision=intent_revision_;
+    void* receipt_animator=nullptr;
     auto wait=[&](const char* reason) { receipt.outcome=ActionOutcome::Waiting; receipt.detail=reason; };
     try {
         resources_.RetainOwner();
@@ -222,6 +230,7 @@ void ActionPlayback::Service(const api::WorldFrame& frame,bool ready,api::Manage
                 if(model.changing.value || !model.animator.value) wait("model/Animator loading");
                 else {
                     animator=model.animator.value;
+                    receipt_animator=animator;
                     receipt.initialized=inputs_.AnimatorInitialized(animator);
                     if(!receipt.initialized.read.returned) throw std::runtime_error("Animator initialization observation unavailable");
                     if(!receipt.initialized.value) { animator=nullptr; wait("Animator initialization"); }
@@ -258,11 +267,11 @@ void ActionPlayback::Service(const api::WorldFrame& frame,bool ready,api::Manage
                         }
                         if(Ended() || status_.closing || revision!=intent_revision_)receipt.outcome=ActionOutcome::Cancelled;
                         else if(program_ready) {
-                        if(!ready_state && ready_)ReleaseReady(animator);
+                        if(!ready_state && ready_ && (!state || state->layer==0))ReleaseReady(animator);
                         if(ready_state)StartReady(*ready_state,animator,style,frame,objects,receipt);
                         else if(visual) StartVisual(*visual,animator,style,frame,objects,receipt);
                         else {
-                            if(visual_) ReleaseVisual(animator);
+                            if(visual_ && (!state || state->layer==0)) ReleaseVisual(animator);
                             if(Ended() || status_.closing || revision!=intent_revision_)receipt.outcome=ActionOutcome::Cancelled;
                             else {
                                 if(npc) receipt.call=actions_.PlayNpcMotion(style,npc->id);
@@ -307,6 +316,7 @@ void ActionPlayback::Service(const api::WorldFrame& frame,bool ready,api::Manage
     if(program_ && (program_preparing_==receipt.serial || program_return_==receipt.serial) && receipt.outcome!=ActionOutcome::Waiting && receipt.outcome!=ActionOutcome::Returned)LeaveProgram();
     if(status_.successor && status_.successor->serial==receipt.serial)
         status_.successor->returned=receipt.outcome==ActionOutcome::Returned;
+    PoseResult(receipt,receipt_animator);
     status_.last=std::move(receipt); status_.pending=pending_.has_value();
     resources_.Drain();
 }

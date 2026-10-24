@@ -82,7 +82,11 @@ void CharacterSession::StartHandoff(std::unique_ptr<api::ModelProfileRequest> re
             if(!services_.visual_program)throw std::logic_error("visual program runtime was not prepared");
             auto player=services_.visual_program({owner_,world_},*plan_.visual_program,plan_.presentation_profile);
             if(!player)throw std::runtime_error("visual program factory returned no player");
-            if(plan_.visual_program->tasks)handoff_->ConfigureTasks(plan_.visual_program->tasks,std::move(player));
+            if(plan_.visual_program->tasks)handoff_->ConfigureTasks(plan_.visual_program->tasks,std::move(player),
+                [this](const auto& selection)->std::optional<PoseCommand> {
+                    if(!services_.pose)throw std::runtime_error("pose sources unavailable");
+                    return services_.pose(plan_.action_sources,selection);
+                });
             else handoff_->ConfigureVisualProgram(std::move(player));
         }catch(const std::exception& e) {
             // This is not a baseline failure. Do not reconstruct a second

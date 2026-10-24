@@ -106,6 +106,28 @@ void IndependentParticipants() {
     cancelled.Service(0,1);cancelled.Stop(TaskExitReason::Deleted);waiting.partner_ready=true;cancelled.Service(0,2);
     Check(cancelled.Drained() && waiting.animations.size()==1);
 }
+void ConfiguredPoses() {
+    Fixture f;auto ports=f.Services();bool prepared=false;
+    std::shared_ptr<AnimationRequestStatus> pose;unsigned submitted=0;bool cancelled=false;
+    ports.pose=PoseRequestEndpoint{10,[&](const auto& key)->std::shared_ptr<const AnimationRequestStatus> {
+        Check(std::get<ReadyPoseSelection>(key).skill==8);
+        if(!prepared)return {};
+        ++submitted;pose=std::make_shared<AnimationRequestStatus>();pose->serial=41;pose->entity_generation=10;return pose;
+    },[&](auto serial,bool cancel){Check(serial==41);cancelled=cancel;pose->released=true;}};
+    auto plan=Plan({{"pose",TaskSubmit{"pose",TaskPoseCommand{ReadyPoseSelection{"source",8,-1}}}},
+        {"wait",TaskWaitRequest{"pose"}},{"entry",TaskSerial{{0,1}}}},2);
+    TaskPresentation run({91},10,plan,f.player,{},ports);run.Service(0,1);
+    Check(!submitted && !run.Drained());prepared=true;run.Service(0,2);
+    pose->accepted=true;run.Service(0,3);Check(!run.Drained());
+    pose->entered=true;run.Service(0,4);Check(!run.Drained());
+    pose->complete=true;run.Service(0,5);run.Service(0,6);
+    Check(run.Drained() && run.Status().issues.empty() && submitted==1 && !cancelled);
+    TaskPresentation next({92},10,plan,f.player,{},ports);next.Service(0,7);pose->accepted=true;
+    next.Stop(TaskExitReason::Deleted);next.Service(0,8);Check(next.Drained() && cancelled);
+    auto bad=ports;bad.pose->entity_generation=999;
+    TaskPresentation foreign({93},10,plan,f.player,{},bad);foreign.Service(0,9);foreign.Service(0,10);
+    Check(foreign.Drained() && foreign.Status().reason==TaskExitReason::Failed && submitted==2);
+}
 void ErrorsAndReentry() {
     Fixture f;
     auto plan=Plan({Visual("scene",VisualTimeline{"scene","scene.playable"}),{"keep",TaskWaitSeconds{10}},
@@ -295,4 +317,4 @@ void MovementInputs() {
     bool invalid=false;try{ResolveVisualMovement(command,{0,2,0},{0,2,0},resolve);}catch(const std::invalid_argument&){invalid=true;}Check(invalid);
 }
 }
-void TestTaskPresentation(){Scopes();IndependentParticipants();ErrorsAndReentry();NamedContexts();IndependentTail();Sounds();Movements();MovementInputs();}
+void TestTaskPresentation(){Scopes();IndependentParticipants();ConfiguredPoses();ErrorsAndReentry();NamedContexts();IndependentTail();Sounds();Movements();MovementInputs();}

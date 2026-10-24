@@ -39,9 +39,23 @@ void ValidateTaskSequence(const TaskSequence& sequence) {
         if(const auto* wait=std::get_if<TaskWaitRequest>(&op))
             if(wait->request.empty() || !requests.count(wait->request) || !std::isfinite(wait->progress) || wait->progress<0)
                 throw std::invalid_argument("invalid or undeclared request wait at "+sequence.nodes[index].source);
+        if(const auto* wait=std::get_if<TaskWaitRequest>(&op);wait && wait->signal==TaskWaitSignal::Progress) {
+            bool pose=false,other=false;
+            for(const auto& candidate:sequence.nodes)if(const auto* submit=std::get_if<TaskSubmit>(&candidate.operation))
+                if(submit->request==wait->request) {
+                    if(std::holds_alternative<TaskPoseCommand>(submit->operation))pose=true;else other=true;
+                }
+            if(pose && !other)throw std::invalid_argument("composite poses have no normalized progress clock");
+        }
         if(const auto* submit=std::get_if<TaskSubmit>(&op))
         {
             if(submit->request.empty())throw std::invalid_argument("task request name is empty");
+            if(const auto* pose=std::get_if<TaskPoseCommand>(&submit->operation))std::visit([](const auto& key) {
+                if(key.source.empty() || key.source.find('\0')!=std::string::npos)throw std::invalid_argument("pose source is empty or invalid");
+                using T=std::decay_t<decltype(key)>;
+                if constexpr(std::is_same_v<T,ReadyPoseSelection>)
+                    if(key.skill<0 || key.variant<-1)throw std::invalid_argument("invalid ready pose index");
+            },pose->selection);
             if(const auto* control=std::get_if<TaskControlCommand>(&submit->operation))ValidateControlChanges(control->changes);
             if(const auto* sound=std::get_if<TaskSoundCommand>(&submit->operation))
                 if(sound->participant.name.empty() || sound->event.empty() || sound->event.find('\0')!=std::string::npos)

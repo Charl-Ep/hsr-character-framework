@@ -58,6 +58,7 @@ void ActionPlayback::StartVisual(const VisualState& input,void* animator,void* s
     const auto revision=intent_revision_;
     auto live=[&]{return !Ended() && !status_.closing && revision==intent_revision_;};
     VisualPlayback next;next.request=request;next.animator=animator;next.phase=request.recover?2:0;next.boundary=frame.sequence;next.serial=receipt.serial;
+    next.task_owned=receipt.task_owned;
     if(!request.recover && !request.expression.available)throw std::runtime_error("configured expression unread: "+request.expression.error);
     const int begin=request.recover?2:0,end=request.recover?3:2;
     for(int i=begin;i<end;++i) {
@@ -122,11 +123,13 @@ void ActionPlayback::TickVisual(void* animator,void* style,const api::WorldFrame
     if(transition.value)return;
     if(!Matches(current,tracking.body[tracking.phase])) {
         if(tracking.phase==0 && tracking.body[1] && Matches(current,tracking.body[1])) {
+            ObservePose(tracking.serial);
             visual_->phase=1;visual_->body_seen=true;status_.visual_note="official occurrence -> loop observed";return;
         }
         if(tracking.body_seen) {
+            ObservePose(tracking.serial,true);
             ReleaseVisual(animator);status_.visual_note="official body successor retained";
-            if(tracking.phase==2 && !Ended() && revision==intent_revision_ && !CompletionState().empty()) {
+            if(!tracking.task_owned && tracking.phase==2 && !Ended() && revision==intent_revision_ && !CompletionState().empty()) {
                 const auto idle=CompletionState();const auto hash=HashName(idle,objects);
                 if(!Ended() && revision==intent_revision_ && Matches(current,hash))
                     status_.successor=AutomaticSuccessor{tracking.serial,0,idle,false,true};
@@ -135,6 +138,7 @@ void ActionPlayback::TickVisual(void* animator,void* style,const api::WorldFrame
         return;
     }
     visual_->body_seen=true;
+    ObservePose(tracking.serial);
     if(current.loop || !std::isfinite(current.normalized_time) || current.normalized_time<1)return;
     if(tracking.phase==0 && tracking.body[1]) {
         const auto call=actions_.PlayFreeStyleState(style,tracking.body[1],tracking.request.value.loop.transition.value,0);
@@ -143,8 +147,9 @@ void ActionPlayback::TickVisual(void* animator,void* style,const api::WorldFrame
         visual_->phase=1;visual_->body_seen=false;visual_->boundary=frame.sequence;
         status_.visual_note="occurrence completed; configured loop requested";
     } else if(tracking.phase==2) {
+        ObservePose(tracking.serial,true);
         ReleaseVisual(animator);
-        if(!Ended() && !status_.closing && revision==intent_revision_ && !CompletionState().empty()) {
+        if(!tracking.task_owned && !Ended() && !status_.closing && revision==intent_revision_ && !CompletionState().empty()) {
             const auto idle=CompletionState();const auto serial=Queue(FreeStyleState{idle});
             status_.successor=AutomaticSuccessor{tracking.serial,serial,idle,false};
         }

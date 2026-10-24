@@ -44,6 +44,7 @@ struct ActionReceipt {
     api::Observed<bool> has_state,initialized;
     api::CallResult call;
     std::string detail;
+    bool task_owned=false;
 };
 struct AutomaticSuccessor {
     std::uint64_t predecessor=0,serial=0;

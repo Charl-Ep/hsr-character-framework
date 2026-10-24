@@ -17,6 +17,7 @@
 #include "PresentationProfile.hpp"
 #include "VisualProgram.hpp"
 #include "AnimationRequests.hpp"
+#include "PoseRequests.hpp"
 #include <variant>
 
 namespace hksr::framework {
@@ -30,6 +31,8 @@ public:
     std::uint64_t Queue(ActionRequest request);
     std::shared_ptr<const AnimationRequestStatus> QueueAnimation(AnimationCommand);
     void ReleaseAnimation(std::uint64_t serial){animation_requests_.Release(serial);}
+    std::shared_ptr<const AnimationRequestStatus> QueuePose(PoseCommand);
+    void ReleasePose(std::uint64_t serial,bool cancel=false);
     api::EntityToken Owner() const {return owner_;}
     void SetCompletionState(std::string state) { completion_state_=std::move(state); }
     std::string CurrentIdle() const {return CompletionState();}
@@ -56,6 +59,9 @@ private:
     struct VisualPlayback;
     bool Ended() const;
     bool OwnFrame(const api::WorldFrame& frame) const;
+    void CancelPose(const std::string& reason);
+    void ObservePose(std::uint64_t serial,bool complete=false);
+    void PoseResult(const ActionReceipt&,void* animator);
     void Complete(const api::WorldFrame& frame,api::ManagedObjects& objects);
     void StartVisual(const VisualState& request,void* animator,void* style,const api::WorldFrame& frame,
         api::ManagedObjects& objects,ActionReceipt& receipt);
@@ -85,6 +91,9 @@ private:
     const api::ProfileInputs& inputs_;
     api::AnimationResources& resources_;
     AnimationRequests animation_requests_;
+    std::shared_ptr<AnimationRequestStatus> pose_request_;
+    void* pose_animator_=nullptr;
+    std::uint64_t pose_model_=0;
     const api::ComponentConfig* text_;
     bool servicing_=false;
     std::uint64_t intent_revision_=0;
@@ -113,6 +122,7 @@ private:
         std::shared_ptr<api::BlinkOverride> blink;
         std::uint64_t boundary=0;
         std::uint64_t serial=0;
+        bool task_owned=false;
     };
     std::optional<VisualPlayback> visual_;
     bool visual_cancelled_=false;
@@ -127,6 +137,7 @@ private:
         bool edge_seen=false,pose_seen=false,successor_seen=false,reversing=false;
         std::optional<ReadyState> pending;
         std::uint64_t boundary=0;
+        std::uint64_t serial=0;
     };
     std::optional<ReadyPlayback> ready_;
     bool ready_cancelled_=false;
