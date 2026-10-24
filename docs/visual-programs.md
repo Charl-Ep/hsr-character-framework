@@ -58,6 +58,12 @@ Start a program action through the development channel:
 
 Each instruction has an `op` and a `source` identifying its configuration node. Operations include effect controls, partner controls, context entry/exit and Timeline playback. An optional `when` selects an input by `choice` and `is`.
 
+`face_target` turns the owner toward the named target's current position. `ratio` defaults to 1, `angle_offset` to 0 degrees and `duration` to -1 (immediate). Positive duration uses the game's smoothing. The instruction completes at submission; later instructions do not wait for rotation to finish. Custom hosts provide `VisualProgramServices::face`.
+
+```json
+{"op":"face_target","source":"Ability.OnStart.LookAt","target":"AbilityTargetEntity","ratio":1,"angle_offset":0,"duration":1}
+```
+
 Each effect specifies either `target` or `anchor`. An anchor resolves through `VisualProgramInput::anchors` or parameter overrides; it contains world `position` and an optional `[x,y,z,w]` quaternion `rotation` (identity by default). Anchored effects accept `scale`, `unique_name`, `fade_in` and `simulate_immediately`, but not entity-relative offsets or attachment options. No target entity is created or substituted. The initial pose is fixed at submission; the effect's own animation can move it.
 
 ```json

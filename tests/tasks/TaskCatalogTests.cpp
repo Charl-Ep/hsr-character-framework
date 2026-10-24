@@ -52,6 +52,8 @@ struct Fixture {
     std::shared_ptr<VisualProgramPlayer> scene;
     std::unique_ptr<TaskController> controller;
     std::vector<std::pair<AnimationCommand,std::shared_ptr<AnimationRequestStatus>>> plays;
+    std::vector<VisualFace> faces;
+    bool facing_ready=true;
     bool accept=true,ready=true;
     std::function<void()> on_attach;
     VisualProgramParameters defaults,captured;
@@ -72,6 +74,10 @@ struct Fixture {
             return result;
         };
         visual.prepare_inputs=[&](auto,const auto& inputs,bool){captured=inputs;};
+        visual.face=[&](auto&,const VisualFace& command) {
+            if(!facing_ready)return VisualStepResult{VisualStepState::Pending,"waiting for model"};
+            faces.push_back(command);return VisualStepResult{VisualStepState::Done,{}};
+        };
         scene=std::make_shared<VisualProgramPlayer>(catalog->visual,std::move(visual));
         TaskPresentationServices ports;
         ports.animation=[&](const auto& participant)->std::optional<TaskAnimationEndpoint> {
@@ -388,4 +394,18 @@ void ControlAtSequenceBoundaries() {
     Reject([&]{ParseTaskCatalog(invalid.dump());});
 }
 }
-void TestTaskCatalog(){Codec();SelectionAndInterrupt();NaturalAndPending();ContextsAndFinish();CloseAndReentrant();InputRequirementsAndPreparation();ControlAdmissionAndPresentation();ControlSlotsReachDispatch();ControlAtSequenceBoundaries();}
+void TestTaskCatalog(){
+    Codec();SelectionAndInterrupt();NaturalAndPending();ContextsAndFinish();CloseAndReentrant();InputRequirementsAndPreparation();ControlAdmissionAndPresentation();ControlSlotsReachDispatch();ControlAtSequenceBoundaries();
+    auto input=Document();
+    input["sequences"]["stand"]["entry"]={{"op","serial"},{"children",Json::array({
+        {{"op","visual"},{"request","turn"},{"instruction",{{"op","face_target"},{"source","LookAt"},
+            {"target","AbilityTargetEntity"},{"ratio",0.5},{"angle_offset",10},{"duration",1}}}},
+        {{"op","wait_request"},{"request","turn"},{"signal","accepted"}},
+        {{"op","animation"},{"request","body"},{"participant","body"},{"state","Attack"}}})}};
+    Fixture f(input);f.facing_ready=false;f.Select("idle");f.Tick();
+    Check(f.faces.empty() && f.plays.empty());
+    f.facing_ready=true;f.Tick();
+    Check(f.faces.size()==1 && f.plays.size()==1 && f.faces[0].target=="AbilityTargetEntity" &&
+        f.faces[0].ratio==0.5f && f.faces[0].angle_offset==10 && f.faces[0].duration==1);
+    f.Tick();Check(f.faces.size()==1); // no per-frame rotation write, no artificial one-second wait
+}

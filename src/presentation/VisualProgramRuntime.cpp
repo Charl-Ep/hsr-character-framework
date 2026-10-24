@@ -193,6 +193,18 @@ std::shared_ptr<VisualProgramPlayer> VisualProgramRuntime::Create(api::EntityOri
             (result.state==api::EffectControlState::NotLoaded || result.state==api::EffectControlState::Pending)?VisualStepState::Pending:VisualStepState::Failed,result.detail};
     };
     services.attach=[this,current](auto context){Attach(*current(),std::move(context));};
+    services.face=[this,current](VisualEffectContext& context,const VisualFace& command) {
+        const auto scene=current();
+        if(closing_ || !Alive(scene->owner))throw std::runtime_error("facing scene ended");
+        if(!api_.ReadAnimator(scene->owner.token))return VisualStepResult{VisualStepState::Pending,"waiting for owned model"};
+        const auto target=ResolveTarget(*scene,context,command.target);
+        const auto pose=api_.ReadEntityPlacement(target.token,target.world);
+        if(!pose.ready)throw std::runtime_error("facing target unreadable: "+command.target+"; "+pose.error);
+        const auto call=api_.FaceEntity(scene->owner.token,scene->owner.world,pose.position,
+            command.ratio,command.angle_offset,command.duration);
+        return VisualStepResult{call.returned?VisualStepState::Done:VisualStepState::Failed,
+            call.returned?"":"owned facing submission failed"};
+    };
     services.movement=[this,current](VisualEffectContext& context,const VisualMovement& command)->std::optional<MovementRequestEndpoint> {
         const auto scene=current();
         if(closing_ || !Alive(scene->owner))throw std::runtime_error("movement scene ended");

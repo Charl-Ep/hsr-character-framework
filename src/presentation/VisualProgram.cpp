@@ -102,7 +102,9 @@ VisualStepResult VisualProgramPlayer::Execute(const VisualInstruction& input,Cur
         if(!cursor.context)cursor.context=ExecutionContext(input,execution);
         auto& context=cursor.context;
         if(!context || context->Closing())return {VisualStepState::Failed,"effect context is absent or closing"};
-        if constexpr(std::is_same_v<T,VisualPartnerOperation>) {
+        if constexpr(std::is_same_v<T,VisualFace>) {
+            return services_.face?services_.face(*context,op):VisualStepResult{VisualStepState::Failed,"owned facing service unavailable"};
+        } else if constexpr(std::is_same_v<T,VisualPartnerOperation>) {
             if(!services_.partner)return {VisualStepState::Failed,"partner service unavailable"};
             partners_pending_=true;
             return services_.partner(context,op);

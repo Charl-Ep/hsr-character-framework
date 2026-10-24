@@ -25,11 +25,12 @@ struct VisualRemove {
 };
 struct VisualTrigger {std::vector<std::string> effects;std::string trigger;bool reset=false;};
 struct VisualFollow {std::string effect;std::vector<std::string> targets;}; // empty releases this binding
+struct VisualFace {std::string target;float ratio=1,angle_offset=0,duration=-1;};
 struct VisualEffectState {std::string effect,state;float transition=0;bool restart=false;};
 struct VisualEffectParameter {std::string effect;api::EffectAnimatorParameter parameter;};
 struct VisualContextOperation {std::string name;bool enter=true;bool fade=true;};
 struct VisualTimeline {std::string key,path;bool play=true;int type=0,wrap_mode=0;bool release_volume=false;};
-using VisualOperation=std::variant<VisualCreate,VisualAssign,VisualProgress,VisualRemove,VisualTrigger,VisualTimeline,VisualFollow,VisualEffectState,VisualContextOperation,VisualEffectParameter,VisualPartnerOperation>;
+using VisualOperation=std::variant<VisualCreate,VisualAssign,VisualProgress,VisualRemove,VisualTrigger,VisualTimeline,VisualFollow,VisualEffectState,VisualContextOperation,VisualEffectParameter,VisualPartnerOperation,VisualFace>;
 struct VisualInstruction {
     VisualOperation operation;
     std::string source; // original configuration node, for diagnostics
@@ -110,6 +111,7 @@ struct VisualProgramServices {
     std::function<bool(std::shared_ptr<VisualEffectContext>)> partner_scope_drained;
     std::function<std::optional<AnimationRequestEndpoint>(const std::string&)> partner_animation;
     std::function<std::optional<MovementRequestEndpoint>(VisualEffectContext&,const VisualMovement&)> movement;
+    std::function<VisualStepResult(VisualEffectContext&,const VisualFace&)> face;
 };
 struct VisualInstructionStatus {
     bool complete=false,cancelled=false;

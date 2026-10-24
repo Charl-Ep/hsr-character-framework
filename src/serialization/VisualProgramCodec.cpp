@@ -50,7 +50,7 @@ std::vector<VisualInstruction> Instructions(const Json& rows,const VisualProgram
     for(const auto& row:rows) {
         Fields(row,{"op","source","when","effects","variable","value","effect","seconds","fade","immediate","trigger","reset","key","path","type","wrap_mode","release_volume","optional","targets","state","transition","restart","context","name","selection",
             "partner","target","self_point","target_point","disable_when_invisible","use_target_scale","visibility","visible","mute_collider","mute_triggers","mute_audio",
-            "normalized_start","normalized_transition","normalized_end"});
+            "normalized_start","normalized_transition","normalized_end","ratio","angle_offset","duration"});
         VisualInstruction instruction;instruction.source=Name(row.at("source"));
         if(row.contains("context") && !row.at("context").is_null()) {
             instruction.context=Name(row.at("context"));
@@ -77,6 +77,9 @@ std::vector<VisualInstruction> Instructions(const Json& rows,const VisualProgram
                 Number(row.value("normalized_end",Json(1)))};
             else throw std::invalid_argument("unknown partner operation: "+op);
             instruction.operation=std::move(partner);
+        }else if(op=="face_target") {
+            instruction.operation=VisualFace{Name(row.at("target")),Number(row.value("ratio",Json(1))),
+                Number(row.value("angle_offset",Json(0))),Number(row.value("duration",Json(-1)))};
         }else if(op=="context_enter" || op=="context_exit") {
             const auto name=Name(row.at("name"));Need(program.contexts.count(name)!=0,"unknown visual context: "+name);
             instruction.operation=VisualContextOperation{name,op=="context_enter",row.value("fade",true)};
