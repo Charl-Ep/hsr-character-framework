@@ -18,6 +18,7 @@
 #include "VisualProgram.hpp"
 #include "AnimationRequests.hpp"
 #include "PoseRequests.hpp"
+#include "HitRequests.hpp"
 #include <variant>
 
 namespace hksr::framework {
@@ -33,6 +34,9 @@ public:
     void ReleaseAnimation(std::uint64_t serial){animation_requests_.Release(serial);}
     std::shared_ptr<const AnimationRequestStatus> QueuePose(PoseCommand);
     void ReleasePose(std::uint64_t serial,bool cancel=false);
+    std::shared_ptr<const HitRequestStatus> QueueHit(HitCommand);
+    void ReleaseHit(std::uint64_t serial,bool cancel=false){hit_requests_.Release(serial,cancel);}
+    void ReleaseHitExpression(std::uint64_t serial){hit_requests_.ReleaseExpression(serial);}
     api::EntityToken Owner() const {return owner_;}
     void SetCompletionState(std::string state) { completion_state_=std::move(state); }
     std::string CurrentIdle() const {return CompletionState();}
@@ -91,6 +95,7 @@ private:
     const api::ProfileInputs& inputs_;
     api::AnimationResources& resources_;
     AnimationRequests animation_requests_;
+    HitRequests hit_requests_;
     std::shared_ptr<AnimationRequestStatus> pose_request_;
     void* pose_animator_=nullptr;
     std::uint64_t pose_model_=0;

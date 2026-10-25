@@ -85,6 +85,7 @@ void TestApplicationService();
 void TestApplicationCoordinator();
 void TestApplicationEvents();
 void TestActionPlayback();
+void TestHitRequests();
 void TestPresentationProfiles();
 void TestVisualEffectContext();
 void TestVisualProgramObservers();
@@ -111,8 +112,8 @@ void TestTimelinePolicy();
 int main(int argc,char** argv) try {
     std::cout<<std::unitbuf;
     if(argc==3 && std::string(argv[1])=="--visual-program") {TestVisualProgram(argv[2]);return 0;}
-    if(argc==3 && std::string(argv[1])=="--parse-visual-program") {
     if(argc==3 && std::string(argv[1])=="--selected-entry") {TestSelectedEntry(argv[2]);return 0;}
+    if(argc==3 && std::string(argv[1])=="--parse-visual-program") {
         std::ifstream input(argv[2],std::ios::binary);if(!input)throw std::runtime_error("visual program file unavailable");
         const auto program=ParseVisualProgram({std::istreambuf_iterator<char>(input),std::istreambuf_iterator<char>()});
         std::cout<<program.id<<": actions="<<program.actions.size()<<" contexts="<<program.contexts.size()<<" partners="<<program.partners.size()<<"\n";
@@ -127,6 +128,7 @@ int main(int argc,char** argv) try {
     TestCatalogBrowser();
     TestSourceCatalog();
     TestActionPlayback();
+    TestHitRequests();
     TestPresentationProfiles();
     TestVisualEffectContext();
     TestVisualProgramObservers();

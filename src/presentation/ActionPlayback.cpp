@@ -15,12 +15,14 @@ std::unique_ptr<api::ActorAnimationSession> RequireSession(api::EntityToken owne
 ActionPlayback::ActionPlayback(api::EntityToken owner,api::GameWorld* world,std::unique_ptr<api::ActorAnimationSession> engine,
     std::shared_ptr<const api::PresentationEffects> effects,const api::ComponentConfig* text)
     :owner_(owner),world_(world),engine_(RequireSession(owner,std::move(engine))),entities_(engine_->Entities()),models_(engine_->Models()),
-    actions_(engine_->Control()),inputs_(engine_->Inputs()),resources_(engine_->Resources()),animation_requests_(owner,world,*engine_),text_(std::move(text)),effect_services_(std::move(effects)) {
+    actions_(engine_->Control()),inputs_(engine_->Inputs()),resources_(engine_->Resources()),animation_requests_(owner,world,*engine_),
+    hit_requests_(owner,world,*engine_,animation_requests_),text_(std::move(text)),effect_services_(std::move(effects)) {
     if(!owner.entity || !owner.generation || !world) throw std::invalid_argument("action playback requires its owned entity epoch");
 }
 std::uint64_t ActionPlayback::Queue(ActionRequest request) {
     if(status_.closing) throw std::logic_error("action playback already closing");
     const auto* layer=std::get_if<AnimatorState>(&request);
+    hit_requests_.ReplaceLayer(layer?layer->layer:0);
     if(!layer || layer->layer==0 || (pending_ && pending_->task_owned))CancelPose("pose request superseded");
     animation_requests_.Cancel(layer?layer->layer:0);
     ++intent_revision_;
@@ -33,6 +35,7 @@ std::uint64_t ActionPlayback::Queue(ActionRequest request) {
 std::shared_ptr<const AnimationRequestStatus> ActionPlayback::QueueAnimation(AnimationCommand command) {
     if(status_.closing)throw std::logic_error("action playback already closing");
     auto ticket=animation_requests_.Submit(command);
+    hit_requests_.ReplaceLayer(command.layer);
     if(command.layer==0) {
         CancelPose("pose replaced by animation request");
         ++intent_revision_;
@@ -45,7 +48,25 @@ std::shared_ptr<const AnimationRequestStatus> ActionPlayback::QueueAnimation(Ani
     }
     return ticket;
 }
+std::shared_ptr<const HitRequestStatus> ActionPlayback::QueueHit(HitCommand command) {
+    if(status_.closing)throw std::logic_error("action playback already closing");
+    const bool body=bool(command.body);
+    // Validate before changing the current body's ownership. Additive hits do
+    // not cancel the receiver's ongoing action or its task/event scope.
+    auto result=hit_requests_.Submit(std::move(command));
+    if(body) {
+        CancelPose("body hit replaced pose");animation_requests_.Cancel();++intent_revision_;
+        completion_.reset();status_.completion_pending=false;status_.successor.reset();
+        if(pending_){pending_->outcome=ActionOutcome::Cancelled;status_.last=std::move(pending_);pending_.reset();}
+        status_.pending=false;visual_cancelled_=ready_cancelled_=retire_action_events_=true;
+        program_playback_.reset();program_preparing_=program_intent_=program_return_=0;
+        if(program_)program_->InterruptAction();
+        presentation_.Abandon();SyncPresentation();
+    }
+    return result;
+}
 void ActionPlayback::CancelPending(bool interrupt_presentation) {
+    hit_requests_.Cancel();
     CancelPose("pose request cancelled");pose_animator_=nullptr;
     animation_requests_.Cancel();
     ++intent_revision_;
@@ -191,6 +212,7 @@ void ActionPlayback::Service(const api::WorldFrame& frame,bool ready,api::Manage
             }
         }catch(const std::exception& e){CancelPose(e.what());status_.visual_note=e.what();visual_cancelled_=true;}
     }
+    hit_requests_.Service(frame,ready,objects);
     animation_requests_.Service(frame,ready,objects);
     if(!pending_ && completion_) {Complete(frame,objects);status_.completion_pending=completion_.has_value();}
     if(!pending_) return;
@@ -324,12 +346,14 @@ bool ActionPlayback::Close(const api::WorldFrame& frame) {
     status_.closing=true; CancelPending();
     if(program_)program_->End();
     if(servicing_ || (!Ended() && !OwnFrame(frame))) return false;
+    // Close has no object allocator. Cancelled hit leases only use retained
+    // components; ServiceEffects drains them before the session is released.
     CancelReadyEffect();ServiceEffects(frame);
     // Entity retirement already owns Art teardown. Do not call its old Animator.
     visual_.reset();
     ready_.reset();
     const bool inputs_closed=engine_->Close();
-    status_.closed=inputs_closed && effects_.empty() && !action_exit_ && retired_exits_.empty() && (!program_ || program_->Drained());
+    status_.closed=inputs_closed && hit_requests_.Drained() && effects_.empty() && !action_exit_ && retired_exits_.empty() && (!program_ || program_->Drained());
     return status_.closed;
 }
 }
