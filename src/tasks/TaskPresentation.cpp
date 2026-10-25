@@ -113,6 +113,7 @@ struct TaskPresentation::State {
             value.state.submitted=state.accepted;value.state.request_complete=state.accepted || state.released;
             value.state.performance_complete=state.complete;value.state.progress=state.progress;
             value.state.started=state.entered;
+            value.state.animation_end=state.end_reached;value.state.state_left=state.state_left;
             value.state.drained=state.released;
             if(!request->released)value.state.error=state.error;
         } else if(request->movement) {
@@ -219,7 +220,7 @@ struct TaskPresentation::State {
                             request->endpoint=std::move(endpoint);
                             request->value.receipt.entity_generation=request->endpoint->entity_generation;
                             if(!ClaimAnimationChannel(request,*command))continue;
-                            request->animation=request->endpoint->submit({command->state,command->layer,command->transition,command->normalized_start});
+                            request->animation=request->endpoint->submit({command->state,command->layer,command->transition,command->normalized_start,command->normalized_end});
                             if(!request->animation)throw std::runtime_error("animation endpoint returned no receipt");
                             if(request->animation->entity_generation!=request->value.receipt.entity_generation)
                                 throw std::runtime_error("animation endpoint returned another entity generation");
@@ -289,7 +290,7 @@ struct TaskPresentation::State {
         const bool natural=execution->Status().reason==TaskExitReason::Completed && !cancel_scope;
         bool submitted=true;
         for(const auto& [id,request]:requests)submitted=submitted && (request->released || request->value.state.request_complete);
-        if((execution->Status().phase==TaskExecutionPhase::Draining || execution->Status().phase==TaskExecutionPhase::Finished) && submitted)
+        if(execution->ProducersComplete() && submitted)
             visual->EndSequence(scope,natural);
         if(execution->Drained() && visual->SequenceDrained(scope)) {
             visual->ForgetSequence(scope);forgotten=true;

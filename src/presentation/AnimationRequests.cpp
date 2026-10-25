@@ -28,12 +28,13 @@ bool AnimationRequests::Live(const std::shared_ptr<Entry>& entry) const {
         api::TrackedEntities().Current(owner_.entity).generation==owner_.generation;
 }
 void AnimationRequests::Finish(const std::shared_ptr<Entry>& entry,const std::string& reason) {
-    auto& status=*entry->status;status.cancelled=!status.complete;status.released=true;
-    if(!status.complete && status.error.empty())status.error=reason;
+    auto& status=*entry->status;status.cancelled=!status.state_left;status.released=true;
+    if(!status.state_left && status.error.empty())status.error=reason;
 }
 std::shared_ptr<const AnimationRequestStatus> AnimationRequests::Submit(AnimationCommand command) {
     if(command.state.empty() || command.state.find('\0')!=std::string::npos || command.layer<0 ||
-        !std::isfinite(command.transition) || command.transition<0 || !std::isfinite(command.normalized_start))
+        !std::isfinite(command.transition) || command.transition<0 || !std::isfinite(command.normalized_start) ||
+        (command.normalized_end && !std::isfinite(*command.normalized_end)))
         throw std::invalid_argument("invalid animation command");
     Cancel(command.layer);
     auto entry=std::make_shared<Entry>();entry->command=std::move(command);
@@ -71,7 +72,7 @@ void AnimationRequests::Service(const api::WorldFrame& frame,bool ready,api::Man
     for(const auto& [id,entry]:entries_)snapshot.push_back(entry);
     for(const auto& entry:snapshot) {
         auto& status=*entry->status;
-        if(!Live(entry) || status.complete || (entry->serviced && frame.sequence<=entry->last_frame))continue;
+        if(!Live(entry) || status.state_left || (entry->serviced && frame.sequence<=entry->last_frame))continue;
         entry->serviced=true;entry->last_frame=frame.sequence;
         try {
             resources.RetainOwner();if(!Live(entry))continue;
@@ -142,7 +143,11 @@ void AnimationRequests::Service(const api::WorldFrame& frame,bool ready,api::Man
                 if(std::isfinite(state.normalized_time) && state.normalized_time>=0)
                     status.progress=std::max(status.progress.value_or(0),double(state.normalized_time));
                 if(!state.loop && status.progress.value_or(0)>=1 && !transition.value)status.complete=true;
-            } else if(status.entered && !transition.value)status.complete=true;
+            } else if(status.entered && !transition.value)status.complete=status.state_left=true;
+            if(entry->command.normalized_end && status.entered) {
+                const auto end=*entry->command.normalized_end;
+                if(end<=0 || status.state_left || (status.progress && *status.progress>=end))status.end_reached=true;
+            }
         }catch(const std::exception& error){Finish(entry,error.what());}
     }
     for(auto it=entries_.begin();it!=entries_.end();) {

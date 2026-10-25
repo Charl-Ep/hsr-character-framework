@@ -189,5 +189,111 @@ void SupersededWaits() {
     run.Observe(host.requests[0].receipt,state);run.Advance(0.1,2);
     Check(run.Status().reason==TaskExitReason::Completed && host.requests.size()==2,"handoff erased an already observed cue");
 }
+void AbilityInvocations() {
+    Host host;host.immediate=true;
+    auto plan=Plan({Submit("body"),{"body-wait",TaskWaitSeconds{1}},
+        {"body-sequence",TaskSerial{{0,1}}},{"call",TaskAbilityCall{"phase",2,true}},
+        {"join",TaskWaitAbilities{}},Submit("after"),{"entry",TaskSerial{{3,4,5}}}},6);
+    TaskSequenceExecution joined({50},plan,host.Services());joined.Advance(0.4,1);
+    Check(host.requests.size()==1 && !joined.ProducersComplete(),"ability invocation joined or completed prematurely");
+    Check(joined.Status().abilities.size()==1 && joined.Status().abilities[0].executing && joined.Status().abilities[0].waiting,
+        "ability registration is not observable");
+    joined.Advance(0.7,2);
+    Check(joined.Drained() && host.requests.size()==2 && !joined.Status().abilities[0].executing,
+        "registered ability completion did not release the join");
+
+    // IsSkillPerform=false does not suppress execution or cancel its body when
+    // the caller proceeds. Producer lifetime and user control are separate.
+    auto detached=std::make_shared<TaskSequence>(*plan);
+    std::get<TaskAbilityCall>(detached->nodes[3].operation).wait_for_performance=false;
+    TaskSequenceExecution tail({51},detached,host.Services());tail.Advance(0.4,3);
+    Check(host.requests.size()==4 && tail.Status().phase==TaskExecutionPhase::Draining && !tail.ProducersComplete(),
+        "unregistered ability blocked control or was discarded");
+    const auto releases=host.releases.size();tail.Advance(0.3,4);
+    Check(!tail.Drained() && host.releases.size()==releases,"unregistered producer was released before completing");
+    tail.Advance(0.4,5);Check(tail.Drained() && tail.ProducersComplete(),"detached producer never drained");
+
+    // Calling an executing identity is not another copy, and completion of an
+    // earlier invocation is not a permanent completed flag for the next one.
+    auto repeated=Plan({Submit("hit"),{"wait",TaskWaitSeconds{0.2}},
+        {"child",TaskSerial{{0,1}}},{"first",TaskAbilityCall{"same",2,true}},
+        {"duplicate",TaskAbilityCall{"same",2,true}},{"join",TaskWaitAbilities{}},
+        {"again",TaskAbilityCall{"same",2,false}},{"join-again",TaskWaitAbilities{}},
+        {"entry",TaskSerial{{3,4,5,6,7}}}},8);
+    const auto before=host.requests.size();TaskSequenceExecution reentry({52},repeated,host.Services());reentry.Advance(0.1,6);
+    Check(host.requests.size()==before+1,"active ability was invoked twice");
+    reentry.Advance(0.2,7);
+    Check(host.requests.size()==before+2 && !reentry.Drained() && reentry.Status().abilities[0].invocation==2 &&
+        reentry.Status().abilities[0].waiting,"ability reentry lost registration or reused its earlier completion");
+    reentry.Advance(0.2,8);Check(reentry.Drained(),"second invocation remained blocked");
+
+    // A child can register another ability before its own body becomes ready.
+    auto nested=Plan({{"child-wait",TaskWaitSeconds{1}}, {"child-call",TaskAbilityCall{"child",0,true}},
+        {"parent-call",TaskAbilityCall{"parent",1,false}}, {"join",TaskWaitAbilities{}},
+        Submit("after-nested"),{"entry",TaskSerial{{2,3,4}}}},5);
+    TaskSequenceExecution children({53},nested,host.Services());children.Advance(0.4,9);
+    Check(children.Status().abilities.size()==2 && !children.ProducersComplete(),"nested waiting registration lost");
+    children.Advance(0.7,10);Check(children.Drained(),"nested child advanced twice or not at all");
+
+    // Cancellation stops pending children, including those never registered as
+    // skill waits. No delayed callback may submit work on a retired actor.
+    auto delayed=Plan({{"wait",TaskWaitSeconds{1}},Submit("too-late"),{"child",TaskSerial{{0,1}}},
+        {"call",TaskAbilityCall{"tail",2,false}}},3);
+    TaskSequenceExecution removed({54},delayed,host.Services());removed.Advance(0.1,11);
+    const auto count=host.requests.size();removed.Stop(TaskExitReason::WorldLeft);removed.Advance(9,12);
+    Check(removed.Drained() && removed.ProducersComplete() && host.requests.size()==count &&
+        !removed.Status().abilities[0].executing,"retired ability continued submitting work");
+
+    // Request resource drain is later than the ability body becoming ready.
+    Host draining;draining.immediate=true;draining.drain=false;
+    auto quick=Plan({Submit("tail"),{"call",TaskAbilityCall{"quick",0,true}},
+        {"join",TaskWaitAbilities{}},{"root",TaskSerial{{1,2}}}},3);
+    TaskSequenceExecution resources({55},quick,draining.Services());resources.Advance(0,13);
+    Check(resources.ProducersComplete() && !resources.Drained() && !resources.Status().abilities[0].executing,
+        "resource tail was counted as an executing ability");
+    TaskRequestState done;done.drained=true;resources.Observe(draining.requests[0].receipt,done);
+    Check(resources.Drained(),"finished ability lost its resource drain receipt");
+
+    Host scoped;
+    std::vector<std::string> names;
+    auto ports=scoped.Services();const auto submit=ports.submit;
+    ports.submit=[&](auto token,auto id,const auto& input){names.push_back(input.request);return submit(token,id,input);};
+    TaskSequenceExecution fresh({57},repeated,ports);fresh.Advance(0.1,1);fresh.Advance(0.2,2);
+    Check(fresh.Status().issues.empty() && scoped.requests.size()==2 && names[0]!=names[1],
+        "new ability invocation collided with its previous animation receipt");
+    fresh.Stop(TaskExitReason::Deleted);
+
+    // A launched child may wait on an animation the parent will submit later.
+    // It binds that invocation's receipt, not another ability's same-name slot.
+    auto inherited=Plan({{"hit-clock",TaskWaitRequest{"clock",TaskWaitSignal::Progress,0.5}},
+        {"hit",TaskAbilityCall{"hit",0,true}},Submit("clock"),{"body-tail",TaskWaitSeconds{0.8}},
+        {"parent",TaskSerial{{1,2,3}}},{"entry-call",TaskAbilityCall{"entry",4,true}},
+        {"all",TaskWaitAbilities{}},{"root",TaskSerial{{5,6}}}},7);
+    TaskSequenceExecution borrowed({58},inherited,scoped.Services());borrowed.Advance(0.1,3);
+    Check(borrowed.Status().issues.empty() && !borrowed.ProducersComplete(),"forward parent clock binding failed");
+    TaskRequestState progress;progress.progress=0.6;borrowed.Observe(scoped.requests.back().receipt,progress);
+    borrowed.Advance(0.8,4);
+    Check(borrowed.ProducersComplete() && borrowed.Status().issues.empty(),"child wait used an unrelated request namespace");
 }
-void TestTaskSequence(){Clocks();Receipts();Loops();TerminalProgress();Stops();SupersededWaits();}
+void AnimationBoundaries() {
+    Host host;
+    auto body=Submit("body");
+    std::get<TaskAnimationCommand>(std::get<TaskSubmit>(body.operation).operation).normalized_end=1.5f;
+    auto plan=Plan({body,{"end",TaskWaitRequest{"body",TaskWaitSignal::AnimationEnd}},Submit("notified"),
+        {"left",TaskWaitRequest{"body",TaskWaitSignal::StateLeft}},Submit("departed"),
+        {"root",TaskSerial{{0,1,2,3,4}}}},5);
+    TaskSequenceExecution run({56},plan,host.Services());run.Advance(0,1);
+    TaskRequestState clip;clip.performance_complete=true;clip.progress=1.1;
+    run.Observe(host.requests[0].receipt,clip);run.Advance(0.1,2);
+    Check(host.requests.size()==1 && run.Status().issues.empty(),"clip completion satisfied or failed a separate request End");
+    clip.animation_end=true;clip.progress=1.6;
+    run.Observe(host.requests[0].receipt,clip);run.Advance(0.1,3);
+    Check(host.requests.size()==2 && !run.ProducersComplete(),"request End implied state departure");
+    clip.state_left=true;run.Observe(host.requests[0].receipt,clip);run.Advance(0.1,4);
+    Check(host.requests.size()==3 && run.Drained(),"observed state departure was not delivered");
+    std::get<TaskAnimationCommand>(std::get<TaskSubmit>(plan->nodes[0].operation).operation).normalized_end.reset();
+    bool rejected=false;try{ValidateTaskSequence(*plan);}catch(const std::invalid_argument&){rejected=true;}
+    Check(rejected,"end wait without an authored End was accepted");
+}
+}
+void TestTaskSequence(){Clocks();Receipts();Loops();TerminalProgress();Stops();SupersededWaits();AbilityInvocations();AnimationBoundaries();}

@@ -316,5 +316,16 @@ void MovementInputs() {
     command.segments[0].stop_distance=100;
     bool invalid=false;try{ResolveVisualMovement(command,{0,2,0},{0,2,0},resolve);}catch(const std::invalid_argument&){invalid=true;}Check(invalid);
 }
+void AbilityTailScope() {
+    Fixture f;
+    auto plan=Plan({{"delay",TaskWaitSeconds{0.5}},Visual("scene",VisualTimeline{"scene","scene.playable"}),
+        {"child",TaskSerial{{0,1}}},{"call",TaskAbilityCall{"visual-tail",2,false}},
+        {"join",TaskWaitAbilities{}},{"entry",TaskSerial{{3,4}}}},5);
+    TaskPresentation run({90},10,plan,f.player,{},f.Services());run.Service(0.1,1);
+    Check(run.YieldedControl() && !run.Drained() && f.starts==0);
+    run.Service(0.4,2);run.Service(0,3);
+    Check(f.starts==1 && f.stops==0 && !run.Drained());
+    f.Retire();run.Service(0,4);Check(run.Drained());
 }
-void TestTaskPresentation(){Scopes();IndependentParticipants();ConfiguredPoses();ErrorsAndReentry();NamedContexts();IndependentTail();Sounds();Movements();MovementInputs();}
+}
+void TestTaskPresentation(){Scopes();IndependentParticipants();ConfiguredPoses();ErrorsAndReentry();NamedContexts();IndependentTail();Sounds();Movements();MovementInputs();AbilityTailScope();}

@@ -103,6 +103,7 @@ struct TaskRequestState {
     // later request. Not natural completion and not an external interruption.
     bool superseded=false;
     bool started=false; // actual asynchronous start, distinct from queue acceptance
+    bool animation_end=false,state_left=false;
 };
 struct TaskRequestSnapshot {
     std::string name,source;
@@ -110,6 +111,11 @@ struct TaskRequestSnapshot {
     TaskRequestState state;
 };
 enum class TaskExecutionPhase { Running,Interrupting,Draining,Finished };
+struct TaskAbilitySnapshot {
+    std::string ability,source;
+    std::uint64_t invocation=0;
+    bool waiting=false,executing=false;
+};
 struct TaskExecutionStatus {
     TaskExecutionToken token;
     TaskExecutionPhase phase=TaskExecutionPhase::Running;
@@ -117,5 +123,6 @@ struct TaskExecutionStatus {
     bool finish_requested=false;
     std::size_t retained_requests=0;
     std::vector<std::string> issues,waiting;
+    std::vector<TaskAbilitySnapshot> abilities;
 };
 }

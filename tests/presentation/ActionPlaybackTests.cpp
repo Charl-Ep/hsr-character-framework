@@ -449,6 +449,43 @@ void TestActionPlayback() {
     ++active_frame.sequence;task_player.Service(active_frame,true,objects);Check(offset_play->accepted);
     task_player.ReleaseAnimation(offset_play->serial);
     expected_layer=0;expected_start=0;
+    // Request End, clip completion and state departure are separate clocks.
+    // Keep observing after a non-loop clip reaches 1: a source End may be later.
+    current_hash=93;current_time=0.2f;
+    auto bounded=task_player.QueueAnimation({"attack_loop",0,0,0,0.6f});
+    ++active_frame.sequence;task_player.Service(active_frame,true,objects);
+    Check(bounded->accepted && !bounded->end_reached && !bounded->state_left);
+    current_time=0.61f;++active_frame.sequence;task_player.Service(active_frame,true,objects);
+    Check(bounded->end_reached && !bounded->complete && !bounded->state_left);
+    current_time=1.1f;++active_frame.sequence;task_player.Service(active_frame,true,objects);
+    Check(bounded->complete && !bounded->state_left);
+    current_hash=7;++active_frame.sequence;task_player.Service(active_frame,true,objects);
+    Check(bounded->state_left && !bounded->cancelled);
+    task_player.ReleaseAnimation(bounded->serial);
+    current_hash=93;current_time=0.2f;
+    auto extended=task_player.QueueAnimation({"attack_loop",0,0,0,1.5f});
+    ++active_frame.sequence;task_player.Service(active_frame,true,objects);
+    current_time=1.1f;++active_frame.sequence;task_player.Service(active_frame,true,objects);
+    Check(extended->complete && !extended->end_reached);
+    current_time=1.6f;++active_frame.sequence;task_player.Service(active_frame,true,objects);
+    Check(extended->end_reached && extended->progress && *extended->progress>1.5 && !extended->state_left);
+    auto replacement=task_player.QueueAnimation({"待机"});
+    Check(extended->cancelled && !extended->state_left && !extended->error.empty());
+    task_player.ReleaseAnimation(replacement->serial);
+    current_hash=93;current_time=0.1f;
+    auto early_exit=task_player.QueueAnimation({"attack_loop",0,0,0,1.5f});
+    ++active_frame.sequence;task_player.Service(active_frame,true,objects);
+    ++active_frame.sequence;task_player.Service(active_frame,true,objects);
+    current_hash=7;++active_frame.sequence;task_player.Service(active_frame,true,objects);
+    Check(early_exit->state_left && early_exit->end_reached && early_exit->progress.value()<1.5);
+    task_player.ReleaseAnimation(early_exit->serial);
+    current_hash=93;current_time=0;
+    auto immediate_end=task_player.QueueAnimation({"attack_loop",0,0,0,-1.0f});
+    ++active_frame.sequence;task_player.Service(active_frame,true,objects);
+    Check(immediate_end->accepted && !immediate_end->end_reached);
+    ++active_frame.sequence;task_player.Service(active_frame,true,objects);
+    Check(immediate_end->entered && immediate_end->end_reached && !immediate_end->complete);
+    task_player.ReleaseAnimation(immediate_end->serial);
     // Cancellation during a managed read cannot reach the playback write.
     const auto before_cancel=state_plays;
     auto cancelled=task_player.QueueAnimation({"attack_loop"});cancel_on_has=true;

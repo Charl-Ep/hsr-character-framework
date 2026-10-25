@@ -107,13 +107,21 @@ struct SequenceParser {
                 std::vector<TaskNodeIndex> compiled;
                 for(std::size_t i=0;i<children.size();++i)compiled.push_back(Node(children[i],path+"/children/"+std::to_string(i)));
                 if(op=="serial")operation=TaskSerial{std::move(compiled)};else operation=TaskParallel{std::move(compiled)};
+            } else if(op=="call_ability") {
+                Fields(row,{"op","ability","wait_for_performance","child","source"});
+                Need(row.at("wait_for_performance").is_boolean(),"ability waiting registration must be explicit");
+                operation=TaskAbilityCall{Name(row.at("ability")),Node(row.at("child"),path+"/child"),row.at("wait_for_performance").get<bool>()};
+            } else if(op=="wait_abilities") {
+                Fields(row,{"op","source"});operation=TaskWaitAbilities{};
             } else if(op=="animation") {
-                Fields(row,{"op","request","participant","state","layer","transition","start","source"});
+                Fields(row,{"op","request","participant","state","layer","transition","start","end","source"});
                 const auto layer=Integer(row.value("layer",Json(0)));Need(layer>=0 && layer<=INT_MAX,"animation layer out of range");
                 const auto transition=Number(row.value("transition",Json(0)));
                 Need(transition>=0 && transition<=std::numeric_limits<float>::max(),"animation transition out of range");
-                operation=TaskSubmit{Name(row.at("request")),TaskAnimationCommand{{Name(row.at("participant"))},Name(row.at("state")),
-                    static_cast<int>(layer),static_cast<float>(transition),Float(row.value("start",Json(0)))}};
+                TaskAnimationCommand animation{{Name(row.at("participant"))},Name(row.at("state")),
+                    static_cast<int>(layer),static_cast<float>(transition),Float(row.value("start",Json(0)))};
+                if(row.contains("end"))animation.normalized_end=Float(row.at("end"));
+                operation=TaskSubmit{Name(row.at("request")),std::move(animation)};
             } else if(op=="ready_pose") {
                 Fields(row,{"op","request","config","skill","variant","source"});
                 const auto skill=Integer(row.at("skill")),variant=Integer(row.value("variant",Json(-1)));
@@ -142,6 +150,8 @@ struct SequenceParser {
                 TaskWaitRequest wait;wait.request=Name(row.at("request"));
                 if(signal=="submitted")wait.signal=TaskWaitSignal::Submitted;
                 else if(signal=="started")wait.signal=TaskWaitSignal::Started;
+                else if(signal=="animation_end")wait.signal=TaskWaitSignal::AnimationEnd;
+                else if(signal=="state_left")wait.signal=TaskWaitSignal::StateLeft;
                 else if(signal=="accepted")wait.signal=TaskWaitSignal::RequestComplete;
                 else if(signal=="performance")wait.signal=TaskWaitSignal::PerformanceComplete;
                 else if(signal=="drained")wait.signal=TaskWaitSignal::Drained;

@@ -8,12 +8,18 @@
 #include <functional>
 
 namespace hksr::framework {
-struct AnimationCommand {std::string state;int layer=0;float transition=0;float normalized_start=0;};
+struct AnimationCommand {
+    std::string state;int layer=0;float transition=0;float normalized_start=0;
+    std::optional<float> normalized_end;
+};
 struct AnimationRequestStatus {
     std::uint64_t serial=0,entity_generation=0,model_generation=0;
     bool accepted=false,entered=false,complete=false,cancelled=false,released=false;
     std::optional<double> progress;
     std::string error;
+    // The configured request boundary and observed state departure are not
+    // the clip's completion or the lifetime of attached resources.
+    bool end_reached=false,state_left=false;
 };
 struct AnimationRequestEndpoint {
     std::uint64_t entity_generation=0;

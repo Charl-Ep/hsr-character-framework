@@ -446,6 +446,17 @@ void TestTaskCatalog(){
     Codec();SelectionAndInterrupt();AnimationOffsets();NaturalAndPending();ContextsAndFinish();CloseAndReentrant();InputRequirementsAndPreparation();ControlAdmissionAndPresentation();ControlSlotsReachDispatch();ControlAtSequenceBoundaries();
     auto input=Document();
     {
+        auto abilities=Document();
+        abilities["sequences"]["stand"]["entry"]={{"op","serial"},{"children",Json::array({
+            {{"op","call_ability"},{"ability","phase"},{"wait_for_performance",false},
+                {"child",{{"op","wait_frame"}}}},{{"op","wait_abilities"}}})}};
+        const auto parsed=ParseTaskCatalog(abilities.dump());
+        const auto& call=std::get<TaskAbilityCall>(parsed.sequences.at("stand")->nodes[1].operation);
+        Check(call.ability=="phase" && !call.wait_for_performance && call.child==0);
+        abilities["sequences"]["stand"]["entry"]["children"][0].erase("wait_for_performance");
+        Reject([&]{ParseTaskCatalog(abilities.dump());});
+    }
+    {
         auto poses=Document();poses["sequences"]["stand"]["entry"]={{"op","ready_pose"},{"request","ready"},{"config","Battle/A"},{"skill",8},{"variant",4}};
         auto parsed=ParseTaskCatalog(poses.dump());
         const auto& ready=std::get<ReadyPoseSelection>(std::get<TaskPoseCommand>(std::get<TaskSubmit>(parsed.sequences.at("stand")->nodes[0].operation).operation).selection);

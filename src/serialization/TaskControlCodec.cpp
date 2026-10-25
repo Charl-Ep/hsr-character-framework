@@ -125,6 +125,7 @@ Json TaskResult(const framework::TaskControlResult& result) {
             {"performance_complete",s.performance_complete},{"drained",s.drained},{"error",s.error}};
         row["superseded"]=s.superseded;
         row["started"]=s.started;
+        row["animation_end"]=s.animation_end;row["state_left"]=s.state_left;
         if(s.progress)row["progress"]=*s.progress;
         out["requests"].push_back(std::move(row));
     }
@@ -139,6 +140,10 @@ Json TaskResult(const framework::TaskControlResult& result) {
         const auto& run=*state.execution;
         out["execution"]={{"token",run.token.value},{"phase",Phase(run.phase)},{"finish_requested",run.finish_requested},
             {"retained_requests",run.retained_requests},{"issues",run.issues},{"waiting",run.waiting}};
+        out["execution"]["abilities"]=Json::array();
+        for(const auto& ability:run.abilities)out["execution"]["abilities"].push_back({
+            {"ability",ability.ability},{"source",ability.source},{"invocation",ability.invocation},
+            {"waiting",ability.waiting},{"executing",ability.executing}});
         if(run.reason)out["execution"]["reason"]=static_cast<int>(*run.reason);
     }
     for(const auto& context:result.contexts) {

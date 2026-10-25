@@ -40,6 +40,22 @@ Keep the execution and service providers alive until `Drained()`. Destruction pe
 
 Reusing a request name starts a new serial after the prior performance finishes. The old request receives normal finish; once drained and no longer referenced by a cursor, it is discarded. Continuous loops do not retain a history of every completed request.
 
+### Ability calls
+
+`call_ability` launches an owned visual sequence at the call site. `wait_for_performance` is required; `wait_abilities` joins only registered abilities. An executing identity is not invoked again. A completed identity can run again, retaining its waiting registration within the execution.
+
+```json
+{"op":"serial","children":[
+  {"op":"call_ability","ability":"phase2","wait_for_performance":true,
+   "child":{"op":"wait_seconds","seconds":0.3}},
+  {"op":"wait_abilities"}
+]}
+```
+
+Each invocation has its own request names. A child may reference a request in its calling scope, including a later submission. Diagnostic receipt names include the ability and invocation number. Execution status exposes each ability's source, invocation, waiting registration and execution state.
+
+Non-waiting abilities keep running after control is yielded. `ProducersComplete()` becomes true after the root and all invoked bodies finish; resource drain can occur later. Cancellation stops every invoked body. These are maintained visual sequences, not native battle ability instances.
+
 ## Presentation adapter
 
 Create `TaskPresentation` after the owned actor's model/domain handoff is ready. Supply its `VisualProgramPlayer`, resolved parameters and an animation resolver. `BindTaskAnimation` binds an existing `ActionPlayback`; `partner:<key>` resolves a declared partner through that visual scene. Unknown participants fail; a declared participant under construction can wait.
@@ -58,6 +74,8 @@ Service animation players on their normal owner frame, then call `TaskPresentati
 Animation requests do not select an automatic successor. A completed non-loop state or observed exit completes its wait; looping states remain active. Releasing a receipt stops observation, not the Animator. The next task command owns the next state. Controlled domain changes cancel old requests, while observed Animator changes invalidate their bindings.
 
 An animation submission accepts `start` (normalized playback offset, default `0`) and `transition` (normalized blend duration, default `0`). Body, partner and layer playback preserve the offset. Progress waits use the observed absolute animation time, not elapsed time since submission. A start offset does not itself count as observed entry or progress.
+
+Optional `end` supplies a separate `animation_end` wait boundary. A positive value completes at that observed normalized time or observed state departure; a nonpositive value completes after observed entry. `state_left` waits only for departure. Neither means resource drain. Observation continues after clip completion until release or departure. These receipts do not implement native animation-logic hold flags or notify the battle event system.
 
 `ready_pose` selects `{config, skill, variant}` by configuration path and original skill/variant indices (`variant` defaults to `-1`). `reaction` selects `{config, flag, recover}` (`recover` defaults to `false`). Both require a request name, operate on this task controller's body and use cached sources bound to that actor. `BindTaskPose` reuses `ActionPlayback` transitions, expression and blink ownership; it does not grant control permission.
 
