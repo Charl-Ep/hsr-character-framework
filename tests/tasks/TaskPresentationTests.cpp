@@ -20,6 +20,7 @@ struct Fixture {
     std::shared_ptr<VisualProgramPlayer> player;
     std::function<void()> on_start,on_attach;
     std::function<std::optional<MovementRequestEndpoint>(VisualEffectContext&,const VisualMovement&)> movement;
+    std::function<std::optional<HitDelivery>(VisualEffectContext&,const std::string&,const HitInput&)> hit;
     std::map<std::string,std::shared_ptr<AnimationRequestStatus>> animations;
     std::map<std::string,std::uint64_t> generations{{"body",10},{"partner",20}};
     std::vector<std::pair<std::string,std::uint64_t>> released;
@@ -32,6 +33,9 @@ struct Fixture {
         services.detach=[&]{++detached;};
         services.movement=[&](auto& context,const auto& command)->std::optional<MovementRequestEndpoint> {
             if(!movement)throw std::runtime_error("test movement unavailable");return movement(context,command);
+        };
+        services.hit=[&](auto& context,const auto& target,const auto& command)->std::optional<HitDelivery> {
+            if(!hit)throw std::runtime_error("test receiver unavailable");return hit(context,target,command);
         };
         ConnectVisualTimelines(services,std::make_shared<VisualTimelines>([&] {
             const int id=static_cast<int>(++starts);api::TimelineRequestServices native;
@@ -327,5 +331,42 @@ void AbilityTailScope() {
     Check(f.starts==1 && f.stops==0 && !run.Drained());
     f.Retire();run.Service(0,4);Check(run.Drained());
 }
+void HitDispatch() {
+    Fixture f;auto inbox=std::make_shared<HitInbox>(20);
+    unsigned sends=0,plays=0;bool ready=false;
+    std::shared_ptr<HitRequestStatus> playback;
+    f.hit=[&](auto&,const std::string& target,const HitInput& input)->std::optional<HitDelivery> {
+        Check(target=="Victim" && input.animation=="DamageHit");++sends;return inbox->Post(input);
+    };
+    auto resolve=[&](const HitInput& input){Check(input.animation=="DamageHit");return HitResolution{ready,HitCommand{{{"Add","Hit",.5f}}}};};
+    auto submit=[&](HitCommand command)->std::shared_ptr<const HitRequestStatus> {
+        Check(command.layers[0].state=="Hit");++plays;playback=std::make_shared<HitRequestStatus>();playback->entity_generation=20;return playback;
+    };
+    auto plan=Plan({{"impact",TaskSubmit{"impact",TaskHitCommand{"Victim",{"DamageHit"}}}}});
+    TaskPresentation run({91},10,plan,f.player,{},f.Services());run.Service(0,1);run.Service(0,2);
+    Check(sends==1 && plays==0 && !run.Drained());inbox->Service(resolve,submit);Check(plays==0);
+    ready=true;inbox->Service(resolve,submit);run.Service(0,3);
+    Check(plays==1 && run.Drained() && run.Status().reason==TaskExitReason::Completed && !playback->cancelled);
+    run.Stop(TaskExitReason::Deleted);run.Service(0,4);Check(!playback->cancelled);
+    // Source cancellation before admission retracts the queued value. It does
+    // not reset any animation on the target or retry against another actor.
+    ready=false;
+    TaskPresentation cancelled({92},10,plan,f.player,{},f.Services());cancelled.Service(0,5);
+    cancelled.Stop(TaskExitReason::Deleted);ready=true;inbox->Service(resolve,submit);cancelled.Service(0,6);
+    Check(cancelled.Drained() && plays==1 && !playback->cancelled);
+    // Retiring the bound target reports failure, not a fallback to the caster.
+    ready=false;TaskPresentation lost({93},10,plan,f.player,{},f.Services());lost.Service(0,7);
+    inbox->Close();lost.Service(0,8);lost.Service(0,9);
+    Check(lost.Drained() && lost.Status().reason==TaskExitReason::Failed && plays==1);
+    bool closed=false;try{inbox->Post({"DamageHit"});}catch(const std::logic_error&){closed=true;}Check(closed);
+    // Cancellation/owner close during a policy read precedes the commit.
+    HitInbox reentrant(30);auto pending=reentrant.Post({"DamageHit"});
+    reentrant.Service([&](const auto&){pending.cancel();return HitResolution{true,HitCommand{{{"Add","Hit",1}}}};},submit);
+    Check(pending.status->cancelled && plays==1);
+    // Empty HitAnimation is a delivered no-op, not a missing implementation.
+    auto ignored=reentrant.Post({});
+    reentrant.Service([](const auto&){return HitResolution{true,{}};},submit);
+    Check(ignored.status->delivered && ignored.status->ignored && !ignored.status->playback && plays==1);
 }
-void TestTaskPresentation(){Scopes();IndependentParticipants();ConfiguredPoses();ErrorsAndReentry();NamedContexts();IndependentTail();Sounds();Movements();MovementInputs();AbilityTailScope();}
+}
+void TestTaskPresentation(){Scopes();IndependentParticipants();ConfiguredPoses();ErrorsAndReentry();NamedContexts();IndependentTail();Sounds();Movements();MovementInputs();AbilityTailScope();HitDispatch();}

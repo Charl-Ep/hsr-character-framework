@@ -19,6 +19,7 @@
 #include "AnimationRequests.hpp"
 #include "PoseRequests.hpp"
 #include "HitRequests.hpp"
+#include "HitInbox.hpp"
 #include <variant>
 
 namespace hksr::framework {
@@ -29,6 +30,9 @@ class ActionPlayback {
 public:
     ActionPlayback(api::EntityToken owner,api::GameWorld* world,std::unique_ptr<api::ActorAnimationSession> engine,
         std::shared_ptr<const api::PresentationEffects> effects={},const api::ComponentConfig* text=nullptr);
+    ~ActionPlayback();
+    std::shared_ptr<HitInbox> IncomingHits() const {return hit_inbox_;}
+    void ConfigureHitResolver(HitResolver resolve){hit_resolver_=std::move(resolve);}
     std::uint64_t Queue(ActionRequest request);
     std::shared_ptr<const AnimationRequestStatus> QueueAnimation(AnimationCommand);
     void ReleaseAnimation(std::uint64_t serial){animation_requests_.Release(serial);}
@@ -96,6 +100,8 @@ private:
     api::AnimationResources& resources_;
     AnimationRequests animation_requests_;
     HitRequests hit_requests_;
+    std::shared_ptr<HitInbox> hit_inbox_;
+    HitResolver hit_resolver_;
     std::shared_ptr<AnimationRequestStatus> pose_request_;
     void* pose_animator_=nullptr;
     std::uint64_t pose_model_=0;

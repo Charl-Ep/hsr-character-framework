@@ -16,9 +16,11 @@ ActionPlayback::ActionPlayback(api::EntityToken owner,api::GameWorld* world,std:
     std::shared_ptr<const api::PresentationEffects> effects,const api::ComponentConfig* text)
     :owner_(owner),world_(world),engine_(RequireSession(owner,std::move(engine))),entities_(engine_->Entities()),models_(engine_->Models()),
     actions_(engine_->Control()),inputs_(engine_->Inputs()),resources_(engine_->Resources()),animation_requests_(owner,world,*engine_),
-    hit_requests_(owner,world,*engine_,animation_requests_),text_(std::move(text)),effect_services_(std::move(effects)) {
+    hit_requests_(owner,world,*engine_,animation_requests_),hit_inbox_(std::make_shared<HitInbox>(owner.generation)),
+    text_(std::move(text)),effect_services_(std::move(effects)) {
     if(!owner.entity || !owner.generation || !world) throw std::invalid_argument("action playback requires its owned entity epoch");
 }
+ActionPlayback::~ActionPlayback(){hit_inbox_->Close();}
 std::uint64_t ActionPlayback::Queue(ActionRequest request) {
     if(status_.closing) throw std::logic_error("action playback already closing");
     const auto* layer=std::get_if<AnimatorState>(&request);
@@ -66,6 +68,7 @@ std::shared_ptr<const HitRequestStatus> ActionPlayback::QueueHit(HitCommand comm
     return result;
 }
 void ActionPlayback::CancelPending(bool interrupt_presentation) {
+    hit_inbox_->CancelPending();
     hit_requests_.Cancel();
     CancelPose("pose request cancelled");pose_animator_=nullptr;
     animation_requests_.Cancel();
@@ -177,6 +180,7 @@ void ActionPlayback::Service(const api::WorldFrame& frame,bool ready,api::Manage
         }
     }
     TickProgram(frame,objects);
+    hit_inbox_->Service(hit_resolver_,[this](HitCommand command){return QueueHit(std::move(command));});
     if(ready_ && !pending_) {
         try {
             const auto component=resources_.Component(api::AnimationComponent::Model,objects);

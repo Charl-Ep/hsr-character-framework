@@ -2,6 +2,13 @@
 #include <stdexcept>
 
 namespace hksr::framework {
+std::shared_ptr<HitInbox> ModelActionHandoff::IncomingHits() const {
+    if(removing_ || Ended() || status_.closed)throw std::runtime_error("hit target ended");
+    if(status_.phase==HandoffPhase::Failed)throw std::runtime_error("hit target model failed");
+    if(status_.phase!=HandoffPhase::Ready)return {};
+    if(status_.ready_domain!=ActionDomain::Alternate)throw std::runtime_error("hit target requires its battle model");
+    return actions_.IncomingHits();
+}
 ModelActionHandoff::ModelActionHandoff(CharacterInstance& character,api::EntityToken owner,api::GameWorld* world,
     std::unique_ptr<api::ModelProfileRequest> request,HandoffServices services,DomainControllers controllers,std::string initial_state)
     :character_(character),owner_(owner),world_(world),

@@ -135,5 +135,15 @@ void TestHitRequests() {
     const auto own_weights=weight_writes;player.Service(foreign,true,objects);
     Check(hit->cancelled && !hit->released && weight_writes==own_weights);
     player.ServiceEffects(frame);Check(hit->released && layers[1].weight==0.25f);
+    // Cross-actor producers post values; this receiver resolves and plays them
+    // only on its own frame. Admission is not a claim of visual completion.
+    player.ConfigureHitResolver([](const HitInput& input){Check(input.animation=="DamageHit");return HitResolution{true,Additive()};});
+    auto inbox=player.IncomingHits();auto delivered=inbox->Post({"DamageHit"});
+    player.Service(foreign,true,objects);Check(!delivered.status->cancelled && !delivered.status->delivered);
+    tick();Check(delivered.status->delivered && delivered.status->playback);
+    tick();tick();Check(delivered.status->playback->accepted && delivered.status->playback->entered);
+    delivered.cancel();tick();Check(!delivered.status->playback->cancelled);
+    player.ReleaseHit(delivered.status->playback->serial);tick();Check(delivered.status->playback->released);
     hit=player.QueueHit(Additive());tick();Check(player.Close(frame));Check(hit->released && layers[1].weight==0.25f && roots.empty());
+    bool closed=false;try{inbox->Post({"DamageHit"});}catch(const std::logic_error&){closed=true;}Check(closed);
 }

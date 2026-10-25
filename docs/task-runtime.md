@@ -6,7 +6,9 @@ The `tasks` module provides typed visual tasks, configuration loading, owned-res
 
 Shared reactions use the `VisualState` executor for configured enter/hold/recover body phases, expression and blink ownership. Task sequences can reference this executor through `reaction`; material, speed and floating behavior are not implemented. See [action API](http-api.md#actions).
 
-`ActionPlayback::QueueHit` accepts receiver-resolved layer and expression commands. Named layers bind to the receiver's current model. Additive requests retain the body action; body requests replace it. `ReleaseHitExpression` and `ReleaseHit` retire separate lifetimes. Clip completion does not return the body to idle. This playback primitive is not yet connected to task target routing or official hit-policy resolution.
+`hit` dispatches a source `HitAnimation` to an explicit owned target. The receiver resolves it on its own frame through `ActionPlayback::ConfigureHitResolver`. `ReactionPolicy` provides shared type, name, weight and return-name selection. Production receiver snapshots and logical return are not yet wired.
+
+`ActionPlayback::QueueHit` binds resolved layer and expression commands to the current model. Additive requests retain the body action; body requests replace it. `ReleaseHitExpression` and `ReleaseHit` retire separate lifetimes. Clip completion does not return the body to idle. A delivered hit belongs to the receiver: ending the attack only retracts an impact that has not been admitted.
 
 ## Model
 

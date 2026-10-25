@@ -131,6 +131,12 @@ struct SequenceParser {
                 Fields(row,{"op","request","config","flag","recover","source"});
                 const auto flag=Integer(row.at("flag"));Need(flag>=INT32_MIN && flag<=INT32_MAX,"reaction flag out of range");
                 operation=TaskSubmit{Name(row.at("request")),TaskPoseCommand{ReactionSelection{Name(row.at("config")),static_cast<std::int32_t>(flag),row.value("recover",false)}}};
+            } else if(op=="hit") {
+                Fields(row,{"op","request","target","animation","source"});
+                Need(row.at("animation").is_string(),"hit animation must be a source string");
+                const auto animation=row.at("animation").get<std::string>();
+                Need(animation.find('\0')==std::string::npos,"invalid hit animation");
+                operation=TaskSubmit{Name(row.at("request")),TaskHitCommand{Name(row.at("target")),{animation}}};
             } else if(op=="control") {
                 Fields(row,{"op","request","changes","source"});
                 operation=TaskSubmit{Name(row.at("request")),TaskControlCommand{control_codec::Changes(row.at("changes"))}};

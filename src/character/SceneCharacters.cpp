@@ -31,6 +31,7 @@ void SceneCharacters::BindProfile(CharacterPlan& plan,std::uint64_t id) const {
     if(plan.visual_program) {
         auto input=std::make_shared<VisualProgramInput>(*plan.visual_program);
         input->character=id;
+        input->resolve_hit_receiver=[this](api::EntityOrigin target){return HitTarget(target);};
         const bool saved=plan.persistence==CharacterPersistence::Layout;
         input->resolve_character=[this,saved](std::uint64_t target){
             const auto found=entries_.find(target);
@@ -82,6 +83,16 @@ api::EntityOrigin SceneCharacters::VisualTarget(std::uint64_t id) const {
         !api::TrackedEntities().IsDisposed(entity.token) && api::TrackedEntities().Current(entity.token.entity).generation==entity.token.generation)
         return {entity.token,entry.active->world};
     return {};
+}
+std::shared_ptr<HitInbox> SceneCharacters::HitTarget(api::EntityOrigin origin) const {
+    if(!origin.token.entity || !origin.token.generation || !origin.world)throw std::invalid_argument("hit target is not owned");
+    for(const auto& [id,entry]:entries_) {
+        const auto current=VisualTarget(id);
+        if(current.token.entity!=origin.token.entity || current.token.generation!=origin.token.generation || current.world!=origin.world)continue;
+        const auto* handoff=entry.active->session->Handoff();
+        return handoff?handoff->IncomingHits():std::shared_ptr<HitInbox>{};
+    }
+    throw std::invalid_argument("hit target is not a live registered framework actor");
 }
 SceneCharacters::SceneCharacters(CharacterSessionServices services)
     :services_(std::move(services)) {

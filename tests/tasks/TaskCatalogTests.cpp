@@ -103,6 +103,14 @@ struct Fixture {
 };
 void Codec() {
     const auto input=Document();const auto parsed=ParseTaskCatalog(input.dump());
+    auto hit=input;hit["sequences"]["stand"]["entry"]={{"op","hit"},{"request","impact"},{"target","Victim"},{"animation","DamageHit_H"}};
+    auto hit_catalog=ParseTaskCatalog(hit.dump());
+    const auto& impact=std::get<TaskHitCommand>(std::get<TaskSubmit>(hit_catalog.sequences.at("stand")->nodes.front().operation).operation);
+    Check(impact.target=="Victim" && impact.hit.animation=="DamageHit_H");
+    hit["sequences"]["stand"]["entry"]["state"]="ForceAnyAnimator";
+    Reject([&]{ParseTaskCatalog(hit.dump());});
+    hit["sequences"]["stand"]["entry"].erase("state");
+    hit["sequences"]["stand"]["entry"]["animation"]="";ParseTaskCatalog(hit.dump());
     Check(parsed.tasks.size()==5 && parsed.visual->actions.empty() && parsed.sequences.size()==3);
     Check(parsed.Resolve({"test","hold"}).definition.sources.at(0).field=="Modifier");
     Check(parsed.contexts.at("enhanced").disables.size()==1);

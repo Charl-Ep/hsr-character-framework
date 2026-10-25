@@ -47,6 +47,8 @@ void ValidateTaskSequence(const TaskSequence& sequence) {
             bool pose=false,other=false;
             for(const auto& candidate:sequence.nodes)if(const auto* submit=std::get_if<TaskSubmit>(&candidate.operation))
                 if(submit->request==wait->request) {
+                    if(std::holds_alternative<TaskHitCommand>(submit->operation))
+                        throw std::invalid_argument("hit delivery has no normalized progress clock");
                     if(std::holds_alternative<TaskPoseCommand>(submit->operation))pose=true;else other=true;
                 }
             if(pose && !other)throw std::invalid_argument("composite poses have no normalized progress clock");
@@ -70,6 +72,9 @@ void ValidateTaskSequence(const TaskSequence& sequence) {
                     if(key.skill<0 || key.variant<-1)throw std::invalid_argument("invalid ready pose index");
             },pose->selection);
             if(const auto* control=std::get_if<TaskControlCommand>(&submit->operation))ValidateControlChanges(control->changes);
+            if(const auto* hit=std::get_if<TaskHitCommand>(&submit->operation))
+                if(hit->target.empty() || hit->target.find('\0')!=std::string::npos || hit->hit.animation.find('\0')!=std::string::npos)
+                    throw std::invalid_argument("invalid target hit command");
             if(const auto* sound=std::get_if<TaskSoundCommand>(&submit->operation))
                 if(sound->participant.name.empty() || sound->event.empty() || sound->event.find('\0')!=std::string::npos)
                     throw std::invalid_argument("invalid task sound command");

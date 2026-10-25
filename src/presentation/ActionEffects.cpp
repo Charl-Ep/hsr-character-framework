@@ -32,6 +32,7 @@ void ActionPlayback::ReplaceReadyEffect(const ReadyPose& pose,api::ManagedObject
     }catch(const std::exception& e){status_.effect_note=std::string("ready effect: ")+e.what();}
 }
 void ActionPlayback::ServiceEffects(const api::WorldFrame& frame) {
+    if(Ended() || status_.closing)hit_inbox_->Close();
     hit_requests_.Retire(frame);
     ServiceRetirements(frame);
     if(program_ && (Ended() || OwnFrame(frame))) {

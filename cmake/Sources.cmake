@@ -69,6 +69,8 @@ set(HKSR_RUNTIME_SOURCES
     src/presentation/ActionPlayback.cpp
     src/presentation/AnimationRequests.cpp
     src/presentation/HitRequests.cpp
+    src/presentation/HitInbox.cpp
+    src/presentation/ReactionPolicy.cpp
     src/presentation/PoseRequests.cpp
     src/presentation/ActionVisualProgram.cpp
     src/presentation/ModelActionHandoff.cpp
@@ -166,6 +168,7 @@ set(HKSR_RUNTIME_TEST_SOURCES
     # tests/presentation
     tests/presentation/ActionPlaybackTests.cpp
     tests/presentation/HitRequestTests.cpp
+    tests/presentation/ReactionPolicyTests.cpp
     tests/presentation/PresentationProfileTests.cpp
     tests/presentation/VisualEffectContextTests.cpp
     tests/presentation/VisualEntityMotionTests.cpp

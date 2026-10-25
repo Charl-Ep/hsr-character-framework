@@ -26,6 +26,8 @@ struct VisualProgramInput {
     // after restoration/creation. Direct targets take precedence.
     std::map<std::string,std::uint64_t> target_characters;
     std::function<api::EntityOrigin(std::uint64_t)> resolve_character;
+    // Resolve only a registered owned receiver, never an official world actor.
+    std::function<std::shared_ptr<HitInbox>(api::EntityOrigin)> resolve_hit_receiver;
     std::function<VisualStepResult(std::uint64_t)> restore_target;
     // Optional value snapshot, read at action selection, not per frame. Values
     // overlay the startup defaults. Existing requests retain their old owners.

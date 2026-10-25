@@ -16,7 +16,8 @@ struct TaskSoundCommand {TaskParticipant participant;std::string event;};
 struct TaskMovementCommand {std::string animation;VisualMovement movement;}; // state comes from this request
 struct TaskControlCommand {std::vector<ControlChange> changes;};
 struct TaskPoseCommand {PoseSelection selection;}; // always this controller's owned body
-using TaskLeafOperation=std::variant<TaskAnimationCommand,VisualInstruction,TaskSoundCommand,TaskMovementCommand,TaskControlCommand,TaskPoseCommand>;
+struct TaskHitCommand {std::string target;HitInput hit;}; // receiver owns policy and playback
+using TaskLeafOperation=std::variant<TaskAnimationCommand,VisualInstruction,TaskSoundCommand,TaskMovementCommand,TaskControlCommand,TaskPoseCommand,TaskHitCommand>;
 struct TaskSubmit {std::string request;TaskLeafOperation operation;};
 enum class TaskWaitSignal { Submitted,RequestComplete,PerformanceComplete,Progress,Drained,Started,AnimationEnd,StateLeft };
 struct TaskWaitRequest {std::string request;TaskWaitSignal signal=TaskWaitSignal::PerformanceComplete;double progress=1;};

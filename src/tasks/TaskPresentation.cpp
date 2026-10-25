@@ -26,6 +26,7 @@ struct TaskPresentation::State {
         std::shared_ptr<Request> animation_dependency;
         std::optional<TaskAnimationEndpoint> endpoint;
         std::optional<PoseRequestEndpoint> pose_endpoint;
+        std::optional<HitDelivery> hit;
         std::shared_ptr<const AnimationRequestStatus> animation;
         std::shared_ptr<const VisualInstructionStatus> visual;
         std::optional<TaskSoundEndpoint> sound;
@@ -53,8 +54,10 @@ struct TaskPresentation::State {
         const auto* animation=std::get_if<TaskAnimationCommand>(&input.operation);
         const auto* sound=std::get_if<TaskSoundCommand>(&input.operation);
         const auto* movement=std::get_if<TaskMovementCommand>(&input.operation);
+        const auto* hit=std::get_if<TaskHitCommand>(&input.operation);
         const bool pose=std::holds_alternative<TaskPoseCommand>(input.operation);
         request->value.receipt={actual,serial,0,animation?animation->participant:sound?sound->participant:TaskParticipant{movement || pose?"body":"visual"},animation || sound || movement || pose?0:owner};
+        if(hit){request->value.receipt.participant={"target:"+hit->target};request->value.receipt.entity_generation=0;}
         if(movement) {
             for(const auto& [id,prior]:requests)if(id<serial && prior->name==movement->animation)request->animation_dependency=prior;
             if(!request->animation_dependency)request->value.state.error="movement animation request has not been submitted";
@@ -65,6 +68,13 @@ struct TaskPresentation::State {
         const auto found=requests.find(receipt.request);if(found==requests.end())return;
         const auto request=found->second;
         if(request->released)return;
+        if(std::holds_alternative<TaskHitCommand>(request->operation)) {
+            if(reason==TaskExitReason::Completed && !request->value.state.request_complete){request->finishing=true;return;}
+            request->released=true;
+            if(request->hit)request->hit->cancel(); // delivered hits remain receiver-owned
+            request->value.state.drained=!request->submitting;
+            return;
+        }
         if(reason==TaskExitReason::Completed && std::holds_alternative<TaskAnimationCommand>(request->operation)) {
             for(const auto& [id,dependent]:requests)if(dependent->animation_dependency==request && !dependent->value.state.drained) {
                 request->finishing=true;return; // retain the bound animation through motion drain
@@ -107,7 +117,21 @@ struct TaskPresentation::State {
     }
     void Observe(const std::shared_ptr<Request>& request) {
         auto& value=request->value;
-        if(request->animation && !value.state.superseded) {
+        if(request->hit) {
+            const auto& state=*request->hit->status;
+            value.receipt.entity_generation=state.entity_generation;
+            value.state.submitted=state.delivered;
+            value.state.request_complete=state.delivered || state.cancelled || !state.error.empty();
+            // This operation dispatches an impact; it does not own or wait for
+            // the receiving actor's reaction or logical return.
+            value.state.performance_complete=state.delivered;
+            value.state.started=state.delivered && !state.ignored;
+            value.state.drained=request->released;
+            if(!request->released) {
+                value.state.error=state.error;
+                if(state.cancelled && state.error.empty())value.state.error="hit delivery cancelled before admission";
+            }
+        } else if(request->animation && !value.state.superseded) {
             const auto& state=*request->animation;
             value.receipt.model=state.model_generation;
             value.state.submitted=state.accepted;value.state.request_complete=state.accepted || state.released;
@@ -208,7 +232,7 @@ struct TaskPresentation::State {
         for(const auto& [id,request]:requests)snapshot.push_back(request);
         for(const auto& request:snapshot) {
             try {
-                if(!request->released && !request->animation && !request->visual && !request->sound && !request->movement && request->value.state.error.empty()) {
+                if(!request->released && !request->animation && !request->visual && !request->sound && !request->movement && !request->hit && request->value.state.error.empty()) {
                     if(const auto* command=std::get_if<TaskAnimationCommand>(&request->operation)) {
                         const bool partner=command->participant.name.compare(0,8,"partner:")==0;
                         if(!partner && !services.animation)throw std::runtime_error("task animation resolver unavailable");
@@ -225,6 +249,17 @@ struct TaskPresentation::State {
                             if(request->animation->entity_generation!=request->value.receipt.entity_generation)
                                 throw std::runtime_error("animation endpoint returned another entity generation");
                             if(request->released)request->endpoint->release(request->animation->serial);
+                        }
+                    } else if(const auto* hit=std::get_if<TaskHitCommand>(&request->operation)) {
+                        request->submitting=true;
+                        try{request->hit=visual->SendSequenceHit(scope,hit->target,hit->hit);}
+                        catch(...){request->submitting=false;throw;}
+                        request->submitting=false;
+                        if(request->hit) {
+                            if(!request->hit->status || !request->hit->status->entity_generation || !request->hit->cancel)
+                                throw std::runtime_error("incomplete owned hit delivery");
+                            request->value.receipt.entity_generation=request->hit->status->entity_generation;
+                            if(request->released)request->hit->cancel();
                         }
                     } else if(const auto* pose=std::get_if<TaskPoseCommand>(&request->operation)) {
                         if(!services.pose || services.pose->entity_generation!=owner || !services.pose->submit || !services.pose->release)

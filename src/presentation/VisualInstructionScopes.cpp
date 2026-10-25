@@ -3,6 +3,15 @@
 #include <stdexcept>
 
 namespace hksr::framework {
+std::optional<HitDelivery> VisualProgramPlayer::SendSequenceHit(std::uint64_t token,const std::string& target,const HitInput& input) {
+    const auto found=instruction_scopes_.find(token);
+    if(found==instruction_scopes_.end() || found->second->ending || status_.closing || end_pending_)
+        throw std::logic_error("hit instruction scope ended");
+    if(!services_.hit)throw std::runtime_error("owned hit target service unavailable");
+    if(!found->second->error.empty())throw std::runtime_error(found->second->error);
+    if(!found->second->prepared)return {};
+    return services_.hit(*found->second->lifetime->effects,target,input);
+}
 VisualProgramParameters VisualProgramPlayer::Parameters(VisualProgramParameters overrides) const {
     auto result=services_.select_inputs?services_.select_inputs():VisualProgramParameters{{},services_.choices,{}};
     for(auto& [name,id]:overrides.targets)result.targets[name]=id;

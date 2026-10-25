@@ -193,6 +193,17 @@ std::shared_ptr<VisualProgramPlayer> VisualProgramRuntime::Create(api::EntityOri
             (result.state==api::EffectControlState::NotLoaded || result.state==api::EffectControlState::Pending)?VisualStepState::Pending:VisualStepState::Failed,result.detail};
     };
     services.attach=[this,current](auto context){Attach(*current(),std::move(context));};
+    services.hit=[this,current](VisualEffectContext& context,const std::string& target_name,const HitInput& command)->std::optional<HitDelivery> {
+        const auto scene=current();
+        if(!Alive(scene->owner))throw std::runtime_error("hit source scene ended");
+        const auto target=ResolveTarget(*scene,context,target_name);
+        if(!scene->input.resolve_hit_receiver)throw std::runtime_error("owned hit receiver resolver unavailable");
+        const auto receiver=scene->input.resolve_hit_receiver(target);
+        if(!receiver)return {};
+        if(!Alive(scene->owner) || !Alive(target) || receiver->Generation()!=target.token.generation)
+            throw std::runtime_error("hit receiver generation changed");
+        return receiver->Post(command);
+    };
     services.face=[this,current](VisualEffectContext& context,const VisualFace& command) {
         const auto scene=current();
         if(closing_ || !Alive(scene->owner))throw std::runtime_error("facing scene ended");

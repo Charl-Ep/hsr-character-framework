@@ -31,6 +31,8 @@ public:
     const HandoffStatus& Status() const { return status_; }
     const ActionPlaybackStatus& Playback() const { return actions_.Status(); }
     std::string CurrentIdle() const { return actions_.CurrentIdle(); }
+    std::shared_ptr<HitInbox> IncomingHits() const;
+    void ConfigureHitResolver(HitResolver resolve){actions_.ConfigureHitResolver(std::move(resolve));}
     VisualBranchState BranchState() const {return actions_.BranchState();}
     bool SuccessorSettled() const {return actions_.SuccessorSettled();}
     std::optional<VisualProgramSnapshot> CaptureVisualProgram() const {

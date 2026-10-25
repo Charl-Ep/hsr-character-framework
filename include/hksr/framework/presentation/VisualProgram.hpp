@@ -3,6 +3,7 @@
 #include "VisualProgramState.hpp"
 #include "VisualPartnerTypes.hpp"
 #include "AnimationRequests.hpp"
+#include "HitInbox.hpp"
 #include "VisualMovement.hpp"
 #include <functional>
 #include <deque>
@@ -112,6 +113,7 @@ struct VisualProgramServices {
     std::function<std::optional<AnimationRequestEndpoint>(const std::string&)> partner_animation;
     std::function<std::optional<MovementRequestEndpoint>(VisualEffectContext&,const VisualMovement&)> movement;
     std::function<VisualStepResult(VisualEffectContext&,const VisualFace&)> face;
+    std::function<std::optional<HitDelivery>(VisualEffectContext&,const std::string&,const HitInput&)> hit;
 };
 struct VisualInstructionStatus {
     bool complete=false,cancelled=false;
@@ -132,6 +134,7 @@ struct VisualProgramStatus {
 // binds an actual playback/model receipt, then supplies that receipt's progress.
 class VisualProgramPlayer {
 public:
+    std::optional<HitDelivery> SendSequenceHit(std::uint64_t,const std::string& target,const HitInput&);
     VisualProgramPlayer(std::shared_ptr<const VisualProgram>,VisualProgramServices);
     std::uint64_t Select(const std::string& action,std::map<std::string,std::string> choices={});
     // The token is the current action intent for action signals, or the named

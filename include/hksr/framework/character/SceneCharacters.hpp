@@ -119,6 +119,7 @@ private:
     std::uint64_t task_catalog_revision_=0;
     void BindProfile(CharacterPlan& plan,std::uint64_t id) const;
     api::EntityOrigin VisualTarget(std::uint64_t id) const;
+    std::shared_ptr<HitInbox> HitTarget(api::EntityOrigin) const;
     void SubmitAction(Entry&);
     bool PrepareDomain(Entry&,ActionDomain);
     std::optional<TaskControlResult> SubmitTask(Entry&);
