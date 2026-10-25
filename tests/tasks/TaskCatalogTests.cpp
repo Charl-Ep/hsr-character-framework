@@ -2,6 +2,7 @@
 #include <nlohmann/json.hpp>
 #include <algorithm>
 #include <limits>
+#include <fstream>
 #include <stdexcept>
 
 namespace {
@@ -52,6 +53,7 @@ struct Fixture {
     std::shared_ptr<VisualProgramPlayer> scene;
     std::unique_ptr<TaskController> controller;
     std::vector<std::pair<AnimationCommand,std::shared_ptr<AnimationRequestStatus>>> plays;
+    std::vector<std::pair<PoseSelection,std::shared_ptr<AnimationRequestStatus>>> poses;
     std::vector<VisualFace> faces;
     bool facing_ready=true;
     bool accept=true,ready=true;
@@ -80,6 +82,11 @@ struct Fixture {
         };
         scene=std::make_shared<VisualProgramPlayer>(catalog->visual,std::move(visual));
         TaskPresentationServices ports;
+        ports.pose=PoseRequestEndpoint{7,[&](const PoseSelection& selection)->std::shared_ptr<const AnimationRequestStatus> {
+            if(!ready)return {};
+            auto value=std::make_shared<AnimationRequestStatus>();value->entity_generation=7;value->serial=poses.size()+1;
+            value->model_generation=8;value->accepted=accept;poses.emplace_back(selection,value);return value;
+        },[&](auto serial,bool cancel){auto& state=*poses.at(serial-1).second;state.released=true;state.cancelled=cancel;}};
         ports.animation=[&](const auto& participant)->std::optional<TaskAnimationEndpoint> {
             if(participant.name!="body")throw std::invalid_argument("unknown participant");
             if(!ready)return {};
@@ -403,6 +410,37 @@ void ControlAtSequenceBoundaries() {
     auto invalid=document;invalid["tasks"]["attack"].erase("control");
     Reject([&]{ParseTaskCatalog(invalid.dump());});
 }
+}
+void TestSelectedEntry(const char* file) {
+    std::ifstream input(file,std::ios::binary);if(!input)throw std::runtime_error("selected entry file absent");
+    const auto document=Json::parse(input);Fixture f(document);const auto id=f.catalog->id;
+    TaskSelection select{{id,"select"}},execute{{id,"entry"}};
+    Check(f.controller->Query(execute).query.facets->path==TaskAvailability::Unavailable);
+    Check(f.controller->Select(select).intent!=0);
+    Check(f.controller->Status().control.selection.has_value() && f.poses.empty());
+    f.Tick();Check(f.poses.size()==1 && !f.poses[0].second->entered);
+    Check(std::get<ReadyPoseSelection>(f.poses[0].first).source==f.catalog->visual->source);
+    const auto no_target=f.controller->Query(execute);
+    Check(no_target.query.facets->path==TaskAvailability::Available && no_target.query.facets->inputs==TaskAvailability::Unavailable);
+    for(const auto& requirement:f.catalog->tasks.at("entry").definition.requirements)
+        if(const auto* target=std::get_if<TaskNeedsTarget>(&requirement))f.defaults.targets[target->name]=99;
+    // The source has WaitPrepareFinish=false. A confirmation can supersede the
+    // still-entering ready request, but only after the target is supplied.
+    Check(f.controller->Select(execute).intent!=0);
+    Check(f.controller->Status().control.performance==ControlPerformance::Accepted);
+    Check(f.controller->Query(select).query.facets->path==TaskAvailability::Unavailable);
+    f.Tick();f.Tick();f.Tick();
+    Check(f.controller->Status().error.empty() && f.poses[0].second->released && f.plays.size()==1 && f.faces.size()==1);
+    const auto& nodes=f.catalog->sequences.at("entry")->nodes;
+    const TaskAnimationCommand* command=nullptr;
+    for(const auto& node:nodes)if(const auto* submit=std::get_if<TaskSubmit>(&node.operation))
+        if(const auto* animation=std::get_if<TaskAnimationCommand>(&submit->operation))command=animation;
+    Check(command && f.plays[0].first.state==command->state && f.plays[0].first.normalized_start==command->normalized_start);
+    f.plays[0].second->entered=true;f.plays[0].second->progress=0;f.Tick();
+    Check(f.controller->Status().control.performance==ControlPerformance::Working && f.controller->Status().error.empty());
+    // Test only the bound selection/confirmation and Entry submission. Hit
+    // delivery and post-performance return remain separately unbound.
+    f.controller->Cancel();f.Tick();f.Tick();Check(f.controller->Drained());
 }
 void TestTaskCatalog(){
     Codec();SelectionAndInterrupt();AnimationOffsets();NaturalAndPending();ContextsAndFinish();CloseAndReentrant();InputRequirementsAndPreparation();ControlAdmissionAndPresentation();ControlSlotsReachDispatch();ControlAtSequenceBoundaries();
