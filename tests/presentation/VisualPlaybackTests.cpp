@@ -36,6 +36,7 @@ void* __fastcall Animator(void* o,void*){Check(o==&model);return other_model?&in
 bool __fastcall Changing(void*,void*){return false;}
 int __fastcall Hash(std::string* name,void*){return names.at(*name);}
 int __fastcall Count(void* o,void*){Check(o==&animator);return static_cast<int>(layers.size());}
+int __fastcall LayerIndex(void*,std::string* name,void*){return *name=="Visual"?0:-1;}
 bool __fastcall Has(void* o,int layer,int hash,void*) {
     Check(o==&animator);
     if(cancel_on_has)active->CancelPending();
@@ -93,6 +94,7 @@ void TestVisualPlayback() {
     api::ModelAccessMethods mm;mm.animator=M(Animator);mm.changing=M(Changing);
     api::AnimationControlMethods am;am.hash=M(Hash);am.has_state=M(Has);am.play=M(Play);am.free_style_state=M(Body);
     am.state_info=M(StateInfo);am.in_transition=M(Transition);am.layer_count=M(Count);am.cross_fade=M(Fade);am.npc_motion=M(Npc);
+    am.layer_index=M(LayerIndex);
     am.blink={M(BlinkSet),M(BlinkValue),M(BlinkActive),offsetof(Emotion,mask),true};
     api::ProfileInputMethods pm;pm.animator_initialized=M(Loaded);
     Objects objects;auto token=api::TrackedEntities().Track(reinterpret_cast<api::GameEntity*>(&entity));
@@ -162,6 +164,16 @@ void TestVisualPlayback() {
     player.ReleasePose(recovered->serial);
     const auto stopped=player.QueuePose(Recipe());tick();player.ReleasePose(stopped->serial,true);tick();
     Check(stopped->released && blink_mask.enabled[3]);
+    // A body hit suspends the visual body's occurrence/loop, not its independent
+    // expression. Ending that source while hit releases the retained expression.
+    framework::HitControlInputs source;source.visual_flag=9001;
+    player.ConfigureReceiverPolicy({},[&]{return source;});
+    layers[2]={100,0,.6f,false,false};player.QueuePose(Recipe());tick();layers[2]={5,0,0,false,false};
+    framework::HitCommand hit;hit.body=framework::HitBody{"Visual","Exit"};
+    const auto hit_status=player.QueueHit(hit);tick();tick();tick();
+    Check(hit_status->accepted && hit_status->error.empty() && layers[0].current==3 && layers[2].current==5 && !blink_mask.enabled[3]);
+    source.visual_flag.reset();tick();Check(layers[2].next==100 && blink_mask.enabled[3] && !hit_status->released);
+    player.ReleaseHit(hit_status->serial);tick();
     api::TrackedEntities().Disposed(token);before=writes;tick();Check(writes==before);
     Check(player.Close(frame) && roots.empty());api::TrackedEntities().Forget(token);
     std::cout<<"Visual row playback: entry/hold/recovery, official successor, transition-target cleanup, NPC interruption, model replacement, partial write and owner end passed; no game acceptance.\n";

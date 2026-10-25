@@ -77,6 +77,12 @@ void CharacterSession::StartHandoff(std::unique_ptr<api::ModelProfileRequest> re
     handoff_=std::make_unique<ModelActionHandoff>(character_,owner_,world_,std::move(request),services_.handoff,
         DomainControllers{},plan_.alternate && plan_.alternate->initial_state.available?plan_.alternate->initial_state.value:std::string{});
     handoff_->ConfigurePresentation(plan_.presentation_profile,plan_.presentation_phase);
+    if(services_.hit_inputs)for(const auto& root:plan_.action_sources)
+        if(root.domain==ActionDomain::Alternate && root.source.kind==api::ActionConfigKind::Battle) {
+            handoff_->ConfigureReceiverPolicy([this,source=root.source.path](bool visual) {
+                return services_.hit_inputs(source,visual);
+            });break;
+        }
     if(plan_.visual_program) {
         try {
             if(!services_.visual_program)throw std::logic_error("visual program runtime was not prepared");

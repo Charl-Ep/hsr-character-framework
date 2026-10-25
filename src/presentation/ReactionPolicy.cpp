@@ -1,4 +1,5 @@
 #include <hksr/framework/presentation/ReactionPolicy.hpp>
+#include <hksr/framework/tasks/BattleControl.hpp>
 #include <cmath>
 #include <stdexcept>
 
@@ -7,6 +8,10 @@ namespace {
 template<class T> const T& Read(const api::ConfigValue<T>& input,const char* field) {
     if(!input.available)throw std::runtime_error(std::string("receiver input unread: ")+field+" "+input.error);
     return input.value;
+}
+template<class T>const T& Read(const std::optional<T>& input,const char* field) {
+    if(!input)throw std::runtime_error(std::string("receiver input unread: ")+field);
+    return *input;
 }
 const std::string& Read(const api::TextInput& input,const char* field) {
     if(!input.available)throw std::runtime_error(std::string("receiver input unread: ")+field+" "+input.error);
@@ -38,6 +43,20 @@ bool Heavy(const std::string& name) {
     return (name.size()>=2 && name.compare(name.size()-2,2,"_H")==0) || name.find("_H_")!=std::string::npos;
 }
 }
+HitControlInputs ResolveHitControl(const BattleControlSnapshot& state) {
+    HitControlInputs out;
+    if(state.dominant_source)out.visual_flag=state.dominant_source->flag;
+    for(const auto& source:state.sources) {
+        if(!source.behaviors)throw std::runtime_error("receiver source behavior flags unreviewed: "+source.id);
+        for(const auto flag:*source.behaviors) {
+            // Native OnHit tests both Endurance and EnduranceEnemyOnly.
+            if(flag==12 || flag==14)out.endurance=true;
+            else if(flag==21)out.mute_heavy=true;
+            else if(flag==22)out.force_heavy=true;
+        }
+    }
+    return out;
+}
 HitDecision SelectHit(const std::string& animation,const HitReceiverState& receiver,
     const ReactionSources& sources,const api::HitAnimationDefaults& defaults,const std::optional<PreviousHit>& previous) {
     HitDecision out;
@@ -58,9 +77,9 @@ HitDecision SelectHit(const std::string& animation,const HitReceiverState& recei
     // ca16bc0 is reached by the ordinary Hit branch in OnHitEnter. The air-hit
     // branch calls the category resolver directly, not this occurrence test.
     if(out.kind==HitKind::Additive && row) {
-        float threshold=Finite(receiver.repeat_occur_at,"character occurrence repeat threshold");
+        float threshold=Finite(Read(receiver.repeat_occur_at,"character occurrence repeat threshold"),"character occurrence repeat threshold");
         if(threshold<0)threshold=Finite(Read(row->repeat_occur_at,"visual occurrence repeat threshold"),"visual occurrence repeat threshold");
-        if(threshold>=0 && receiver.in_occur && Finite(receiver.occur_progress,"occurrence progress")<=threshold) {
+        if(threshold>=0 && Read(receiver.in_occur,"current occurrence") && Finite(Read(receiver.occur_progress,"occurrence progress"),"occurrence progress")<=threshold) {
             out.kind=HitKind::Heavy;
             // ca16ce0 returns AnimOccur itself here, not the category lookup.
             out.state=Read(row->occur.state,"repeated AnimOccur");out.repeated_occur=true;
@@ -82,9 +101,9 @@ HitDecision SelectHit(const std::string& animation,const HitReceiverState& recei
         }
         if(!override_weight) {
             const auto& weights=Read(defaults.resilience_weights,"ResilienceHitAdditiveWeights");
-            const int index=receiver.endurance?0:receiver.resilience;
+            const int index=receiver.endurance?0:Read(receiver.resilience,"Resilience");
             if(index<0 || static_cast<std::size_t>(index)>=weights.size())throw std::runtime_error("receiver resilience has no weight entry");
-            out.weight=Finite(weights[index],"resilience weight")*Finite(receiver.entity_weight,"entity hit weight");
+            out.weight=Finite(weights[index],"resilience weight")*Finite(Read(receiver.entity_weight,"entity hit weight"),"entity hit weight");
             Finite(out.weight,"resolved hit weight");
         }
     }

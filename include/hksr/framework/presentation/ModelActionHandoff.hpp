@@ -33,6 +33,11 @@ public:
     std::string CurrentIdle() const { return actions_.CurrentIdle(); }
     std::shared_ptr<HitInbox> IncomingHits() const;
     void ConfigureHitResolver(HitResolver resolve){actions_.ConfigureHitResolver(std::move(resolve));}
+    void ConfigureReceiverPolicy(HitCatalogResolver resolve) {
+        actions_.ConfigureReceiverPolicy(std::move(resolve),[this] {
+            return tasks_?ResolveHitControl(tasks_->Status().control):HitControlInputs{};
+        });
+    }
     VisualBranchState BranchState() const {return actions_.BranchState();}
     bool SuccessorSettled() const {return actions_.SuccessorSettled();}
     std::optional<VisualProgramSnapshot> CaptureVisualProgram() const {

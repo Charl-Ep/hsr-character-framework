@@ -60,7 +60,8 @@ std::shared_ptr<const HitRequestStatus> ActionPlayback::QueueHit(HitCommand comm
         CancelPose("body hit replaced pose");animation_requests_.Cancel();++intent_revision_;
         completion_.reset();status_.completion_pending=false;status_.successor.reset();
         if(pending_){pending_->outcome=ActionOutcome::Cancelled;status_.last=std::move(pending_);pending_.reset();}
-        status_.pending=false;visual_cancelled_=ready_cancelled_=retire_action_events_=true;
+        status_.pending=false;ready_cancelled_=retire_action_events_=true;
+        if(visual_)visual_->body_suspended=true;
         program_playback_.reset();program_preparing_=program_intent_=program_return_=0;
         if(program_)program_->InterruptAction();
         presentation_.Abandon();SyncPresentation();
@@ -70,6 +71,7 @@ std::shared_ptr<const HitRequestStatus> ActionPlayback::QueueHit(HitCommand comm
 void ActionPlayback::CancelPending(bool interrupt_presentation) {
     hit_inbox_->CancelPending();
     hit_requests_.Cancel();
+    received_hit_.reset();resolved_hit_.reset();previous_hit_.reset();hit_policy_animator_=nullptr;
     CancelPose("pose request cancelled");pose_animator_=nullptr;
     animation_requests_.Cancel();
     ++intent_revision_;
@@ -180,7 +182,15 @@ void ActionPlayback::Service(const api::WorldFrame& frame,bool ready,api::Manage
         }
     }
     TickProgram(frame,objects);
-    hit_inbox_->Service(hit_resolver_,[this](HitCommand command){return QueueHit(std::move(command));});
+    if(received_hit_ && received_hit_->playback->accepted && !received_hit_->playback->cancelled && received_hit_->playback->error.empty())
+        previous_hit_=PreviousHit{received_hit_->resolved.decision.state,received_hit_->resolved.frame};
+    hit_inbox_->Service([&](const HitInput& input) {
+        return hit_resolver_?hit_resolver_(input):ResolveIncomingHit(input,frame,objects);
+    },[this](HitCommand command) {
+        auto receipt=QueueHit(std::move(command));
+        if(resolved_hit_){received_hit_=ReceivedHit{*resolved_hit_,receipt};resolved_hit_.reset();}
+        return receipt;
+    });
     if(ready_ && !pending_) {
         try {
             const auto component=resources_.Component(api::AnimationComponent::Model,objects);
@@ -209,6 +219,10 @@ void ActionPlayback::Service(const api::WorldFrame& frame,bool ready,api::Manage
                 CancelPose("reaction model changed");
                 ReleaseVisual(model.animator.value);status_.visual_note="model changed; visual ownership ended";
             } else if(visual_cancelled_) ReleaseVisual(model.animator.value);
+            else if(visual_->body_suspended && visual_->task_owned && hit_control_ &&
+                hit_control_().visual_flag!=std::optional<std::int32_t>(visual_->request.value.flag.value)) {
+                ReleaseVisual(model.animator.value);status_.visual_note="receiver visual source ended during body hit";
+            }
             else {
                 const auto style=resources_.Component(api::AnimationComponent::FreeStyle,objects);
                 if(!style.call.returned || !style.object)throw std::runtime_error("visual FreeStyle unavailable");

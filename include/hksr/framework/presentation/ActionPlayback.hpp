@@ -20,6 +20,7 @@
 #include "PoseRequests.hpp"
 #include "HitRequests.hpp"
 #include "HitInbox.hpp"
+#include "ReactionPolicy.hpp"
 #include <variant>
 
 namespace hksr::framework {
@@ -33,6 +34,9 @@ public:
     ~ActionPlayback();
     std::shared_ptr<HitInbox> IncomingHits() const {return hit_inbox_;}
     void ConfigureHitResolver(HitResolver resolve){hit_resolver_=std::move(resolve);}
+    void ConfigureReceiverPolicy(HitCatalogResolver catalog,std::function<HitControlInputs()> control) {
+        hit_catalog_=std::move(catalog);hit_control_=std::move(control);
+    }
     std::uint64_t Queue(ActionRequest request);
     std::shared_ptr<const AnimationRequestStatus> QueueAnimation(AnimationCommand);
     void ReleaseAnimation(std::uint64_t serial){animation_requests_.Release(serial);}
@@ -67,6 +71,7 @@ private:
     struct VisualPlayback;
     bool Ended() const;
     bool OwnFrame(const api::WorldFrame& frame) const;
+    HitResolution ResolveIncomingHit(const HitInput&,const api::WorldFrame&,api::ManagedObjects&);
     void CancelPose(const std::string& reason);
     void ObservePose(std::uint64_t serial,bool complete=false);
     void PoseResult(const ActionReceipt&,void* animator);
@@ -102,6 +107,14 @@ private:
     HitRequests hit_requests_;
     std::shared_ptr<HitInbox> hit_inbox_;
     HitResolver hit_resolver_;
+    HitCatalogResolver hit_catalog_;
+    std::function<HitControlInputs()> hit_control_;
+    std::optional<PreviousHit> previous_hit_;
+    struct ResolvedHit {HitDecision decision;std::uint64_t frame=0;};
+    std::optional<ResolvedHit> resolved_hit_;
+    struct ReceivedHit {ResolvedHit resolved;std::shared_ptr<const HitRequestStatus> playback;};
+    std::optional<ReceivedHit> received_hit_;
+    void* hit_policy_animator_=nullptr;
     std::shared_ptr<AnimationRequestStatus> pose_request_;
     void* pose_animator_=nullptr;
     std::uint64_t pose_model_=0;
@@ -133,7 +146,7 @@ private:
         std::shared_ptr<api::BlinkOverride> blink;
         std::uint64_t boundary=0;
         std::uint64_t serial=0;
-        bool task_owned=false;
+        bool task_owned=false,body_suspended=false;
     };
     std::optional<VisualPlayback> visual_;
     bool visual_cancelled_=false;

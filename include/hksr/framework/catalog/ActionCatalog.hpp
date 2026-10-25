@@ -37,6 +37,8 @@ public:
     const api::ActionConfigInput* Document(const ActionSourceKey& source) const;
     // Source preparation shares this exact document read with discovery.
     const api::ActionConfigInput& Load(const ActionSourceKey& source);
+    const api::ReadyAnimationDefaults& LoadReadyDefaults();
+    const api::VisualConfigSources& LoadVisuals(const std::string& source);
 private:
     struct Projection {
         ActionCatalogStatus status;

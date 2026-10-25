@@ -20,6 +20,7 @@ struct HitCommand {
     std::string expression;
     float expression_transition=0;
     int blink_source=-1;
+    std::optional<float> expression_seconds;
 };
 struct HitRequestStatus {
     std::uint64_t serial=0,entity_generation=0,model_generation=0;

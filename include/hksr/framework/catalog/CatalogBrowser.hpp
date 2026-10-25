@@ -5,6 +5,7 @@
 #include "../character/CharacterPlan.hpp"
 #include "../presentation/ActionSelection.hpp"
 #include "../presentation/PoseRequests.hpp"
+#include "../presentation/ReactionPolicy.hpp"
 #include <deque>
 
 namespace hksr::framework {
@@ -20,6 +21,9 @@ struct CatalogReaders {
     ActionCatalog::ReadVisual visuals;
     ActionCatalog::ReadReadyDefaults ready_defaults;
     ActionCatalog::BeginAbility begin_abilities;
+    std::function<api::CharacterHitInput(const std::string&)> hit_character;
+    std::function<api::HitAnimationDefaults()> hit_weights;
+    std::function<api::VisualReactionInput()> hit_names;
 };
 // Official-thread coordinator. Construction and selection do not call the
 // engine. UI receives immutable values, never game objects or query callbacks.
@@ -42,6 +46,7 @@ public:
     void ForgetCharacter(std::uint64_t character);
     PlacedAction ResolveAction(std::uint64_t character,const CatalogActionSelection& selection) const;
     std::optional<PoseCommand> ResolvePose(const std::vector<ActionSourceRoot>&,const PoseSelection&);
+    std::optional<HitCatalogInputs> ResolveHitInputs(const std::string& source,bool visuals);
     CharacterPlan Plan(std::uint64_t request,std::shared_ptr<const ModelAssetInput> payload={},std::string look={}) const;
     std::shared_ptr<const CatalogSnapshot> Snapshot() const { return snapshot_; }
     api::NpcMotionSources NpcMotions(void* owned_component) const;
@@ -51,10 +56,17 @@ private:
     bool AdvanceOne();
     void Publish();
     void RequestActions();
+    bool AdvanceHitInputs();
     struct CharacterSources {std::uint64_t revision;std::vector<ActionSourceRoot> roots;};
     std::map<std::uint64_t,CharacterSources> character_sources_;
     std::map<std::uint64_t,std::vector<ActionSourceRoot>> source_roots_;
     std::set<std::string> pose_sources_;
+    std::map<std::string,HitCatalogInputs> hit_sources_;
+    std::map<std::string,std::string> hit_errors_;
+    std::map<std::string,bool> hit_pending_;
+    std::shared_ptr<const api::HitAnimationDefaults> hit_weights_;
+    std::shared_ptr<const api::VisualReactionInput> hit_names_;
+    std::shared_ptr<const api::ReadyAnimationDefaults> hit_animations_;
     std::map<std::uint64_t,std::shared_ptr<const ActionCatalogStatus>> source_views_,character_views_;
     std::deque<std::uint64_t> pending_sources_;
     std::uint64_t revision_=0,next_source_=0;

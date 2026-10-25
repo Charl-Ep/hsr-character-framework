@@ -14,6 +14,7 @@ struct CharacterSessionServices {
     std::function<std::shared_ptr<VisualProgramPlayer>(api::EntityOrigin,const VisualProgramInput&,
         const std::shared_ptr<const PresentationProfile>&)> visual_program;
     std::function<std::optional<PoseCommand>(const std::vector<ActionSourceRoot>&,const PoseSelection&)> pose;
+    std::function<std::optional<HitCatalogInputs>(const std::string&,bool)> hit_inputs;
 };
 // Actual source -> CharacterInstance -> model/action handoff assembly. No UI,
 // scanning, player borrowing or implicit game launch. Create/Service execute

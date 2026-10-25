@@ -1,4 +1,5 @@
 #include <hksr/framework/presentation/ReactionPolicy.hpp>
+#include <hksr/framework/tasks/BattleControl.hpp>
 #include <stdexcept>
 #include <limits>
 
@@ -16,6 +17,15 @@ api::VisualReactionInput Reactions(const std::string& prefix) {
 template<class F>void Reject(F function){bool rejected=false;try{function();}catch(const std::exception&){rejected=true;}Check(rejected);}
 }
 void TestReactionPolicy() {
+    BattleControlSnapshot control;
+    control.sources={{"visual-only",12,10,1,std::vector<std::int32_t>{}},
+        {"independent-behavior",99,20,2,std::vector<std::int32_t>{12,21}}};
+    control.dominant_source=control.sources[0];
+    auto flags=ResolveHitControl(control);
+    Check(flags.visual_flag==12 && flags.endurance && flags.mute_heavy && !flags.force_heavy);
+    control.sources.pop_back();Check(!ResolveHitControl(control).endurance); // visual flag 12 is not Endurance
+    control.sources[0].behaviors.reset();Reject([&]{ResolveHitControl(control);});
+    control={};Check(!ResolveHitControl(control).visual_flag && !ResolveHitControl(control).endurance);
     auto defaults=Reactions("base."),phase=Reactions("phase.");
     api::VisualBehaviorInput visual;visual.flag={true,99,{}};visual.force_hit_h={true,false,{}};
     visual.repeat_occur_at={true,-1,{}};visual.reactions=Reactions("visual.");visual.occur.state=Text("abnormal.enter");
@@ -38,6 +48,11 @@ void TestReactionPolicy() {
     phase.hit=Text("");Check(decide("DamageHit").state=="base.Hit");
     phase.hit.available=false;Reject([&]{decide("DamageHit");});phase.hit=Text("phase.Hit");
     phase.hit_weight={true,.4f,{}};state.entity_weight=.7f;Check(decide("DamageHit").weight==.4f);
+    state.resilience.reset();state.entity_weight.reset();
+    Check(decide("DamageHit").weight==.4f); // unread inputs not consumed by phase override
+    Check(decide("DamageHit_H").kind==HitKind::Heavy);
+    phase.hit_weight.value=-1;Reject([&]{decide("DamageHit");});
+    state.resilience=3;state.entity_weight=.7f;
     phase.hit_weight.value=-1;Check(decide("DamageHit").weight==.7f);
     phase.force_hit_h.value=true;Check(decide("DamageHit").kind==HitKind::Heavy);
     sources.visual=&visual;
@@ -56,6 +71,9 @@ void TestReactionPolicy() {
     phase.force_hit_h.value=false;visual.repeat_occur_at.value=.35f;state.in_occur=true;state.occur_progress=.35f;
     value=decide("DamageHit");Check(value.repeated_occur && value.kind==HitKind::Heavy && value.state=="abnormal.enter");
     state.occur_progress=.36f;Check(!decide("DamageHit").repeated_occur);
+    state.in_occur.reset();Reject([&]{decide("DamageHit");});
+    visual.repeat_occur_at.value=-1;Check(!decide("DamageHit").repeated_occur);
+    state.in_occur=true;visual.repeat_occur_at.value=.35f;
     state.repeat_occur_at=.5f;Check(decide("DamageHit").repeated_occur);
     state.height=1;Check(!decide("DamageHit").repeated_occur);
     state.height=0;state.in_occur=false;

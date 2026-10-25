@@ -8,7 +8,7 @@
 namespace {
 using namespace hksr;
 using namespace hksr::framework;
-int entity,world,model,animator,other_animator,style,model_type,style_type,info,next_root;
+int entity,world,model,animator,other_animator,style,model_type,style_type,motion_type,emotion_type,info,next_root;
 auto* owner=reinterpret_cast<api::GameEntity*>(&entity);
 auto* own_world=reinterpret_cast<api::GameWorld*>(&world);
 std::map<int,void*> roots;
@@ -28,7 +28,15 @@ void __fastcall Free(int id,void*){roots.erase(id);}
 unsigned __fastcall Id(void* value,void*){Check(value==owner);return 1;}
 api::GameWorld* __fastcall World(void* value,void*){Check(value==owner);return own_world;}
 bool __fastcall Yes(void*,void*){return true;}
-void* __fastcall Component(void* value,void* type,void*){Check(value==owner);return type==&model_type?static_cast<void*>(&model):&style;}
+int __fastcall EntityType(void* value,void*){Check(value==owner);return 1;}
+void* __fastcall Component(void* value,void* type,void*){
+    Check(value==owner);if(type==&motion_type || type==&emotion_type)return nullptr;
+    return type==&model_type?static_cast<void*>(&model):&style;
+}
+std::string visual_layer="Visual";
+void* __fastcall LayerName(void*,int layer,void*){Check(layer==0);return &visual_layer;}
+int __fastcall TextLength(std::string* value,void*){return static_cast<int>(value->size());}
+std::uint16_t __fastcall TextChar(std::string* value,int index,void*){return static_cast<unsigned char>(value->at(index));}
 void* __fastcall Animator(void*,void*){return replaced?&other_animator:&animator;}
 bool __fastcall Changing(void*,void*){return changing;}
 int __fastcall Hash(std::string* name,void*){return names.at(*name);}
@@ -50,7 +58,10 @@ void __fastcall Info(void* value,int layer,int next,unsigned char* bytes,void*){
 }
 bool __fastcall Transition(void*,int layer,void*){return layers.at(layer).transition;}
 struct Objects:api::ManagedObjects {
-    api::ObjectResult ManagedType(const char*,const char* name) override{return {{true,0},std::string(name)=="CharacterModelComponent"?&model_type:&style_type};}
+    api::ObjectResult ManagedType(const char*,const char* name) override{
+        const std::string type=name;
+        return {{true,0},type=="CharacterModelComponent"?&model_type:type=="BGOBCKLPEMK"?&motion_type:type=="PEPNFLNCDHG"?&emotion_type:&style_type};
+    }
     api::ObjectResult NewStringUtf8(const char* value) override{strings.push_back(std::make_unique<std::string>(value));return {{true,0},strings.back().get()};}
     api::ObjectResult AllocateObject(const char*,const char*) override{throw std::runtime_error("unexpected allocation");}
 };
@@ -59,14 +70,17 @@ HitCommand Additive(){return {{{"Add","Hit",0.75f},{"Override","Hit",0.75f}}};}
 void TestHitRequests() {
     api::AnimationControlMethods methods;methods.hash=M(Hash);methods.has_state=M(Has);methods.play=M(Play);methods.free_style_state=M(Body);
     methods.cross_fade=M(Fade);methods.layer_count=M(Count);methods.layer_index=M(Index);methods.layer_weight=M(Weight);methods.set_layer_weight=M(SetWeight);
-    methods.state_info=M(Info);methods.in_transition=M(Transition);
+    methods.state_info=M(Info);methods.in_transition=M(Transition);methods.layer_name=M(LayerName);
     api::ModelAccessMethods models;models.animator=M(Animator);models.changing=M(Changing);
     api::ProfileInputMethods profiles;profiles.animator_initialized=M(Yes);
     const api::ReferenceMethods refs{M(Keep),M(Target),M(Free),{}, {}};
     const auto token=api::TrackedEntities().Track(owner);
-    auto session=std::make_unique<api::ActorAnimationSession>(token,refs,api::EntityAccess({M(Id),M(World),M(Yes),M(Component),{},{},{},{}}),
+    api::EntityAccessMethods entity_methods{M(Id),M(World),M(Yes),M(Component),{},{},{},{},M(EntityType)};
+    auto session=std::make_unique<api::ActorAnimationSession>(token,refs,api::EntityAccess(entity_methods),
         api::ModelAccess(models),api::AnimationControl(methods),api::ProfileInputs(profiles));
-    ActionPlayback player(token,own_world,std::move(session));
+    api::ComponentConfigMethods text_methods;text_methods.string_length=M(TextLength);text_methods.string_character=M(TextChar);
+    api::ComponentConfig text(text_methods);
+    ActionPlayback player(token,own_world,std::move(session),{},&text);
     Objects objects;api::WorldFrame frame;frame.world=own_world;frame.disposing={false,{true,0}};
     auto tick=[&]{++frame.sequence;player.Service(frame,true,objects);};
     auto attack=player.QueueAnimation({"Attack"});tick();tick();Check(attack->accepted && attack->entered);
@@ -111,6 +125,12 @@ void TestHitRequests() {
     hit=player.QueueHit(expressive);tick();tick();tick();
     auto face=player.QueueAnimation({"Face",3});tick();tick();
     player.ReleaseHit(hit->serial);tick();Check(layers[3].state==30 && face->entered && !face->cancelled);
+    layers[3].state=10;expressive.expression_seconds=.5f;
+    hit=player.QueueHit(expressive);tick();tick();tick();Check(layers[3].state==30);
+    frame.delta_time=.25f;tick();Check(layers[3].state==30);
+    player.Service(frame,true,objects);Check(layers[3].state==30); // same frame does not advance timer twice
+    tick();Check(layers[3].state==10 && !hit->released);frame.delta_time=0;
+    player.ReleaseHit(hit->serial);tick();
 
     HitCommand heavy;heavy.layers={{"Add","",0},{"Override","",0}};heavy.body=HitBody{"Visual","Heavy"};
     hit=player.QueueHit(heavy);tick();tick();tick();Check(hit->accepted && hit->entered && attack->cancelled && layers[0].state==21);
@@ -144,6 +164,36 @@ void TestHitRequests() {
     tick();tick();Check(delivered.status->playback->accepted && delivered.status->playback->entered);
     delivered.cancel();tick();Check(!delivered.status->playback->cancelled);
     player.ReleaseHit(delivered.status->playback->serial);tick();Check(delivered.status->playback->released);
+    // The production policy assembles inputs from this receiver's catalog,
+    // control sources and actual animation session, not an injected HitCommand.
+    player.ConfigureHitResolver({});player.SetPresentationDomain(true);
+    auto character=std::make_shared<api::CharacterHitInput>();character->loaded=true;
+    character->source="receiver";character->resilience={true,3,{}};character->repeat_occur_at={true,-1,{}};
+    character->phase_present={true,false,{}};
+    auto weights=std::make_shared<api::HitAnimationDefaults>();weights->resilience_weights={true,{.25f,.5f,.75f,1.f},{}};
+    weights->avatar_weight={true,.6f,{}};weights->minimum_frame_interval={true,2,{}};
+    auto defaults=std::make_shared<api::VisualReactionInput>();defaults->present=true;
+    defaults->hit={true,"Hit",{}};defaults->hit_h={true,"Heavy",{}};
+    auto presentation=std::make_shared<api::ReadyAnimationDefaults>();presentation->hit_additive_layer={true,"Add",{}};
+    presentation->hit_override_layer={true,"Override",{}};presentation->hit_expression={true,"Face",{}};
+    bool available=false;HitControlInputs controls;
+    player.ConfigureReceiverPolicy([&](bool visual)->std::optional<HitCatalogInputs> {
+        Check(!visual);if(!available)return {};return HitCatalogInputs{character,weights,defaults,presentation,{}};
+    },[&]{return controls;});
+    auto actual=inbox->Post({"DamageHit"});tick();Check(!actual.status->delivered && actual.status->error.empty());
+    available=true;tick();tick();
+    if(!actual.status->error.empty())throw std::runtime_error("receiver delivery: "+actual.status->error);
+    if(actual.status->playback && !actual.status->playback->error.empty())throw std::runtime_error("receiver playback: "+actual.status->playback->error);
+    Check(actual.status->playback && actual.status->playback->accepted);
+    Check(layers[1].weight==.6f && layers[3].state==30);
+    auto repeated=inbox->Post({"DamageHit"});tick();Check(repeated.status->delivered && repeated.status->ignored);
+    tick();tick();controls.force_heavy=true;
+    auto forced=inbox->Post({"DamageHit"});tick();tick();tick();
+    Check(forced.status->playback && forced.status->playback->entered && layers[0].state==21 && layers[1].weight==0);
+    player.CancelPending();tick();controls={};
+    character->resilience.available=false;auto unread=inbox->Post({"DamageHit"});const auto writes=weight_writes;tick();
+    Check(!unread.status->error.empty() && weight_writes==writes);
+    character->resilience.available=true;
     hit=player.QueueHit(Additive());tick();Check(player.Close(frame));Check(hit->released && layers[1].weight==0.25f && roots.empty());
     bool closed=false;try{inbox->Post({"DamageHit"});}catch(const std::logic_error&){closed=true;}Check(closed);
 }

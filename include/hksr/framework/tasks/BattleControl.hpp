@@ -11,7 +11,10 @@ struct ControlSource {
     std::string id;
     std::int32_t flag=0,priority=0;
     std::uint64_t order=0;
-    bool operator==(const ControlSource& other) const {return std::tie(id,flag,priority,order)==std::tie(other.id,other.flag,other.priority,other.order);}
+    // ModifierBehaviorFlag is a different enum from the visual row's flag.
+    // Missing means not reviewed; an explicit empty set means none contributed.
+    std::optional<std::vector<std::int32_t>> behaviors;
+    bool operator==(const ControlSource& other) const {return std::tie(id,flag,priority,order,behaviors)==std::tie(other.id,other.flag,other.priority,other.order,other.behaviors);}
 };
 struct ControlInsertion {
     std::string id;

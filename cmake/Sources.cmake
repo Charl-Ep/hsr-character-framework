@@ -71,6 +71,7 @@ set(HKSR_RUNTIME_SOURCES
     src/presentation/HitRequests.cpp
     src/presentation/HitInbox.cpp
     src/presentation/ReactionPolicy.cpp
+    src/presentation/IncomingHits.cpp
     src/presentation/PoseRequests.cpp
     src/presentation/ActionVisualProgram.cpp
     src/presentation/ModelActionHandoff.cpp

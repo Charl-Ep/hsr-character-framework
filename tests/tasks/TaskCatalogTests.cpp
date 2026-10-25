@@ -393,7 +393,7 @@ void ControlAtSequenceBoundaries() {
         {{"op","animation"},{"request","body"},{"participant","body"},{"state","Attack"}},
         {{"op","wait_request"},{"request","body"},{"signal","progress"},{"progress",0.5}},
         {{"op","control"},{"request","phase-change"},{"changes",Json::array({
-            {{"op","add_source"},{"id","sequence-phase"},{"flag",17},{"priority",2}},
+            {{"op","add_source"},{"id","sequence-phase"},{"flag",17},{"priority",2},{"behaviors",Json::array({12,21})}},
             {{"op","performance"},{"phase","finished"}}})}},
         {{"op","wait_frame"}},
         {{"op","wait_request"},{"request","body"},{"signal","performance"}}
@@ -407,6 +407,7 @@ void ControlAtSequenceBoundaries() {
     f.plays[0].second->progress=0.49;f.Tick();Check(f.controller->Status().control.sources.empty());
     f.plays[0].second->entered=true;f.plays[0].second->progress=0.5;f.Tick();
     Check(f.controller->Status().control.performance==ControlPerformance::Finished); // started did not rewind the explicit step
+    Check(f.controller->Status().control.sources.at(0).behaviors==std::optional<std::vector<std::int32_t>>({{12,21}}));
     Check(f.controller->Query(during).query.availability==TaskAvailability::Available);
     Check(f.plays.size()==1 && f.controller->Selection()->task.name=="attack");
     const auto requests=f.controller->Requests();

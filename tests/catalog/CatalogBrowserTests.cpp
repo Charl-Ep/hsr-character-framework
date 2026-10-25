@@ -72,6 +72,29 @@ void TestCatalogBrowser() {
         api::VisualBehaviorInput row;row.flag={true,99,{}};row.emotion={true,"Emo_Hit",{}};
         row.recover.resolved_state={true,"Recover",{}};out.defaults.behaviors.rows.push_back(row);return out;
     };
+    int hit_config_reads=0,hit_weight_reads=0,hit_name_reads=0;
+    readers.hit_character=[&](const auto& path){++hit_config_reads;api::CharacterHitInput out;out.source=path;out.loaded=true;return out;};
+    readers.hit_weights=[&]{++hit_weight_reads;return api::HitAnimationDefaults{};};
+    readers.hit_names=[&]{++hit_name_reads;return api::VisualReactionInput{};};
+    // Receiving a hit must not discover the roster, actions, events or abilities.
+    {
+        CatalogBrowser receiving(readers);
+        Check(!receiving.ResolveHitInputs("Battle/A",false));receiving.Advance(100000);
+        const auto input=receiving.ResolveHitInputs("Battle/A",false);
+        Check(input && input->character->source=="Battle/A" && !input->visuals);
+        Check(table_reads==0 && document_reads.empty() && ability_reads==0 && pose_visual_reads==0);
+        Check(hit_config_reads==1 && hit_name_reads==1 && hit_weight_reads==1 && ready_reads==1);
+        Check(receiving.ResolveHitInputs("Battle/A",false).has_value());
+        Check(!receiving.ResolveHitInputs("Battle/B",true));receiving.Advance(100000);
+        Check(receiving.ResolveHitInputs("Battle/B",true)->visuals->character_config=="Battle/B");
+        Check(hit_config_reads==2 && hit_weight_reads==1 && ready_reads==1 && pose_visual_reads==1);
+        Check(document_reads.empty() && ability_reads==0 && table_reads==0);
+        const auto old=receiving.ResolveHitInputs("Battle/A",false);
+        receiving.RefreshDocument({api::ActionConfigKind::Battle,"Battle/A"});
+        Check(!receiving.ResolveHitInputs("Battle/A",false));receiving.Advance(100000);
+        Check(receiving.ResolveHitInputs("Battle/A",false)->character!=old->character && old->character->loaded);
+    }
+    hit_config_reads=hit_weight_reads=hit_name_reads=ready_reads=pose_visual_reads=0;
     CatalogBrowser browser(readers);Check(table_reads==0 && ready_reads==0 && !browser.Snapshot()->requested);
     auto selection=browser.Prepare(BrowsePlayer{{11,0,1},{}});Check(table_reads==0 && identity_reads==0);
     Finish(browser);auto view=browser.Snapshot();

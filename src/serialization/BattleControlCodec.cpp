@@ -72,7 +72,12 @@ ControlChange Change(const Json& row) {
     if(op=="select") {Fields(row,{"op","skill"});return ControlSelect{Selection(row.at("skill"))};}
     if(op=="performance") {Fields(row,{"op","phase"});return ControlSetPerformance{Performance(row.at("phase"))};}
     if(op=="add_source") {
-        Fields(row,{"op","id","flag","priority"});return ControlAddSource{{Name(row.at("id")),Int(row.at("flag")),Int(row.at("priority"))}};
+        Fields(row,{"op","id","flag","priority","behaviors"});ControlSource source{Name(row.at("id")),Int(row.at("flag")),Int(row.at("priority"))};
+        if(row.contains("behaviors")) {
+            source.behaviors=std::vector<std::int32_t>{};
+            for(const auto& flag:row.at("behaviors").get<std::vector<Json>>())source.behaviors->push_back(Int(flag));
+        }
+        return ControlAddSource{std::move(source)};
     }
     if(op=="remove_source") {Fields(row,{"op","id"});return ControlRemoveSource{Name(row.at("id"))};}
     if(op=="queue") {Fields(row,{"op","id","skill"});return ControlQueueInsertion{Name(row.at("id")),Skill(row.at("skill"))};}
@@ -90,7 +95,10 @@ Json InsertionValue(const ControlInsertion& value) {
     return {{"id",value.id},{"skill",SkillValue(value.skill)},{"phase",ControlName(value.phase)},
         {"return_selection",SelectionValue(value.return_selection)},{"return_performance",ControlName(value.return_performance)}};
 }
-Json SourceValue(const ControlSource& value){return {{"id",value.id},{"flag",value.flag},{"priority",value.priority},{"order",value.order}};}
+Json SourceValue(const ControlSource& value){
+    Json out={{"id",value.id},{"flag",value.flag},{"priority",value.priority},{"order",value.order}};
+    out["behaviors"]=value.behaviors?Json(*value.behaviors):Json(nullptr);return out;
+}
 Json KeyValue(const std::optional<std::string>& value){return value?Json(*value):Json(nullptr);}
 Json SlotsValue(const SkillSlotsSnapshot& state) {
     Json out={{"slots",Json::array()},{"mappings",Json::array()},{"bindings",state.bindings}};

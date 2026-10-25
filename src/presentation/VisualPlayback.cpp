@@ -114,7 +114,7 @@ void ActionPlayback::StartVisual(const VisualState& input,void* animator,void* s
         (request.recover?" recovery requested":" occurrence/hold requested")+"; body/expression only";
 }
 void ActionPlayback::TickVisual(void* animator,void* style,const api::WorldFrame& frame,api::ManagedObjects& objects) {
-    if(!visual_ || frame.sequence<=visual_->boundary)return;
+    if(!visual_ || visual_->body_suspended || frame.sequence<=visual_->boundary)return;
     const auto tracking=*visual_;const auto revision=intent_revision_;
     const auto current=actions_.CurrentState(animator,0);
     const auto transition=actions_.InTransition(animator,0);

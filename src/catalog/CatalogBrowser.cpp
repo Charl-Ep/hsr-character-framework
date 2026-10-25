@@ -93,6 +93,7 @@ void CatalogBrowser::AdvanceSource() {
     state_.sources[id]=std::move(value);RequestActions();publication_dirty_=true;
 }
 bool CatalogBrowser::AdvanceOne() {
+        if(AdvanceHitInputs())return true;
         if(table_pending_) {
             ++work_.source_steps;
             table_pending_=false;state_.attempted=true;
@@ -135,7 +136,7 @@ void CatalogBrowser::Advance(std::uint32_t budget_microseconds) {
         const auto elapsed=std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now()-started).count();
         ++work_.slices;work_.total_us+=elapsed;work_.max_us=std::max(work_.max_us,static_cast<std::uint64_t>(elapsed));
     }
-    if(work_.slices && !table_pending_ && pending_sources_.empty() && !sources_dirty_ &&
+    if(work_.slices && hit_pending_.empty() && !table_pending_ && pending_sources_.empty() && !sources_dirty_ &&
         !actions_.ReadingAbilities() && (!actions_started_ || actions_.Finished())) {
         if(report_)try{report_(work_);}catch(...) {} // diagnostics do not own catalog progress
         work_={};
@@ -159,6 +160,7 @@ void CatalogBrowser::ReleaseSource(std::uint64_t request) {
     source_roots_.erase(request);source_views_.erase(request);RequestActions();Publish();
 }
 void CatalogBrowser::RefreshDocument(const ActionSourceKey& source) {
+    if(source.kind==api::ActionConfigKind::Battle){hit_sources_.erase(source.path);hit_errors_.erase(source.path);}
     // Only catalogs referencing this document can have their row identities
     // changed. Unrelated actors remain usable with their existing revision.
     for(auto& entry:character_sources_)
@@ -219,6 +221,33 @@ std::optional<PoseCommand> CatalogBrowser::ResolvePose(const std::vector<ActionS
     }
     if(!view->finished)return {};
     throw std::runtime_error("reaction configuration unavailable");
+}
+std::optional<HitCatalogInputs> CatalogBrowser::ResolveHitInputs(const std::string& source,bool visuals) {
+    if(source.empty())throw std::invalid_argument("receiver character source absent");
+    if(const auto failed=hit_errors_.find(source);failed!=hit_errors_.end())throw std::runtime_error(failed->second);
+    const auto found=hit_sources_.find(source);
+    if(found!=hit_sources_.end() && found->second.character && hit_weights_ && hit_names_ && hit_animations_ &&
+        (!visuals || found->second.visuals)) {
+        auto out=found->second;out.weights=hit_weights_;out.names=hit_names_;out.animations=hit_animations_;return out;
+    }
+    hit_pending_[source]=hit_pending_[source] || visuals;return {};
+}
+bool CatalogBrowser::AdvanceHitInputs() {
+    if(hit_pending_.empty())return false;
+    const auto source=hit_pending_.begin()->first;const bool visuals=hit_pending_.begin()->second;
+    try {
+        // One focused read per work item, no ActionCatalog::Request or ability
+        // traversal. Shared inputs reuse the same cache as the action menus.
+        if(!hit_weights_)hit_weights_=std::make_shared<const api::HitAnimationDefaults>(readers_.hit_weights());
+        else if(!hit_names_)hit_names_=std::make_shared<const api::VisualReactionInput>(readers_.hit_names());
+        else if(!hit_animations_)hit_animations_=std::make_shared<const api::ReadyAnimationDefaults>(actions_.LoadReadyDefaults());
+        else if(!hit_sources_[source].character)
+            hit_sources_[source].character=std::make_shared<const api::CharacterHitInput>(readers_.hit_character(source));
+        else if(visuals && !hit_sources_[source].visuals)
+            hit_sources_[source].visuals=std::make_shared<const api::VisualConfigSources>(actions_.LoadVisuals(source));
+        else hit_pending_.erase(source);
+    }catch(const std::exception& error){hit_errors_[source]=error.what();hit_pending_.erase(source);}
+    ++work_.action_steps;return true;
 }
 bool CatalogBrowser::InspectVisuals(const std::vector<ActionSourceRoot>& roots) {
     bool changed=false;

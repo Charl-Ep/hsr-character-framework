@@ -104,6 +104,28 @@ void ActionCatalog::StoreAbilities(const std::vector<std::string>& names,api::Ab
         ability_sources_.insert_or_assign(part.first,std::move(part.second));
     }
 }
+const api::ReadyAnimationDefaults& ActionCatalog::LoadReadyDefaults() {
+    if(ready_defaults_)return *ready_defaults_;
+    api::ReadyAnimationDefaults result;
+    try{result=read_ready_();}catch(const std::exception& e){result.transition_in.error=e.what();}
+    ready_defaults_=std::move(result);
+    for(auto it=views_.begin();it!=views_.end();) {
+        if(it->second.ready)it=views_.erase(it);else ++it;
+    }
+    for(auto it=discovery_.begin();it!=discovery_.end();) {
+        if(it->second.uses_ready)it=discovery_.erase(it);else ++it;
+    }
+    Rebuild();return *ready_defaults_;
+}
+const api::VisualConfigSources& ActionCatalog::LoadVisuals(const std::string& source) {
+    if(const auto found=visual_sources_.find(source);found!=visual_sources_.end())return found->second;
+    api::VisualConfigSources result;result.character_config=source;
+    try{result=read_visual_(source);}
+    catch(const std::exception& e){result.character.issues.push_back({-1,"visual sources",e.what()});}
+    catch(...){result.character.issues.push_back({-1,"visual sources","unknown failure"});}
+    const auto found=visual_sources_.emplace(source,std::move(result)).first;
+    InvalidateDocument({api::ActionConfigKind::Battle,source});Rebuild();return found->second;
+}
 void ActionCatalog::Advance() {
     if(advancing_) return;
     // Documents/defaults do not depend on completion of another source's
@@ -113,24 +135,10 @@ void ActionCatalog::Advance() {
         Load(source);advancing_=false;return;
     }
     if(pending_ready_) {
-        advancing_=true;api::ReadyAnimationDefaults result;
-        try{result=read_ready_();}catch(const std::exception& e){result.transition_in.error=e.what();}
-        ready_defaults_=std::move(result);
-        for(auto it=views_.begin();it!=views_.end();) {
-            if(it->second.ready)it=views_.erase(it);else ++it;
-        }
-        for(auto it=discovery_.begin();it!=discovery_.end();) {
-            if(it->second.uses_ready)it=discovery_.erase(it);else ++it;
-        }
-        advancing_=false;Rebuild();return;
+        advancing_=true;LoadReadyDefaults();advancing_=false;return;
     }
     if(!pending_visuals_.empty()) {
-        const auto path=pending_visuals_.front();advancing_=true;api::VisualConfigSources result;result.character_config=path;
-        try {result=read_visual_(path);}
-        catch(const std::exception& e){result.character.issues.push_back({-1,"visual sources",e.what()});}
-        catch(...){result.character.issues.push_back({-1,"visual sources","unknown failure"});}
-        visual_sources_.insert_or_assign(path,std::move(result));
-        InvalidateDocument({api::ActionConfigKind::Battle,path});advancing_=false;Rebuild();return;
+        const auto path=pending_visuals_.front();advancing_=true;LoadVisuals(path);advancing_=false;return;
     }
     {
         if(!ability_read_ && pending_abilities_.empty()) return;

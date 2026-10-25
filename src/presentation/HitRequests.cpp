@@ -28,6 +28,8 @@ void Validate(const HitCommand& value) {
     if(!animation)throw std::invalid_argument("hit request has no animation");
     if(!value.expression.empty())Text(value.expression);
     if(!std::isfinite(value.expression_transition) || value.expression_transition<0)throw std::invalid_argument("invalid hit expression transition");
+    if(value.expression_seconds && (!std::isfinite(*value.expression_seconds) || *value.expression_seconds<0))
+        throw std::invalid_argument("invalid hit expression duration");
 }
 }
 struct HitRequests::State {
@@ -46,6 +48,8 @@ struct HitRequests::State {
         std::unique_ptr<api::BlinkOverride> blink;
         int body_layer=-1;
         bool ending=false,expression_ending=false;
+        std::optional<float> expression_remaining;
+        std::uint64_t expression_frame=0;
     };
     api::EntityToken owner;api::GameWorld* world;
     api::ActorAnimationSession& engine;AnimationRequests& animations;
@@ -259,9 +263,22 @@ void HitRequests::Service(const api::WorldFrame& frame,bool ready,api::ManagedOb
                 auto current=[&]{return !entry->ending && s.Model(*entry);};
                 if(entry->expression_ending)s.Expression(*entry);
                 else if(entry->status->accepted && entry->expression && current()) {
+                    if(entry->command.expression_seconds) {
+                        if(!entry->expression_remaining)entry->expression_remaining=entry->command.expression_seconds;
+                        else if(frame.sequence>entry->expression_frame && std::isfinite(frame.delta_time) && frame.delta_time>=0)
+                            *entry->expression_remaining-=frame.delta_time;
+                        entry->expression_frame=frame.sequence;
+                        if(*entry->expression_remaining<=0){entry->expression_ending=true;s.Expression(*entry);continue;}
+                    }
                     const auto result=entry->expression->Apply(current);
                     if(result.attempted && !result.call.returned)throw std::runtime_error(result.detail);
                     if(!entry->blink && entry->command.blink_source>=0 && current()) {
+                        const auto emotion=s.engine.Resources().Component(api::AnimationComponent::Emotion,objects);
+                        if(!current())continue;
+                        if(!emotion.call.returned)throw std::runtime_error("hit emotion component lookup failed");
+                        // OnHit itself skips blink writes for an absent emotion
+                        // component. That does not invalidate the body/face call.
+                        if(!emotion.object)continue;
                         entry->blink=std::make_unique<api::BlinkOverride>(api::AnimationOverrideTarget{s.owner,s.engine.Resources(),s.engine.Models(),s.engine.Control()},entry->command.blink_source);
                         const auto blink_result=entry->blink->Apply(objects,current);
                         if(blink_result.attempted && !blink_result.call.returned)throw std::runtime_error(blink_result.detail);

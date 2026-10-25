@@ -60,6 +60,7 @@ void FrameworkHost::Prepare(api::RuntimeMetadata& metadata,api::RuntimeCapabilit
         });
     auto sessions=services_->Sessions(capabilities.event_record_lifetime);
     sessions.pose=[this](const auto& roots,const auto& selection){return Browser().ResolvePose(roots,selection);};
+    sessions.hit_inputs=[this](const auto& source,bool visual){return Browser().ResolveHitInputs(source,visual);};
     characters_=std::make_unique<SceneCharacters>(std::move(sessions));
     characters_->ConfigureProfiles(profiles_);
     characters_->ConfigurePrograms(programs_);
@@ -89,6 +90,9 @@ void FrameworkHost::Prepare(api::RuntimeMetadata& metadata,api::RuntimeCapabilit
     readers.npc_motions=[this](void* component){return Measure("catalog.npc-motions",[&]{return official_catalog_->ReadNpcMotionsFromComponent(component);});};
     readers.visuals=[this](const auto& path){return Measure("catalog.visual:"+path,[&]{return official_catalog_->ReadVisualConfigSources(path);});};
     readers.ready_defaults=[this]{return Measure("catalog.ready-defaults",[&]{return official_catalog_->ReadReadyAnimationDefaults();});};
+    readers.hit_character=[this](const auto& path){return Measure("catalog.hit-character:"+path,[&]{return official_catalog_->ReadCharacterHitInput(path);});};
+    readers.hit_weights=[this]{return Measure("catalog.hit-weights",[&]{return official_catalog_->ReadHitAnimationDefaults();});};
+    readers.hit_names=[this]{return Measure("catalog.hit-names",[&]{return official_catalog_->ReadDefaultHitNames();});};
     readers.begin_abilities=[this,&metadata](const auto& names)->std::unique_ptr<api::AbilitySourceRead>{
             return std::make_unique<TimedAbilityRead>(official_catalog_->BeginAbilitySources(names,metadata),names.size(),
                 [this](const auto& message){Trace(message);});};
@@ -106,6 +110,7 @@ void FrameworkHost::Prepare(api::ManagedObjects& objects,api::PresentationBindin
     Assemble(objects,std::make_unique<RuntimeServices>(objects,std::move(bindings)),capabilities);
     auto sessions=services_->Sessions(capabilities.event_record_lifetime);
     sessions.pose=[this](const auto& roots,const auto& selection){return Browser().ResolvePose(roots,selection);};
+    sessions.hit_inputs=[this](const auto& source,bool visual){return Browser().ResolveHitInputs(source,visual);};
     characters_=std::make_unique<SceneCharacters>(std::move(sessions),std::move(create));
     PrepareApplication(catalog.characters?std::make_unique<CatalogBrowser>(std::move(catalog)):nullptr);
     ApplicationSnapshot snapshot;snapshot.prepared=true;snapshot.binding_errors=binding_errors_;application_.Publish(std::move(snapshot));

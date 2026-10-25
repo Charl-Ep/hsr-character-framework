@@ -3,6 +3,20 @@
 #include <hksr/animation/OfficialCatalog.hpp>
 
 namespace hksr::framework {
+struct BattleControlSnapshot;
+struct HitControlInputs {
+    std::optional<std::int32_t> visual_flag;
+    bool endurance=false,mute_heavy=false,force_heavy=false;
+};
+HitControlInputs ResolveHitControl(const BattleControlSnapshot&);
+struct HitCatalogInputs {
+    std::shared_ptr<const api::CharacterHitInput> character;
+    std::shared_ptr<const api::HitAnimationDefaults> weights;
+    std::shared_ptr<const api::VisualReactionInput> names;
+    std::shared_ptr<const api::ReadyAnimationDefaults> animations;
+    std::shared_ptr<const api::VisualConfigSources> visuals;
+};
+using HitCatalogResolver=std::function<std::optional<HitCatalogInputs>(bool visual)>;
 enum class HitKind { None,Additive,Airborne,Heavy,Launch };
 // Values belong to the receiving actor. The attacker supplies only the source
 // HitAnimation and its separately resolved motion request.
@@ -10,11 +24,11 @@ struct HitReceiverState {
     float height=0;
     bool launch_allowed=false,has_launch_motion=false;
     bool endurance=false,mute_heavy=false,force_heavy=false;
-    int resilience=0;
-    float entity_weight=1;
-    float repeat_occur_at=-1;
-    bool in_occur=false;
-    float occur_progress=0;
+    std::optional<int> resilience=0;
+    std::optional<float> entity_weight=1.f;
+    std::optional<float> repeat_occur_at=-1.f;
+    std::optional<bool> in_occur=false;
+    std::optional<float> occur_progress=0.f;
     std::uint64_t frame=0;
 };
 struct ReactionSources {
