@@ -167,7 +167,7 @@ void TestVisualPlayback() {
     // A body hit suspends the visual body's occurrence/loop, not its independent
     // expression. Ending that source while hit releases the retained expression.
     framework::HitControlInputs source;source.visual_flag=9001;
-    player.ConfigureReceiverPolicy({},[&]{return source;});
+    player.ConfigureReceiverPolicy({},[&](bool){return source;});
     layers[2]={100,0,.6f,false,false};player.QueuePose(Recipe());tick();layers[2]={5,0,0,false,false};
     framework::HitCommand hit;hit.body=framework::HitBody{"Visual","Exit"};
     const auto hit_status=player.QueueHit(hit);tick();tick();tick();

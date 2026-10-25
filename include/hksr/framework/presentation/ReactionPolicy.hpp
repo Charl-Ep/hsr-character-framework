@@ -8,7 +8,7 @@ struct HitControlInputs {
     std::optional<std::int32_t> visual_flag;
     bool endurance=false,mute_heavy=false,force_heavy=false;
 };
-HitControlInputs ResolveHitControl(const BattleControlSnapshot&);
+HitControlInputs ResolveHitControl(const BattleControlSnapshot&,bool behaviors=true);
 struct HitCatalogInputs {
     std::shared_ptr<const api::CharacterHitInput> character;
     std::shared_ptr<const api::HitAnimationDefaults> weights;

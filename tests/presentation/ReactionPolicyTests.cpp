@@ -25,6 +25,7 @@ void TestReactionPolicy() {
     Check(flags.visual_flag==12 && flags.endurance && flags.mute_heavy && !flags.force_heavy);
     control.sources.pop_back();Check(!ResolveHitControl(control).endurance); // visual flag 12 is not Endurance
     control.sources[0].behaviors.reset();Reject([&]{ResolveHitControl(control);});
+    Check(ResolveHitControl(control,false).visual_flag==12); // return does not consume hit behavior inputs
     control={};Check(!ResolveHitControl(control).visual_flag && !ResolveHitControl(control).endurance);
     auto defaults=Reactions("base."),phase=Reactions("phase.");
     api::VisualBehaviorInput visual;visual.flag={true,99,{}};visual.force_hit_h={true,false,{}};

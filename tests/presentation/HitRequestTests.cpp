@@ -15,7 +15,11 @@ std::map<int,void*> roots;
 std::vector<std::unique_ptr<std::string>> strings;
 struct Layer {int state=10,next=0;float time=0,weight=0.25f;bool transition=false;};
 std::array<Layer,4> layers;
-std::map<std::string,int> names{{"Attack",10},{"Hit",20},{"Heavy",21},{"Face",30}};
+std::map<std::string,int> names{{"Attack",10},{"Idle",11},{"Hit",20},{"Heavy",21},{"Face",30},{"Neutral",40},{"ChangedFace",41}};
+int alive_state=1;
+struct Motion {float clock=0;} motion;
+bool motion_present=false;
+float motion_height=0;
 bool changing=false,replaced=false,override_exists=true,fail_weight=false,hit_exists=true;
 std::function<void()> on_weight;
 unsigned body_plays=0,layer_plays=0,weight_writes=0;
@@ -29,8 +33,12 @@ unsigned __fastcall Id(void* value,void*){Check(value==owner);return 1;}
 api::GameWorld* __fastcall World(void* value,void*){Check(value==owner);return own_world;}
 bool __fastcall Yes(void*,void*){return true;}
 int __fastcall EntityType(void* value,void*){Check(value==owner);return 1;}
+int __fastcall Alive(void* value,void*){Check(value==owner);return alive_state;}
+float __fastcall Height(void* value,float,void*){Check(value==&motion);return motion_height;}
+float __fastcall FallHeight(void* value,void*){Check(value==&motion);return motion_height;}
 void* __fastcall Component(void* value,void* type,void*){
-    Check(value==owner);if(type==&motion_type || type==&emotion_type)return nullptr;
+    Check(value==owner);if(type==&motion_type)return motion_present?&motion:nullptr;
+    if(type==&emotion_type)return nullptr;
     return type==&model_type?static_cast<void*>(&model):&style;
 }
 std::string visual_layer="Visual";
@@ -71,11 +79,12 @@ void TestHitRequests() {
     api::AnimationControlMethods methods;methods.hash=M(Hash);methods.has_state=M(Has);methods.play=M(Play);methods.free_style_state=M(Body);
     methods.cross_fade=M(Fade);methods.layer_count=M(Count);methods.layer_index=M(Index);methods.layer_weight=M(Weight);methods.set_layer_weight=M(SetWeight);
     methods.state_info=M(Info);methods.in_transition=M(Transition);methods.layer_name=M(LayerName);
+    methods.hit_motion={M(Height),M(FallHeight),offsetof(Motion,clock),true};
     api::ModelAccessMethods models;models.animator=M(Animator);models.changing=M(Changing);
     api::ProfileInputMethods profiles;profiles.animator_initialized=M(Yes);
     const api::ReferenceMethods refs{M(Keep),M(Target),M(Free),{}, {}};
     const auto token=api::TrackedEntities().Track(owner);
-    api::EntityAccessMethods entity_methods{M(Id),M(World),M(Yes),M(Component),{},{},{},{},M(EntityType)};
+    api::EntityAccessMethods entity_methods{M(Id),M(World),M(Yes),M(Component),{},{},{},{},M(EntityType),M(Alive)};
     auto session=std::make_unique<api::ActorAnimationSession>(token,refs,api::EntityAccess(entity_methods),
         api::ModelAccess(models),api::AnimationControl(methods),api::ProfileInputs(profiles));
     api::ComponentConfigMethods text_methods;text_methods.string_length=M(TextLength);text_methods.string_character=M(TextChar);
@@ -176,10 +185,17 @@ void TestHitRequests() {
     defaults->hit={true,"Hit",{}};defaults->hit_h={true,"Heavy",{}};
     auto presentation=std::make_shared<api::ReadyAnimationDefaults>();presentation->hit_additive_layer={true,"Add",{}};
     presentation->hit_override_layer={true,"Override",{}};presentation->hit_expression={true,"Face",{}};
+    presentation->default_expression={true,"Neutral",{}};
+    auto visuals=std::make_shared<api::VisualConfigSources>();visuals->context_available=true;
+    visuals->defaults.loaded=true;visuals->defaults.behaviors.enumerated=true;
+    visuals->expression_transition={true,.2f,{}};
+    api::VisualBehaviorInput return_visual;return_visual.flag={true,99,{}};
+    return_visual.emotion={true,"ChangedFace",{}};return_visual.loop.resolved_state={true,"Idle",{}};
+    visuals->defaults.behaviors.rows.push_back(return_visual);
     bool available=false;HitControlInputs controls;
     player.ConfigureReceiverPolicy([&](bool visual)->std::optional<HitCatalogInputs> {
-        Check(!visual);if(!available)return {};return HitCatalogInputs{character,weights,defaults,presentation,{}};
-    },[&]{return controls;});
+        if(!available)return {};return HitCatalogInputs{character,weights,defaults,presentation,visual?visuals:nullptr};
+    },[&](bool){return controls;});
     auto actual=inbox->Post({"DamageHit"});tick();Check(!actual.status->delivered && actual.status->error.empty());
     available=true;tick();tick();
     if(!actual.status->error.empty())throw std::runtime_error("receiver delivery: "+actual.status->error);
@@ -190,6 +206,26 @@ void TestHitRequests() {
     tick();tick();controls.force_heavy=true;
     auto forced=inbox->Post({"DamageHit"});tick();tick();tick();
     Check(forced.status->playback && forced.status->playback->entered && layers[0].state==21 && layers[1].weight==0);
+    Check(forced.status->playback->body_end_reached && !forced.status->playback->clip_complete);
+    player.SetCompletionState("Idle");
+    // Expression returns to the latest source, not its pre-hit snapshot. The
+    // body remains independent and does not return just because its clip ended.
+    controls.visual_flag=99;frame.delta_time=.5f;tick();frame.delta_time=0;
+    Check(forced.status->playback->expression_released && layers[3].state==41 && !forced.status->playback->released);
+    layers[0].time=2;tick();tick();Check(!forced.status->playback->body_returned);
+    layers[0].state=10;tick();tick();Check(!forced.status->playback->released); // unrelated successor is not reset
+    layers[0].state=11;motion_present=true;motion_height=.05f;tick();Check(!forced.status->playback->released);
+    motion_height=0;alive_state=3;tick();Check(!forced.status->playback->released);
+    const auto returned_body_plays=body_plays;alive_state=1;tick();
+    Check(forced.status->playback->body_returned && forced.status->playback->released && !forced.status->playback->cancelled);
+    Check(body_plays==returned_body_plays && layers[0].state==11); // observe native successor, do not replay it
+    motion_present=false;controls={};
+    tick();tick();auto return_wait=inbox->Post({"DamageHit"});tick();tick();tick();
+    available=false;frame.delta_time=.5f;tick();Check(layers[3].state==30 && !return_wait.status->playback->expression_released);
+    available=true;tick();frame.delta_time=0;
+    Check(layers[3].state==40 && return_wait.status->playback->expression_released);
+    layers[1].state=layers[2].state=10;tick();tick();
+    Check(return_wait.status->playback->released && layers[0].state==11);
     player.CancelPending();tick();controls={};
     character->resilience.available=false;auto unread=inbox->Post({"DamageHit"});const auto writes=weight_writes;tick();
     Check(!unread.status->error.empty() && weight_writes==writes);

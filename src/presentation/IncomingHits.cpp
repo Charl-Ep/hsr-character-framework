@@ -23,7 +23,7 @@ HitResolution ActionPlayback::ResolveIncomingHit(const HitInput& input,const api
     if(!presentation_enabled_)throw std::runtime_error("receiver is not in battle presentation domain");
     const auto revision=intent_revision_;
     auto live=[&]{return !Ended() && !status_.closing && revision==intent_revision_ && OwnFrame(frame);};
-    const auto control=hit_control_();
+    const auto control=hit_control_(true);
     const auto phase=program_?program_->CurrentPhase():nullptr;
     const auto catalog=hit_catalog_(control.visual_flag.has_value() && !phase);
     if(!catalog || !live())return {};
@@ -104,8 +104,50 @@ HitResolution ActionPlayback::ResolveIncomingHit(const HitInput& input,const api
     // OnHit's additive submit uses normalized transition zero. Direction-based
     // start offsets and the body request's logical track remain separate work.
     auto command=BuildHitCommand(decision,names);
+    // GOK's ordinary OnHit request passes End=0. It does not ask for a
+    // normalized-time-one return; the controller's destination is checked later.
+    if(command.body)command.body->normalized_end=0.f;
     command.expression_seconds=.5f; // ordinary OnHit expression lifetime, independent of body return
+    command.receiver_return=true;
     if(!live())return {};
     resolved_hit_=ResolvedHit{decision,frame.sequence};return {true,std::move(command)};
+}
+std::optional<HitReturn> ActionPlayback::ResolveHitReturn(bool body,const api::WorldFrame& frame,api::ManagedObjects& objects) {
+    if(!hit_catalog_ || !hit_control_ || !presentation_enabled_ || Ended() || status_.closing || !OwnFrame(frame))return {};
+    const auto revision=intent_revision_;
+    auto live=[&]{return !Ended() && !status_.closing && revision==intent_revision_ && OwnFrame(frame);};
+    // ca108f0 restores from today's source/phase, not the expression captured
+    // when the hit began. These shared caches do not enumerate action menus.
+    const auto alive=entities_.AliveState(owner_.entity);if(!live())return {};
+    if(!alive.read.returned)throw std::runtime_error("receiver return alive state unread");
+    if(alive.value!=1)return {};
+    const auto control=hit_control_(false);
+    const auto phase=program_?program_->CurrentPhase():nullptr;
+    const auto catalog=hit_catalog_(control.visual_flag.has_value() && !phase);
+    if(!catalog || !live())return {};
+    if(!catalog->animations)throw std::runtime_error("receiver return defaults unread");
+    std::optional<VisualState> visual;
+    if(control.visual_flag) {
+        const auto* table=phase?&phase->visuals:catalog->visuals.get();
+        if(!table || !table->context_available)throw std::runtime_error("receiver return visual table unread");
+        visual=ResolveVisualState(*table,*control.visual_flag);
+    }else if(visual_ && !visual_->task_owned && !visual_->request.recover)visual=visual_->request;
+    HitReturn out;
+    out.expression=visual?Value(visual->expression,"return visual expression"):std::string{};
+    if(out.expression.empty())out.expression=Value(catalog->animations->default_expression,"default expression");
+    out.expression_transition=visual?Value(visual->expression_transition,"return expression transition"):.2f;
+    if(body) {
+        const auto motion=resources_.Component(api::AnimationComponent::Motion,objects);if(!live())return {};
+        if(!motion.call.returned)throw std::runtime_error("receiver return motion lookup failed");
+        if(motion.object) {
+            const auto height=actions_.HitMotionHeight(motion.object);if(!live())return {};
+            if(!height.read.returned || !std::isfinite(height.value))throw std::runtime_error("receiver return height unread");
+            if(height.value>0)return {}; // return uses zero, not the enter classification's 0.1
+        }
+        const auto idle=SelectIdle({true,CompletionState(),{}},catalog->animations->default_expression,phase.get(),
+            visual?&visual->value:nullptr,visual?&visual->expression:nullptr);
+        out.body=idle.state;
+    }
+    return live()?std::optional<HitReturn>(std::move(out)):std::nullopt;
 }
 }

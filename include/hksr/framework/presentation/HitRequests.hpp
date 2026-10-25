@@ -13,6 +13,7 @@ struct HitLayer {
 struct HitBody {
     std::string layer,state;
     float transition=0,start=0;
+    std::optional<float> normalized_end;
 };
 struct HitCommand {
     std::vector<HitLayer> layers;
@@ -21,11 +22,20 @@ struct HitCommand {
     float expression_transition=0;
     int blink_source=-1;
     std::optional<float> expression_seconds;
+    bool receiver_return=false;
 };
+struct HitReturn {
+    std::string body,expression;
+    float expression_transition=0;
+};
+// Requested only at a natural expression/animation boundary. nullopt means
+// current receiver inputs are not ready, not permission to restore old state.
+using HitReturnResolver=std::function<std::optional<HitReturn>(bool body,const api::WorldFrame&,api::ManagedObjects&)>;
 struct HitRequestStatus {
     std::uint64_t serial=0,entity_generation=0,model_generation=0;
     bool accepted=false,entered=false,clip_complete=false,state_left=false;
     bool cancelled=false,released=false;
+    bool expression_released=false,body_end_reached=false,body_returned=false;
     std::string error;
 };
 // Receiving actor's playback primitive. It shares the actor's animation
@@ -37,6 +47,7 @@ public:
     HitRequests(api::EntityToken,api::GameWorld*,api::ActorAnimationSession&,AnimationRequests&);
     ~HitRequests(); // no engine calls
     std::shared_ptr<const HitRequestStatus> Submit(HitCommand);
+    void ConfigureReturn(HitReturnResolver);
     void ReleaseExpression(std::uint64_t);
     void Release(std::uint64_t,bool cancel=false);
     void Cancel(); // data only; Service drains the leases

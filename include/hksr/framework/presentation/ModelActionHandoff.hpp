@@ -34,8 +34,8 @@ public:
     std::shared_ptr<HitInbox> IncomingHits() const;
     void ConfigureHitResolver(HitResolver resolve){actions_.ConfigureHitResolver(std::move(resolve));}
     void ConfigureReceiverPolicy(HitCatalogResolver resolve) {
-        actions_.ConfigureReceiverPolicy(std::move(resolve),[this] {
-            return tasks_?ResolveHitControl(tasks_->Status().control):HitControlInputs{};
+        actions_.ConfigureReceiverPolicy(std::move(resolve),[this](bool behaviors) {
+            return tasks_?ResolveHitControl(tasks_->Status().control,behaviors):HitControlInputs{};
         });
     }
     VisualBranchState BranchState() const {return actions_.BranchState();}

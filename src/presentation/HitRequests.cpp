@@ -22,7 +22,8 @@ void Validate(const HitCommand& value) {
     }
     if(value.body) {
         const auto& body=*value.body;Text(body.state);Text(body.layer);
-        if(layers.count(body.layer) || !std::isfinite(body.transition) || body.transition<0 || !std::isfinite(body.start))
+        if(layers.count(body.layer) || !std::isfinite(body.transition) || body.transition<0 || !std::isfinite(body.start) ||
+            (body.normalized_end && !std::isfinite(*body.normalized_end)))
             throw std::invalid_argument("invalid hit body request");
     }
     if(!animation)throw std::invalid_argument("hit request has no animation");
@@ -48,12 +49,14 @@ struct HitRequests::State {
         std::unique_ptr<api::BlinkOverride> blink;
         int body_layer=-1;
         bool ending=false,expression_ending=false;
+        std::optional<std::pair<int,float>> expression_return;
         std::optional<float> expression_remaining;
         std::uint64_t expression_frame=0;
     };
     api::EntityToken owner;api::GameWorld* world;
     api::ActorAnimationSession& engine;AnimationRequests& animations;
     std::vector<std::shared_ptr<Entry>> entries;
+    HitReturnResolver resolve_return;
     std::uint64_t next=0,model=0;void* animator=nullptr;bool servicing=false;
     bool Live() const {
         return !api::TrackedEntities().IsDisposed(owner) && !api::TrackedEntities().IsRetiring(owner) &&
@@ -79,9 +82,16 @@ struct HitRequests::State {
             entry.blink.reset();
         }
         if(entry.expression) {
-            try{entry.expression->Release(live);}catch(const std::exception& e){Error(entry,e.what());}
+            try {
+                if(entry.expression_return) {
+                    const auto [hash,blend]=*entry.expression_return;
+                    const auto result=entry.expression->ReleaseTo(hash,blend,live);
+                    if(result.attempted && !result.call.returned)throw std::runtime_error(result.detail);
+                }else entry.expression->Release(live);
+            }catch(const std::exception& e){Error(entry,e.what());}
             entry.expression.reset();
         }
+        entry.status->expression_released=true;
     }
     void End(Entry& entry,bool restore) {
         if(restore)Expression(entry);
@@ -122,7 +132,7 @@ struct HitRequests::State {
             const auto index=control.LayerIndex(entry->animator,text);if(!current())return;
             if(!index.read.returned || index.value<0)throw std::runtime_error("hit visual layer unavailable: "+command.layer);
             indices.insert(index.value);entry->body_layer=index.value;
-            body=AnimationCommand{command.state,index.value,command.transition,command.start};
+            body=AnimationCommand{command.state,index.value,command.transition,command.start,command.normalized_end};
             state_exists(command.state,index.value);if(!current())return;
         }
         for(const auto& command:entry->command.layers) {
@@ -170,12 +180,43 @@ struct HitRequests::State {
             else if(animation->cancelled || animation->released)Error(entry,"hit animation superseded");
         };
         read(entry.body);for(const auto& layer:entry.layers)read(layer.animation);
+        if(entry.body)entry.status->body_end_reached=entry.body->end_reached;
         if(!any)return;
         entry.status->accepted=entry.status->accepted || accepted;
         entry.status->entered=entry.status->entered || entered;
         entry.status->clip_complete=entry.status->clip_complete || complete;
         entry.status->state_left=entry.status->state_left || left;
-        if(left && !entry.command.body)entry.ending=true;
+        if(left && !entry.command.body && !entry.command.receiver_return)entry.ending=true;
+    }
+    bool Return(Entry& entry,bool body,const api::WorldFrame& frame,api::ManagedObjects& objects) {
+        if(!resolve_return)throw std::runtime_error("receiver return policy absent");
+        auto target=resolve_return(body,frame,objects);
+        if(!target || entry.ending || !Model(entry))return false;
+        if(body) {
+            if(target->body.empty())return false;
+            const auto text=engine.Resources().Text(target->body,objects);
+            if(entry.ending || !Model(entry))return false;
+            const auto hash=engine.Control().StateHash(text);
+            if(entry.ending || !Model(entry))return false;
+            if(!hash.read.returned)throw std::runtime_error("receiver return state hash unread");
+            const auto current=engine.Control().CurrentState(entry.animator,entry.body_layer);
+            if(entry.ending || !Model(entry))return false;
+            if(!current.read.returned)throw std::runtime_error("receiver return state unread");
+            if(current.short_name_hash!=hash.value && current.full_path_hash!=hash.value)return false;
+            // Native OnHit also requires the actual return animation to be
+            // present. A different successor is not an invitation to replace it.
+        }
+        if(entry.expression) {
+            Text(target->expression);
+            const auto text=engine.Resources().Text(target->expression,objects);
+            if(entry.ending || !Model(entry))return false;
+            const auto hash=engine.Control().StateHash(text);
+            if(entry.ending || !Model(entry))return false;
+            if(!hash.read.returned)throw std::runtime_error("hit expression return hash unread");
+            entry.expression_return=std::make_pair(hash.value,target->expression_transition);
+        }
+        if(body)entry.status->body_returned=true;
+        return true;
     }
 };
 HitRequests::HitRequests(api::EntityToken owner,api::GameWorld* world,api::ActorAnimationSession& engine,AnimationRequests& animations)
@@ -184,6 +225,7 @@ HitRequests::HitRequests(api::EntityToken owner,api::GameWorld* world,api::Actor
         throw std::invalid_argument("hit receiver requires its owned animation session");
 }
 HitRequests::~HitRequests()=default;
+void HitRequests::ConfigureReturn(HitReturnResolver resolve){state_->resolve_return=std::move(resolve);}
 std::shared_ptr<const HitRequestStatus> HitRequests::Submit(HitCommand command) {
     Validate(command);Cancel();auto& s=*state_;
     auto entry=std::make_shared<State::Entry>();entry->command=std::move(command);
@@ -261,6 +303,10 @@ void HitRequests::Service(const api::WorldFrame& frame,bool ready,api::ManagedOb
             if(!entry->ending) {
                 s.Observe(*entry);
                 auto current=[&]{return !entry->ending && s.Model(*entry);};
+                if(!entry->ending && entry->status->state_left && entry->command.receiver_return &&
+                    (!entry->command.body || entry->status->body_end_reached) &&
+                    s.Return(*entry,bool(entry->command.body),frame,objects))entry->ending=true;
+                if(entry->ending){s.End(*entry,true);continue;}
                 if(entry->expression_ending)s.Expression(*entry);
                 else if(entry->status->accepted && entry->expression && current()) {
                     if(entry->command.expression_seconds) {
@@ -268,7 +314,12 @@ void HitRequests::Service(const api::WorldFrame& frame,bool ready,api::ManagedOb
                         else if(frame.sequence>entry->expression_frame && std::isfinite(frame.delta_time) && frame.delta_time>=0)
                             *entry->expression_remaining-=frame.delta_time;
                         entry->expression_frame=frame.sequence;
-                        if(*entry->expression_remaining<=0){entry->expression_ending=true;s.Expression(*entry);continue;}
+                        if(*entry->expression_remaining<=0) {
+                            if(!entry->command.receiver_return || s.Return(*entry,false,frame,objects)) {
+                                entry->expression_ending=true;s.Expression(*entry);
+                            }
+                            continue;
+                        }
                     }
                     const auto result=entry->expression->Apply(current);
                     if(result.attempted && !result.call.returned)throw std::runtime_error(result.detail);

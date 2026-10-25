@@ -34,7 +34,7 @@ public:
     ~ActionPlayback();
     std::shared_ptr<HitInbox> IncomingHits() const {return hit_inbox_;}
     void ConfigureHitResolver(HitResolver resolve){hit_resolver_=std::move(resolve);}
-    void ConfigureReceiverPolicy(HitCatalogResolver catalog,std::function<HitControlInputs()> control) {
+    void ConfigureReceiverPolicy(HitCatalogResolver catalog,std::function<HitControlInputs(bool behaviors)> control) {
         hit_catalog_=std::move(catalog);hit_control_=std::move(control);
     }
     std::uint64_t Queue(ActionRequest request);
@@ -72,6 +72,7 @@ private:
     bool Ended() const;
     bool OwnFrame(const api::WorldFrame& frame) const;
     HitResolution ResolveIncomingHit(const HitInput&,const api::WorldFrame&,api::ManagedObjects&);
+    std::optional<HitReturn> ResolveHitReturn(bool body,const api::WorldFrame&,api::ManagedObjects&);
     void CancelPose(const std::string& reason);
     void ObservePose(std::uint64_t serial,bool complete=false);
     void PoseResult(const ActionReceipt&,void* animator);
@@ -108,7 +109,7 @@ private:
     std::shared_ptr<HitInbox> hit_inbox_;
     HitResolver hit_resolver_;
     HitCatalogResolver hit_catalog_;
-    std::function<HitControlInputs()> hit_control_;
+    std::function<HitControlInputs(bool behaviors)> hit_control_;
     std::optional<PreviousHit> previous_hit_;
     struct ResolvedHit {HitDecision decision;std::uint64_t frame=0;};
     std::optional<ResolvedHit> resolved_hit_;

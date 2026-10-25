@@ -19,6 +19,9 @@ ActionPlayback::ActionPlayback(api::EntityToken owner,api::GameWorld* world,std:
     hit_requests_(owner,world,*engine_,animation_requests_),hit_inbox_(std::make_shared<HitInbox>(owner.generation)),
     text_(std::move(text)),effect_services_(std::move(effects)) {
     if(!owner.entity || !owner.generation || !world) throw std::invalid_argument("action playback requires its owned entity epoch");
+    hit_requests_.ConfigureReturn([this](bool body,const api::WorldFrame& frame,api::ManagedObjects& objects) {
+        return ResolveHitReturn(body,frame,objects);
+    });
 }
 ActionPlayback::~ActionPlayback(){hit_inbox_->Close();}
 std::uint64_t ActionPlayback::Queue(ActionRequest request) {
@@ -220,7 +223,7 @@ void ActionPlayback::Service(const api::WorldFrame& frame,bool ready,api::Manage
                 ReleaseVisual(model.animator.value);status_.visual_note="model changed; visual ownership ended";
             } else if(visual_cancelled_) ReleaseVisual(model.animator.value);
             else if(visual_->body_suspended && visual_->task_owned && hit_control_ &&
-                hit_control_().visual_flag!=std::optional<std::int32_t>(visual_->request.value.flag.value)) {
+                hit_control_(false).visual_flag!=std::optional<std::int32_t>(visual_->request.value.flag.value)) {
                 ReleaseVisual(model.animator.value);status_.visual_note="receiver visual source ended during body hit";
             }
             else {

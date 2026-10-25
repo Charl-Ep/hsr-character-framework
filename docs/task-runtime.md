@@ -6,11 +6,13 @@ The `tasks` module provides typed visual tasks, configuration loading, owned-res
 
 Shared reactions use the `VisualState` executor for configured enter/hold/recover body phases, expression and blink ownership. Task sequences can reference this executor through `reaction`; material, speed and floating behavior are not implemented. See [action API](http-api.md#actions).
 
-`hit` dispatches a source `HitAnimation` to an explicit owned target. `CharacterSession` binds the receiving actor's configuration cache, control sources and animation session. `ReactionPolicy` selects its reaction type, name and weight. Motion height is read from the receiver's movement component. Directional offsets, launch requests and logical body returns are not implemented.
+`hit` dispatches a source `HitAnimation` to an explicit owned target. `CharacterSession` binds the receiving actor's configuration cache, control sources and animation session. `ReactionPolicy` selects its reaction type, name and weight. Motion height is read from the receiver's movement component. Directional offsets, launch requests and the native logical-request queue are not implemented.
 
 `ActionPlayback::QueueHit` binds resolved layer and expression commands to the current model. Additive requests retain the body action; body requests replace it. `ReleaseHitExpression` and `ReleaseHit` retire separate lifetimes. Clip completion does not return the body to idle. A delivered hit belongs to the receiver: ending the attack only retracts an impact that has not been admitted.
 
 Receiver configuration is loaded on demand through `CatalogBrowser` and shared with action-menu inputs. It does not enumerate skills or abilities. `add_source.behaviors` contains the contributing `ModifierBehaviorFlag` values, separately from its visual `flag`. An empty array contributes none; omission leaves those inputs unknown. Only values used by the selected reaction branch are required. Hit expression duration is independent of body playback.
+
+Production hits resolve the current visual/default expression when their expression timer ends. Body-return observation requires the configured request boundary, state departure, an alive grounded receiver and the current return animation. It releases playback ownership without replaying that animation. Other successors remain untouched. This observes ordinary controller returns; it does not schedule a missing successor or implement native Extra holds. Raw `QueueHit` calls retain explicit release semantics unless `receiver_return` is enabled.
 
 ## Model
 
