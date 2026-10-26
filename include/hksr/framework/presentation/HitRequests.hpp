@@ -23,6 +23,7 @@ struct HitCommand {
     int blink_source=-1;
     std::optional<float> expression_seconds;
     bool receiver_return=false;
+    std::optional<float> angle;
 };
 struct HitReturn {
     std::string body,expression;

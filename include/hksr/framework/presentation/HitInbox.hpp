@@ -3,7 +3,13 @@
 #include <functional>
 
 namespace hksr::framework {
-struct HitInput {std::string animation;};
+struct HitAngles {float horizontal=0,vertical=0;};
+struct HitOrigin {api::Position3 position;bool self=false;};
+struct HitInput {
+    std::string animation;
+    std::optional<HitAngles> direction;
+    std::optional<HitOrigin> origin; // captured by the sending scene, not authored coordinates
+};
 struct HitResolution {bool ready=false;std::optional<HitCommand> command;};
 using HitResolver=std::function<HitResolution(const HitInput&)>;
 struct HitDeliveryStatus {

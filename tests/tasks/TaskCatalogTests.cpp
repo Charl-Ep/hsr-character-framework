@@ -107,6 +107,12 @@ void Codec() {
     auto hit_catalog=ParseTaskCatalog(hit.dump());
     const auto& impact=std::get<TaskHitCommand>(std::get<TaskSubmit>(hit_catalog.sequences.at("stand")->nodes.front().operation).operation);
     Check(impact.target=="Victim" && impact.hit.animation=="DamageHit_H");
+    hit["sequences"]["stand"]["entry"]["direction"]={{"horizontal",30},{"vertical",10}};
+    auto directed=ParseTaskCatalog(hit.dump());
+    const auto& directed_hit=std::get<TaskHitCommand>(std::get<TaskSubmit>(directed.sequences.at("stand")->nodes.front().operation).operation).hit;
+    Check(directed_hit.direction && directed_hit.direction->horizontal==30 && directed_hit.direction->vertical==10 && !directed_hit.origin);
+    hit["sequences"]["stand"]["entry"]["origin"]={{"x",0},{"y",0},{"z",0}};
+    Reject([&]{ParseTaskCatalog(hit.dump());});hit["sequences"]["stand"]["entry"].erase("origin");
     hit["sequences"]["stand"]["entry"]["state"]="ForceAnyAnimator";
     Reject([&]{ParseTaskCatalog(hit.dump());});
     hit["sequences"]["stand"]["entry"].erase("state");

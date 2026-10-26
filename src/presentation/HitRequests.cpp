@@ -31,6 +31,7 @@ void Validate(const HitCommand& value) {
     if(!std::isfinite(value.expression_transition) || value.expression_transition<0)throw std::invalid_argument("invalid hit expression transition");
     if(value.expression_seconds && (!std::isfinite(*value.expression_seconds) || *value.expression_seconds<0))
         throw std::invalid_argument("invalid hit expression duration");
+    if(value.angle && !std::isfinite(*value.angle))throw std::invalid_argument("invalid hit angle");
 }
 }
 struct HitRequests::State {
@@ -158,6 +159,13 @@ struct HitRequests::State {
                 entry->animator,hash.value,entry->command.expression_transition,current);
         }
         if(!current())return;
+        if(entry->command.angle) {
+            const auto parameter=control.HitAngleParameter();if(!current())return;
+            if(!parameter.read.returned)throw std::runtime_error("hit-angle parameter unavailable");
+            const auto written=control.SetFloatParameter(entry->animator,parameter.value,*entry->command.angle);
+            if(!written.returned)throw std::runtime_error("hit-angle parameter write failed");
+            if(!current())return;
+        }
         entry->layers=std::move(resolved);
         for(auto& layer:entry->layers) {
             if(!current())return;

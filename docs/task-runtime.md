@@ -6,7 +6,9 @@ The `tasks` module provides typed visual tasks, configuration loading, owned-res
 
 Shared reactions use the `VisualState` executor for configured enter/hold/recover body phases, expression and blink ownership. Task sequences can reference this executor through `reaction`; material, speed and floating behavior are not implemented. See [action API](http-api.md#actions).
 
-`hit` dispatches a source `HitAnimation` to an explicit owned target. `CharacterSession` binds the receiving actor's configuration cache, control sources and animation session. `ReactionPolicy` selects its reaction type, name and weight. Motion height is read from the receiver's movement component. Directional offsets, launch requests and the native logical-request queue are not implemented.
+`hit` dispatches a source `HitAnimation` to an explicit owned target. `CharacterSession` binds the receiving actor's configuration cache, control sources and animation session. `ReactionPolicy` selects its reaction type, name and weight. Motion height is read from the receiver's movement component. Launch requests are not implemented.
+
+Optional `direction: {"horizontal": 0, "vertical": 0}` captures the sender's logical position and applies the receiving model's hit angle before playback. Angles are degrees; a random contribution must already be resolved. Geometry uses the receiver's base character configuration and current attachment. Runtime shape overrides and AttackData hit-effect creation are not supplied by this command.
 
 `ActionPlayback::QueueHit` binds resolved layer and expression commands to the current model. Additive requests retain the body action; body requests replace it. `ReleaseHitExpression` and `ReleaseHit` retire separate lifetimes. Clip completion does not return the body to idle. A delivered hit belongs to the receiver: ending the attack only retracts an impact that has not been admitted.
 

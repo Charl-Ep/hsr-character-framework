@@ -202,7 +202,15 @@ std::shared_ptr<VisualProgramPlayer> VisualProgramRuntime::Create(api::EntityOri
         if(!receiver)return {};
         if(!Alive(scene->owner) || !Alive(target) || receiver->Generation()!=target.token.generation)
             throw std::runtime_error("hit receiver generation changed");
-        return receiver->Post(command);
+        auto hit=command;
+        if(hit.direction) {
+            const auto position=api_.ReadLogicalPosition(scene->owner.token,scene->owner.world);
+            if(!Alive(scene->owner) || !Alive(target))throw std::runtime_error("hit endpoint ended during capture");
+            if(!position.read.returned)throw std::runtime_error("hit source logical position unread");
+            hit.origin=HitOrigin{position.value,scene->owner.token.entity==target.token.entity &&
+                scene->owner.token.generation==target.token.generation};
+        }
+        return receiver->Post(std::move(hit));
     };
     services.face=[this,current](VisualEffectContext& context,const VisualFace& command) {
         const auto scene=current();

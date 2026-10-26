@@ -18,6 +18,7 @@ struct Layer {int state=10,next=0;float time=0,weight=0.25f;bool transition=fals
 std::array<Layer,4> layers;
 std::map<std::string,int> names{{"Attack",10},{"Idle",11},{"Hit",20},{"Heavy",21},{"Face",30},{"Neutral",40},{"ChangedFace",41}};
 int alive_state=1;
+float hit_angle=0;int hit_angle_writes=0;
 struct Motion {float clock=0;} motion;
 bool motion_present=false;
 float motion_height=0;
@@ -27,6 +28,8 @@ unsigned body_plays=0,layer_plays=0,weight_writes=0;
 void CheckAt(bool value,int line){if(!value)throw std::runtime_error("hit request test failed at line "+std::to_string(line));}
 #define Check(...) CheckAt((__VA_ARGS__),__LINE__)
 template<class T>api::Method M(T f){return {reinterpret_cast<void*>(f),&info};}
+int __fastcall Parameter(std::int16_t tag,void*){Check(tag==1);return 123;}
+void __fastcall SetFloat(void* object,int key,float value,void*){Check(object==&animator && key==123);hit_angle=value;++hit_angle_writes;}
 int __fastcall Keep(void* value,int,int,void*){roots[++next_root]=value;return next_root;}
 void* __fastcall Target(int id,void*){return roots.at(id);}
 void __fastcall Free(int id,void*){roots.erase(id);}
@@ -80,6 +83,7 @@ void TestHitRequests() {
     api::AnimationControlMethods methods;methods.hash=M(Hash);methods.has_state=M(Has);methods.play=M(Play);methods.free_style_state=M(Body);
     methods.cross_fade=M(Fade);methods.layer_count=M(Count);methods.layer_index=M(Index);methods.layer_weight=M(Weight);methods.set_layer_weight=M(SetWeight);
     methods.state_info=M(Info);methods.in_transition=M(Transition);methods.layer_name=M(LayerName);
+    methods.ready_parameter_hash=M(Parameter);methods.float_set=M(SetFloat);
     methods.hit_motion={M(Height),M(FallHeight),offsetof(Motion,clock),true};
     api::ModelAccessMethods models;models.animator=M(Animator);models.changing=M(Changing);
     api::ProfileInputMethods profiles;profiles.animator_initialized=M(Yes);
@@ -95,7 +99,9 @@ void TestHitRequests() {
     auto tick=[&]{++frame.sequence;player.Service(frame,true,objects);};
     auto attack=player.QueueAnimation({"Attack"});tick();tick();Check(attack->accepted && attack->entered);
     const auto initial_body=body_plays;
-    auto hit=player.QueueHit(Additive());tick();Check(!hit->accepted && layers[1].weight==0.75f && layers[2].weight==0.75f);
+    auto directed=Additive();directed.angle=-90.f;
+    auto hit=player.QueueHit(directed);tick();Check(!hit->accepted && layers[1].weight==0.75f && layers[2].weight==0.75f);
+    Check(hit_angle==-90 && hit_angle_writes==1);
     tick();tick();Check(hit->accepted && hit->entered && body_plays==initial_body && !attack->cancelled);
     layers[1].time=layers[2].time=1.5f;tick();tick();
     Check(hit->clip_complete && !hit->state_left && !hit->released); // time=1 is not a logical return

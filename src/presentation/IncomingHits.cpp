@@ -104,6 +104,17 @@ HitResolution ActionPlayback::ResolveIncomingHit(const HitInput& input,const api
     // OnHit's additive submit uses normalized transition zero. Direction-based
     // start offsets and the body request's logical track remain separate work.
     auto command=BuildHitCommand(decision,names);
+    if(input.direction) {
+        if(!input.origin)throw std::runtime_error("hit source position was not captured");
+        if(input.origin->self)command.angle=0.f;
+        else {
+            const auto angle=engine_->ReadHitAngle(input.origin->position,Value(character.shape,"HitBox"),
+                Value(character.hit_box_attach_point,"HitBoxAttachPoint"),input.direction->horizontal,input.direction->vertical,objects);
+            if(!live())return {};
+            if(!angle.read.returned)throw std::runtime_error("receiver hit direction unavailable");
+            command.angle=angle.value;
+        }
+    }
     // GOK's ordinary OnHit request passes End=0. It does not ask for a
     // normalized-time-one return; the controller's destination is checked later.
     if(command.body)command.body->normalized_end=0.f;
