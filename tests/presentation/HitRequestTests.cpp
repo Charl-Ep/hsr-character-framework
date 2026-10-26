@@ -1,4 +1,5 @@
 #include <hksr/framework/presentation/ActionPlayback.hpp>
+#include <hksr/framework/tasks/TaskPresentation.hpp>
 #include <Windows.h>
 #include <array>
 #include <cstring>
@@ -48,7 +49,7 @@ std::uint16_t __fastcall TextChar(std::string* value,int index,void*){return sta
 void* __fastcall Animator(void*,void*){return replaced?&other_animator:&animator;}
 bool __fastcall Changing(void*,void*){return changing;}
 int __fastcall Hash(std::string* name,void*){return names.at(*name);}
-bool __fastcall Has(void*,int layer,int hash,void*){return (hash!=20 || hit_exists) && (hash!=30 || layer==3);}
+bool __fastcall Has(void*,int layer,int hash,void*){return (hash!=20 || hit_exists) && ((hash!=30 && hash!=40 && hash!=41) || layer==3);}
 int __fastcall Count(void*,void*){return 4;}
 int __fastcall Index(void*,std::string* name,void*){return *name=="Visual"?0:*name=="Add"?1:*name=="Override" && override_exists?2:-1;}
 float __fastcall Weight(void* value,int layer,void*){Check(value==&animator);return layers.at(layer).weight;}
@@ -230,6 +231,69 @@ void TestHitRequests() {
     character->resilience.available=false;auto unread=inbox->Post({"DamageHit"});const auto writes=weight_writes;tick();
     Check(!unread.status->error.empty() && weight_writes==writes);
     character->resilience.available=true;
+    // Active-skill recovery uses the same phase/visual source, but not the
+    // receiving-hit height test. Queue admission permits reset before playback.
+    player.CancelPending();tick();available=true;controls={};motion_present=true;motion_height=.4f;
+    AnimationCommand skill_body{"Attack",0,0,0,.58f};skill_body.track=AnimationTrack{3,0,{},false};
+    auto skill=player.QueueAnimation(skill_body);tick();tick();layers[0].time=.7f;
+    controls.visual_flag=99;
+    auto recovery=player.QueueSkillRecovery();const auto recovery_plays=body_plays;tick();
+    if(!recovery->error.empty())throw std::runtime_error("skill recovery: "+recovery->error);
+    Check(recovery->accepted && !recovery->complete && layers[3].state==41 && body_plays==recovery_plays);
+    tick();Check(!recovery->complete && layers[0].state==10);
+    layers[0].time=1.1f;tick();tick();tick();
+    Check(recovery->complete && layers[0].state==11 && body_plays==recovery_plays+1);
+    player.ReleaseAnimation(skill->serial);player.ReleaseSkillRecovery(recovery->serial);
+    Check(layers[3].state==41); // return observer release does not restore the skill face
+    auto no_replay=player.QueueSkillRecovery();tick();Check(no_replay->complete && body_plays==recovery_plays+1);
+    player.ReleaseSkillRecovery(no_replay->serial);
+    motion_present=false;controls={};
+    skill=player.QueueAnimation(skill_body);tick();tick();
+    available=false;auto waiting_return=player.QueueSkillRecovery();tick();Check(!waiting_return->accepted);
+    player.QueueAnimation({"Heavy"});available=true;tick();
+    Check(waiting_return->cancelled && waiting_return->released && layers[0].state==21);
+    player.CancelPending();tick();
+    VisualProgramServices visual_services;
+    visual_services.effects=std::make_shared<api::PresentationEffects>(api::EffectRequestServices{{},api::EffectAccess({}),{},{},{}});
+    visual_services.create=[](auto&,const auto&,const auto&)->VisualEffectId{throw std::runtime_error("unexpected recovery effect");};
+    auto visual_scene=std::make_shared<VisualProgramPlayer>(std::make_shared<VisualProgram>(),visual_services);
+    TaskPresentationServices ports;
+    std::shared_ptr<const AnimationRequestStatus> recovery_receipt;
+    ports.animation=[&](const auto& participant)->std::optional<TaskAnimationEndpoint>{
+        Check(participant.name=="body");auto endpoint=BindTaskAnimation(player);
+        endpoint.recover=[&]{recovery_receipt=player.QueueSkillRecovery();return recovery_receipt;};return endpoint;
+    };
+    ControlPerformance control_phase=ControlPerformance::Working;
+    ports.control=[&](const auto& changes){for(const auto& change:changes)control_phase=std::get<ControlSetPerformance>(change).phase;};
+    auto recovery_plan=std::make_shared<TaskSequence>();
+    TaskAnimationCommand body_command{{"body"},"Attack",0,0,0,.58f};body_command.track=AnimationTrack{3,0,{},false};
+    recovery_plan->nodes={
+        {"body",TaskSubmit{"body",body_command}},
+        {"entry-finish",TaskWaitRequest{"body",TaskWaitSignal::Progress,.7}},
+        {"after",TaskSubmit{"after",TaskControlCommand{{ControlSetPerformance{ControlPerformance::Resetting}}}}},
+        {"return",TaskSubmit{"return",TaskSkillRecovery{}}},
+        {"admitted",TaskWaitRequest{"return",TaskWaitSignal::RequestComplete}},
+        {"reset",TaskSubmit{"reset",TaskControlCommand{{ControlSetPerformance{ControlPerformance::Ready}}}}},
+        {"entry",TaskSerial{{0,1,2,3,4,5}}}};recovery_plan->entry=6;
+    TaskPresentation recovery_task({300},token.generation,recovery_plan,visual_scene,{},ports);
+    auto service_task=[&]{tick();recovery_task.Service(.01,frame.sequence);};
+    recovery_task.Service(0,++frame.sequence);service_task();service_task();
+    layers[0].time=.71f;service_task();service_task();service_task();
+    if(!recovery_task.Status().issues.empty())throw std::runtime_error("recovery sequence: "+recovery_task.Status().issues.front());
+    if(control_phase!=ControlPerformance::Ready || layers[0].state!=10 || recovery_task.Drained()) {
+        std::string detail="recovery boundary phase="+std::to_string(static_cast<int>(control_phase))+" body="+std::to_string(layers[0].state)+
+            " drained="+std::to_string(recovery_task.Drained());
+        for(const auto& waiting:recovery_task.Status().waiting)detail+=" wait="+waiting;
+        for(const auto& row:recovery_task.Requests())detail+=" request="+row.name+" accepted="+std::to_string(row.state.request_complete)+" drained="+std::to_string(row.state.drained);
+        if(recovery_receipt)detail+=" owned-return="+std::to_string(recovery_receipt->accepted)+" error="+recovery_receipt->error;
+        throw std::runtime_error(detail);
+    }
+    // Releasing the finished task must retain its body record until the
+    // registered SkillFinishRecover has consumed that record's end boundary.
+    service_task();Check(layers[0].state==10 && !recovery_task.Drained());
+    layers[0].time=1.1f;service_task();service_task();service_task();service_task();
+    Check(layers[0].state==11 && recovery_task.Drained() && recovery_task.Status().issues.empty());
+    visual_scene->End();visual_scene->Service();player.CancelPending();tick();
     hit=player.QueueHit(Additive());tick();Check(player.Close(frame));Check(hit->released && layers[1].weight==0.25f && roots.empty());
     bool closed=false;try{inbox->Post({"DamageHit"});}catch(const std::logic_error&){closed=true;}Check(closed);
 }

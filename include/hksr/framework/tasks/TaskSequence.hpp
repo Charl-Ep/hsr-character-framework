@@ -11,15 +11,17 @@ using TaskNodeIndex=std::size_t;
 struct TaskAnimationCommand {
     TaskParticipant participant;std::string state;int layer=0;float transition=0;float normalized_start=0;
     std::optional<float> normalized_end;
+    std::optional<AnimationTrack> track;
 };
 struct TaskSoundCommand {TaskParticipant participant;std::string event;};
 struct TaskMovementCommand {std::string animation;VisualMovement movement;}; // state comes from this request
 struct TaskControlCommand {std::vector<ControlChange> changes;};
 struct TaskPoseCommand {PoseSelection selection;}; // always this controller's owned body
 struct TaskHitCommand {std::string target;HitInput hit;}; // receiver owns policy and playback
-using TaskLeafOperation=std::variant<TaskAnimationCommand,VisualInstruction,TaskSoundCommand,TaskMovementCommand,TaskControlCommand,TaskPoseCommand,TaskHitCommand>;
+struct TaskSkillRecovery {}; // owned body's current Phase/Visual return, not native battle reset
+using TaskLeafOperation=std::variant<TaskAnimationCommand,VisualInstruction,TaskSoundCommand,TaskMovementCommand,TaskControlCommand,TaskPoseCommand,TaskHitCommand,TaskSkillRecovery>;
 struct TaskSubmit {std::string request;TaskLeafOperation operation;};
-enum class TaskWaitSignal { Submitted,RequestComplete,PerformanceComplete,Progress,Drained,Started,AnimationEnd,StateLeft };
+enum class TaskWaitSignal { Submitted,RequestComplete,PerformanceComplete,Progress,Drained,Started,AnimationEnd,StateLeft,AnimationFinished };
 struct TaskWaitRequest {std::string request;TaskWaitSignal signal=TaskWaitSignal::PerformanceComplete;double progress=1;};
 struct TaskWaitSeconds {double seconds=0;};
 struct TaskWaitFrame {};

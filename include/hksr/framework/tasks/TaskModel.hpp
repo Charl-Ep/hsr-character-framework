@@ -103,7 +103,7 @@ struct TaskRequestState {
     // later request. Not natural completion and not an external interruption.
     bool superseded=false;
     bool started=false; // actual asynchronous start, distinct from queue acceptance
-    bool animation_end=false,state_left=false;
+    bool animation_end=false,state_left=false,animation_finished=false;
 };
 struct TaskRequestSnapshot {
     std::string name,source;

@@ -455,6 +455,20 @@ void TestTaskCatalog(){
     Codec();SelectionAndInterrupt();AnimationOffsets();NaturalAndPending();ContextsAndFinish();CloseAndReentrant();InputRequirementsAndPreparation();ControlAdmissionAndPresentation();ControlSlotsReachDispatch();ControlAtSequenceBoundaries();
     auto input=Document();
     {
+        auto queued=Document();auto& sequence=queued["sequences"]["stand"]["entry"];
+        sequence={{"op","serial"},{"children",Json::array({
+            {{"op","animation"},{"request","body"},{"participant","body"},{"state","Skill"},{"end",.58},
+                {"track",{{"logic",3},{"extra",0},{"release_on",Json::array({6})},{"force",false}}}},
+            {{"op","wait_request"},{"request","body"},{"signal","animation_finished"}},
+            {{"op","skill_recovery"},{"request","return"}}})}};
+        const auto parsed=ParseTaskCatalog(queued.dump());
+        const auto& nodes=parsed.sequences.at("stand")->nodes;
+        const auto& animation=std::get<TaskAnimationCommand>(std::get<TaskSubmit>(nodes[0].operation).operation);
+        Check(animation.track && animation.track->logic==3 && animation.track->release_on==std::vector<int>{6});
+        Check(std::holds_alternative<TaskSkillRecovery>(std::get<TaskSubmit>(nodes[2].operation).operation));
+        sequence["children"][0].erase("end");Reject([&]{ParseTaskCatalog(queued.dump());});
+    }
+    {
         auto abilities=Document();
         abilities["sequences"]["stand"]["entry"]={{"op","serial"},{"children",Json::array({
             {{"op","call_ability"},{"ability","phase"},{"wait_for_performance",false},

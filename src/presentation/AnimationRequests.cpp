@@ -15,6 +15,7 @@ struct AnimationRequests::Entry {
     int hash=0;
     std::uint64_t submitted_frame=0,last_frame=0;
     bool serviced=false;
+    bool held=false;
 };
 AnimationRequests::AnimationRequests(api::EntityToken owner,api::GameWorld* world,api::ActorAnimationSession& engine,BodyPlayer body)
     :owner_(owner),world_(world),engine_(engine),body_player_(std::move(body)) {
@@ -28,32 +29,96 @@ bool AnimationRequests::Live(const std::shared_ptr<Entry>& entry) const {
         api::TrackedEntities().Current(owner_.entity).generation==owner_.generation;
 }
 void AnimationRequests::Finish(const std::shared_ptr<Entry>& entry,const std::string& reason) {
-    auto& status=*entry->status;status.cancelled=!status.state_left;status.released=true;
-    if(!status.state_left && status.error.empty())status.error=reason;
+    auto& status=*entry->status;status.cancelled=!status.state_left && !status.advanced;status.released=true;
+    if(status.cancelled && status.error.empty())status.error=reason;
 }
 std::shared_ptr<const AnimationRequestStatus> AnimationRequests::Submit(AnimationCommand command) {
     if(command.state.empty() || command.state.find('\0')!=std::string::npos || command.layer<0 ||
         !std::isfinite(command.transition) || command.transition<0 || !std::isfinite(command.normalized_start) ||
-        (command.normalized_end && !std::isfinite(*command.normalized_end)))
+        (command.normalized_end && !std::isfinite(*command.normalized_end)) ||
+        (command.track && !command.normalized_end))
         throw std::invalid_argument("invalid animation command");
-    Cancel(command.layer);
+    if(!command.track)Cancel(command.layer);
+    else {
+        // A tracked lane replaces legacy observations, not other records in
+        // its queue. Validation precedes every ownership change.
+        for(auto it=entries_.begin();it!=entries_.end();) {
+            if(it->second->command.layer==command.layer && !it->second->command.track) {
+                Finish(it->second,"animation track replaced direct request");it=entries_.erase(it);
+            }else ++it;
+        }
+    }
     auto entry=std::make_shared<Entry>();entry->command=std::move(command);
     entry->status=std::make_shared<AnimationRequestStatus>();
     entry->status->serial=++next_;entry->status->entity_generation=owner_.generation;
     entries_.emplace(next_,entry);
+    if(entry->command.track) {
+        auto& queue=tracks_[entry->command.layer];
+        const auto& track=*entry->command.track;
+        if(!queue.empty() && animator_) {
+            entry->animator=animator_;entry->status->model_generation=model_;
+        }
+        entry->held=!track.release_on.empty();
+        auto match=std::find_if(queue.begin(),queue.end(),[&](const auto& previous) {
+            const auto& allowed=previous->command.track->release_on;
+            return std::find(allowed.begin(),allowed.end(),track.extra)!=allowed.end();
+        });
+        if(match==queue.end())queue.push_back(entry);
+        else {(*match)->held=false;queue.insert(std::next(match),entry);}
+        if(track.force) {
+            while(queue.front()!=entry) {
+                const auto previous=queue.front();queue.pop_front();
+                previous->status->request_finished=previous->status->advanced=true;
+            }
+        }
+    }
     return entry->status;
 }
 void AnimationRequests::Release(std::uint64_t serial) {
     const auto found=entries_.find(serial);if(found==entries_.end())return;
     found->second->status->released=true;entries_.erase(found);
+    for(auto it=tracks_.begin();it!=tracks_.end();) {
+        auto& queue=it->second;
+        queue.erase(std::remove_if(queue.begin(),queue.end(),[&](const auto& value){return value->status->serial==serial;}),queue.end());
+        if(queue.empty())it=tracks_.erase(it);else ++it;
+    }
     // Releasing observation never resets an Animator or overwrites a newer
     // state. A task's authored successor owns the next animation request.
 }
 void AnimationRequests::Cancel(std::optional<int> layer,const std::string& reason) {
+    if(layer)tracks_.erase(*layer);else tracks_.clear();
     if(!layer)animator_=nullptr; // explicit owner/domain handoff starts a new binding epoch
     for(auto it=entries_.begin();it!=entries_.end();) {
         if(layer && it->second->command.layer!=*layer){++it;continue;}
         Finish(it->second,reason);it=entries_.erase(it);
+    }
+}
+bool AnimationRequests::AtHead(const std::shared_ptr<Entry>& entry) const {
+    if(!entry->command.track)return true;
+    const auto found=tracks_.find(entry->command.layer);
+    return found!=tracks_.end() && !found->second.empty() && found->second.front()==entry;
+}
+void AnimationRequests::AdvanceTracks() {
+    for(auto& [layer,queue]:tracks_) {
+        if(queue.empty())continue;
+        auto current=queue.front();auto& status=*current->status;
+        if(current->held || status.released || status.cancelled)continue;
+        if(!status.end_reached)continue;
+        // The ordinary track delays its sole SkillFinishRecover successor to
+        // the current clip's end. This is not a rule for other successors or
+        // queues containing additional requests.
+        if(queue.size()==2 && queue[1]->command.track->logic==1 && queue[1]->command.track->extra==6 &&
+            !status.state_left && status.progress.value_or(0)<1)continue;
+        status.request_finished=true;
+        if(queue.size()==1)continue;
+        status.advanced=true;queue.pop_front();
+        // Non-playing, non-positive-End records without a hold can be passed
+        // over when a later request is already queued. Preserve that receipt.
+        while(queue.size()>1 && !queue.front()->status->accepted && !queue.front()->held &&
+            *queue.front()->command.normalized_end<=0) {
+            queue.front()->status->request_finished=queue.front()->status->advanced=true;
+            queue.pop_front();
+        }
     }
 }
 void AnimationRequests::Service(const api::WorldFrame& frame,bool ready,api::ManagedObjects& objects) {
@@ -72,7 +137,8 @@ void AnimationRequests::Service(const api::WorldFrame& frame,bool ready,api::Man
     for(const auto& [id,entry]:entries_)snapshot.push_back(entry);
     for(const auto& entry:snapshot) {
         auto& status=*entry->status;
-        if(!Live(entry) || status.state_left || (entry->serviced && frame.sequence<=entry->last_frame))continue;
+        if(!Live(entry) || status.state_left || status.advanced || !AtHead(entry) ||
+            (entry->serviced && frame.sequence<=entry->last_frame))continue;
         entry->serviced=true;entry->last_frame=frame.sequence;
         try {
             resources.RetainOwner();if(!Live(entry))continue;
@@ -86,12 +152,13 @@ void AnimationRequests::Service(const api::WorldFrame& frame,bool ready,api::Man
             if(!model.changing.read.returned || !model.animator.read.returned)throw std::runtime_error("animation model observation unread");
             if(model.changing.value || !model.animator.value) {
                 animator_=nullptr;
-                if(status.accepted)Finish(entry,"animation model changed");
+                if(status.accepted)Cancel(entry->command.layer,"animation model changed");
                 continue;
             }
             if(animator_!=model.animator.value){animator_=model.animator.value;++model_;}
-            if(status.accepted && (entry->animator!=animator_ || status.model_generation!=model_)) {
-                Finish(entry,"animation model changed");continue;
+            if((status.accepted || (entry->command.track && entry->animator)) &&
+                (entry->animator!=animator_ || status.model_generation!=model_)) {
+                Cancel(entry->command.layer,"animation model changed");continue;
             }
             if(!status.accepted) {
                 const auto initialized=engine_.Inputs().AnimatorInitialized(animator_);if(!Live(entry))continue;
@@ -148,8 +215,12 @@ void AnimationRequests::Service(const api::WorldFrame& frame,bool ready,api::Man
                 const auto end=*entry->command.normalized_end;
                 if(end<=0 || status.state_left || (status.progress && *status.progress>=end))status.end_reached=true;
             }
-        }catch(const std::exception& error){Finish(entry,error.what());}
+        }catch(const std::exception& error){
+            if(entry->command.track)Cancel(entry->command.layer,error.what());
+            else Finish(entry,error.what());
+        }
     }
+    AdvanceTracks();
     for(auto it=entries_.begin();it!=entries_.end();) {
         if(it->second->status->released)it=entries_.erase(it);else ++it;
     }

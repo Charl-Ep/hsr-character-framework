@@ -49,22 +49,27 @@ void ValidateTaskSequence(const TaskSequence& sequence) {
                 if(submit->request==wait->request) {
                     if(std::holds_alternative<TaskHitCommand>(submit->operation))
                         throw std::invalid_argument("hit delivery has no normalized progress clock");
+                    if(std::holds_alternative<TaskSkillRecovery>(submit->operation))
+                        throw std::invalid_argument("skill recovery has no normalized progress clock");
                     if(std::holds_alternative<TaskPoseCommand>(submit->operation))pose=true;else other=true;
                 }
             if(pose && !other)throw std::invalid_argument("composite poses have no normalized progress clock");
         }
         if(const auto* wait=std::get_if<TaskWaitRequest>(&op);wait &&
-            (wait->signal==TaskWaitSignal::AnimationEnd || wait->signal==TaskWaitSignal::StateLeft)) {
+            (wait->signal==TaskWaitSignal::AnimationEnd || wait->signal==TaskWaitSignal::StateLeft || wait->signal==TaskWaitSignal::AnimationFinished)) {
             for(const auto& candidate:sequence.nodes)if(const auto* submit=std::get_if<TaskSubmit>(&candidate.operation))
                 if(submit->request==wait->request) {
                     const auto* animation=std::get_if<TaskAnimationCommand>(&submit->operation);
-                    if(!animation || (wait->signal==TaskWaitSignal::AnimationEnd && !animation->normalized_end))
+                    if(!animation || (wait->signal==TaskWaitSignal::AnimationEnd && !animation->normalized_end) ||
+                        (wait->signal==TaskWaitSignal::AnimationFinished && !animation->track))
                         throw std::invalid_argument("animation boundary wait requires a matching animation request and end value");
                 }
         }
         if(const auto* submit=std::get_if<TaskSubmit>(&op))
         {
             if(submit->request.empty())throw std::invalid_argument("task request name is empty");
+            if(const auto* animation=std::get_if<TaskAnimationCommand>(&submit->operation);animation && animation->track && !animation->normalized_end)
+                throw std::invalid_argument("tracked animation requires an explicit end");
             if(const auto* pose=std::get_if<TaskPoseCommand>(&submit->operation))std::visit([](const auto& key) {
                 if(key.source.empty() || key.source.find('\0')!=std::string::npos)throw std::invalid_argument("pose source is empty or invalid");
                 using T=std::decay_t<decltype(key)>;
@@ -271,6 +276,7 @@ struct TaskSequenceExecution::State {
                 const bool done=node.signal==TaskWaitSignal::Submitted?value.submitted:
                     node.signal==TaskWaitSignal::Started?value.started:
                     node.signal==TaskWaitSignal::AnimationEnd?value.animation_end:
+                    node.signal==TaskWaitSignal::AnimationFinished?value.animation_finished:
                     node.signal==TaskWaitSignal::StateLeft?value.state_left:
                     node.signal==TaskWaitSignal::RequestComplete?value.request_complete:
                     node.signal==TaskWaitSignal::PerformanceComplete?value.performance_complete:
@@ -284,6 +290,7 @@ struct TaskSequenceExecution::State {
                         node.signal==TaskWaitSignal::Submitted?std::string("submission"):
                         node.signal==TaskWaitSignal::Started?std::string("playback start"):
                         node.signal==TaskWaitSignal::AnimationEnd?std::string("animation request end"):
+                        node.signal==TaskWaitSignal::AnimationFinished?std::string("animation request finish"):
                         node.signal==TaskWaitSignal::StateLeft?std::string("state departure"):
                         node.signal==TaskWaitSignal::RequestComplete?std::string("acceptance"):
                         node.signal==TaskWaitSignal::PerformanceComplete?std::string("performance completion"):std::string("drain");
@@ -416,6 +423,7 @@ bool TaskSequenceExecution::Observe(const TaskRequestReceipt& receipt,const Task
     value.superseded=value.superseded || update.superseded;
     value.started=value.started || update.started;
     value.animation_end=value.animation_end || update.animation_end;value.state_left=value.state_left || update.state_left;
+    value.animation_finished=value.animation_finished || update.animation_finished;
     if(update.progress && std::isfinite(*update.progress) && *update.progress>=0 && (!value.progress || *update.progress>*value.progress))value.progress=update.progress;
     if(!update.error.empty()) {
         if(value.error!=update.error)s.status.issues.push_back("request="+std::to_string(receipt.request)+": "+update.error);

@@ -40,6 +40,8 @@ public:
     std::uint64_t Queue(ActionRequest request);
     std::shared_ptr<const AnimationRequestStatus> QueueAnimation(AnimationCommand);
     void ReleaseAnimation(std::uint64_t serial){animation_requests_.Release(serial);}
+    std::shared_ptr<const AnimationRequestStatus> QueueSkillRecovery();
+    void ReleaseSkillRecovery(std::uint64_t serial);
     std::shared_ptr<const AnimationRequestStatus> QueuePose(PoseCommand);
     void ReleasePose(std::uint64_t serial,bool cancel=false);
     std::shared_ptr<const HitRequestStatus> QueueHit(HitCommand);
@@ -72,7 +74,9 @@ private:
     bool Ended() const;
     bool OwnFrame(const api::WorldFrame& frame) const;
     HitResolution ResolveIncomingHit(const HitInput&,const api::WorldFrame&,api::ManagedObjects&);
-    std::optional<HitReturn> ResolveHitReturn(bool body,const api::WorldFrame&,api::ManagedObjects&);
+    std::optional<HitReturn> ResolveHitReturn(bool body,const api::WorldFrame&,api::ManagedObjects&,bool require_grounded=true);
+    void ServiceSkillRecovery(const api::WorldFrame&,api::ManagedObjects&);
+    void CancelSkillRecovery();
     void CancelPose(const std::string& reason);
     void ObservePose(std::uint64_t serial,bool complete=false);
     void PoseResult(const ActionReceipt&,void* animator);
@@ -105,6 +109,13 @@ private:
     const api::ProfileInputs& inputs_;
     api::AnimationResources& resources_;
     AnimationRequests animation_requests_;
+    struct SkillRecovery {
+        std::shared_ptr<AnimationRequestStatus> status;
+        std::shared_ptr<const AnimationRequestStatus> body;
+        std::uint64_t intent=0;
+    };
+    std::map<std::uint64_t,std::shared_ptr<SkillRecovery>> recoveries_;
+    std::uint64_t recovery_serial_=0;
     HitRequests hit_requests_;
     std::shared_ptr<HitInbox> hit_inbox_;
     HitResolver hit_resolver_;

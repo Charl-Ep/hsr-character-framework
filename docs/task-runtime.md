@@ -83,7 +83,11 @@ Animation requests do not select an automatic successor. A completed non-loop st
 
 An animation submission accepts `start` (normalized playback offset, default `0`) and `transition` (normalized blend duration, default `0`). Body, partner and layer playback preserve the offset. Progress waits use the observed absolute animation time, not elapsed time since submission. A start offset does not itself count as observed entry or progress.
 
-Optional `end` supplies a separate `animation_end` wait boundary. A positive value completes at that observed normalized time or observed state departure; a nonpositive value completes after observed entry. `state_left` waits only for departure. Neither means resource drain. Observation continues after clip completion until release or departure. These receipts do not implement native animation-logic hold flags or notify the battle event system.
+Optional `end` supplies a separate `animation_end` wait boundary. A positive value completes at that observed normalized time or observed state departure; a nonpositive value completes after observed entry. `state_left` waits only for departure. Neither means resource drain. Observation continues after clip completion until release or departure.
+
+Optional `track` queues requests on the participant's animation layer. It requires `end` and explicit `logic`, `extra`, `release_on` and `force` fields. An incoming Extra matching an earlier request's `release_on` releases its hold and inserts after that record; otherwise it appends. `force` advances to the new record immediately. `animation_finished` observes the local request notification, separately from clip completion and state departure. Advancement preserves observations and reports supersession for unmet waits. Native event broadcasts, delay records and task-listener callbacks are not used.
+
+`skill_recovery` requires a request name and the owned body endpoint. It resolves the current Phase/Visual return and expression, then queues Idle/SkillFinishRecover. With one pending successor, return waits for the current animation's End and normalized time one, or observed departure. `accepted` means recovery was admitted; `performance` means its body command was submitted. A naturally finished sequence retains the queued body until that submission. Cancellation removes the owned return request. Reaching an existing return state does not replay it. The operation does not reset gameplay state or grant control permission.
 
 `ready_pose` selects `{config, skill, variant}` by configuration path and original skill/variant indices (`variant` defaults to `-1`). `reaction` selects `{config, flag, recover}` (`recover` defaults to `false`). Both require a request name, operate on this task controller's body and use cached sources bound to that actor. `BindTaskPose` reuses `ActionPlayback` transitions, expression and blink ownership; it does not grant control permission.
 
@@ -91,7 +95,7 @@ A ready performance wait completes when the destination or its controller succes
 
 Use a performance wait for animation completion. A progress wait requires that exact threshold to have been observed; if the request finishes below it, execution reports an unsatisfied dependency instead of waiting forever or assuming the missed cue ran.
 
-A later animation on the same participant and layer supersedes this execution's earlier observation. Its last progress is retained and `superseded` is reported separately from natural completion. Already-satisfied waits remain valid; unmet waits fail. External interruption still reports an execution error. Different participants and layers remain independent.
+A later direct animation on the same participant and layer supersedes this execution's earlier observation. Its last progress is retained and `superseded` is reported separately from natural completion. Already-satisfied waits remain valid; unmet waits fail. External interruption still reports an execution error. Different participants and layers remain independent.
 
 Submissions are asynchronous. Add explicit request waits for dependencies, including before reusing a request name. A visual creation instruction completing means the creation command was accepted, not that its effect finished. Effect controls retain and retry their exact pending receipts.
 

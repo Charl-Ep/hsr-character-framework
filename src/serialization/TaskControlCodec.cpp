@@ -125,7 +125,7 @@ Json TaskResult(const framework::TaskControlResult& result) {
             {"performance_complete",s.performance_complete},{"drained",s.drained},{"error",s.error}};
         row["superseded"]=s.superseded;
         row["started"]=s.started;
-        row["animation_end"]=s.animation_end;row["state_left"]=s.state_left;
+        row["animation_end"]=s.animation_end;row["state_left"]=s.state_left;row["animation_finished"]=s.animation_finished;
         if(s.progress)row["progress"]=*s.progress;
         out["requests"].push_back(std::move(row));
     }

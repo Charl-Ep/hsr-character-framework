@@ -39,7 +39,9 @@ std::uint64_t ActionPlayback::Queue(ActionRequest request) {
 }
 std::shared_ptr<const AnimationRequestStatus> ActionPlayback::QueueAnimation(AnimationCommand command) {
     if(status_.closing)throw std::logic_error("action playback already closing");
+    const bool follows=command.track && !command.track->force && animation_requests_.HasTrack(command.layer);
     auto ticket=animation_requests_.Submit(command);
+    if(follows)return ticket;
     hit_requests_.ReplaceLayer(command.layer);
     if(command.layer==0) {
         CancelPose("pose replaced by animation request");
@@ -77,6 +79,7 @@ void ActionPlayback::CancelPending(bool interrupt_presentation) {
     received_hit_.reset();resolved_hit_.reset();previous_hit_.reset();hit_policy_animator_=nullptr;
     CancelPose("pose request cancelled");pose_animator_=nullptr;
     animation_requests_.Cancel();
+    CancelSkillRecovery();
     ++intent_revision_;
     if(interrupt_presentation){presentation_.Interrupt();LeaveProgram();SyncPresentation();}
     visual_cancelled_=true;
@@ -168,11 +171,11 @@ void ActionPlayback::Service(const api::WorldFrame& frame,bool ready,api::Manage
     ServiceEffects(frame);
     if(Ended()) {
         CancelPose("pose owner ended");
-        animation_requests_.Cancel({},"animation owner ended");
+        animation_requests_.Cancel({},"animation owner ended");CancelSkillRecovery();
         if(pending_) { pending_->outcome=ActionOutcome::OwnerEnded; status_.last=std::move(pending_); pending_.reset(); }
         status_.pending=false; return;
     }
-    if(!OwnFrame(frame)) {CancelPose("pose owner world left");animation_requests_.Cancel({},"animation owner world left");return;}
+    if(!OwnFrame(frame)) {CancelPose("pose owner world left");animation_requests_.Cancel({},"animation owner world left");CancelSkillRecovery();return;}
     resources_.Drain();
     if(!ready) return;
     servicing_=true;
@@ -235,6 +238,7 @@ void ActionPlayback::Service(const api::WorldFrame& frame,bool ready,api::Manage
     }
     hit_requests_.Service(frame,ready,objects);
     animation_requests_.Service(frame,ready,objects);
+    ServiceSkillRecovery(frame,objects);
     if(!pending_ && completion_) {Complete(frame,objects);status_.completion_pending=completion_.has_value();}
     if(!pending_) return;
     auto receipt=std::move(*pending_); pending_.reset(); status_.pending=false;

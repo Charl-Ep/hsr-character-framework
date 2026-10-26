@@ -6,11 +6,18 @@
 #include <map>
 #include <optional>
 #include <functional>
+#include <deque>
 
 namespace hksr::framework {
+struct AnimationTrack {
+    int logic=0,extra=0;
+    std::vector<int> release_on;
+    bool force=false;
+};
 struct AnimationCommand {
     std::string state;int layer=0;float transition=0;float normalized_start=0;
     std::optional<float> normalized_end;
+    std::optional<AnimationTrack> track;
 };
 struct AnimationRequestStatus {
     std::uint64_t serial=0,entity_generation=0,model_generation=0;
@@ -20,14 +27,18 @@ struct AnimationRequestStatus {
     // The configured request boundary and observed state departure are not
     // the clip's completion or the lifetime of attached resources.
     bool end_reached=false,state_left=false;
+    // Local request notification/queue advancement, not Animator departure.
+    bool request_finished=false,advanced=false;
 };
 struct AnimationRequestEndpoint {
     std::uint64_t entity_generation=0;
     std::function<std::shared_ptr<const AnimationRequestStatus>(const AnimationCommand&)> submit;
     std::function<void(std::uint64_t)> release;
+    std::function<std::shared_ptr<const AnimationRequestStatus>()> recover;
+    std::function<void(std::uint64_t)> release_recovery;
 };
-// Request observations on an existing owned session. No automatic successor,
-// event registration, entity lookup by name or gameplay state mutation.
+// Direct observations or explicit queued requests on an owned session.
+// No event registration, global entity lookup or gameplay state mutation.
 class AnimationRequests {
 public:
     using BodyPlayer=std::function<api::CallResult(const AnimationCommand&)>;
@@ -36,15 +47,19 @@ public:
     void Release(std::uint64_t);
     void Cancel(std::optional<int> layer={},const std::string& reason="animation request superseded");
     void Service(const api::WorldFrame&,bool inputs_ready,api::ManagedObjects&);
+    bool HasTrack(int layer) const {const auto it=tracks_.find(layer);return it!=tracks_.end() && !it->second.empty();}
 private:
     struct Entry;
     bool Live(const std::shared_ptr<Entry>&) const;
     void Finish(const std::shared_ptr<Entry>&,const std::string&);
+    void AdvanceTracks();
+    bool AtHead(const std::shared_ptr<Entry>&) const;
     api::EntityToken owner_;
     api::GameWorld* world_;
     api::ActorAnimationSession& engine_;
     BodyPlayer body_player_;
     std::map<std::uint64_t,std::shared_ptr<Entry>> entries_;
+    std::map<int,std::deque<std::shared_ptr<Entry>>> tracks_;
     std::uint64_t next_=0,model_=0;
     void* animator_=nullptr;
     bool servicing_=false;

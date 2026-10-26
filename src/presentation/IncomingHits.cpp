@@ -112,7 +112,7 @@ HitResolution ActionPlayback::ResolveIncomingHit(const HitInput& input,const api
     if(!live())return {};
     resolved_hit_=ResolvedHit{decision,frame.sequence};return {true,std::move(command)};
 }
-std::optional<HitReturn> ActionPlayback::ResolveHitReturn(bool body,const api::WorldFrame& frame,api::ManagedObjects& objects) {
+std::optional<HitReturn> ActionPlayback::ResolveHitReturn(bool body,const api::WorldFrame& frame,api::ManagedObjects& objects,bool require_grounded) {
     if(!hit_catalog_ || !hit_control_ || !presentation_enabled_ || Ended() || status_.closing || !OwnFrame(frame))return {};
     const auto revision=intent_revision_;
     auto live=[&]{return !Ended() && !status_.closing && revision==intent_revision_ && OwnFrame(frame);};
@@ -137,12 +137,14 @@ std::optional<HitReturn> ActionPlayback::ResolveHitReturn(bool body,const api::W
     if(out.expression.empty())out.expression=Value(catalog->animations->default_expression,"default expression");
     out.expression_transition=visual?Value(visual->expression_transition,"return expression transition"):.2f;
     if(body) {
-        const auto motion=resources_.Component(api::AnimationComponent::Motion,objects);if(!live())return {};
-        if(!motion.call.returned)throw std::runtime_error("receiver return motion lookup failed");
-        if(motion.object) {
-            const auto height=actions_.HitMotionHeight(motion.object);if(!live())return {};
-            if(!height.read.returned || !std::isfinite(height.value))throw std::runtime_error("receiver return height unread");
-            if(height.value>0)return {}; // return uses zero, not the enter classification's 0.1
+        if(require_grounded) {
+            const auto motion=resources_.Component(api::AnimationComponent::Motion,objects);if(!live())return {};
+            if(!motion.call.returned)throw std::runtime_error("receiver return motion lookup failed");
+            if(motion.object) {
+                const auto height=actions_.HitMotionHeight(motion.object);if(!live())return {};
+                if(!height.read.returned || !std::isfinite(height.value))throw std::runtime_error("receiver return height unread");
+                if(height.value>0)return {}; // ordinary hit return, not active-skill completion
+            }
         }
         const auto idle=SelectIdle({true,CompletionState(),{}},catalog->animations->default_expression,phase.get(),
             visual?&visual->value:nullptr,visual?&visual->expression:nullptr);

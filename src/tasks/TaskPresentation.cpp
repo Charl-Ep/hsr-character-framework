@@ -4,7 +4,8 @@
 namespace hksr::framework {
 TaskAnimationEndpoint BindTaskAnimation(ActionPlayback& player) {
     return {player.Owner().generation,[&player](const auto& command){return player.QueueAnimation(command);},
-        [&player](auto serial){player.ReleaseAnimation(serial);}};
+        [&player](auto serial){player.ReleaseAnimation(serial);},[&player]{return player.QueueSkillRecovery();},
+        [&player](auto serial){player.ReleaseSkillRecovery(serial);}};
 }
 PoseRequestEndpoint BindTaskPose(ActionPlayback& player,PoseResolver resolve) {
     return {player.Owner().generation,[&player,resolve=std::move(resolve)](const auto& selection) {
@@ -56,7 +57,8 @@ struct TaskPresentation::State {
         const auto* movement=std::get_if<TaskMovementCommand>(&input.operation);
         const auto* hit=std::get_if<TaskHitCommand>(&input.operation);
         const bool pose=std::holds_alternative<TaskPoseCommand>(input.operation);
-        request->value.receipt={actual,serial,0,animation?animation->participant:sound?sound->participant:TaskParticipant{movement || pose?"body":"visual"},animation || sound || movement || pose?0:owner};
+        const bool recovery=std::holds_alternative<TaskSkillRecovery>(input.operation);
+        request->value.receipt={actual,serial,0,animation?animation->participant:sound?sound->participant:TaskParticipant{movement || pose || recovery?"body":"visual"},animation || sound || movement || pose || recovery?0:owner};
         if(hit){request->value.receipt.participant={"target:"+hit->target};request->value.receipt.entity_generation=0;}
         if(movement) {
             for(const auto& [id,prior]:requests)if(id<serial && prior->name==movement->animation)request->animation_dependency=prior;
@@ -68,6 +70,14 @@ struct TaskPresentation::State {
         const auto found=requests.find(receipt.request);if(found==requests.end())return;
         const auto request=found->second;
         if(request->released)return;
+        if(std::holds_alternative<TaskSkillRecovery>(request->operation)) {
+            if(reason==TaskExitReason::Completed && (!request->animation || !request->animation->complete)) {
+                request->finishing=true;return;
+            }
+            request->released=true;
+            if(request->animation)request->endpoint->release_recovery(request->animation->serial);
+            request->value.state.drained=true;return;
+        }
         if(std::holds_alternative<TaskHitCommand>(request->operation)) {
             if(reason==TaskExitReason::Completed && !request->value.state.request_complete){request->finishing=true;return;}
             request->released=true;
@@ -79,6 +89,13 @@ struct TaskPresentation::State {
             for(const auto& [id,dependent]:requests)if(dependent->animation_dependency==request && !dependent->value.state.drained) {
                 request->finishing=true;return; // retain the bound animation through motion drain
             }
+            const auto& animation=std::get<TaskAnimationCommand>(request->operation);
+            if(animation.track && animation.participant.name=="body" && animation.layer==0)
+                for(const auto& [id,dependent]:requests)
+                    if(std::holds_alternative<TaskSkillRecovery>(dependent->operation) && !dependent->released &&
+                        !dependent->value.state.performance_complete) {
+                        request->finishing=true;return; // the queued return still consumes this record's End
+                    }
         }
         if(std::holds_alternative<TaskMovementCommand>(request->operation)) {
             if(reason==TaskExitReason::Completed && (!request->movement || !request->movement->status().closed)) {
@@ -134,10 +151,12 @@ struct TaskPresentation::State {
         } else if(request->animation && !value.state.superseded) {
             const auto& state=*request->animation;
             value.receipt.model=state.model_generation;
-            value.state.submitted=state.accepted;value.state.request_complete=state.accepted || state.released;
+            value.state.submitted=state.accepted;value.state.request_complete=state.accepted || state.released || state.request_finished;
             value.state.performance_complete=state.complete;value.state.progress=state.progress;
             value.state.started=state.entered;
             value.state.animation_end=state.end_reached;value.state.state_left=state.state_left;
+            value.state.animation_finished=state.request_finished;
+            value.state.superseded=state.advanced;
             value.state.drained=state.released;
             if(!request->released)value.state.error=state.error;
         } else if(request->movement) {
@@ -166,9 +185,11 @@ struct TaskPresentation::State {
             else if(state.cancelled && !request->released)value.state.error="visual instruction cancelled";
         }
         if(request->released && !request->sound && !request->movement && !request->submitting)value.state.drained=true;
-        if(request->finishing && (request->sound || request->movement?value.state.drained:value.state.request_complete))Release(value.receipt,TaskExitReason::Completed);
+        if(request->finishing && (std::holds_alternative<TaskSkillRecovery>(request->operation)?value.state.performance_complete:
+            request->sound || request->movement?value.state.drained:value.state.request_complete))Release(value.receipt,TaskExitReason::Completed);
         started=started || value.state.started;
-        execution->Observe(value.receipt,value.state);
+        if(!execution->Observe(value.receipt,value.state) && !request->released)
+            execution->Fail("request observation identity changed: "+request->name);
         // An error observation can synchronously cancel this request through
         // release. Publish that drain before dropping our adapter record.
         if(request->released && value.state.drained) {
@@ -189,7 +210,7 @@ struct TaskPresentation::State {
     }
     bool ClaimAnimationChannel(const std::shared_ptr<Request>& request,const TaskAnimationCommand& command) {
         std::vector<std::shared_ptr<Request>> motions;
-        for(const auto& [id,move]:requests)if(id<request->value.receipt.request && move->animation_dependency) {
+        for(const auto& [id,move]:requests)if((!command.track || command.track->force) && id<request->value.receipt.request && move->animation_dependency) {
             const auto* animation=std::get_if<TaskAnimationCommand>(&move->animation_dependency->operation);
             if(animation && animation->participant.name==command.participant.name && animation->layer==command.layer)motions.push_back(move);
         }
@@ -203,6 +224,7 @@ struct TaskPresentation::State {
             const bool pose=std::holds_alternative<TaskPoseCommand>(other->operation);
             if(pose?(command.participant.name!="body" || command.layer!=0):
                 (!animation || animation->participant.name!=command.participant.name || animation->layer!=command.layer))continue;
+            if(command.track && animation && animation->track)continue;
             if(id>request->value.receipt.request){Supersede(request);return false;}
             prior.push_back(other);
         }
@@ -232,6 +254,9 @@ struct TaskPresentation::State {
         for(const auto& [id,request]:requests)snapshot.push_back(request);
         for(const auto& request:snapshot) {
             try {
+                if(!request->released && request->animation_dependency && request->animation_dependency->animation &&
+                    request->animation_dependency->animation->advanced)
+                    Release(request->value.receipt,TaskExitReason::Replaced);
                 if(!request->released && !request->animation && !request->visual && !request->sound && !request->movement && !request->hit && request->value.state.error.empty()) {
                     if(const auto* command=std::get_if<TaskAnimationCommand>(&request->operation)) {
                         const bool partner=command->participant.name.compare(0,8,"partner:")==0;
@@ -244,11 +269,24 @@ struct TaskPresentation::State {
                             request->endpoint=std::move(endpoint);
                             request->value.receipt.entity_generation=request->endpoint->entity_generation;
                             if(!ClaimAnimationChannel(request,*command))continue;
-                            request->animation=request->endpoint->submit({command->state,command->layer,command->transition,command->normalized_start,command->normalized_end});
+                            request->animation=request->endpoint->submit({command->state,command->layer,command->transition,command->normalized_start,command->normalized_end,command->track});
                             if(!request->animation)throw std::runtime_error("animation endpoint returned no receipt");
                             if(request->animation->entity_generation!=request->value.receipt.entity_generation)
                                 throw std::runtime_error("animation endpoint returned another entity generation");
                             if(request->released)request->endpoint->release(request->animation->serial);
+                        }
+                    } else if(std::holds_alternative<TaskSkillRecovery>(request->operation)) {
+                        if(!services.animation)throw std::runtime_error("skill recovery body resolver unavailable");
+                        auto endpoint=services.animation({"body"});if(request->released)continue;
+                        if(endpoint) {
+                            if(endpoint->entity_generation!=owner || !endpoint->recover || !endpoint->release_recovery)
+                                throw std::runtime_error("owned skill recovery endpoint unavailable");
+                            request->endpoint=std::move(endpoint);request->value.receipt.participant={"body"};
+                            request->value.receipt.entity_generation=owner;
+                            request->animation=request->endpoint->recover();
+                            if(!request->animation || request->animation->entity_generation!=owner)
+                                throw std::runtime_error("skill recovery returned a foreign or absent receipt");
+                            if(request->released)request->endpoint->release_recovery(request->animation->serial);
                         }
                     } else if(const auto* hit=std::get_if<TaskHitCommand>(&request->operation)) {
                         request->submitting=true;

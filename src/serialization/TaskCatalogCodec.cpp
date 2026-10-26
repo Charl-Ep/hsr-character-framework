@@ -114,14 +114,28 @@ struct SequenceParser {
             } else if(op=="wait_abilities") {
                 Fields(row,{"op","source"});operation=TaskWaitAbilities{};
             } else if(op=="animation") {
-                Fields(row,{"op","request","participant","state","layer","transition","start","end","source"});
+                Fields(row,{"op","request","participant","state","layer","transition","start","end","track","source"});
                 const auto layer=Integer(row.value("layer",Json(0)));Need(layer>=0 && layer<=INT_MAX,"animation layer out of range");
                 const auto transition=Number(row.value("transition",Json(0)));
                 Need(transition>=0 && transition<=std::numeric_limits<float>::max(),"animation transition out of range");
                 TaskAnimationCommand animation{{Name(row.at("participant"))},Name(row.at("state")),
                     static_cast<int>(layer),static_cast<float>(transition),Float(row.value("start",Json(0)))};
                 if(row.contains("end"))animation.normalized_end=Float(row.at("end"));
+                if(row.contains("track")) {
+                    const auto& value=row.at("track");Fields(value,{"logic","extra","release_on","force"});
+                    auto integer=[&](const Json& input) {
+                        const auto number=Integer(input);Need(number>=INT_MIN && number<=INT_MAX,"animation track enum out of range");
+                        return static_cast<int>(number);
+                    };
+                    AnimationTrack track;track.logic=integer(value.at("logic"));track.extra=integer(value.at("extra"));
+                    Need(value.at("release_on").is_array() && value.at("force").is_boolean(),"invalid animation track policy");
+                    for(const auto& item:value.at("release_on"))track.release_on.push_back(integer(item));
+                    track.force=value.at("force").get<bool>();animation.track=std::move(track);
+                    Need(animation.normalized_end.has_value(),"animation track requires end");
+                }
                 operation=TaskSubmit{Name(row.at("request")),std::move(animation)};
+            } else if(op=="skill_recovery") {
+                Fields(row,{"op","request","source"});operation=TaskSubmit{Name(row.at("request")),TaskSkillRecovery{}};
             } else if(op=="ready_pose") {
                 Fields(row,{"op","request","config","skill","variant","source"});
                 const auto skill=Integer(row.at("skill")),variant=Integer(row.value("variant",Json(-1)));
@@ -157,6 +171,7 @@ struct SequenceParser {
                 if(signal=="submitted")wait.signal=TaskWaitSignal::Submitted;
                 else if(signal=="started")wait.signal=TaskWaitSignal::Started;
                 else if(signal=="animation_end")wait.signal=TaskWaitSignal::AnimationEnd;
+                else if(signal=="animation_finished")wait.signal=TaskWaitSignal::AnimationFinished;
                 else if(signal=="state_left")wait.signal=TaskWaitSignal::StateLeft;
                 else if(signal=="accepted")wait.signal=TaskWaitSignal::RequestComplete;
                 else if(signal=="performance")wait.signal=TaskWaitSignal::PerformanceComplete;

@@ -486,6 +486,55 @@ void TestActionPlayback() {
     ++active_frame.sequence;task_player.Service(active_frame,true,objects);
     Check(immediate_end->entered && immediate_end->end_reached && !immediate_end->complete);
     task_player.ReleaseAnimation(immediate_end->serial);
+    // Tracked requests retain queue order and source End independently from
+    // the clip and from the lifetime of the sequence's observations.
+    auto tracked=[](const char* state,float end,int logic=3,int extra=0,std::vector<int> allowed={},bool force=false) {
+        framework::AnimationCommand command{state,0,0,0,end};
+        command.track=framework::AnimationTrack{logic,extra,std::move(allowed),force};return command;
+    };
+    current_hash=93;current_time=.2f;count=state_plays;
+    auto queued_body=task_player.QueueAnimation(tracked("attack_loop",.58f));
+    ++active_frame.sequence;task_player.Service(active_frame,true,objects);
+    auto queued_idle=task_player.QueueAnimation(tracked("待机",0,1,6));
+    current_time=.7f;++active_frame.sequence;task_player.Service(active_frame,true,objects);
+    Check(queued_body->end_reached && !queued_body->request_finished && !queued_idle->accepted && state_plays==count+1);
+    current_time=1.05f;++active_frame.sequence;task_player.Service(active_frame,true,objects);
+    Check(queued_body->advanced && queued_body->request_finished && !queued_body->state_left && !queued_body->cancelled);
+    ++active_frame.sequence;task_player.Service(active_frame,true,objects);
+    Check(queued_idle->accepted && state_plays==count+2);
+    task_player.ReleaseAnimation(queued_body->serial);task_player.ReleaseAnimation(queued_idle->serial);
+    current_time=.2f;count=state_plays;
+    auto held=task_player.QueueAnimation(tracked("attack_loop",.3f,3,0,{6}));
+    ++active_frame.sequence;task_player.Service(active_frame,true,objects);
+    auto unrelated=task_player.QueueAnimation(tracked("待机",2,1,9));
+    current_time=1.2f;++active_frame.sequence;task_player.Service(active_frame,true,objects);
+    Check(held->end_reached && !held->request_finished && !unrelated->accepted);
+    auto matched=task_player.QueueAnimation(tracked("attack_loop",2,3,6));
+    ++active_frame.sequence;task_player.Service(active_frame,true,objects);
+    Check(held->advanced && !matched->accepted && !unrelated->accepted);
+    ++active_frame.sequence;task_player.Service(active_frame,true,objects);
+    Check(matched->accepted && !unrelated->accepted && state_plays==count+2);
+    // Immediate selection discards predecessors, not requests behind the
+    // selected queue record. It does not invent clip completion/departure.
+    auto forced=task_player.QueueAnimation(tracked("待机",0,1,4,{},true));
+    Check(matched->advanced && unrelated->advanced && !unrelated->accepted && !unrelated->complete);
+    ++active_frame.sequence;task_player.Service(active_frame,true,objects);Check(forced->accepted);
+    task_player.CancelPending(false);
+    current_time=.1f;count=state_plays;
+    auto queued_first=task_player.QueueAnimation(tracked("attack_loop",.3f));
+    ++active_frame.sequence;task_player.Service(active_frame,true,objects);
+    auto skipped=task_player.QueueAnimation(tracked("待机",-1));
+    auto final_request=task_player.QueueAnimation(tracked("attack_loop",2));
+    current_time=.4f;++active_frame.sequence;task_player.Service(active_frame,true,objects);
+    Check(queued_first->advanced && skipped->advanced && skipped->request_finished && !skipped->accepted && !skipped->entered);
+    ++active_frame.sequence;task_player.Service(active_frame,true,objects);
+    Check(final_request->accepted && state_plays==count+2);task_player.CancelPending(false);
+    // Model retirement cancels unplayed successors as well as the head.
+    auto old_head=task_player.QueueAnimation(tracked("attack_loop",2));
+    ++active_frame.sequence;task_player.Service(active_frame,true,objects);
+    auto old_tail=task_player.QueueAnimation(tracked("待机",0,1,6));
+    changing=true;++active_frame.sequence;task_player.Service(active_frame,true,objects);changing=false;
+    Check(old_head->cancelled && old_tail->cancelled && old_tail->released && !old_tail->accepted);
     // Cancellation during a managed read cannot reach the playback write.
     const auto before_cancel=state_plays;
     auto cancelled=task_player.QueueAnimation({"attack_loop"});cancel_on_has=true;
