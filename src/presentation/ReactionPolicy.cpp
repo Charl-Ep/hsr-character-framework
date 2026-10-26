@@ -46,6 +46,9 @@ bool Heavy(const std::string& name) {
 HitControlInputs ResolveHitControl(const BattleControlSnapshot& state,bool behaviors) {
     HitControlInputs out;
     if(state.dominant_source)out.visual_flag=state.dominant_source->flag;
+    for(const auto& source:state.sources)for(auto effect:source.hit_effects) {
+        effect.version=source.hit_effect_version;out.effects.push_back(std::move(effect));
+    }
     if(!behaviors)return out;
     for(const auto& source:state.sources) {
         if(!source.behaviors)throw std::runtime_error("receiver source behavior flags unreviewed: "+source.id);

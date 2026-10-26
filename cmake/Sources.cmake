@@ -71,6 +71,8 @@ set(HKSR_RUNTIME_SOURCES
     src/presentation/HitRequests.cpp
     src/presentation/HitInbox.cpp
     src/presentation/ReactionPolicy.cpp
+    src/presentation/HitEffectPolicy.cpp
+    src/presentation/IncomingHitEffects.cpp
     src/presentation/IncomingHits.cpp
     src/presentation/SkillRecovery.cpp
     src/presentation/PoseRequests.cpp
@@ -172,6 +174,7 @@ set(HKSR_RUNTIME_TEST_SOURCES
     tests/presentation/HitRequestTests.cpp
     tests/presentation/ReactionPolicyTests.cpp
     tests/presentation/PresentationProfileTests.cpp
+    tests/presentation/HitEffectPolicyTests.cpp
     tests/presentation/VisualEffectContextTests.cpp
     tests/presentation/VisualEntityMotionTests.cpp
     tests/presentation/VisualProgramObserverTests.cpp

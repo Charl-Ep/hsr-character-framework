@@ -87,6 +87,7 @@ void TestApplicationEvents();
 void TestActionPlayback();
 void TestHitRequests();
 void TestReactionPolicy();
+void TestHitEffectPolicy();
 void TestPresentationProfiles();
 void TestVisualEffectContext();
 void TestVisualProgramObservers();
@@ -132,6 +133,7 @@ int main(int argc,char** argv) try {
     TestHitRequests();
     TestReactionPolicy();
     TestPresentationProfiles();
+    TestHitEffectPolicy();
     TestVisualEffectContext();
     TestVisualProgramObservers();
     TestVisualPartners();

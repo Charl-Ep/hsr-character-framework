@@ -55,6 +55,7 @@ public:
     void ReplaceLayer(int); // a newer explicit actor animation owns this layer
     void Retire(const api::WorldFrame&); // cancellation only; no allocation/playback
     void Service(const api::WorldFrame&,bool inputs_ready,api::ManagedObjects&);
+    void CollectReceipts(); // data-only child acknowledgements before classifying the next incoming hit
     bool Drained() const;
 private:
     struct State;

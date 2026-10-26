@@ -188,6 +188,7 @@ void ActionPlayback::Service(const api::WorldFrame& frame,bool ready,api::Manage
         }
     }
     TickProgram(frame,objects);
+    hit_requests_.CollectReceipts();
     if(received_hit_ && received_hit_->playback->accepted && !received_hit_->playback->cancelled && received_hit_->playback->error.empty())
         previous_hit_=PreviousHit{received_hit_->resolved.decision.state,received_hit_->resolved.frame};
     hit_inbox_->Service([&](const HitInput& input) {
@@ -196,7 +197,7 @@ void ActionPlayback::Service(const api::WorldFrame& frame,bool ready,api::Manage
         auto receipt=QueueHit(std::move(command));
         if(resolved_hit_){received_hit_=ReceivedHit{*resolved_hit_,receipt};resolved_hit_.reset();}
         return receipt;
-    });
+    },[&](const HitInput& input){return ReceiveHitEffects(input,frame,objects);});
     if(ready_ && !pending_) {
         try {
             const auto component=resources_.Component(api::AnimationComponent::Model,objects);
@@ -369,6 +370,7 @@ void ActionPlayback::Service(const api::WorldFrame& frame,bool ready,api::Manage
 }
 bool ActionPlayback::Close(const api::WorldFrame& frame) {
     status_.closing=true; CancelPending();
+    CancelHitEffects();
     if(program_)program_->End();
     if(servicing_ || (!Ended() && !OwnFrame(frame))) return false;
     // Close has no object allocator. Cancelled hit leases only use retained
@@ -378,7 +380,7 @@ bool ActionPlayback::Close(const api::WorldFrame& frame) {
     visual_.reset();
     ready_.reset();
     const bool inputs_closed=engine_->Close();
-    status_.closed=inputs_closed && hit_requests_.Drained() && effects_.empty() && !action_exit_ && retired_exits_.empty() && (!program_ || program_->Drained());
+    status_.closed=inputs_closed && hit_requests_.Drained() && hit_effects_.empty() && effects_.empty() && !action_exit_ && retired_exits_.empty() && (!program_ || program_->Drained());
     return status_.closed;
 }
 }

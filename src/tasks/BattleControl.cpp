@@ -115,6 +115,7 @@ void BattleControl::Apply(const std::vector<ControlChange>& changes,ControlTicke
             else if constexpr(std::is_same_v<T,ControlAddSource>) {
                 const auto found=std::find_if(state_.sources.begin(),state_.sources.end(),[&](const auto& row){return row.id==value.source.id;});
                 auto source=value.source;
+                source.hit_effect_version=++hit_effect_version_;
                 if(found==state_.sources.end()){source.order=++source_order_;state_.sources.push_back(std::move(source));}
                 else {source.order=found->order;*found=std::move(source);}
             } else if constexpr(std::is_same_v<T,ControlRemoveSource>) {

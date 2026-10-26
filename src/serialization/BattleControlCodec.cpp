@@ -2,6 +2,7 @@
 #include <nlohmann/json.hpp>
 #include <limits>
 #include <stdexcept>
+#include <cmath>
 
 namespace hksr::framework::control_codec {
 namespace {
@@ -72,10 +73,30 @@ ControlChange Change(const Json& row) {
     if(op=="select") {Fields(row,{"op","skill"});return ControlSelect{Selection(row.at("skill"))};}
     if(op=="performance") {Fields(row,{"op","phase"});return ControlSetPerformance{Performance(row.at("phase"))};}
     if(op=="add_source") {
-        Fields(row,{"op","id","flag","priority","behaviors"});ControlSource source{Name(row.at("id")),Int(row.at("flag")),Int(row.at("priority"))};
+        Fields(row,{"op","id","flag","priority","behaviors","hit_effects"});ControlSource source{Name(row.at("id")),Int(row.at("flag")),Int(row.at("priority"))};
         if(row.contains("behaviors")) {
             source.behaviors=std::vector<std::int32_t>{};
             for(const auto& flag:row.at("behaviors").get<std::vector<Json>>())source.behaviors->push_back(Int(flag));
+        }
+        if(row.contains("hit_effects"))for(const auto& value:row.at("hit_effects").get<std::vector<Json>>()) {
+            Fields(value,{"stacking","path","death_path","priority","count","death_count","offset","keep_original","replay_on_mutex"});
+            HitEffectOverride effect;const auto mode=Name(value.at("stacking"));
+            if(mode=="multiple")effect.stacking=HitEffectStacking::Multiple;
+            else if(mode!="highest")throw std::invalid_argument("unknown hit effect stacking");
+            if(!value.at("path").is_null())effect.path=value.at("path").get<std::string>();
+            effect.death_path=value.value("death_path",std::string{});
+            if((effect.path && effect.path->find('\0')!=std::string::npos) || effect.death_path.find('\0')!=std::string::npos)
+                throw std::invalid_argument("invalid hit effect source path");
+            effect.priority=Int(value.at("priority"));effect.count=Int(value.value("count",Json(1)));
+            effect.death_count=Int(value.value("death_count",Json(0)));
+            effect.keep_original=value.value("keep_original",false);effect.replay_on_mutex=value.value("replay_on_mutex",false);
+            if(value.contains("offset")) {
+                const auto xyz=value.at("offset").get<std::vector<float>>();
+                if(xyz.size()!=3 || !std::isfinite(xyz[0]) || !std::isfinite(xyz[1]) || !std::isfinite(xyz[2]))
+                    throw std::invalid_argument("invalid hit effect offset");
+                effect.offset=api::Position3{xyz[0],xyz[1],xyz[2]};
+            }
+            source.hit_effects.push_back(std::move(effect));
         }
         return ControlAddSource{std::move(source)};
     }
@@ -97,7 +118,15 @@ Json InsertionValue(const ControlInsertion& value) {
 }
 Json SourceValue(const ControlSource& value){
     Json out={{"id",value.id},{"flag",value.flag},{"priority",value.priority},{"order",value.order}};
-    out["behaviors"]=value.behaviors?Json(*value.behaviors):Json(nullptr);return out;
+    out["behaviors"]=value.behaviors?Json(*value.behaviors):Json(nullptr);
+    out["hit_effects"]=Json::array();out["hit_effect_version"]=value.hit_effect_version;
+    for(const auto& effect:value.hit_effects) {
+        Json row={{"stacking",effect.stacking==HitEffectStacking::Multiple?"multiple":"highest"},
+            {"path",effect.path?Json(*effect.path):Json(nullptr)},{"death_path",effect.death_path},{"priority",effect.priority},
+            {"count",effect.count},{"death_count",effect.death_count},{"keep_original",effect.keep_original},{"replay_on_mutex",effect.replay_on_mutex}};
+        if(effect.offset)row["offset"]={effect.offset->x,effect.offset->y,effect.offset->z};out["hit_effects"].push_back(std::move(row));
+    }
+    return out;
 }
 Json KeyValue(const std::optional<std::string>& value){return value?Json(*value):Json(nullptr);}
 Json SlotsValue(const SkillSlotsSnapshot& state) {

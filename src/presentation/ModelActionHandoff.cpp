@@ -204,6 +204,7 @@ void ModelActionHandoff::Service(const api::WorldFrame& frame,AppearanceServices
                 }
             else {
                 api::ModelTransitionPlan plan;
+                actions_.CancelHitEffects();
                 plan.destination=active_->domain==ActionDomain::Exploration?api::ModelDestination::Baseline:api::ModelDestination::Alternate;
                 plan.controller=active_->domain==ActionDomain::Exploration?controllers_.exploration:controllers_.alternate;
                 // Initial exploration already exists; do not reload it.

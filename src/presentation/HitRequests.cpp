@@ -260,6 +260,10 @@ void HitRequests::ReplaceLayer(int layer) {
     }
 }
 bool HitRequests::Drained() const {return state_->entries.empty();}
+void HitRequests::CollectReceipts() {
+    auto& s=*state_;if(s.servicing)return;
+    for(const auto& entry:s.entries)if(!entry->ending && entry->animator)s.Observe(*entry);
+}
 void HitRequests::Retire(const api::WorldFrame& frame) {
     auto& s=*state_;if(s.servicing || s.entries.empty())return;
     s.servicing=true;struct Guard{bool& value;~Guard(){value=false;}} guard{s.servicing};

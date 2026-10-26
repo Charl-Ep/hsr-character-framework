@@ -367,6 +367,25 @@ void HitDispatch() {
     auto ignored=reentrant.Post({});
     reentrant.Service([](const auto&){return HitResolution{true,{}};},submit);
     Check(ignored.status->delivered && ignored.status->ignored && !ignored.status->playback && plays==1);
+    // Effects and reactions have independent admission. Empty/throttled body
+    // does not skip a hit effect; a pending Animator does not resubmit it.
+    HitInbox channels(20);HitInput with_effect{"DamageHit"};with_effect.effect=HitEffectInput{"hit-path"};
+    auto separate=channels.Post(with_effect);int effect_calls=0;
+    auto receive_effect=[&](const HitInput&){++effect_calls;return HitEffectAdmission{true,false,{}};};
+    ready=false;channels.Service(resolve,submit,receive_effect);
+    Check(effect_calls==1 && separate.status->effects_delivered && !separate.status->animation_delivered);
+    separate.cancel();Check(!separate.status->cancelled); // receiver already owns the accepted half
+    ready=true;channels.Service(resolve,submit,receive_effect);
+    Check(effect_calls==1 && separate.status->delivered && plays==2);
+    with_effect.animation.clear();auto no_animation=channels.Post(with_effect);
+    channels.Service([](const auto&){return HitResolution{true,{}};},submit,receive_effect);
+    Check(no_animation.status->delivered && no_animation.status->ignored && !no_animation.status->effects_ignored && effect_calls==2);
+    with_effect.animation="DamageHit";auto failed_effect=channels.Post(with_effect);
+    channels.Service(resolve,submit,[](const auto&)->HitEffectAdmission{throw std::runtime_error("effect unavailable");});
+    Check(failed_effect.status->playback && failed_effect.status->delivered && failed_effect.status->effect_errors.size()==1 && plays==3);
+    auto close_in_effect=channels.Post(with_effect);
+    channels.Service(resolve,submit,[&](const auto&){channels.Close();return HitEffectAdmission{true,false,{}};});
+    Check(close_in_effect.status->cancelled && plays==3);
 }
 }
 void TestTaskPresentation(){Scopes();IndependentParticipants();ConfiguredPoses();ErrorsAndReentry();NamedContexts();IndependentTail();Sounds();Movements();MovementInputs();AbilityTailScope();HitDispatch();}

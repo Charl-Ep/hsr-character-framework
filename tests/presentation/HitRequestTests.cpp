@@ -1,5 +1,6 @@
 #include <hksr/framework/presentation/ActionPlayback.hpp>
 #include <hksr/framework/tasks/TaskPresentation.hpp>
+#include <hksr/presentation/PresentationBindings.hpp>
 #include <Windows.h>
 #include <array>
 #include <cstring>
@@ -10,6 +11,8 @@ namespace {
 using namespace hksr;
 using namespace hksr::framework;
 int entity,world,model,animator,other_animator,style,model_type,style_type,motion_type,emotion_type,info,next_root;
+int transform_type,game_object,root_transform,effect_manager;
+struct Logical {api::Position3 position{2,3,4};} logical;
 auto* owner=reinterpret_cast<api::GameEntity*>(&entity);
 auto* own_world=reinterpret_cast<api::GameWorld*>(&world);
 std::map<int,void*> roots;
@@ -43,8 +46,12 @@ float __fastcall FallHeight(void* value,void*){Check(value==&motion);return moti
 void* __fastcall Component(void* value,void* type,void*){
     Check(value==owner);if(type==&motion_type)return motion_present?&motion:nullptr;
     if(type==&emotion_type)return nullptr;
+    if(type==&transform_type)return &logical;
     return type==&model_type?static_cast<void*>(&model):&style;
 }
+void* __fastcall GameObject(void* value,void*){Check(value==owner);return &game_object;}
+void* __fastcall RootTransform(void* value,void*){Check(value==&game_object);return &root_transform;}
+api::Position3 __fastcall TransformVector(void* value,api::Position3 vector,void*){Check(value==&logical);return vector;}
 std::string visual_layer="Visual";
 void* __fastcall LayerName(void*,int layer,void*){Check(layer==0);return &visual_layer;}
 int __fastcall TextLength(std::string* value,void*){return static_cast<int>(value->size());}
@@ -72,12 +79,61 @@ bool __fastcall Transition(void*,int layer,void*){return layers.at(layer).transi
 struct Objects:api::ManagedObjects {
     api::ObjectResult ManagedType(const char*,const char* name) override{
         const std::string type=name;
-        return {{true,0},type=="CharacterModelComponent"?&model_type:type=="BGOBCKLPEMK"?&motion_type:type=="PEPNFLNCDHG"?&emotion_type:&style_type};
+        return {{true,0},type=="CharacterModelComponent"?&model_type:type=="TransformComponent"?&transform_type:type=="BGOBCKLPEMK"?&motion_type:type=="PEPNFLNCDHG"?&emotion_type:&style_type};
     }
     api::ObjectResult NewStringUtf8(const char* value) override{strings.push_back(std::make_unique<std::string>(value));return {{true,0},strings.back().get()};}
     api::ObjectResult AllocateObject(const char*,const char*) override{throw std::runtime_error("unexpected allocation");}
 };
 HitCommand Additive(){return {{{"Add","Hit",0.75f},{"Override","Hit",0.75f}}};}
+struct EffectParams {unsigned id=0;bool released=false;void* path=nullptr;void* target=nullptr;void* callback=nullptr;};
+std::vector<std::unique_ptr<EffectParams>> effect_params;
+std::vector<std::unique_ptr<std::array<unsigned char,128>>> effect_delegates;
+int effect_starts=0,effect_updates=0,effect_removes=0,effect_replays=0;
+bool block_effect=false;
+void* __fastcall EffectMap(void* caster,void* path,void*){Check(caster==owner);return path;}
+bool __fastcall EffectEmpty(std::string* path,void*){return path->empty();}
+api::EffectReference __fastcall EffectAcquire(void* path,void*) {
+    auto p=std::make_unique<EffectParams>();p->id=static_cast<unsigned>(effect_params.size()+1);p->path=path;
+    const auto ref=api::EffectReference{p->id,0,p.get()};effect_params.push_back(std::move(p));return ref;
+}
+void __fastcall EffectSubmit(void* manager,EffectParams* p,void*){Check(manager==&effect_manager && p->target==owner);++effect_starts;}
+unsigned __fastcall EffectId(EffectParams* p,void*){return p->id;}
+bool __fastcall EffectReleased(EffectParams* p,void*){return p->released;}
+int __fastcall EffectState(EffectParams*,void*){return 3;}
+void* __fastcall EffectInstance(EffectParams* p,void*){return p;}
+bool __fastcall EffectRemove(void* manager,api::EffectReference ref,bool,void*) {
+    Check(manager==&effect_manager);auto* p=static_cast<EffectParams*>(ref.parameters);p->released=true;++effect_removes;return true;
+}
+void __fastcall EffectRelease(EffectParams* p,void*){p->released=true;}
+std::shared_ptr<api::PresentationEffects> EffectServices(const api::ReferenceMethods& refs) {
+    api::EffectAccessMethods methods;methods.map_path=M(EffectMap);methods.path_empty=M(EffectEmpty);methods.acquire=M(EffectAcquire);
+    methods.submit=M(EffectSubmit);methods.id=M(EffectId);methods.released=M(EffectReleased);methods.state=M(EffectState);
+    methods.instance=M(EffectInstance);methods.remove=M(EffectRemove);methods.release=M(EffectRelease);
+    api::EffectRequestServices services{refs,api::EffectAccess(methods)};
+    services.manager=[] {return api::ObjectResult{{true,0},&effect_manager};};
+    services.completion={[]{auto p=std::make_unique<std::array<unsigned char,128>>();p->fill(0);auto* raw=p->data();effect_delegates.push_back(std::move(p));return api::ObjectResult{{true,0},raw};},{24,40,64}};
+    services.configure_hit=[](void* raw,void* caster,void* target,void* callback,const api::HitEffectPlacement& placement) {
+        Check(caster==owner && target==owner && placement.offset.y==0 && !placement.ignore_prefab_attach_point);
+        auto* p=static_cast<EffectParams*>(raw);p->target=target;p->callback=callback;return api::EffectInputResult{{true,0},{true,0}};
+    };
+    services.loaded_hit=[](auto,void*,auto){return api::EffectControlResult{api::EffectControlState::Applied};};
+    services.update_hit=[](void* manager,api::EffectReference ref,const auto&) {
+        Check(manager==&effect_manager && ref.id);++effect_updates;return api::EffectControlResult{api::EffectControlState::Applied};
+    };
+    services.replay_hit=[](api::EffectReference ref,api::EffectMutexKind kind) {
+        Check(ref.id && kind==api::EffectMutexKind::Default);++effect_replays;return api::EffectControlResult{api::EffectControlState::Applied};
+    };
+    services.hit_mutex=[](void*,void* target,void*,const api::EffectMutexRule&,float,const std::vector<api::EffectReference>& refs) {
+        Check(target==owner);api::EffectMutexDecision result;result.kind.read.returned=true;
+        result.kind.value=block_effect?api::EffectMutexKind::Default:api::EffectMutexKind::None;
+        if(block_effect && !refs.empty())result.replay=refs.front();return result;
+    };
+    services.hit_rules=[](const std::string&){return api::ConfigValue<api::HitEffectRules>{true,{}, {}};};
+    services.match_hit=[](api::EffectReference ref,void*,void* path) {
+        return api::Observed<bool>{*static_cast<std::string*>(static_cast<EffectParams*>(ref.parameters)->path)==*static_cast<std::string*>(path),{true,0}};
+    };
+    return std::make_shared<api::PresentationEffects>(std::move(services));
+}
 }
 void TestHitRequests() {
     api::AnimationControlMethods methods;methods.hash=M(Hash);methods.has_state=M(Has);methods.play=M(Play);methods.free_style_state=M(Body);
@@ -90,11 +146,15 @@ void TestHitRequests() {
     const api::ReferenceMethods refs{M(Keep),M(Target),M(Free),{}, {}};
     const auto token=api::TrackedEntities().Track(owner);
     api::EntityAccessMethods entity_methods{M(Id),M(World),M(Yes),M(Component),{},{},{},{},M(EntityType),M(Alive)};
-    auto session=std::make_unique<api::ActorAnimationSession>(token,refs,api::EntityAccess(entity_methods),
-        api::ModelAccess(models),api::AnimationControl(methods),api::ProfileInputs(profiles));
+    api::PresentationBindings bindings;bindings.references=refs;bindings.entity=entity_methods;bindings.model=models;
+    bindings.animation=methods;bindings.profile_inputs=profiles;
+    bindings.placement.game_object=M(GameObject);bindings.scene.transform=M(RootTransform);
+    bindings.hit_geometry.transform_vector=M(TransformVector);bindings.hit_geometry.logical_position_available=true;
+    bindings.hit_geometry.logical_position_offset=offsetof(Logical,position);
+    auto session=std::make_unique<api::ActorAnimationSession>(token,bindings);
     api::ComponentConfigMethods text_methods;text_methods.string_length=M(TextLength);text_methods.string_character=M(TextChar);
     api::ComponentConfig text(text_methods);
-    ActionPlayback player(token,own_world,std::move(session),{},&text);
+    ActionPlayback player(token,own_world,std::move(session),EffectServices(refs),&text);
     Objects objects;api::WorldFrame frame;frame.world=own_world;frame.disposing={false,{true,0}};
     auto tick=[&]{++frame.sequence;player.Service(frame,true,objects);};
     auto attack=player.QueueAnimation({"Attack"});tick();tick();Check(attack->accepted && attack->entered);
@@ -186,6 +246,7 @@ void TestHitRequests() {
     auto character=std::make_shared<api::CharacterHitInput>();character->loaded=true;
     character->source="receiver";character->resilience={true,3,{}};character->repeat_occur_at={true,-1,{}};
     character->phase_present={true,false,{}};
+    character->shape={true,{api::HitShapeKind::Capsule,.3f,1.5f,{}},{}};character->hit_box_attach_point={true,"",{}};
     auto weights=std::make_shared<api::HitAnimationDefaults>();weights->resilience_weights={true,{.25f,.5f,.75f,1.f},{}};
     weights->avatar_weight={true,.6f,{}};weights->minimum_frame_interval={true,2,{}};
     auto defaults=std::make_shared<api::VisualReactionInput>();defaults->present=true;
@@ -210,6 +271,21 @@ void TestHitRequests() {
     Check(actual.status->playback && actual.status->playback->accepted);
     Check(layers[1].weight==.6f && layers[3].state==30);
     auto repeated=inbox->Post({"DamageHit"});tick();Check(repeated.status->delivered && repeated.status->ignored);
+    HitInput effect_hit;effect_hit.origin=HitOrigin{{2,3,7},true,{token,own_world}};effect_hit.effect=HitEffectInput{"hit-path"};
+    auto only_effect=inbox->Post(effect_hit);tick();
+    if(!only_effect.status->error.empty())throw std::runtime_error(only_effect.status->error);
+    Check(only_effect.status->delivered && only_effect.status->ignored && effect_starts==1 && effect_removes==0);
+    effect_hit.animation="DamageHit";
+    auto first_effect=inbox->Post(effect_hit);tick();auto throttled_effect=inbox->Post(effect_hit);tick();
+    Check(throttled_effect.status->ignored && effect_starts==3 && throttled_effect.status->effects_delivered);
+    HitEffectOverride replacement_effect;replacement_effect.path="override";replacement_effect.replay_on_mutex=true;
+    controls.effects={replacement_effect};auto override_hit=inbox->Post(effect_hit);tick();
+    Check(override_hit.status->error.empty() && effect_starts==4);
+    auto update_hit=inbox->Post(effect_hit);tick();Check(update_hit.status->error.empty() && effect_starts==4 && effect_updates==1);
+    block_effect=true;auto replay_hit=inbox->Post(effect_hit);tick();
+    Check(replay_hit.status->error.empty() && effect_starts==4 && effect_replays==1);block_effect=false;
+    player.CancelPending();tick();Check(effect_removes==0); // action cancellation does not own delivered incoming effects
+    player.SetPresentationDomain(false);tick();Check(effect_removes==4);player.SetPresentationDomain(true);controls.effects.clear();
     tick();tick();controls.force_heavy=true;
     auto forced=inbox->Post({"DamageHit"});tick();tick();tick();
     Check(forced.status->playback && forced.status->playback->entered && layers[0].state==21 && layers[1].weight==0);

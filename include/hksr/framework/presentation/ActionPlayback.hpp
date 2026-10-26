@@ -56,7 +56,8 @@ public:
     void ConfigurePresentation(std::shared_ptr<const PresentationProfile> profile,const std::string& phase={}) {
         presentation_.Configure(std::move(profile),phase);SyncPresentation();
     }
-    void SetPresentationDomain(bool battle) {presentation_enabled_=battle;if(!battle){presentation_.LeaveDomain();LeaveProgram();}SyncPresentation();}
+    void SetPresentationDomain(bool battle) {if(presentation_enabled_!=battle)CancelHitEffects();presentation_enabled_=battle;if(!battle){presentation_.LeaveDomain();LeaveProgram();}SyncPresentation();}
+    void CancelHitEffects(); // receiver model/domain retirement; not a sender action tail
     void ConfigureVisualProgram(std::shared_ptr<VisualProgramPlayer>);
     std::optional<VisualProgramSnapshot> CaptureVisualProgram() const;
     VisualBranchState BranchState() const;
@@ -74,6 +75,8 @@ private:
     bool Ended() const;
     bool OwnFrame(const api::WorldFrame& frame) const;
     HitResolution ResolveIncomingHit(const HitInput&,const api::WorldFrame&,api::ManagedObjects&);
+    HitEffectAdmission ReceiveHitEffects(const HitInput&,const api::WorldFrame&,api::ManagedObjects&);
+    void ServiceHitEffects(const api::WorldFrame&);
     std::optional<HitReturn> ResolveHitReturn(bool body,const api::WorldFrame&,api::ManagedObjects&,bool require_grounded=true);
     void ServiceSkillRecovery(const api::WorldFrame&,api::ManagedObjects&);
     void CancelSkillRecovery();
@@ -178,8 +181,10 @@ private:
     std::optional<ReadyPlayback> ready_;
     bool ready_cancelled_=false;
     std::shared_ptr<const api::PresentationEffects> effect_services_;
-    struct EffectEntry {std::uint64_t serial;std::string path;std::unique_ptr<api::OwnedEffectRequest> request;};
+    struct EffectEntry {std::uint64_t serial;std::string path;std::unique_ptr<api::OwnedEffectRequest> request;std::uint64_t reported_completion=0;};
     std::vector<EffectEntry> effects_;
+    std::vector<std::shared_ptr<EffectEntry>> hit_effects_;
+    std::uint64_t hit_effect_revision_=0;
     api::OwnedEffectRequest* ready_effect_=nullptr;
     std::uint64_t effect_serial_=0;
     std::optional<std::uint64_t> effect_intent_revision_;

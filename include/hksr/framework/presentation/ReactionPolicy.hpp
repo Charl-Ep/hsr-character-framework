@@ -1,5 +1,6 @@
 #pragma once
 #include "HitRequests.hpp"
+#include "HitEffectPolicy.hpp"
 #include <hksr/animation/OfficialCatalog.hpp>
 
 namespace hksr::framework {
@@ -7,6 +8,7 @@ struct BattleControlSnapshot;
 struct HitControlInputs {
     std::optional<std::int32_t> visual_flag;
     bool endurance=false,mute_heavy=false,force_heavy=false;
+    std::vector<HitEffectOverride> effects;
 };
 HitControlInputs ResolveHitControl(const BattleControlSnapshot&,bool behaviors=true);
 struct HitCatalogInputs {

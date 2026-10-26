@@ -1,5 +1,6 @@
 #include <hksr/framework/tasks/BattleControl.hpp>
 #include <hksr/framework/tasks/TaskCatalog.hpp>
+#include <hksr/framework/presentation/ReactionPolicy.hpp>
 #include <stdexcept>
 
 namespace {
@@ -172,5 +173,22 @@ void SequenceControlOwnership() {
     auto next=state.Accept(Path(),ControlTrigger::User,3,steps);
     state.Reset();Check(!state.Advance(next,steps));
 }
+void HitEffectSourceLifetime() {
+    const auto catalog=ParseTaskCatalog(R"({"format":"hksr.task-catalog","id":"hits","domain":"battle",
+      "visual":{"id":"hits","source":"config","scope":"battle","effects":{}},"sequences":{},
+      "tasks":{"override":{"control":{"trigger":"event","presentation":false,"sources":[{"document":"fixture","field":"modifier"}],
+        "accepted":[{"op":"add_source","id":"armor","flag":0,"priority":1,"behaviors":[],"hit_effects":[
+          {"stacking":"multiple","path":"armor-hit","priority":1,"count":1,"keep_original":true,"replay_on_mutex":true,"offset":[1,2,3]}]}],
+        "completed":[{"op":"remove_source","id":"armor"}]}}}})");
+    BattleControl state;auto path=*catalog.tasks.at("override").definition.control;
+    auto old=state.Accept(path,ControlTrigger::Event,1);
+    const auto first=ResolveHitControl(state.Snapshot(),false).effects;
+    Check(first.size()==1 && first[0].offset->y==2 && first[0].keep_original);
+    auto replacement=state.Accept(path,ControlTrigger::Event,2);
+    const auto current=ResolveHitControl(state.Snapshot(),false).effects;
+    Check(current[0].version>first[0].version);
+    state.End(old,TaskExitReason::Completed);Check(ResolveHitControl(state.Snapshot(),false).effects.size()==1);
+    state.End(replacement,TaskExitReason::Completed);Check(ResolveHitControl(state.Snapshot(),false).effects.empty());
 }
-void TestBattleControl(){ChoicesAndCompletion();QueueAndReturn();SourceOwnership();SlotsAndMappingLifetime();SlotControlAdmission();SlotCatalogParsing();SequenceControlOwnership();}
+}
+void TestBattleControl(){ChoicesAndCompletion();QueueAndReturn();SourceOwnership();SlotsAndMappingLifetime();SlotControlAdmission();SlotCatalogParsing();SequenceControlOwnership();HitEffectSourceLifetime();}

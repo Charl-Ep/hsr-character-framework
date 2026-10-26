@@ -1,6 +1,7 @@
 #pragma once
 #include "TaskModel.hpp"
 #include "SkillSlots.hpp"
+#include "../presentation/HitEffectPolicy.hpp"
 #include <deque>
 
 namespace hksr::framework {
@@ -14,7 +15,9 @@ struct ControlSource {
     // ModifierBehaviorFlag is a different enum from the visual row's flag.
     // Missing means not reviewed; an explicit empty set means none contributed.
     std::optional<std::vector<std::int32_t>> behaviors;
-    bool operator==(const ControlSource& other) const {return std::tie(id,flag,priority,order,behaviors)==std::tie(other.id,other.flag,other.priority,other.order,other.behaviors);}
+    std::vector<HitEffectOverride> hit_effects;
+    std::uint32_t hit_effect_version=0;
+    bool operator==(const ControlSource& other) const {return std::tie(id,flag,priority,order,behaviors,hit_effects,hit_effect_version)==std::tie(other.id,other.flag,other.priority,other.order,other.behaviors,other.hit_effects,other.hit_effect_version);}
 };
 struct ControlInsertion {
     std::string id;
@@ -102,6 +105,7 @@ private:
     BattleControlSnapshot state_;
     std::map<std::string,std::uint64_t> versions_;
     std::uint64_t revision_=0,source_order_=0,epoch_=1;
+    std::uint32_t hit_effect_version_=0;
     void Apply(const std::vector<ControlChange>&,ControlTicket*,bool accepting);
 };
 void ValidateControlRelation(const ControlRelation&);

@@ -146,7 +146,7 @@ struct SequenceParser {
                 const auto flag=Integer(row.at("flag"));Need(flag>=INT32_MIN && flag<=INT32_MAX,"reaction flag out of range");
                 operation=TaskSubmit{Name(row.at("request")),TaskPoseCommand{ReactionSelection{Name(row.at("config")),static_cast<std::int32_t>(flag),row.value("recover",false)}}};
             } else if(op=="hit") {
-                Fields(row,{"op","request","target","animation","direction","source"});
+                Fields(row,{"op","request","target","animation","direction","effect","source"});
                 Need(row.at("animation").is_string(),"hit animation must be a source string");
                 const auto animation=row.at("animation").get<std::string>();
                 Need(animation.find('\0')==std::string::npos,"invalid hit animation");
@@ -154,6 +154,17 @@ struct SequenceParser {
                 if(row.contains("direction")) {
                     const auto& direction=row.at("direction");Fields(direction,{"horizontal","vertical"});
                     hit.direction=HitAngles{Float(direction.value("horizontal",Json(0))),Float(direction.value("vertical",Json(0)))};
+                }
+                if(row.contains("effect")) {
+                    const auto& value=row.at("effect");
+                    Fields(value,{"path","height","angle","delay","minimum_interval","maximum_count","offset_by_scale"});
+                    HitEffectInput effect;effect.path=value.at("path").get<std::string>();
+                    Need(effect.path.find('\0')==std::string::npos,"invalid hit effect path");
+                    effect.height=Float(value.at("height"));effect.angle=Float(value.at("angle"));
+                    effect.delay=Float(value.at("delay"));effect.minimum_interval=Float(value.at("minimum_interval"));
+                    const auto count=Integer(value.at("maximum_count"));
+                    Need(count>=INT32_MIN && count<=INT32_MAX,"hit effect count out of range");effect.maximum_count=static_cast<int>(count);
+                    effect.offset_by_scale=value.at("offset_by_scale").get<bool>();hit.effect=std::move(effect);
                 }
                 operation=TaskSubmit{Name(row.at("request")),TaskHitCommand{Name(row.at("target")),std::move(hit)}};
             } else if(op=="control") {

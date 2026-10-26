@@ -142,7 +142,7 @@ struct TaskPresentation::State {
             // This operation dispatches an impact; it does not own or wait for
             // the receiving actor's reaction or logical return.
             value.state.performance_complete=state.delivered;
-            value.state.started=state.delivered && !state.ignored;
+            value.state.started=state.delivered && (!state.ignored || !state.effects_ignored);
             value.state.drained=request->released;
             if(!request->released) {
                 value.state.error=state.error;
