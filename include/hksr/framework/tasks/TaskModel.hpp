@@ -31,7 +31,7 @@ struct TaskInputDefinition {
 struct TaskValueEquals {std::string name;TaskValue value;};
 struct TaskPhaseEquals {std::string phase;};
 struct TaskNeedsParticipant {TaskParticipant participant;};
-struct TaskNeedsTarget {std::string name;};
+struct TaskNeedsTarget {std::string name;bool allow_position=false;};
 struct TaskNeedsAnchor {std::string name;};
 struct TaskChoiceEquals {std::string name,value;};
 struct TaskUnresolvedRequirement {std::string source,detail;};
@@ -77,6 +77,7 @@ struct TaskQuery {
     std::optional<TaskSlot> slot;
     std::vector<std::string> targets,anchors;
     std::map<std::string,std::string> choices;
+    std::vector<std::string> position_targets;
 };
 enum class TaskExitReason { Completed,Interrupted,Replaced,ActorLost,WorldLeft,Deleted,Failed };
 // The adapter reserves request identity before native submission. Model is

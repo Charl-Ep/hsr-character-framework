@@ -99,6 +99,44 @@ std::shared_ptr<const PresentationEffects> Services() {
         },std::move(actions));
 }
 }
+void TestSpatialHitEffects() {
+    a={};b={};b.id=2;allocating=&a;release_on_remove=false;on_submit={};on_remove={};
+    const auto services=Services();unsigned starts=0;
+    SpatialHitServices calls{[=]{return services->CreateRequest("point-test");},
+        [&](auto& request,const std::string& name,const SpatialEffectOptions& options) {
+            Check(name=="point.prefab" && options.position.y==-15);++starts;
+            request.StartSpatial(&entity,&path,options);
+        }};
+    SpatialHitEffects hits({{6,-15,58},{0,0,0,1}},calls);
+    HitInput input{"Hit"};input.effect=HitEffectInput{"point.prefab"};
+    input.effect->delay=.2f;input.effect->maximum_count=1;input.effect->minimum_interval=.05f;
+    auto delayed=hits.Submit(input);hits.Service(.1f);
+    Check(starts==0 && !delayed.status->admitted);hits.Service(.1f);
+    Check(starts==1 && delayed.status->admitted && delayed.status->submitted && !delayed.status->closed && delayed.status->error.empty());
+    Check(a.target==nullptr); // no victim, no receiver callback, not the true player
+    Complete(a);hits.Service(0);
+    input.effect->delay=0;auto duplicate=hits.Submit(input);hits.Service(0);
+    Check(starts==1 && duplicate.status->ignored && duplicate.status->closed);
+    a.released=true;hits.Service(.1f);Check(delayed.status->closed && hits.Drained());
+    allocating=&b;auto again=hits.Submit(input);hits.Service(0);Check(starts==2 && again.status->admitted);
+    again.cancel();hits.Service(0);Check(b.removes==1 && !again.status->closed);
+    b.released=true;hits.Service(0);Check(again.status->closed && hits.Drained());
+    input.effect->delay=5;auto cancelled=hits.Submit(input);cancelled.cancel();hits.Service(10);
+    Check(starts==2 && cancelled.status->closed && cancelled.status->cancelled);
+    input.effect.reset();auto empty=hits.Submit(input);
+    Check(empty.status->admitted && empty.status->ignored && empty.status->closed);
+    input.effect=HitEffectInput{"point.prefab"};input.effect->delay=1;
+    auto retiring=hits.Submit(input);hits.Cancel();hits.Service(2);
+    Check(retiring.status->cancelled && retiring.status->closed && hits.Drained() && starts==2 && roots.empty());
+    // Exceptions after retaining a request still cancel and drain that owner.
+    a={};allocating=&a;release_on_remove=true;
+    SpatialHitEffects broken({{6,-15,58},{}},{calls.create,[&](auto& request,const auto&,const auto& options) {
+        request.StartSpatial(&entity,&path,options);throw std::runtime_error("after submit");
+    }});
+    input.effect->delay=0;auto failure=broken.Submit(input);broken.Service(0);broken.Service(0);
+    Check(failure.status->error=="after submit" && failure.status->closed && broken.Drained() && roots.empty());
+    release_on_remove=false;
+}
 void TestTaskEffects() {
     auto program=std::make_shared<VisualProgram>();program->effects["flame"]={"flame.prefab","Target",{}};
     VisualProgramServices services;services.effects=Services();

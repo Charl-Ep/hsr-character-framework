@@ -49,6 +49,7 @@ public:
     api::EffectControlResult BindTargets(VisualEffectId,const std::vector<api::EntityOrigin>&);
     const api::EffectRequestStatus* Status(VisualEffectId) const; // borrowed until Service
     bool Closing() const {return closing_;}
+    bool Finishing() const {return finishing_;}
     bool Drained() const {return (finishing_ || closing_) && requests_.empty() && producers_==0;}
     std::size_t PendingRequests() const {return requests_.size();}
 private:

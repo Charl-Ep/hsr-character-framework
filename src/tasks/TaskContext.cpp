@@ -161,7 +161,10 @@ TaskQueryResult TaskContext::Evaluate(const TaskRequirement& requirement,const T
                 reason(TaskAvailability::Unavailable,TaskReasonKind::Participant,item.participant.name,"participant is absent");
         } else if constexpr(std::is_same_v<T,TaskNeedsTarget> || std::is_same_v<T,TaskNeedsAnchor>) {
             const auto& names=std::is_same_v<T,TaskNeedsTarget>?query.targets:query.anchors;
-            if(std::find(names.begin(),names.end(),item.name)==names.end())
+            bool present=std::find(names.begin(),names.end(),item.name)!=names.end();
+            if constexpr(std::is_same_v<T,TaskNeedsTarget>)
+                present=present || (item.allow_position && std::find(query.position_targets.begin(),query.position_targets.end(),item.name)!=query.position_targets.end());
+            if(!present)
                 reason(TaskAvailability::Unavailable,TaskReasonKind::MissingInput,item.name,
                     std::is_same_v<T,TaskNeedsTarget>?"owned target is unavailable":"spatial anchor is absent");
         } else if constexpr(std::is_same_v<T,TaskChoiceEquals>) {

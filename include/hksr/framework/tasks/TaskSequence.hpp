@@ -17,7 +17,7 @@ struct TaskSoundCommand {TaskParticipant participant;std::string event;};
 struct TaskMovementCommand {std::string animation;VisualMovement movement;}; // state comes from this request
 struct TaskControlCommand {std::vector<ControlChange> changes;};
 struct TaskPoseCommand {PoseSelection selection;}; // always this controller's owned body
-struct TaskHitCommand {std::string target;HitInput hit;}; // receiver owns policy and playback
+struct TaskHitCommand {std::string target;HitInput hit;bool allow_position=false;};
 struct TaskSkillRecovery {}; // owned body's current Phase/Visual return, not native battle reset
 using TaskLeafOperation=std::variant<TaskAnimationCommand,VisualInstruction,TaskSoundCommand,TaskMovementCommand,TaskControlCommand,TaskPoseCommand,TaskHitCommand,TaskSkillRecovery>;
 struct TaskSubmit {std::string request;TaskLeafOperation operation;};

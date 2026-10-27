@@ -56,7 +56,7 @@ ControlCharacterTask ParseTaskCommand(const Json& row) {
     for(auto it=row.begin();it!=row.end();++it)
         if(it.key()!="op" && it.key()!="character" && it.key()!="creation" && it.key()!="catalog" &&
             it.key()!="task" && it.key()!="inputs" && it.key()!="slot" && it.key()!="choices" &&
-            it.key()!="targets" && it.key()!="anchors" && it.key()!="trigger")
+            it.key()!="targets" && it.key()!="anchors" && it.key()!="position_targets" && it.key()!="trigger")
             throw std::invalid_argument("unknown task command field: "+it.key());
     out.id=Id(row.at("character"));out.creation=Id(row.at("creation"));
     const auto op=Name(row.at("op"));
@@ -71,7 +71,7 @@ ControlCharacterTask ParseTaskCommand(const Json& row) {
         out.input.selection=ParseSelection(row);
     } else {
         if(out.input.operation==TaskControlOperation::Select)throw std::invalid_argument("task selection missing");
-        for(const auto* field:{"catalog","inputs","slot","choices","targets","anchors","trigger"})
+        for(const auto* field:{"catalog","inputs","slot","choices","targets","anchors","position_targets","trigger"})
             if(row.contains(field))throw std::invalid_argument("task inputs require a task identity");
     }
     return out;
@@ -109,6 +109,7 @@ TaskSelection ParseSelection(const Json& row) {
         }
         selection.visual.choices=row.value("choices",Json::object()).get<std::map<std::string,std::string>>();
         selection.visual.anchors=ParseVisualSpatialAnchors(row.value("anchors",Json::object()).dump());
+        selection.visual.position_targets=ParseVisualSpatialAnchors(row.value("position_targets",Json::object()).dump());
         ValidateTaskSelection(selection);return selection;
 }
 Json TaskResult(const framework::TaskControlResult& result) {
@@ -180,6 +181,10 @@ Json Selection(const TaskSelection& selection) {
         out["choices"]=selection.visual.choices;out["targets"]=Json::object();out["anchors"]=Json::object();
         for(const auto& [name,id]:selection.visual.targets)out["targets"][name]=id?Json(std::to_string(id)):Json(nullptr);
         for(const auto& [name,anchor]:selection.visual.anchors)out["anchors"][name]={
+            {"position",{anchor.position.x,anchor.position.y,anchor.position.z}},
+            {"rotation",{anchor.rotation.x,anchor.rotation.y,anchor.rotation.z,anchor.rotation.w}}};
+        out["position_targets"]=Json::object();
+        for(const auto& [name,anchor]:selection.visual.position_targets)out["position_targets"][name]={
             {"position",{anchor.position.x,anchor.position.y,anchor.position.z}},
             {"rotation",{anchor.rotation.x,anchor.rotation.y,anchor.rotation.z,anchor.rotation.w}}};
     return out;

@@ -1,9 +1,11 @@
 #pragma once
 #include "VisualEffectContext.hpp"
 #include "VisualProgramState.hpp"
+#include "VisualTargets.hpp"
 #include "VisualPartnerTypes.hpp"
 #include "AnimationRequests.hpp"
 #include "HitInbox.hpp"
+#include "SpatialHitEffects.hpp"
 #include "VisualMovement.hpp"
 #include <functional>
 #include <deque>
@@ -16,6 +18,7 @@ struct VisualEffectInput {
     std::string path,target;
     api::EntityEffectOptions options;
     std::string anchor; // named world pose, mutually exclusive with target
+    bool allow_position=false;
 };
 struct VisualCreate {std::vector<std::string> effects;};
 struct VisualAssign {std::string variable;float value=0;};
@@ -59,6 +62,7 @@ struct VisualProgramAction {
 };
 struct VisualProgram {
     std::string id,source,scope;
+    VisualTargetDefaults target_defaults;
     std::map<std::string,VisualEffectInput> effects;
     std::map<std::string,VisualPartnerInput> partners;
     std::map<std::string,VisualProgramAction> actions;
@@ -96,6 +100,7 @@ struct VisualProgramServices {
     std::function<VisualProgramParameters()> select_inputs;
     // Value-only owner/generation lookup; no engine reads or resource creation.
     std::function<std::vector<std::string>(const VisualProgramParameters&)> available_targets;
+    std::vector<std::string> bound_targets; // native-only bindings also block fallback if their owner ends
     // Capture resolved input values for a named lifetime before it can submit.
     // Does not attach native animation-event producers.
     std::function<void(const std::string&,std::shared_ptr<VisualEffectContext>)> context_started;
@@ -114,6 +119,7 @@ struct VisualProgramServices {
     std::function<std::optional<MovementRequestEndpoint>(VisualEffectContext&,const VisualMovement&)> movement;
     std::function<VisualStepResult(VisualEffectContext&,const VisualFace&)> face;
     std::function<std::optional<HitDelivery>(VisualEffectContext&,const std::string&,const HitInput&)> hit;
+    std::function<std::optional<SpatialHitEndpoint>(std::shared_ptr<VisualEffectContext>,const std::string&,const HitInput&)> point_hit;
 };
 struct VisualInstructionStatus {
     bool complete=false,cancelled=false;
@@ -165,6 +171,7 @@ public:
     bool Drained() const;
     VisualProgramParameters Parameters(VisualProgramParameters overrides={}) const;
     std::vector<std::string> AvailableTargets(const VisualProgramParameters&) const;
+    std::vector<std::string> AvailablePositionTargets(const VisualProgramParameters&) const;
     VisualStepResult RestoreInputsReady(const VisualProgramParameters& inputs) const {
         return services_.restore_inputs_ready?services_.restore_inputs_ready(inputs):VisualStepResult{VisualStepState::Done,{}};
     }
@@ -179,6 +186,7 @@ public:
     void ForgetSequence(std::uint64_t); // only after drain
     std::optional<AnimationRequestEndpoint> PartnerAnimation(const std::string& key) const;
     std::optional<MovementRequestEndpoint> StartSequenceMovement(std::uint64_t,const VisualMovement&);
+    std::optional<SpatialHitEndpoint> SendSequencePointHit(std::uint64_t,const std::string&,const HitInput&);
 private:
     struct Cursor {
         std::size_t cue=0,instruction=0;

@@ -90,6 +90,8 @@ void TestReactionPolicy();
 void TestHitEffectPolicy();
 void TestPresentationProfiles();
 void TestVisualEffectContext();
+void TestVisualTargets();
+void TestSpatialHitEffects();
 void TestVisualProgramObservers();
 void TestVisualTimelines();
 void TestVisualPartners();
@@ -135,6 +137,8 @@ int main(int argc,char** argv) try {
     TestPresentationProfiles();
     TestHitEffectPolicy();
     TestVisualEffectContext();
+    TestVisualTargets();
+    TestSpatialHitEffects();
     TestVisualProgramObservers();
     TestVisualPartners();
     TestVisualTimelines();

@@ -30,13 +30,16 @@ struct TaskController::State {
     TaskQuery Inputs(const TaskSelection& selection,bool captured,const std::vector<TaskRequirement>& requirements) const {
         auto query=selection.query;
         const auto inputs=captured || selection.inputs_captured?selection.visual:visual->Parameters(selection.visual);
-        query.targets.clear();query.choices=inputs.choices;query.anchors.clear();
-        VisualProgramParameters required;bool needs_target=false;
+        query.targets.clear();query.position_targets.clear();query.choices=inputs.choices;query.anchors.clear();
+        std::vector<std::string> needs_target;
         for(const auto& requirement:requirements)if(const auto* target=std::get_if<TaskNeedsTarget>(&requirement)) {
-            needs_target=true;
-            if(const auto found=inputs.targets.find(target->name);found!=inputs.targets.end())required.targets.insert(*found);
+            needs_target.push_back(target->name);
         }
-        if(needs_target)query.targets=visual->AvailableTargets(required);
+        if(!needs_target.empty()) {
+            const auto required=VisualTargetInputs(catalog->visual->target_defaults,inputs,needs_target);
+            query.targets=visual->AvailableTargets(required);
+            query.position_targets=visual->AvailablePositionTargets(required);
+        }
         for(const auto& [name,anchor]:inputs.anchors){(void)anchor;query.anchors.push_back(name);}
         return query;
     }

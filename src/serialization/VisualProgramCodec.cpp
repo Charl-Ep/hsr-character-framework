@@ -151,9 +151,19 @@ std::vector<VisualInstruction> visual_codec::Instructions(const Json& json,const
 }
 VisualProgram visual_codec::Resources(const Json& json) {
     VisualProgram out;out.id=Name(json.at("id"));out.source=Name(json.at("source"));out.scope=Name(json.at("scope"));
+    if(json.contains("target_defaults")) {
+        Need(json.at("target_defaults").is_object(),"target defaults must be an object");
+        for(auto it=json.at("target_defaults").begin();it!=json.at("target_defaults").end();++it) {
+            const auto& row=it.value();Fields(row,{"alias","local_position"});
+            Need(row.contains("alias")!=row.contains("local_position"),"target default needs alias or local_position");
+            if(row.contains("alias"))out.target_defaults.emplace(Name(it.key()),Name(row.at("alias")));
+            else out.target_defaults.emplace(Name(it.key()),Vector(row.at("local_position")));
+        }
+        ValidateVisualTargetDefaults(out.target_defaults);
+    }
     Need(json.at("effects").is_object(),"visual effects must be an object");
     for(auto it=json.at("effects").begin();it!=json.at("effects").end();++it) {
-        const auto& row=it.value();Fields(row,{"path","target","anchor","position_offset","rotation_offset","scale","attach_to_target","attach_point","fade_in","simulate_immediately","unique_name","resident"});
+        const auto& row=it.value();Fields(row,{"path","target","anchor","position_offset","rotation_offset","scale","attach_to_target","attach_point","fade_in","simulate_immediately","unique_name","resident","allow_position"});
         VisualEffectInput input;input.path=Name(row.at("path"));
         Need(row.contains("target")!=row.contains("anchor"),"effect needs exactly one target or world anchor");
         if(row.contains("anchor")) {
@@ -169,6 +179,9 @@ VisualProgram visual_codec::Resources(const Json& json) {
         input.options.attach_to_target=row.value("attach_to_target",false);input.options.fade_in=row.value("fade_in",true);
         input.options.simulate_immediately=row.value("simulate_immediately",false);
         input.options.resident=row.value("resident",false);
+        input.allow_position=row.value("allow_position",false);
+        Need(!input.allow_position || (!input.target.empty() && !input.options.attach_to_target),
+            "position target cannot provide an entity attachment");
         out.effects.emplace(Name(it.key()),std::move(input));
     }
     if(json.contains("partners")) {
@@ -248,7 +261,7 @@ VisualProgram visual_codec::Resources(const Json& json) {
     return out;
 }
 VisualProgram ParseVisualProgram(const std::string& text) {
-    const auto json=Json::parse(text);Fields(json,{"format","id","source","scope","effects","partners","actions","signals","contexts","phases","restore"});
+    const auto json=Json::parse(text);Fields(json,{"format","id","source","scope","effects","partners","actions","signals","contexts","phases","restore","target_defaults"});
     Need(json.at("format")=="hksr.visual-program","unsupported visual program format");
     auto out=visual_codec::Resources(json);
     Need(json.at("actions").is_object() && !json.at("actions").empty(),"visual actions must be nonempty object");

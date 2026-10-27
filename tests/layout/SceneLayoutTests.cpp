@@ -40,9 +40,12 @@ void TestSceneLayout() {
     VisualContextSnapshot context;context.name="phase";context.inputs.targets["Target"]=17;
     context.inputs.choices["variant"]="left";context.variables["progress"]=0.75f;
     context.inputs.anchors["origin"]={{1,2,3},{0,0,0,1}};
+    context.inputs.position_targets["empty-space"]={{6,-15,58},{0,1,0,0}};
     visual.characters[1].visual_state=VisualProgramSnapshot{"program",{}, {context}};
     Check(!SameLayout(parsed,visual) && SameLayout(visual,DecodeSceneLayout(EncodeSceneLayout(visual))));
     auto changed_visual=visual;changed_visual.characters[1].visual_state->contexts[0].variables["progress"]=1;
+    Check(!SameLayout(visual,changed_visual));
+    changed_visual=visual;changed_visual.characters[1].visual_state->contexts[0].inputs.position_targets.at("empty-space").position.x=7;
     Check(!SameLayout(visual,changed_visual));
     changed_visual=visual;changed_visual.characters[1].visual_state->contexts[0].inputs.targets["Target"]=999;
     Reject([&]{EncodeSceneLayout(changed_visual);});

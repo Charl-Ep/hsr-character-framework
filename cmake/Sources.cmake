@@ -94,6 +94,8 @@ set(HKSR_RUNTIME_SOURCES
     src/presentation/VisualPartners.cpp
     src/presentation/VisualProgramRuntime.cpp
     src/presentation/VisualMovement.cpp
+    src/presentation/VisualTargets.cpp
+    src/presentation/SpatialHitEffects.cpp
 
     # src/tasks
     src/tasks/BattleControl.cpp
@@ -176,6 +178,7 @@ set(HKSR_RUNTIME_TEST_SOURCES
     tests/presentation/PresentationProfileTests.cpp
     tests/presentation/HitEffectPolicyTests.cpp
     tests/presentation/VisualEffectContextTests.cpp
+    tests/presentation/VisualTargetTests.cpp
     tests/presentation/VisualEntityMotionTests.cpp
     tests/presentation/VisualProgramObserverTests.cpp
     tests/presentation/VisualTimelinesTests.cpp

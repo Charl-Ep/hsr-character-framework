@@ -40,6 +40,23 @@ Production hits resolve the current visual/default expression when their express
 
 Target, spatial-anchor and visual-choice requirements use the visual scene's resolved input view. Target presence is checked against owned entity generations and world identity without engine reads. The caller cannot supply that availability. Inputs are rechecked when a queued task starts, then captured for its branches and resource scope. Resource loading and visual completion remain separate observations.
 
+### Position targets
+
+`visual.target_defaults` declares an owner-local position or a target alias:
+
+```json
+{"target_defaults": {
+  "AbilityTargetEntity": {"local_position": [0, 0, 3]},
+  "SkillPointEntity": {"alias": "AbilityTargetEntity"}
+}}
+```
+
+The position is captured from the actor's world pose when the execution scope starts. Entity selections take precedence; a selected entity that becomes unavailable does not fall back. A cleared selection uses the configured default. Target aliases share the resolved input without creating another actor.
+
+Target requirements accept positions only with `allow_position: true`. Facing and target movement consume the captured point. Effects and `hit` also require `allow_position: true`; entity attachment and follow operations still require an entity. Spatial effects apply local position and Z-X-Y Euler offsets to the captured pose. An initial attachment-point lookup is replaced by that pose only for the spatial branch.
+
+A position `hit` emits the base effect without a receiver reaction, hitbox or modifier override. Delay, minimum interval and maximum live count are scoped to the sender's execution and target name; official entity-wide mutex rules are not used. The sender owns the effect through natural completion, cancellation and model/world retirement. Empty base paths are no-ops. Captured world poses are stored in `position_targets` for context restoration.
+
 ## Execution
 
 Sequences contain submissions, request waits, second/frame waits, serial/parallel groups, branches and finite or finish-requested loops. Leaf operations are animation, movement, sound or existing `VisualInstruction` values.

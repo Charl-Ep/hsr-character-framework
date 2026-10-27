@@ -28,6 +28,7 @@ struct TaskPresentation::State {
         std::optional<TaskAnimationEndpoint> endpoint;
         std::optional<PoseRequestEndpoint> pose_endpoint;
         std::optional<HitDelivery> hit;
+        std::optional<SpatialHitEndpoint> point_hit;
         std::shared_ptr<const AnimationRequestStatus> animation;
         std::shared_ptr<const VisualInstructionStatus> visual;
         std::optional<TaskSoundEndpoint> sound;
@@ -79,10 +80,13 @@ struct TaskPresentation::State {
             request->value.state.drained=true;return;
         }
         if(std::holds_alternative<TaskHitCommand>(request->operation)) {
-            if(reason==TaskExitReason::Completed && !request->value.state.request_complete){request->finishing=true;return;}
+            if(reason==TaskExitReason::Completed && (request->point_hit?!request->point_hit->status->closed:!request->value.state.request_complete)) {
+                request->finishing=true;return;
+            }
             request->released=true;
             if(request->hit)request->hit->cancel(); // delivered hits remain receiver-owned
-            request->value.state.drained=!request->submitting;
+            if(request->point_hit && reason!=TaskExitReason::Completed)request->point_hit->cancel();
+            request->value.state.drained=request->point_hit?request->point_hit->status->closed:!request->submitting;
             return;
         }
         if(reason==TaskExitReason::Completed && std::holds_alternative<TaskAnimationCommand>(request->operation)) {
@@ -134,7 +138,15 @@ struct TaskPresentation::State {
     }
     void Observe(const std::shared_ptr<Request>& request) {
         auto& value=request->value;
-        if(request->hit) {
+        if(request->point_hit) {
+            const auto& state=*request->point_hit->status;
+            value.state.submitted=state.admitted;
+            value.state.request_complete=state.admitted || state.cancelled || !state.error.empty();
+            value.state.performance_complete=state.admitted;
+            value.state.started=state.submitted;
+            value.state.drained=state.closed;
+            if(!request->released)value.state.error=state.error;
+        } else if(request->hit) {
             const auto& state=*request->hit->status;
             value.receipt.entity_generation=state.entity_generation;
             value.state.submitted=state.delivered;
@@ -184,9 +196,9 @@ struct TaskPresentation::State {
             if(!state.issues.empty())value.state.error=state.issues.front();
             else if(state.cancelled && !request->released)value.state.error="visual instruction cancelled";
         }
-        if(request->released && !request->sound && !request->movement && !request->submitting)value.state.drained=true;
+        if(request->released && !request->sound && !request->movement && !request->point_hit && !request->submitting)value.state.drained=true;
         if(request->finishing && (std::holds_alternative<TaskSkillRecovery>(request->operation)?value.state.performance_complete:
-            request->sound || request->movement?value.state.drained:value.state.request_complete))Release(value.receipt,TaskExitReason::Completed);
+            request->sound || request->movement || request->point_hit?value.state.drained:value.state.request_complete))Release(value.receipt,TaskExitReason::Completed);
         started=started || value.state.started;
         if(!execution->Observe(value.receipt,value.state) && !request->released)
             execution->Fail("request observation identity changed: "+request->name);
@@ -257,7 +269,7 @@ struct TaskPresentation::State {
                 if(!request->released && request->animation_dependency && request->animation_dependency->animation &&
                     request->animation_dependency->animation->advanced)
                     Release(request->value.receipt,TaskExitReason::Replaced);
-                if(!request->released && !request->animation && !request->visual && !request->sound && !request->movement && !request->hit && request->value.state.error.empty()) {
+                if(!request->released && !request->animation && !request->visual && !request->sound && !request->movement && !request->hit && !request->point_hit && request->value.state.error.empty()) {
                     if(const auto* command=std::get_if<TaskAnimationCommand>(&request->operation)) {
                         const bool partner=command->participant.name.compare(0,8,"partner:")==0;
                         if(!partner && !services.animation)throw std::runtime_error("task animation resolver unavailable");
@@ -290,9 +302,17 @@ struct TaskPresentation::State {
                         }
                     } else if(const auto* hit=std::get_if<TaskHitCommand>(&request->operation)) {
                         request->submitting=true;
-                        try{request->hit=visual->SendSequenceHit(scope,hit->target,hit->hit);}
+                        try {
+                            if(hit->allow_position)request->point_hit=visual->SendSequencePointHit(scope,hit->target,hit->hit);
+                            if(!request->point_hit)request->hit=visual->SendSequenceHit(scope,hit->target,hit->hit);
+                        }
                         catch(...){request->submitting=false;throw;}
                         request->submitting=false;
+                        if(request->point_hit) {
+                            if(!request->point_hit->status || !request->point_hit->cancel)throw std::runtime_error("incomplete position hit delivery");
+                            request->value.receipt.entity_generation=owner; // sender-owned effect; no receiver
+                            if(request->released)request->point_hit->cancel();
+                        }
                         if(request->hit) {
                             if(!request->hit->status || !request->hit->status->entity_generation || !request->hit->cancel)
                                 throw std::runtime_error("incomplete owned hit delivery");

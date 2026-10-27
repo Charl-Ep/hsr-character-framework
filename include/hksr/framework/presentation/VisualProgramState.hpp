@@ -11,9 +11,10 @@ struct VisualSpatialAnchor {api::Position3 position;api::Rotation4 rotation;};
 using VisualSpatialAnchors=std::map<std::string,VisualSpatialAnchor>;
 VisualSpatialAnchors ParseVisualSpatialAnchors(const std::string& json);
 struct VisualProgramParameters {
-    std::map<std::string,std::uint64_t> targets; // zero explicitly leaves an alias unbound
+    std::map<std::string,std::uint64_t> targets; // zero clears an explicit entity selection
     std::map<std::string,std::string> choices;
     VisualSpatialAnchors anchors;
+    VisualSpatialAnchors position_targets; // captured world poses, not entity identities
 };
 // Current presentation inputs, separate from a persistence recipe or an
 // animation receipt. Scope distinguishes values retained by named contexts.

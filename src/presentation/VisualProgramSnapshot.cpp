@@ -13,7 +13,7 @@ void ValidateVisualSnapshot(const VisualProgramSnapshot& value) {
         for(const auto& [key,id]:item.inputs.targets)need(name(key));
         for(const auto& [key,choice]:item.inputs.choices)need(name(key) && name(choice));
         for(const auto& [key,number]:item.variables)need(name(key) && std::isfinite(number));
-        for(const auto& [key,pose]:item.inputs.anchors) {
+        for(const auto* poses:{&item.inputs.anchors,&item.inputs.position_targets})for(const auto& [key,pose]:*poses) {
             const auto& p=pose.position;const auto& q=pose.rotation;
             const double norm=double(q.x)*q.x+double(q.y)*q.y+double(q.z)*q.z+double(q.w)*q.w;
             need(name(key) && std::isfinite(p.x) && std::isfinite(p.y) && std::isfinite(p.z) && std::isfinite(norm) && norm>0);
@@ -27,11 +27,14 @@ bool SameVisualSnapshot(const VisualProgramSnapshot& a,const VisualProgramSnapsh
     auto same=[](const VisualContextSnapshot& x,const VisualContextSnapshot& y) {
         if(std::tie(x.name,x.variables,x.inputs.targets,x.inputs.choices)!=std::tie(y.name,y.variables,y.inputs.targets,y.inputs.choices) ||
             x.inputs.anchors.size()!=y.inputs.anchors.size())return false;
-        for(const auto& [key,pose]:x.inputs.anchors) {
-            const auto found=y.inputs.anchors.find(key);if(found==y.inputs.anchors.end())return false;
+        for(const auto& pair:{std::make_pair(&x.inputs.anchors,&y.inputs.anchors),std::make_pair(&x.inputs.position_targets,&y.inputs.position_targets)}) {
+        if(pair.first->size()!=pair.second->size())return false;
+        for(const auto& [key,pose]:*pair.first) {
+            const auto found=pair.second->find(key);if(found==pair.second->end())return false;
             const auto& other=found->second;const auto& p=pose.position;const auto& q=pose.rotation;
             const auto& r=other.position;const auto& s=other.rotation;
             if(std::tie(p.x,p.y,p.z,q.x,q.y,q.z,q.w)!=std::tie(r.x,r.y,r.z,s.x,s.y,s.z,s.w))return false;
+        }
         }
         return true;
     };

@@ -77,7 +77,7 @@ TaskRequirement Requirement(const Json& row) {
     if(op=="value") {Fields(row,{"op","name","is"});return TaskValueEquals{Name(row.at("name")),Value(row.at("is"))};}
     if(op=="phase") {Fields(row,{"op","is"});return TaskPhaseEquals{Name(row.at("is"))};}
     if(op=="participant") {Fields(row,{"op","name"});return TaskNeedsParticipant{{Name(row.at("name"))}};}
-    if(op=="target") {Fields(row,{"op","name"});return TaskNeedsTarget{Name(row.at("name"))};}
+    if(op=="target") {Fields(row,{"op","name","allow_position"});return TaskNeedsTarget{Name(row.at("name")),row.value("allow_position",false)};}
     if(op=="anchor") {Fields(row,{"op","name"});return TaskNeedsAnchor{Name(row.at("name"))};}
     if(op=="choice") {Fields(row,{"op","name","is"});return TaskChoiceEquals{Name(row.at("name")),Name(row.at("is"))};}
     if(op=="unresolved") {Fields(row,{"op","source","detail"});return TaskUnresolvedRequirement{Name(row.at("source")),Name(row.at("detail"))};}
@@ -146,7 +146,7 @@ struct SequenceParser {
                 const auto flag=Integer(row.at("flag"));Need(flag>=INT32_MIN && flag<=INT32_MAX,"reaction flag out of range");
                 operation=TaskSubmit{Name(row.at("request")),TaskPoseCommand{ReactionSelection{Name(row.at("config")),static_cast<std::int32_t>(flag),row.value("recover",false)}}};
             } else if(op=="hit") {
-                Fields(row,{"op","request","target","animation","direction","effect","source"});
+                Fields(row,{"op","request","target","animation","direction","effect","source","allow_position"});
                 Need(row.at("animation").is_string(),"hit animation must be a source string");
                 const auto animation=row.at("animation").get<std::string>();
                 Need(animation.find('\0')==std::string::npos,"invalid hit animation");
@@ -166,7 +166,7 @@ struct SequenceParser {
                     Need(count>=INT32_MIN && count<=INT32_MAX,"hit effect count out of range");effect.maximum_count=static_cast<int>(count);
                     effect.offset_by_scale=value.at("offset_by_scale").get<bool>();hit.effect=std::move(effect);
                 }
-                operation=TaskSubmit{Name(row.at("request")),TaskHitCommand{Name(row.at("target")),std::move(hit)}};
+                operation=TaskSubmit{Name(row.at("request")),TaskHitCommand{Name(row.at("target")),std::move(hit),row.value("allow_position",false)}};
             } else if(op=="control") {
                 Fields(row,{"op","request","changes","source"});
                 operation=TaskSubmit{Name(row.at("request")),TaskControlCommand{control_codec::Changes(row.at("changes"))}};
@@ -230,7 +230,7 @@ TaskCatalog ParseTaskCatalog(const std::string& text) {
     if(domain=="exploration")out.domain=ActionDomain::Exploration;
     else Need(domain=="battle","unknown task catalog domain: "+domain);
     const auto& visual=json.at("visual");
-    Fields(visual,{"id","source","scope","effects","partners","signals","contexts","phases","restore"});
+    Fields(visual,{"id","source","scope","effects","partners","signals","contexts","phases","restore","target_defaults"});
     out.visual=std::make_shared<const VisualProgram>(visual_codec::Resources(visual));
     const auto& sequences=json.at("sequences");Need(sequences.is_object(),"task sequences must be an object");
     for(auto it=sequences.begin();it!=sequences.end();++it) {

@@ -3,6 +3,14 @@
 #include <stdexcept>
 
 namespace hksr::framework {
+std::optional<SpatialHitEndpoint> VisualProgramPlayer::SendSequencePointHit(std::uint64_t token,const std::string& target,const HitInput& input) {
+    const auto found=instruction_scopes_.find(token);
+    if(found==instruction_scopes_.end() || found->second->ending || status_.closing || end_pending_)
+        throw std::logic_error("point hit instruction scope ended");
+    if(!found->second->error.empty())throw std::runtime_error(found->second->error);
+    if(!found->second->prepared || !services_.point_hit)return {};
+    return services_.point_hit(found->second->lifetime->effects,target,input);
+}
 std::optional<HitDelivery> VisualProgramPlayer::SendSequenceHit(std::uint64_t token,const std::string& target,const HitInput& input) {
     const auto found=instruction_scopes_.find(token);
     if(found==instruction_scopes_.end() || found->second->ending || status_.closing || end_pending_)
@@ -17,10 +25,22 @@ VisualProgramParameters VisualProgramPlayer::Parameters(VisualProgramParameters 
     for(auto& [name,id]:overrides.targets)result.targets[name]=id;
     for(auto& [name,value]:overrides.choices)result.choices[name]=std::move(value);
     for(auto& [name,value]:overrides.anchors)result.anchors[name]=value;
+    for(auto& [name,value]:overrides.position_targets)result.position_targets[name]=value;
     return result;
 }
 std::vector<std::string> VisualProgramPlayer::AvailableTargets(const VisualProgramParameters& inputs) const {
-    return services_.available_targets?services_.available_targets(inputs):std::vector<std::string>{};
+    const auto available=services_.available_targets?services_.available_targets(inputs):std::vector<std::string>{};
+    std::vector<std::string> out;
+    for(const auto& [name,value]:ResolveVisualTargetBindings(program_->target_defaults,inputs,available,services_.bound_targets))
+        if(std::holds_alternative<VisualEntityTarget>(value))out.push_back(name);
+    return out;
+}
+std::vector<std::string> VisualProgramPlayer::AvailablePositionTargets(const VisualProgramParameters& inputs) const {
+    const auto available=services_.available_targets?services_.available_targets(inputs):std::vector<std::string>{};
+    std::vector<std::string> out;
+    for(const auto& [name,value]:ResolveVisualTargetBindings(program_->target_defaults,inputs,available,services_.bound_targets))
+        if(std::holds_alternative<VisualPositionTarget>(value))out.push_back(name);
+    return out;
 }
 std::optional<AnimationRequestEndpoint> VisualProgramPlayer::PartnerAnimation(const std::string& key) const {
     if(status_.closing || end_pending_ || !services_.partner_animation)

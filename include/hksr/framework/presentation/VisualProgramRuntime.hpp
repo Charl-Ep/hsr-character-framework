@@ -60,6 +60,9 @@ private:
     void Detach(Scene&,const std::string& context={});
     VisualEffectId CreateEffect(Scene&,VisualEffectContext&,const std::string&,const VisualEffectInput&);
     api::EntityOrigin ResolveTarget(Scene&,VisualEffectContext&,const std::string&);
+    std::vector<std::string> AvailableEntities(Scene&,const VisualProgramParameters&,bool restored=false) const;
+    std::optional<VisualSpatialAnchor> PositionTarget(Scene&,VisualEffectContext&,const std::string&) const;
+    VisualSpatialAnchor TargetPose(Scene&,VisualEffectContext&,const std::string&);
     std::shared_ptr<VisualEntityMotion> Motion();
     VisualPartners& Partners(const std::shared_ptr<Scene>&);
     api::PresentationContext& api_;

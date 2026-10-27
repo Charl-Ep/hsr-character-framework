@@ -448,7 +448,10 @@ void TestSelectedEntry(const char* file) {
     f.Tick();Check(f.poses.size()==1 && !f.poses[0].second->entered);
     Check(std::get<ReadyPoseSelection>(f.poses[0].first).source==f.catalog->visual->source);
     const auto no_target=f.controller->Query(execute);
-    Check(no_target.query.facets->path==TaskAvailability::Available && no_target.query.facets->inputs==TaskAvailability::Unavailable);
+    Check(no_target.query.facets->path==TaskAvailability::Available && no_target.query.facets->inputs==TaskAvailability::Available);
+    execute.visual.targets["AbilityTargetEntity"]=98; // explicitly selected but unavailable
+    Check(f.controller->Query(execute).query.facets->inputs==TaskAvailability::Unavailable);
+    execute.visual.targets.clear();
     for(const auto& requirement:f.catalog->tasks.at("entry").definition.requirements)
         if(const auto* target=std::get_if<TaskNeedsTarget>(&requirement))f.defaults.targets[target->name]=99;
     // The source has WaitPrepareFinish=false. A confirmation can supersede the
@@ -484,7 +487,9 @@ void TestSelectedEntry(const char* file) {
     Check(f.controller->Query(select).query.availability==TaskAvailability::Available);
     // A target disappearing between acceptance and dispatch is reported as a
     // failure, yet selecting again remains possible without rebuilding actor.
-    Check(f.controller->Select(execute).intent!=0);f.defaults.targets.clear();f.Tick();
+    Check(f.controller->Select(execute).intent!=0);
+    for(auto& [name,target_id]:f.defaults.targets)target_id=98;
+    f.Tick();
     Check(f.controller->Status().control.performance==ControlPerformance::Failed);
     Check(f.controller->Query(select).query.availability==TaskAvailability::Available);
     Check(f.controller->Select(select).intent!=0);

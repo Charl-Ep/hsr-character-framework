@@ -21,6 +21,7 @@ struct Fixture {
     std::function<void()> on_start,on_attach;
     std::function<std::optional<MovementRequestEndpoint>(VisualEffectContext&,const VisualMovement&)> movement;
     std::function<std::optional<HitDelivery>(VisualEffectContext&,const std::string&,const HitInput&)> hit;
+    std::function<std::optional<SpatialHitEndpoint>(const std::string&,const HitInput&)> point_hit;
     std::map<std::string,std::shared_ptr<AnimationRequestStatus>> animations;
     std::map<std::string,std::uint64_t> generations{{"body",10},{"partner",20}};
     std::vector<std::pair<std::string,std::uint64_t>> released;
@@ -36,6 +37,9 @@ struct Fixture {
         };
         services.hit=[&](auto& context,const auto& target,const auto& command)->std::optional<HitDelivery> {
             if(!hit)throw std::runtime_error("test receiver unavailable");return hit(context,target,command);
+        };
+        services.point_hit=[&](auto,const auto& target,const auto& command)->std::optional<SpatialHitEndpoint> {
+            return point_hit?point_hit(target,command):std::nullopt;
         };
         ConnectVisualTimelines(services,std::make_shared<VisualTimelines>([&] {
             const int id=static_cast<int>(++starts);api::TimelineRequestServices native;
@@ -331,6 +335,31 @@ void AbilityTailScope() {
     Check(f.starts==1 && f.stops==0 && !run.Drained());
     f.Retire();run.Service(0,4);Check(run.Drained());
 }
+void PointHitDispatch() {
+    Fixture f;auto status=std::make_shared<SpatialHitStatus>();unsigned sent=0,cancelled=0;
+    f.point_hit=[&](const auto& target,const auto&)->std::optional<SpatialHitEndpoint> {
+        Check(target=="Point");++sent;return SpatialHitEndpoint{status,[&]{++cancelled;status->cancelled=true;}};
+    };
+    auto plan=Plan({{"impact",TaskSubmit{"impact",TaskHitCommand{"Point",{"Hit"},true}}}});
+    TaskPresentation run({101},10,plan,f.player,{},f.Services());run.Service(0,1);run.Service(0,2);
+    Check(sent==1 && !run.Drained());
+    auto requests=run.Requests();Check(requests.size()==1 && requests[0].receipt.participant.name=="target:Point" && requests[0].receipt.entity_generation==10);
+    status->admitted=status->submitted=true;run.Service(0,3);
+    Check(cancelled==0 && !run.Drained()); // admission does not destroy the natural effect tail
+    status->closed=true;run.Service(0,4);Check(run.Drained() && run.Status().reason==TaskExitReason::Completed);
+    // A natural tail must remain cancellable after the sequence body finishes.
+    status=std::make_shared<SpatialHitStatus>();status->admitted=status->submitted=true;
+    TaskPresentation tail({104},10,plan,f.player,{},f.Services());tail.Service(0,5);tail.Service(0,6);
+    Check(!tail.Drained() && cancelled==0);tail.Stop(TaskExitReason::Deleted);tail.Service(0,7);
+    Check(cancelled==1 && status->cancelled && !tail.Drained());status->closed=true;tail.Service(0,8);Check(tail.Drained());
+    status=std::make_shared<SpatialHitStatus>();
+    TaskPresentation stop({102},10,plan,f.player,{},f.Services());stop.Service(0,5);stop.Stop(TaskExitReason::Interrupted);
+    stop.Service(0,6);Check(cancelled==2 && !stop.Drained());status->closed=true;stop.Service(0,7);Check(stop.Drained());
+    // Entity-only consumers do not route through the point endpoint.
+    auto entity_only=Plan({{"impact",TaskSubmit{"impact",TaskHitCommand{"Point",{"Hit"},false}}}});
+    TaskPresentation invalid({103},10,entity_only,f.player,{},f.Services());invalid.Service(0,8);invalid.Service(0,9);
+    Check(sent==3 && invalid.Status().reason==TaskExitReason::Failed);
+}
 void HitDispatch() {
     Fixture f;auto inbox=std::make_shared<HitInbox>(20);
     unsigned sends=0,plays=0;bool ready=false;
@@ -388,4 +417,4 @@ void HitDispatch() {
     Check(close_in_effect.status->cancelled && plays==3);
 }
 }
-void TestTaskPresentation(){Scopes();IndependentParticipants();ConfiguredPoses();ErrorsAndReentry();NamedContexts();IndependentTail();Sounds();Movements();MovementInputs();AbilityTailScope();HitDispatch();}
+void TestTaskPresentation(){Scopes();IndependentParticipants();ConfiguredPoses();ErrorsAndReentry();NamedContexts();IndependentTail();Sounds();Movements();MovementInputs();AbilityTailScope();HitDispatch();PointHitDispatch();}

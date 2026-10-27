@@ -40,14 +40,18 @@ LookMode Look(const std::string& text) {
     throw std::invalid_argument("invalid gaze mode");
 }
 Json Context(const VisualContextSnapshot& value) {
-    Json targets=Json::object(),anchors=Json::object();
+    Json targets=Json::object(),anchors=Json::object(),positions=Json::object();
     for(const auto& [name,id]:value.inputs.targets)targets[name]=id?Json(std::to_string(id)):Json(nullptr);
     for(const auto& [name,pose]:value.inputs.anchors) {
         const auto q=pose.rotation;
         anchors[name]={{"position",Position(pose.position)},{"rotation",{q.x,q.y,q.z,q.w}}};
     }
+    for(const auto& [name,pose]:value.inputs.position_targets) {
+        const auto q=pose.rotation;
+        positions[name]={{"position",Position(pose.position)},{"rotation",{q.x,q.y,q.z,q.w}}};
+    }
     return {{"name",value.name},{"choices",value.inputs.choices},{"variables",value.variables},
-        {"targets",targets},{"anchors",anchors}};
+        {"targets",targets},{"anchors",anchors},{"position_targets",positions}};
 }
 VisualContextSnapshot Context(const Json& value) {
     VisualContextSnapshot out;out.name=value.at("name").get<std::string>();
@@ -55,10 +59,15 @@ VisualContextSnapshot Context(const Json& value) {
     out.variables=value.at("variables").get<std::map<std::string,float>>();
     Need(value.at("targets").is_object() && value.at("anchors").is_object(),"invalid visual inputs");
     for(auto it=value.at("targets").begin();it!=value.at("targets").end();++it)out.inputs.targets[it.key()]=it.value().is_null()?0:Id(it.value());
-    for(auto it=value.at("anchors").begin();it!=value.at("anchors").end();++it) {
+    for(const auto* field:{"anchors","position_targets"}) {
+    if(!value.contains(field))continue;
+    Need(value.at(field).is_object(),"invalid visual poses");
+    auto& poses=std::string(field)=="anchors"?out.inputs.anchors:out.inputs.position_targets;
+    for(auto it=value.at(field).begin();it!=value.at(field).end();++it) {
         const auto& row=it.value();const auto& q=row.at("rotation");
         Need(q.is_array() && q.size()==4,"invalid visual anchor rotation");
-        out.inputs.anchors[it.key()]={Position(row.at("position")),{q[0].get<float>(),q[1].get<float>(),q[2].get<float>(),q[3].get<float>()}};
+        poses[it.key()]={Position(row.at("position")),{q[0].get<float>(),q[1].get<float>(),q[2].get<float>(),q[3].get<float>()}};
+    }
     }
     return out;
 }

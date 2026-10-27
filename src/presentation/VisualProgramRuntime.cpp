@@ -27,8 +27,17 @@ struct VisualProgramRuntime::Scene {
         std::map<std::string,api::EntityOrigin> resolved;
         bool restored=false;
         std::optional<api::Position3> movement_origin;
+        VisualSpatialAnchors positions;
+        std::map<std::string,std::string> aliases;
     };
     std::map<VisualEffectContext*,Inputs> context_inputs;
+    struct PointHits {
+        std::shared_ptr<VisualEffectContext> context;
+        std::string target;
+        std::shared_ptr<SpatialHitEffects> effects;
+        std::uint64_t frame=0;
+    };
+    std::vector<PointHits> point_hits;
     struct Channel {std::vector<VisualEventRoutes::RuleId> rules;api::ManagedRootId receiver=0;};
     std::map<std::string,Channel> channels;
     std::shared_ptr<VisualProgramPlayer> player;
@@ -125,26 +134,28 @@ std::shared_ptr<VisualProgramPlayer> VisualProgramRuntime::Create(api::EntityOri
         }
         return VisualProgramParameters{std::move(targets),std::move(choices),std::move(anchors)};
     };
-    services.available_targets=[current](const VisualProgramParameters& inputs) {
-        const auto scene=current();std::map<std::string,api::EntityOrigin> targets=scene->input.targets;
-        for(const auto& [name,id]:inputs.targets) {
-            if(targets.count(name))continue; // same precedence as ResolveTarget
-            if(scene->input.resolve_character)targets[name]=scene->input.resolve_character(id);
-        }
-        targets["Caster"]=scene->owner;std::vector<std::string> result;
-        for(const auto& [name,target]:targets)
-            if(Alive(target) && target.world==scene->owner.world)result.push_back(name);
-        return result;
-    };
+    services.available_targets=[this,current](const VisualProgramParameters& inputs) {return AvailableEntities(*current(),inputs);};
+    for(const auto& [name,target]:input.targets){(void)target;services.bound_targets.push_back(name);}
     services.create=[this,current](auto& context,const auto& key,const auto& value){return CreateEffect(*current(),context,key,value);};
     services.partner=[this,current](auto context,const auto& op){return Partners(current()).Execute(std::move(context),op);};
     services.end_partners=[current](auto context){const auto scene=current();if(scene->partners)scene->partners->End(context);};
     services.partners_drained=[current]{const auto scene=current();return !scene->partners || scene->partners->Drained();};
     services.partner_scope_drained=[current](auto context){const auto scene=current();return !scene->partners || scene->partners->Drained(context);};
     services.partner_animation=[this,current](const auto& key){return Partners(current()).Animation(key);};
-    services.prepare_inputs=[current](auto context,const VisualProgramParameters& inputs,bool restored) {
+    services.prepare_inputs=[this,current](auto context,const VisualProgramParameters& inputs,bool restored) {
         auto scene=current();
-        scene->context_inputs[context.get()]={context,inputs.targets,inputs.anchors,{},restored};
+        std::vector<std::string> bound;
+        if(!restored)for(const auto& [name,target]:scene->input.targets){(void)target;bound.push_back(name);}
+        const auto bindings=ResolveVisualTargetBindings(scene->input.program->target_defaults,inputs,AvailableEntities(*scene,inputs,restored),bound);
+        Scene::Inputs captured{context,inputs.targets,inputs.anchors,{},restored};
+        captured.positions=CaptureVisualPositionTargets(bindings,[&] {
+            const auto pose=api_.ReadEntityPlacement(scene->owner.token,scene->owner.world);
+            if(!Alive(scene->owner) || !pose.ready)throw std::runtime_error("position target owner pose unread: "+pose.error);
+            return VisualSpatialAnchor{pose.position,pose.rotation};
+        });
+        for(const auto& [name,value]:bindings)if(const auto* entity=std::get_if<VisualEntityTarget>(&value))
+            if(name!=entity->binding)captured.aliases[name]=entity->binding;
+        scene->context_inputs[context.get()]=std::move(captured);
     };
     services.capture_inputs=[current](const auto& context) {
         const auto scene=current();VisualProgramParameters result;
@@ -154,11 +165,12 @@ std::shared_ptr<VisualProgramPlayer> VisualProgramRuntime::Create(api::EntityOri
         for(const auto& [name,target]:inputs.resolved)
             if(name!="Caster" && !inputs.restored && scene->input.targets.count(name))
                 throw std::runtime_error("visual target has no persistent character identity: "+name);
-        result.targets=inputs.targets;result.anchors=inputs.anchors;return result;
+        result.targets=inputs.targets;result.anchors=inputs.anchors;result.position_targets=inputs.positions;return result;
     };
     services.restore_inputs_ready=[this,current](const VisualProgramParameters& inputs) {
         const auto scene=current();
         for(const auto& [name,id]:inputs.targets) {
+            if(!id)continue;
             if(!scene->input.resolve_character)return VisualStepResult{VisualStepState::Failed,"visual target resolver unavailable"};
             if(scene->input.restore_target) {
                 const auto readiness=scene->input.restore_target(id);
@@ -193,6 +205,30 @@ std::shared_ptr<VisualProgramPlayer> VisualProgramRuntime::Create(api::EntityOri
             (result.state==api::EffectControlState::NotLoaded || result.state==api::EffectControlState::Pending)?VisualStepState::Pending:VisualStepState::Failed,result.detail};
     };
     services.attach=[this,current](auto context){Attach(*current(),std::move(context));};
+    services.point_hit=[this,current](std::shared_ptr<VisualEffectContext> context,const std::string& name,const HitInput& command)->std::optional<SpatialHitEndpoint> {
+        const auto scene=current();const auto point=PositionTarget(*scene,*context,name);
+        if(!point)return {};
+        auto found=std::find_if(scene->point_hits.begin(),scene->point_hits.end(),[&](const auto& row){return row.context==context && row.target==name;});
+        if(found==scene->point_hits.end()) {
+            std::ostringstream label;label<<"position hit owner="<<scene->owner.token.generation<<" target="<<name
+                <<" point="<<point->position.x<<","<<point->position.y<<","<<point->position.z<<" ";
+            SpatialHitServices calls;calls.create=[this,label=label.str()]{return api_.EffectServices()->CreateRequest(label);};
+            std::weak_ptr<Scene> weak=scene;
+            calls.start=[this,weak](auto& request,const std::string& name,const auto& options) {
+                const auto scene=weak.lock();
+                if(!scene || !Alive(scene->owner))throw std::runtime_error("position hit owner ended");
+                const auto path=objects_.NewStringUtf8(name.c_str());
+                if(!path.call.returned || !path.object)throw std::runtime_error("position hit path allocation failed");
+                const auto pin=scene->Keep(path.object);scene->releasing.push_back(pin);
+                if(!Alive(scene->owner))throw std::runtime_error("position hit owner ended during input retention");
+                request.StartSpatial(scene->owner.token.entity,path.object,options);
+            };
+            scene->point_hits.push_back({context,name,std::make_shared<SpatialHitEffects>(*point,std::move(calls)),frame_?frame_->sequence:0});
+            found=std::prev(scene->point_hits.end());
+        }
+        const auto effects=found->effects;
+        auto result=effects->Submit(command);effects->Service(0);return result;
+    };
     services.hit=[this,current](VisualEffectContext& context,const std::string& target_name,const HitInput& command)->std::optional<HitDelivery> {
         const auto scene=current();
         if(!Alive(scene->owner))throw std::runtime_error("hit source scene ended");
@@ -216,9 +252,7 @@ std::shared_ptr<VisualProgramPlayer> VisualProgramRuntime::Create(api::EntityOri
         const auto scene=current();
         if(closing_ || !Alive(scene->owner))throw std::runtime_error("facing scene ended");
         if(!api_.ReadAnimator(scene->owner.token))return VisualStepResult{VisualStepState::Pending,"waiting for owned model"};
-        const auto target=ResolveTarget(*scene,context,command.target);
-        const auto pose=api_.ReadEntityPlacement(target.token,target.world);
-        if(!pose.ready)throw std::runtime_error("facing target unreadable: "+command.target+"; "+pose.error);
+        const auto pose=TargetPose(*scene,context,command.target);
         const auto call=api_.FaceEntity(scene->owner.token,scene->owner.world,pose.position,
             command.ratio,command.angle_offset,command.duration);
         return VisualStepResult{call.returned?VisualStepState::Done:VisualStepState::Failed,
@@ -240,10 +274,7 @@ std::shared_ptr<VisualProgramPlayer> VisualProgramRuntime::Create(api::EntityOri
                 if(anchor==inputs.anchors.end())throw std::runtime_error("explicit movement anchor missing: "+name);
                 return anchor->second.position;
             }
-            const auto target=ResolveTarget(*scene,context,name);
-            const auto position=api_.ReadEntityPlacement(target.token,target.world);
-            if(!position.ready)throw std::runtime_error("movement target unreadable: "+name+"; "+position.error);
-            return position.position;
+            return TargetPose(*scene,context,name).position;
         });
         return BindMovementRequest(scene->owner.token.generation,api_.StartMovement(scene->owner.token,scene->owner.world,command.state,plan));
     };
@@ -278,6 +309,31 @@ void VisualProgramRuntime::Detach(Scene& scene,const std::string& name) {
     for(auto rule:channel.rules)routes_.Detach(rule);
     if(channel.receiver){scene.releasing.push_back(channel.receiver);channel.receiver=0;}
 }
+std::vector<std::string> VisualProgramRuntime::AvailableEntities(Scene& scene,const VisualProgramParameters& inputs,bool restored) const {
+    std::map<std::string,api::EntityOrigin> targets=restored?std::map<std::string,api::EntityOrigin>{}:scene.input.targets;
+    for(const auto& [name,id]:inputs.targets) {
+        if(targets.count(name))continue;
+        if(id && scene.input.resolve_character)targets[name]=scene.input.resolve_character(id);
+    }
+    targets["Caster"]=scene.owner;std::vector<std::string> out;
+    for(const auto& [name,target]:targets)
+        if(Alive(target) && target.world==scene.owner.world)out.push_back(name);
+    return out;
+}
+std::optional<VisualSpatialAnchor> VisualProgramRuntime::PositionTarget(Scene& scene,VisualEffectContext& context,const std::string& name) const {
+    if(!Alive(scene.owner))throw std::runtime_error("position target owner ended");
+    const auto inputs=scene.context_inputs.find(&context);
+    if(inputs==scene.context_inputs.end())throw std::runtime_error("target inputs have not been captured");
+    const auto point=inputs->second.positions.find(name);
+    return point==inputs->second.positions.end()?std::nullopt:std::optional<VisualSpatialAnchor>(point->second);
+}
+VisualSpatialAnchor VisualProgramRuntime::TargetPose(Scene& scene,VisualEffectContext& context,const std::string& name) {
+    if(const auto point=PositionTarget(scene,context,name))return *point;
+    const auto target=ResolveTarget(scene,context,name);
+    const auto pose=api_.ReadEntityPlacement(target.token,target.world);
+    if(!Alive(scene.owner) || !Alive(target) || !pose.ready)throw std::runtime_error("target pose unread: "+name+"; "+pose.error);
+    return {pose.position,pose.rotation};
+}
 api::EntityOrigin VisualProgramRuntime::ResolveTarget(Scene& scene,VisualEffectContext& context,const std::string& name) {
     if(name.compare(0,8,"partner:")==0) {
         if(!scene.partners)throw std::runtime_error("partner target has not been created: "+name);
@@ -285,6 +341,10 @@ api::EntityOrigin VisualProgramRuntime::ResolveTarget(Scene& scene,VisualEffectC
     }
     const auto snapshot=scene.context_inputs.find(&context);
     auto* inputs=snapshot==scene.context_inputs.end()?nullptr:&snapshot->second;
+    if(inputs) {
+        if(inputs->positions.count(name))throw std::runtime_error("operation requires an entity, not a position: "+name);
+        if(const auto alias=inputs->aliases.find(name);alias!=inputs->aliases.end())return ResolveTarget(scene,context,alias->second);
+    }
     api::EntityOrigin target=scene.owner;
     if(name!="Caster") {
         const auto resolved=inputs?inputs->resolved.find(name):std::map<std::string,api::EntityOrigin>::iterator{};
@@ -338,6 +398,16 @@ VisualEffectId VisualProgramRuntime::CreateEffect(Scene& scene,VisualEffectConte
         const auto& pose=found->second;
         spatial=api::SpatialEffectOptions{pose.position,pose.rotation,input.options.unique_name,input.options.scale,
             input.options.fade_in,input.options.simulate_immediately,input.options.resident};
+    }else if(const auto point=PositionTarget(scene,context,input.target)) {
+        if(!input.allow_position || input.options.attach_to_target)
+            throw std::runtime_error("effect requires an entity target: "+key);
+        // This path has no target transform. Offsets are applied to the captured
+        // world pose, replacing initial attach-point lookup in this projection.
+        // Persistent attachment/follow operations retain their entity contract.
+        auto pose=TransformVisualTarget(*point,input.options.position_offset);
+        pose.rotation=RotateVisualTarget(pose.rotation,input.options.rotation_offset);
+        spatial=api::SpatialEffectOptions{pose.position,pose.rotation,input.options.unique_name,input.options.scale,
+            input.options.fade_in,input.options.simulate_immediately,input.options.resident};
     }else target=ResolveTarget(scene,context,input.target);
     const auto path=objects_.NewStringUtf8(input.path.c_str());
     if(!path.call.returned || !path.object)throw std::runtime_error("visual effect path allocation failed");
@@ -380,6 +450,17 @@ void VisualProgramRuntime::Collect() {
             }
         }
         if(scene.player && (closing_ || !Alive(scene.owner)) && !scene.player->Status().closing)scene.player->End();
+        for(auto hit=scene.point_hits.begin();hit!=scene.point_hits.end();) {
+            if(closing_ || !Alive(scene.owner) || !scene.player || scene.player->Status().closing || hit->context->Closing())hit->effects->Cancel();
+            float delta=0;
+            if(frame_ && hit->frame!=frame_->sequence) {
+                hit->frame=frame_->sequence;
+                if(frame_->world==scene.owner.world && frame_->paused.read.returned && !frame_->paused.value)delta=frame_->delta_time;
+            }
+            hit->effects->Service(delta);
+            if(hit->effects->Drained() && (closing_ || !Alive(scene.owner) || hit->context->Closing() || hit->context->Finishing()))hit=scene.point_hits.erase(hit);
+            else ++hit;
+        }
         if(scene.player && scene.player->Status().closing)scene.player->Service();
         if(scene.partners && frame_)scene.partners->Service(*frame_);
         scene.ReleasePending();
@@ -401,7 +482,7 @@ void VisualProgramRuntime::Collect() {
             const auto text=out.str();
             if(text!=scene.last_trace){trace_(text);scene.last_trace=text;}
         }
-        if(!scene.player || scene.player->Drained()) {
+        if((!scene.player || scene.player->Drained()) && scene.point_hits.empty()) {
             for(const auto& [name,channel]:scene.channels)Detach(scene,name);
             scene.ReleasePending();
             if(scene.releasing.empty()) {
@@ -413,7 +494,12 @@ void VisualProgramRuntime::Collect() {
     }
 }
 bool VisualProgramRuntime::PrepareModelChange(api::EntityOrigin origin) {
-    return !motion_ || motion_->ReleaseParticipant(origin);
+    bool drained=!motion_ || motion_->ReleaseParticipant(origin);
+    for(const auto& scene:scenes_) {
+        if(scene->owner.world==origin.world && scene->owner.token.entity==origin.token.entity && scene->owner.token.generation==origin.token.generation)
+            for(const auto& hit:scene->point_hits){hit.effects->Cancel();drained=hit.effects->Drained() && drained;}
+    }
+    return drained;
 }
 bool VisualProgramRuntime::Close() {
     closing_=true;Collect();if(!scenes_.empty())return false;
