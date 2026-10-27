@@ -276,8 +276,17 @@ void TaskController::Service(double seconds,std::uint64_t frame,bool allow_start
             }
             state.SyncContexts();
         }
-        state.retiring.erase(std::remove_if(state.retiring.begin(),state.retiring.end(),
-            [](const auto& run){return run->player->Drained();}),state.retiring.end());
+        state.retiring.erase(std::remove_if(state.retiring.begin(),state.retiring.end(),[&](const auto& run) {
+            if(!run->player->Drained())return false;
+            // RetireActive captured the last execution while its resources were
+            // still draining. Publish its final receipt before dropping it; an
+            // older tail must not overwrite a newer active execution's status.
+            if(!state.active && state.status.execution && state.status.execution->token.value==run->player->Status().token.value) {
+                state.status.execution=run->player->Status();
+                state.status.execution->retained_requests=0;
+            }
+            return true;
+        }),state.retiring.end());
     }catch(const std::exception& error) {
         state.status.error=error.what();state.pending.reset();
         if(state.active){state.active->next.reset();state.active->player->Stop(TaskExitReason::Failed);}

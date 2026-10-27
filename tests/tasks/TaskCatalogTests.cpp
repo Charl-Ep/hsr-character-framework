@@ -54,6 +54,7 @@ struct Fixture {
     std::unique_ptr<TaskController> controller;
     std::vector<std::pair<AnimationCommand,std::shared_ptr<AnimationRequestStatus>>> plays;
     std::vector<std::pair<PoseSelection,std::shared_ptr<AnimationRequestStatus>>> poses;
+    std::vector<std::shared_ptr<AnimationRequestStatus>> recoveries;
     std::vector<VisualFace> faces;
     bool facing_ready=true;
     bool accept=true,ready=true;
@@ -93,7 +94,11 @@ struct Fixture {
             return TaskAnimationEndpoint{7,[&](const auto& command) {
                 auto value=std::make_shared<AnimationRequestStatus>();value->entity_generation=7;value->serial=plays.size()+1;
                 value->model_generation=8;value->accepted=accept;plays.emplace_back(command,value);return value;
-            },[&](auto serial){plays.at(serial-1).second->released=true;}};
+            },[&](auto serial){plays.at(serial-1).second->released=true;},[&] {
+                auto value=std::make_shared<AnimationRequestStatus>();value->entity_generation=7;
+                value->serial=recoveries.size()+1;value->model_generation=8;
+                recoveries.push_back(value);return value;
+            },[&](auto serial){recoveries.at(serial-1)->released=true;}};
         };
         controller=std::make_unique<TaskController>(7,catalog,scene,std::move(ports));
     }
@@ -235,6 +240,8 @@ void NaturalAndPending() {
     Check(delayed.plays.size()==1 && !delayed.controller->Drained());
     delayed.plays[0].second->accepted=true;delayed.Tick();delayed.Tick();
     Check(delayed.controller->Drained());
+    Check(delayed.controller->Status().execution && delayed.controller->Status().execution->phase==TaskExecutionPhase::Finished &&
+        delayed.controller->Status().execution->retained_requests==0 && delayed.controller->Requests().empty());
     Fixture changed;auto overlay=changed.controller->Context().Enter("override");
     changed.controller->Context().SetSlot(overlay,{1},{"test","attack"});
     TaskSelection select{{"test","idle"}};select.query.slot=TaskSlot{1};
@@ -458,9 +465,30 @@ void TestSelectedEntry(const char* file) {
     Check(command && f.plays[0].first.state==command->state && f.plays[0].first.normalized_start==command->normalized_start);
     f.plays[0].second->entered=true;f.plays[0].second->progress=0;f.Tick();
     Check(f.controller->Status().control.performance==ControlPerformance::Working && f.controller->Status().error.empty());
-    // Test only the bound selection/confirmation and Entry submission. Hit
-    // delivery and post-performance return remain separately unbound.
-    f.controller->Cancel();f.Tick();f.Tick();Check(f.controller->Drained());
+    // Cancellation must run the owned return admission and reopen control;
+    // native hit delivery and visual quality are not proved by this fixture.
+    f.controller->Cancel();f.Tick();f.Tick();
+    Check(f.recoveries.size()==1 && !f.controller->Drained());
+    Check(f.controller->Status().control.performance==ControlPerformance::Working);
+    f.recoveries[0]->accepted=true;f.recoveries[0]->complete=true;f.Tick();f.Tick();
+    Check(f.controller->Drained());
+    Check(f.controller->Status().control.performance==ControlPerformance::Ready);
+    Check(f.controller->Status().execution->phase==TaskExecutionPhase::Finished);
+    Check(f.controller->Status().execution->retained_requests==0);
+    Check(f.controller->Query(select).query.availability==TaskAvailability::Available);
+    Check(f.controller->Query(execute).query.availability==TaskAvailability::Available);
+    // Cancellation before dispatch must also retire the accepted control ticket.
+    Check(f.controller->Select(execute).intent!=0);
+    f.controller->Cancel();f.Tick();
+    Check(f.controller->Status().control.performance==ControlPerformance::Ready);
+    Check(f.controller->Query(select).query.availability==TaskAvailability::Available);
+    // A target disappearing between acceptance and dispatch is reported as a
+    // failure, yet selecting again remains possible without rebuilding actor.
+    Check(f.controller->Select(execute).intent!=0);f.defaults.targets.clear();f.Tick();
+    Check(f.controller->Status().control.performance==ControlPerformance::Failed);
+    Check(f.controller->Query(select).query.availability==TaskAvailability::Available);
+    Check(f.controller->Select(select).intent!=0);
+    Check(f.controller->Status().control.performance==ControlPerformance::Ready);
 }
 void TestTaskCatalog(){
     Codec();SelectionAndInterrupt();AnimationOffsets();NaturalAndPending();ContextsAndFinish();CloseAndReentrant();InputRequirementsAndPreparation();ControlAdmissionAndPresentation();ControlSlotsReachDispatch();ControlAtSequenceBoundaries();
