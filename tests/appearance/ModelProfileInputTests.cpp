@@ -993,7 +993,7 @@ void TestModelProfileInputs() {
         session.Remove(); session.Service(frame,appearance,{}); Check(session.Status().closed && roots.empty());
     }
     std::cout<<"CharacterSession passed: prepared sources, no battle prerequisite for NPC, baseline capture before handoff, pending load, independent failure, natural disposal and removal; local fixtures only.\n";
-    {
+    TestSection([&] {
         reset_baseline();framework::CharacterPlan plan;plan.package=package;
         framework::SceneCharacters registry(session_services,[&](auto& session,const auto&,const auto&){session.Create(create);});
         const framework::SceneAddress target_scene{"Map/Targets",1};
@@ -1015,8 +1015,8 @@ void TestModelProfileInputs() {
         registry.Delete(target);registry.Delete(visual_source);registry.Service(current,target_scene,appearance,{});
         Check(!resolve_target(target).token.entity && registry.Ids().empty() && roots.empty());
         registry.Shutdown();registry.Service(current,target_scene,appearance,{});Check(registry.Closed());
-    }
-    {
+    });
+    TestSection([&] {
         reset_baseline();
         auto scene_frame=frame; scene_frame.manager={create.manager,{true,0}}; scene_frame.battle={false,{true,0}};
         auto away=scene_frame; away.world=foreign.world;
@@ -1092,8 +1092,8 @@ void TestModelProfileInputs() {
         Check(registry.Ids().empty()); // deletion cannot return on revisiting a map
         registry.Shutdown(); registry.Service(scene_frame,returned,appearance,{});
         Check(registry.Closed() && roots.empty());
-    }
-    {
+    });
+    TestSection([&] {
         reset_baseline(); auto scene_frame=frame;
         scene_frame.manager={create.manager,{true,0}}; scene_frame.battle={false,{true,0}};
         framework::CharacterPlan plan; plan.package=package;
@@ -1117,9 +1117,9 @@ void TestModelProfileInputs() {
         Check(!registry.Status(selected_id).enabled && !registry.Status(selected_id).active && registry.Status(selected_id).retiring==1);
         registry.Service(scene_frame,scene_address,appearance,{}); Check(roots.empty());
         registry.Shutdown(); Check(registry.Closed());
-    }
+    });
     std::cout<<"Scene character scheduling passed: source/session composition, independent scene intent, return replay, manual removal, explicit rebuild, partial creation ownership and callback cancellation; supplied scene identities, no game bootstrap.\n";
-    {
+    TestSection([&] {
         reset_baseline();
         auto current=frame;current.manager={create.manager,{true,0}};current.battle={false,{true,0}};
         current.adventure_phase={&map_phase,{true,0}};
@@ -1264,9 +1264,9 @@ void TestModelProfileInputs() {
         Check(!missing.Application().TakeReplies()[0].accepted && missing.Application().Snapshot().characters.empty());
         Check(missing.Frame(current,true) && roots.empty());
         std::cout<<"Framework host integration passed: UI value queue, official map getters, session creation/action/return/rebuild, independent command failure and asynchronous drain; local only.\n";
-    }
+    });
     TestGazeHandoff(frame,create,session_services,references,entity_methods,package,appearance,types);
-    {
+    TestSection([&] {
         reset_baseline(); auto scene_frame=frame;
         scene_frame.manager={create.manager,{true,0}}; scene_frame.battle={false,{true,0}};
         framework::SceneCharacters registry(session_services,[&](auto& session,const auto&,const auto&) { session.Create(create); });
@@ -1279,8 +1279,8 @@ void TestModelProfileInputs() {
         Check(!registry.Status(bad).error.empty() && registry.Status(good).active && npc_plays==plays+1);
         registry.Shutdown(); registry.Service(scene_frame,framework::SceneAddress{"A",1},appearance,{});
         Check(registry.Closed() && roots.empty());
-    }
-    {
+    });
+    TestSection([&] {
         reset_baseline();auto current=frame;current.sequence=1000;
         current.manager={create.manager,{true,0}};current.battle={false,{true,0}};
         framework::CharacterPlan plan;plan.package=package;plan.source_intent=framework::BrowseNpc{77};
@@ -1303,5 +1303,5 @@ void TestModelProfileInputs() {
         Check(std::get<framework::FreeStyleState>(registry.DesiredAction(id)->request).name=="SomeState");
         registry.Shutdown();registry.Service(current,layout_scene,appearance,types);
         Check(registry.Closed() && roots.empty());
-    }
+    });
 }
