@@ -1,6 +1,7 @@
 #include <hksr/framework/tasks/TaskController.hpp>
 #include <nlohmann/json.hpp>
 #include <algorithm>
+#include <array>
 #include <limits>
 #include <fstream>
 #include <stdexcept>
@@ -49,6 +50,28 @@ Json Document() {
     })");
 }
 struct Fixture {
+    struct EffectReceipt {unsigned id;bool released=false;};
+    inline static std::map<int,void*> effect_roots;
+    inline static int next_effect_root=0,effect_method_info=0;
+    inline static EffectReceipt* allocating_effect=nullptr;
+    static int __fastcall KeepEffect(void* object,int,int,void*) {effect_roots[++next_effect_root]=object;return next_effect_root;}
+    static void* __fastcall GetEffect(int id,void*) {return effect_roots.at(id);}
+    static void __fastcall FreeEffect(int id,void*) {effect_roots.erase(id);}
+    static unsigned __fastcall EffectId(EffectReceipt* p,void*) {return p->id;}
+    static bool __fastcall EffectReleased(EffectReceipt* p,void*) {return p->released;}
+    static int __fastcall EffectState(EffectReceipt*,void*) {return 3;}
+    static void* __fastcall EffectInstance(EffectReceipt* p,void*) {return p;}
+    static void* __fastcall MapEffect(void*,void* path,void*) {return path;}
+    static bool __fastcall EffectEmpty(void*,void*) {return false;}
+    static api::EffectReference __fastcall AcquireEffect(void*,void*) {return {allocating_effect->id,0,allocating_effect};}
+    static void __fastcall SubmitEffect(void*,EffectReceipt*,void*) {}
+    static void __fastcall ReleaseEffect(EffectReceipt* p,void*) {p->released=true;}
+    static bool __fastcall RemoveEffect(void*,api::EffectReference ref,bool,void*) {
+        static_cast<EffectReceipt*>(ref.parameters)->released=true;return true;
+    }
+    template<class F> static api::Method EffectMethod(F entry) {
+        return {reinterpret_cast<void*>(entry),&effect_method_info};
+    }
     std::shared_ptr<const TaskCatalog> catalog;
     std::shared_ptr<VisualProgramPlayer> scene;
     std::unique_ptr<TaskController> controller;
@@ -56,16 +79,43 @@ struct Fixture {
     std::vector<std::pair<PoseSelection,std::shared_ptr<AnimationRequestStatus>>> poses;
     std::vector<std::shared_ptr<AnimationRequestStatus>> recoveries;
     std::vector<VisualFace> faces;
+    std::deque<EffectReceipt> effect_receipts;
+    std::vector<std::unique_ptr<std::array<unsigned char,128>>> effect_delegates;
+    std::vector<std::pair<std::string,VisualEffectInput>> effect_inputs;
+    int effect_manager=0;
     bool facing_ready=true;
     bool accept=true,ready=true;
     std::function<void()> on_attach;
     VisualProgramParameters defaults,captured;
     std::uint64_t frame=0;
-    explicit Fixture(Json document=Document()) {
+    explicit Fixture(Json document=Document(),bool record_effects=false) {
         catalog=std::make_shared<const TaskCatalog>(ParseTaskCatalog(document.dump()));
         VisualProgramServices visual;
         visual.effects=std::make_shared<api::PresentationEffects>(api::EffectRequestServices{{},api::EffectAccess({}),{},{},{}});
         visual.create=[](auto&,const auto&,const auto&)->VisualEffectId{throw std::runtime_error("unexpected effect");};
+        if(record_effects) {
+            // Submit through the real request owner backed by local native
+            // functions. This tests sequencing and cleanup, not rendering.
+            api::EffectRequestServices requests{
+                {EffectMethod(KeepEffect),EffectMethod(GetEffect),EffectMethod(FreeEffect),{},{}},
+                api::EffectAccess({EffectMethod(MapEffect),EffectMethod(AcquireEffect),EffectMethod(SubmitEffect),
+                    EffectMethod(RemoveEffect),EffectMethod(ReleaseEffect),EffectMethod(EffectId),
+                    EffectMethod(EffectReleased),EffectMethod(EffectState),EffectMethod(EffectInstance),{},EffectMethod(EffectEmpty)}),
+                {[&] {
+                    auto delegate=std::make_unique<std::array<unsigned char,128>>();delegate->fill(0);
+                    auto* raw=delegate->data();effect_delegates.push_back(std::move(delegate));
+                    return api::ObjectResult{{true,0},raw};
+                },{24,40,64}},
+                [&]{return api::ObjectResult{{true,0},&effect_manager};},
+                [](void*,void*,void*){return api::EffectInputResult{{true,0},{true,0}};}};
+            visual.effects=std::make_shared<api::PresentationEffects>(std::move(requests));
+            visual.create=[&](auto& context,const auto& key,const auto& options) {
+                effect_inputs.emplace_back(key,options);
+                effect_receipts.push_back({static_cast<unsigned>(effect_receipts.size()+1)});
+                allocating_effect=&effect_receipts.back();
+                return context.Start(key,&effect_manager,&effect_manager);
+            };
+        }
         visual.attach=[&](auto){if(on_attach)on_attach();};
         visual.select_inputs=[&]{return defaults;};
         visual.available_targets=[](const auto& inputs) {
@@ -440,7 +490,7 @@ void ControlAtSequenceBoundaries() {
 }
 void TestSelectedEntry(const char* file) {
     std::ifstream input(file,std::ios::binary);if(!input)throw std::runtime_error("selected entry file absent");
-    const auto document=Json::parse(input);Fixture f(document);const auto id=f.catalog->id;
+    const auto document=Json::parse(input);Fixture f(document,true);const auto id=f.catalog->id;
     TaskSelection select{{id,"select"}},execute{{id,"entry"}};
     Check(f.controller->Query(execute).query.facets->path==TaskAvailability::Unavailable);
     Check(f.controller->Select(select).intent!=0);
@@ -467,7 +517,12 @@ void TestSelectedEntry(const char* file) {
         if(const auto* animation=std::get_if<TaskAnimationCommand>(&submit->operation))command=animation;
     Check(command && f.plays[0].first.state==command->state && f.plays[0].first.normalized_start==command->normalized_start);
     f.plays[0].second->entered=true;f.plays[0].second->progress=0;f.Tick();
-    Check(f.controller->Status().control.performance==ControlPerformance::Working && f.controller->Status().error.empty());
+    if(!f.controller->Status().error.empty())throw std::runtime_error(f.controller->Status().error);
+    if(f.controller->Status().control.performance!=ControlPerformance::Working)
+        throw std::runtime_error("selected entry at body start: performance="+
+            std::to_string(static_cast<int>(f.controller->Status().control.performance))+
+            " effects="+std::to_string(f.effect_inputs.size())+
+            " error="+f.controller->Status().error);
     // Cancellation must run the owned return admission and reopen control;
     // native hit delivery and visual quality are not proved by this fixture.
     f.controller->Cancel();f.Tick();f.Tick();
@@ -478,6 +533,8 @@ void TestSelectedEntry(const char* file) {
     Check(f.controller->Status().control.performance==ControlPerformance::Ready);
     Check(f.controller->Status().execution->phase==TaskExecutionPhase::Finished);
     Check(f.controller->Status().execution->retained_requests==0);
+    for(const auto& receipt:f.effect_receipts)Check(receipt.released);
+    Check(Fixture::effect_roots.empty());
     Check(f.controller->Query(select).query.availability==TaskAvailability::Available);
     Check(f.controller->Query(execute).query.availability==TaskAvailability::Available);
     // Cancellation before dispatch must also retire the accepted control ticket.
