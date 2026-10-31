@@ -1,4 +1,5 @@
 #include <hksr/framework/catalog/ActionCatalog.hpp>
+#include <hksr/framework/catalog/ActionSourceStore.hpp>
 #include <set>
 #include <algorithm>
 #include <stdexcept>
@@ -9,6 +10,12 @@ ActionCatalog::ActionCatalog(api::OfficialCatalog& api,api::TypeRelationships& t
 },{},[&api](const auto& path) {
     return api.ReadVisualConfigSources(path);
 },[&api]{return api.ReadReadyAnimationDefaults();},[&api,&types](const auto& names){return api.BeginAbilitySources(names,types);}){}
+void ActionCatalog::SetSourceStore(std::shared_ptr<ActionSourceStore> store) {
+    source_store_=std::move(store);
+    // A queued request may precede the first table/version read. Re-evaluate
+    // its missing inputs when that read binds the already-loaded store.
+    discovery_.clear();views_.clear();Rebuild();
+}
 void ActionCatalog::Request(std::vector<ActionSourceRoot> roots) {
     auto key=[](const ActionSourceRoot& r){return std::tie(r.domain,r.source.kind,r.source.path);};
     std::sort(roots.begin(),roots.end(),[&](const auto& a,const auto& b){return key(a)<key(b);});
@@ -27,12 +34,23 @@ void ActionCatalog::Request(std::vector<ActionSourceRoot> roots) {
     Rebuild();
 }
 const api::ActionConfigInput* ActionCatalog::Document(const ActionSourceKey& source) const {
-    const auto found=documents_.find(source); return found==documents_.end()?nullptr:&found->second;
+    if(const auto found=documents_.find(source);found!=documents_.end())return &found->second;
+    if(source_store_)if(auto cached=source_store_->Document(source))
+        return &documents_.emplace(source,*cached).first->second;
+    return nullptr;
 }
 bool ActionCatalog::RequestVisuals(const std::string& path) {
     if(!read_visual_)throw std::logic_error("visual configuration reader unavailable");
     if(!visual_requests_.insert(path).second)return false;
     InvalidateDocument({api::ActionConfigKind::Battle,path});Rebuild();return true;
+}
+const api::AbilitySources* ActionCatalog::Ability(const std::string& name) const {
+    if(const auto found=ability_sources_.find(name);found!=ability_sources_.end())return &found->second;
+    if(source_store_)if(auto cached=source_store_->Ability(name)) {
+        retirements_.emplace(name,LinkActionRetirements(*cached));
+        return &ability_sources_.emplace(name,*cached).first->second;
+    }
+    return nullptr;
 }
 void ActionCatalog::InvalidateDocument(const ActionSourceKey& source) {
     for(auto it=discovery_.begin();it!=discovery_.end();) {
@@ -54,9 +72,11 @@ void ActionCatalog::InvalidateAbility(const std::string& ability) {
     }
 }
 void ActionCatalog::Refresh(const ActionSourceKey& source) {
+    if(source_store_)source_store_->Erase(source);
     documents_.erase(source);visual_sources_.erase(source.path);InvalidateDocument(source);Rebuild();
 }
 void ActionCatalog::RefreshAbility(const std::string& ability) {
+    if(source_store_)source_store_->EraseAbility(ability);
     if(ability_read_ && std::find(reading_abilities_.begin(),reading_abilities_.end(),ability)!=reading_abilities_.end()) {
         ability_read_->Cancel();discard_read_=true;
     }
@@ -76,12 +96,13 @@ const api::ActionConfigInput& ActionCatalog::Load(const ActionSourceKey& source)
         auto read=read_(source.kind,source.path);
         if(read.kind!=source.kind || read.path!=source.path) throw std::runtime_error("reader returned another action configuration");
         result=std::move(read);
+        if(source_store_)source_store_->Put(result);
     } catch(const std::exception& error) { result.issues.push_back({-1,"read document",error.what()}); }
     catch(...) { result.issues.push_back({-1,"read document","unknown failure"}); }
     const auto found=documents_.emplace(source,std::move(result)).first;
     InvalidateDocument(source);Rebuild();return found->second;
 }
-void ActionCatalog::StoreAbilities(const std::vector<std::string>& names,api::AbilitySources result) {
+void ActionCatalog::StoreAbilities(const std::vector<std::string>& names,api::AbilitySources result,bool persist) {
     std::map<std::string,api::AbilitySources> parts;
     for(const auto& name:names)parts.emplace(name,api::AbilitySources{});
     auto distribute=[&](auto& entries,auto member) {
@@ -99,6 +120,7 @@ void ActionCatalog::StoreAbilities(const std::vector<std::string>& names,api::Ab
         else if(auto it=parts.find(issue.ability);it!=parts.end())it->second.issues.push_back(issue);
     }
     for(auto& part:parts) {
+        if(persist && source_store_)source_store_->Put(part.first,part.second);
         InvalidateAbility(part.first);
         retirements_.insert_or_assign(part.first,LinkActionRetirements(part.second));
         ability_sources_.insert_or_assign(part.first,std::move(part.second));
@@ -228,6 +250,7 @@ ActionCatalog::Projection ActionCatalog::Project(const std::vector<ActionSourceR
     std::set<std::pair<ActionDomain,std::string>> seen_abilities;
     std::set<std::string> scheduled_abilities;
     std::set<std::string> seen_visuals;
+    std::vector<ReadyActions> ready_actions;
     std::map<std::pair<ActionDomain,std::string>,std::size_t> proposal_indices;
     auto propose=[&](ActionDomain domain,const std::string& state,ActionReference reference) {
         if(state.empty()) return;
@@ -273,14 +296,13 @@ ActionCatalog::Projection ActionCatalog::Project(const std::vector<ActionSourceR
             if(read_ready_ && !ready_defaults_){pending_ready=true;status.pending_domains.insert(input.domain);}
             if(read_ready_)result.uses_ready=true;
             ReadyActions ready;
-            if(values){ready=BuildReadyActions(*value,ready_defaults_.value_or(api::ReadyAnimationDefaults{}));
-                ResolveReadyPreparations(ready,value->abilities,ability_sources_);}
+            if(values)ready=BuildReadyActions(*value,ready_defaults_.value_or(api::ReadyAnimationDefaults{}));
             if(value->elation_config.available && !value->elation_config.value.empty()) {
                 const ActionSourceKey linked{api::ActionConfigKind::Elation,value->elation_config.value};
                 queue.push_back({input.domain,linked});
                 if(values)if(const auto* elation=Document(linked))AppendElationReadyPoses(ready,*elation);
             }
-            if(values && !ready.poses.empty())status.ready_actions.push_back(std::make_shared<const ReadyActions>(std::move(ready)));
+            if(values && !ready.poses.empty())ready_actions.push_back(std::move(ready));
         }
         auto note=[&](const char* field,bool available,const std::string& error) {
             if(!available && !error.empty()) document.issues.push_back({-1,field,error});
@@ -303,13 +325,13 @@ ActionCatalog::Projection ActionCatalog::Project(const std::vector<ActionSourceR
             for(std::size_t ai=0;ai<chain.size();++ai) {
             const auto name=chain[ai];
             result.used_abilities.insert(name);
-            const auto cached=ability_sources_.find(name);
+            const auto* cached=Ability(name);
             if(seen_abilities.emplace(input.domain,name).second) {
                 AbilityDocumentStatus task;if(values){task.domain=input.domain;task.ability=name;}
-                task.reader_available=bool(read_ability_) || bool(begin_ability_); task.attempted=cached!=ability_sources_.end();
+                task.reader_available=bool(read_ability_) || bool(begin_ability_); task.attempted=cached!=nullptr;
                 if(task.attempted && values) {
-                    task.issues=cached->second.issues;
-                    task.removal_sources=cached->second.removals.size();
+                    task.issues=cached->issues;
+                    task.removal_sources=cached->removals.size();
                     task.linked_retirements=retirements_.at(name).size();
                 }
                 else if(!task.attempted && task.reader_available) {
@@ -318,11 +340,11 @@ ActionCatalog::Projection ActionCatalog::Project(const std::vector<ActionSourceR
                 } else if(!task.attempted && values)task.issues.push_back({name,"ability reader unavailable",{}});
                 if(values)status.abilities.push_back(std::move(task));
             }
-            if(values && cached!=ability_sources_.end()) for(const auto& animation:cached->second.animations) {
+            if(values && cached) for(const auto& animation:cached->animations) {
                 if(animation.ability!=name) continue;
                 if(animation.state.available) propose(input.domain,animation.state.value,{input.source,ability.field,animation,ability.value});
             }
-            if(cached!=ability_sources_.end())for(const auto& ref:cached->second.references)
+            if(cached)for(const auto& ref:cached->references)
                 if(ref.enabled.available && ref.enabled.value && ref.target.available && !ref.target.value.empty() && chain_seen.insert(ref.target.value).second)
                     chain.push_back(ref.target.value);
             }
@@ -336,6 +358,13 @@ ActionCatalog::Projection ActionCatalog::Project(const std::vector<ActionSourceR
             for(const auto& file:value->presentation.event_files.values) add_file(file);
         }
         if(values)status.documents.push_back(std::move(document));
+    }
+    // Ready relationships consume the complete dependency walk, including
+    // values imported from the store during this very first projection.
+    for(auto& ready:ready_actions) {
+        const auto* document=Document({api::ActionConfigKind::Battle,ready.source});
+        ResolveReadyPreparations(ready,document->abilities,ability_sources_);
+        status.ready_actions.push_back(std::make_shared<const ReadyActions>(std::move(ready)));
     }
     // Resolve once per distinct ability/domain, not once per reference field.
     if(values)for(const auto& key:seen_abilities)if(key.first==ActionDomain::Alternate) {

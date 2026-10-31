@@ -1,4 +1,5 @@
 #include <hksr/framework/catalog/CatalogBrowser.hpp>
+#include <hksr/framework/catalog/ActionSourceStore.hpp>
 #include <stdexcept>
 #include <type_traits>
 #include <algorithm>
@@ -7,7 +8,7 @@
 namespace hksr::framework {
 CatalogBrowser::CatalogBrowser(CatalogReaders readers,std::function<void(const CatalogWork&)> report)
     :readers_(std::move(readers)),actions_(readers_.document,readers_.abilities,readers_.visuals,readers_.ready_defaults,readers_.begin_abilities),
-     report_(std::move(report)) {Publish();}
+     report_(std::move(report)) {actions_.SetSourceStore(readers_.source_store);Publish();}
 void CatalogBrowser::Publish() {
     if(source_batch_){publication_dirty_=true;return;}
     publication_dirty_=false;
@@ -48,6 +49,7 @@ void CatalogBrowser::BatchSources(const std::function<void()>& update) {
 }
 void CatalogBrowser::Request(bool refresh) {
     if(!state_.requested || refresh) {
+        if(!work_since_)work_since_=std::chrono::steady_clock::now();
         table_pending_=true;state_.requested=true;state_.error.clear();
         if(refresh) {
             // Existing requests keep their copied result. Pending/new requests
@@ -58,6 +60,7 @@ void CatalogBrowser::Request(bool refresh) {
     }
 }
 std::uint64_t CatalogBrowser::Prepare(BrowseSource source) {
+    if(!work_since_)work_since_=std::chrono::steady_clock::now();
     const auto id=++next_source_;
     auto value=std::make_shared<SourceRequestStatus>();value->id=id;value->input=std::move(source);
     state_.sources.emplace(id,std::move(value));pending_sources_.push_back(id);
@@ -101,6 +104,7 @@ bool CatalogBrowser::AdvanceOne() {
             try {rows=readers_.characters();}
             catch(const std::exception& error) {state_.table_error=error.what();}
             catch(...) {state_.table_error="unknown character table failure";}
+            if(readers_.source_store)actions_.SetSourceStore(readers_.source_store);
             state_.rows=std::make_shared<const api::CharacterCatalog>(rows);
             preparation_=std::make_unique<SourcePreparation>(std::move(rows),CatalogQueries{
                 readers_.identity,[this](const auto& path) {
@@ -124,6 +128,7 @@ void CatalogBrowser::Advance(std::uint32_t budget_microseconds) {
     try {
         do {
             if(!AdvanceOne())break;
+            if(!work_since_)work_since_=started;
             advanced=true;
         }while(std::chrono::steady_clock::now()-started<std::chrono::microseconds(budget_microseconds));
     }catch(const std::exception& error){state_.error=error.what();publication_dirty_=true;}
@@ -138,8 +143,11 @@ void CatalogBrowser::Advance(std::uint32_t budget_microseconds) {
     }
     if(work_.slices && hit_pending_.empty() && !table_pending_ && pending_sources_.empty() && !sources_dirty_ &&
         !actions_.ReadingAbilities() && (!actions_started_ || actions_.Finished())) {
+        work_.elapsed_us=static_cast<std::uint64_t>(std::chrono::duration_cast<std::chrono::microseconds>(
+            std::chrono::steady_clock::now()-work_since_.value_or(started)).count());
         if(report_)try{report_(work_);}catch(...) {} // diagnostics do not own catalog progress
-        work_={};
+        if(readers_.source_store)readers_.source_store->Flush();
+        work_={};work_since_.reset();
     }
 }
 std::uint64_t CatalogBrowser::RetrySource(std::uint64_t request) {

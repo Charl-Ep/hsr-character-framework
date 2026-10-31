@@ -29,6 +29,7 @@ struct Extension {
     hksr::api::RuntimeSubscription runtime;
     std::unique_ptr<hksr::framework::HttpControl> http;
     std::shared_ptr<hksr::framework::LayoutIo> layouts;
+    std::shared_ptr<hksr::framework::ActionSourceStore> action_sources;
     std::filesystem::path http_settings;
     std::optional<std::filesystem::file_time_type> http_modified;
     bool http_checked=false;
@@ -126,6 +127,17 @@ void Run() {
                 s.Log("official initialization critical section completed; starting SDK worker");
                 s.framework=std::make_shared<hksr::framework::FrameworkHost>([&s](const std::string& text){s.Log(text);});
                 s.framework->SetLayoutIo(s.layouts);
+                try {
+                    std::wstring executable(32768,L'\0');
+                    const auto size=GetModuleFileNameW(nullptr,executable.data(),static_cast<DWORD>(executable.size()));
+                    if(!size || size>=executable.size())throw std::runtime_error("cannot resolve game data root");
+                    executable.resize(size);const std::filesystem::path game(executable);
+                    auto markers=hksr::framework::ReadActionVersionMarkers(game.parent_path()/(game.stem().wstring()+L"_Data"));
+                    s.action_sources=std::make_shared<hksr::framework::ActionSourceStore>(
+                        s.http_settings.parent_path()/L"ActionCatalog"/L"sources.json",
+                        s.http_settings.parent_path()/L"Cache"/L"ActionCatalog"/L"sources.json",[&s](const auto& message){s.Log(message);});
+                    s.action_sources->Load();s.framework->SetActionSources(s.action_sources,std::move(markers));
+                }catch(const std::exception& e){s.Log("action sources unavailable: "+std::string(e.what()));}
                 auto profiles=std::make_shared<hksr::framework::PresentationProfiles>(hksr::framework::ReadPresentationProfiles(s.http_settings.parent_path()/L"PresentationProfiles"));
                 for(const auto& error:profiles->errors)s.Log("presentation profile: "+error);
                 s.Log("presentation profiles loaded="+std::to_string(profiles->sources.size()));
@@ -154,6 +166,7 @@ void Run() {
         }
         if(started) {
             s.layouts->Pump();
+            if(s.action_sources)s.action_sources->Pump();
             s.ReadHttpSettings(); // bootstrap worker only; no network/file IO on official frame
             const auto status=s.runtime.Status();
             // Runtime availability and a prepared subscription can precede

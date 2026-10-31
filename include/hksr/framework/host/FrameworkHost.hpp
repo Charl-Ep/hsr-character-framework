@@ -7,6 +7,7 @@
 #include <hksr/runtime/RuntimeHost.hpp>
 #include <hksr/control/MouseMode.hpp>
 #include <hksr/animation/AnimatorCatalog.hpp>
+#include "../catalog/ActionSourceStore.hpp"
 #include <atomic>
 #include <chrono>
 
@@ -23,6 +24,9 @@ public:
     // Set once before registering with the SDK runtime. Pump this mailbox on
     // the bootstrap worker; the host only exchanges values with it.
     void SetLayoutIo(std::shared_ptr<LayoutIo> io) {layout_io_=std::move(io);}
+    void SetActionSources(std::shared_ptr<ActionSourceStore> store,std::map<std::string,std::string> markers) {
+        source_store_=std::move(store);source_markers_=std::move(markers);
+    }
     void SetPresentationProfiles(std::shared_ptr<const PresentationProfiles> profiles) {profiles_=std::move(profiles);}
     // Authored inputs, loaded off the engine thread before Prepare. An empty
     // registry does not install the optional program observation machinery.
@@ -58,6 +62,7 @@ private:
     std::map<std::uint64_t,std::string> last_character_trace_;
     std::shared_ptr<const api::CharacterCatalog> traced_catalog_;
     std::map<std::uint64_t,std::string> source_traces_;
+    std::map<std::string,std::string> layout_traces_;
     void Assemble(api::ManagedObjects& objects,std::unique_ptr<RuntimeServices>,api::RuntimeCapabilities capabilities);
     void PrepareTypes();
     void PrepareApplication(std::unique_ptr<CatalogBrowser>);
@@ -67,6 +72,8 @@ private:
     CatalogBrowser& Browser();
     ApplicationService application_;
     std::shared_ptr<LayoutIo> layout_io_;
+    std::shared_ptr<ActionSourceStore> source_store_;
+    std::map<std::string,std::string> source_markers_;
     std::shared_ptr<const PresentationProfiles> profiles_;
     VisualProgramLibrary programs_;
     bool task_development_=false;

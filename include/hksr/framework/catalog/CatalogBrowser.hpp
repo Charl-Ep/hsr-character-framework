@@ -7,10 +7,11 @@
 #include "../presentation/PoseRequests.hpp"
 #include "../presentation/ReactionPolicy.hpp"
 #include <deque>
+#include <chrono>
 
 namespace hksr::framework {
 struct CatalogWork {
-    std::uint64_t slices=0,total_us=0,max_us=0,source_steps=0,action_steps=0;
+    std::uint64_t slices=0,total_us=0,max_us=0,source_steps=0,action_steps=0,elapsed_us=0;
 };
 struct CatalogReaders {
     std::function<api::CharacterCatalog()> characters;
@@ -24,6 +25,7 @@ struct CatalogReaders {
     std::function<api::CharacterHitInput(const std::string&)> hit_character;
     std::function<api::HitAnimationDefaults()> hit_weights;
     std::function<api::VisualReactionInput()> hit_names;
+    std::shared_ptr<ActionSourceStore> source_store;
 };
 // Official-thread coordinator. Construction and selection do not call the
 // engine. UI receives immutable values, never game objects or query callbacks.
@@ -80,6 +82,7 @@ private:
     unsigned source_batch_=0;
     bool sources_dirty_=false;
     CatalogWork work_;
+    std::optional<std::chrono::steady_clock::time_point> work_since_;
     std::function<void(const CatalogWork&)> report_;
 };
 }

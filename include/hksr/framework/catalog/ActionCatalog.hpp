@@ -8,6 +8,7 @@
 #include <tuple>
 
 namespace hksr::framework {
+class ActionSourceStore;
 // Domain-local value cache; official-thread reads only on Advance. Event-file
 // reference traversal is automatic, cycle-safe and shared across characters.
 // No number-of-skills cap, default four-state list, JSON report or game pointers.
@@ -22,6 +23,7 @@ public:
     explicit ActionCatalog(Read read,ReadAbility abilities={},ReadVisual visuals={},ReadReadyDefaults ready={},BeginAbility begin={}):read_(std::move(read)),read_ability_(std::move(abilities)),read_visual_(std::move(visuals)),read_ready_(std::move(ready)),begin_ability_(std::move(begin)){}
     void Request(std::vector<ActionSourceRoot> roots);
     bool RequestVisuals(const std::string& character_config); // opt-in, shared by source
+    void SetSourceStore(std::shared_ptr<ActionSourceStore> store);
     void Advance(); // one document or one resumable shared-cache ability slice
     bool CancelPending(); // engine-thread drain; true when no managed reader remains
     bool ReadingAbilities() const {return bool(ability_read_);}
@@ -61,7 +63,9 @@ private:
     Projection Project(const std::vector<ActionSourceRoot>& roots,bool values=true) const;
     void InvalidateDocument(const ActionSourceKey& source);
     void InvalidateAbility(const std::string& ability);
-    void StoreAbilities(const std::vector<std::string>& names,api::AbilitySources result);
+    void StoreAbilities(const std::vector<std::string>& names,api::AbilitySources result,bool persist=true);
+    const api::AbilitySources* Ability(const std::string& name) const;
+    std::shared_ptr<ActionSourceStore> source_store_;
     void Rebuild();
     Read read_;
     ReadAbility read_ability_;
@@ -77,10 +81,12 @@ private:
     std::set<std::string> visual_requests_;
     std::vector<std::string> pending_visuals_;
     std::vector<ActionSourceRoot> requested_;
-    std::map<ActionSourceKey,api::ActionConfigInput> documents_;
+    // Imported disk values are already available, not queued engine work.
+    // Projection may memoize them without invoking the native reader or IO.
+    mutable std::map<ActionSourceKey,api::ActionConfigInput> documents_;
     std::vector<ActionSourceKey> pending_;
-    std::map<std::string,api::AbilitySources> ability_sources_;
-    std::map<std::string,std::vector<ActionRetirement>> retirements_;
+    mutable std::map<std::string,api::AbilitySources> ability_sources_;
+    mutable std::map<std::string,std::vector<ActionRetirement>> retirements_;
     std::vector<std::string> pending_abilities_;
     mutable ActionCatalogStatus status_;
     mutable std::uint64_t status_revision_=0;

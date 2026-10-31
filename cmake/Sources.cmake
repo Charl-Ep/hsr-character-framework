@@ -39,6 +39,8 @@ set(HKSR_RUNTIME_SOURCES
 
     # src/catalog
     src/catalog/ActionCatalog.cpp
+    src/catalog/ActionSourceStore.cpp
+    src/serialization/ActionSourcesCodec.cpp
     src/catalog/VisualActionCatalog.cpp
     src/catalog/CatalogBrowser.cpp
     src/catalog/OfficialCharacterFamilies.cpp
@@ -157,6 +159,7 @@ set(HKSR_RUNTIME_TEST_SOURCES
 
     # tests/catalog
     tests/catalog/ActionCatalogTests.cpp
+    tests/catalog/ActionSourceStoreTests.cpp
     tests/catalog/CatalogBrowserTests.cpp
     tests/catalog/SourceCatalogTests.cpp
 

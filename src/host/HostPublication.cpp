@@ -24,6 +24,14 @@ void FrameworkHost::Publish(const std::optional<SceneAddress>& scene) {
     out.prepared=true;out.closing=closing_;out.scene=scene;out.map_error=identity_->Error();
     out.closed=closing_ && characters_->Closed() && identity_->Closed() && type_roots_.empty() && effects_closed_ && !coordinator_->Catalog();
     coordinator_->Populate(out);
+    for(const auto& entry:out.layouts.maps) {
+        const auto& value=entry.second;
+        const auto stamp=value.phase+":"+value.error;
+        if(layout_traces_[entry.first]!=stamp) {
+            layout_traces_[entry.first]=stamp;
+            Trace("layout scene="+entry.first+" phase="+value.phase+" error="+value.error);
+        }
+    }
     if(out.catalog) {
         const auto& catalog=*out.catalog;
         for(auto it=source_traces_.begin();it!=source_traces_.end();)

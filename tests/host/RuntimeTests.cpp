@@ -107,6 +107,8 @@ void TestSelectedEntry(const char* file);
 void TestReadyPlayback();
 void TestSourceCatalog();
 void TestActionCatalog();
+void TestActionSourceStore();
+void AuditActionSources(const char* file);
 void TestCatalogBrowser();
 void TestSceneIdentity();
 void TestSceneLayout();
@@ -117,6 +119,7 @@ int main(int argc,char** argv) try {
     std::cout<<std::unitbuf;
     if(argc==3 && std::string(argv[1])=="--visual-program") {TestVisualProgram(argv[2]);return 0;}
     if(argc==3 && std::string(argv[1])=="--selected-entry") {TestSelectedEntry(argv[2]);return 0;}
+    if(argc==3 && std::string(argv[1])=="--audit-action-sources") {AuditActionSources(argv[2]);return 0;}
     if(argc==3 && std::string(argv[1])=="--parse-visual-program") {
         std::ifstream input(argv[2],std::ios::binary);if(!input)throw std::runtime_error("visual program file unavailable");
         const auto program=ParseVisualProgram({std::istreambuf_iterator<char>(input),std::istreambuf_iterator<char>()});
@@ -129,6 +132,7 @@ int main(int argc,char** argv) try {
     TestLayoutController();
     TestCharacterControls();
     TestActionCatalog();
+    TestActionSourceStore();
     TestCatalogBrowser();
     TestSourceCatalog();
     TestActionPlayback();

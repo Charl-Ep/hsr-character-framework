@@ -84,7 +84,17 @@ void FrameworkHost::Prepare(api::RuntimeMetadata& metadata,api::RuntimeCapabilit
         mouse_=services_->CreateMouseMode();
     }catch(const std::exception& e){Trace(std::string("mouse mode unavailable: ")+e.what());}
     CatalogReaders readers;
-    readers.characters=[this]{return Measure("catalog.tables",[&]{return official_catalog_->ReadCharacters();});};
+    readers.source_store=source_store_;
+    readers.characters=[this,version_checked=false]() mutable {
+        if(!version_checked) {
+            version_checked=true;
+            if(source_store_)try {
+                const auto version=official_catalog_->ReadActionDataVersion();
+                source_store_->Bind({version.build,version.design,source_markers_});
+            }catch(const std::exception& e){Trace("action sources bypassed: "+std::string(e.what()));}
+        }
+        return Measure("catalog.tables",[&]{return official_catalog_->ReadCharacters();});
+    };
     readers.identity=[this](const auto& path){return Measure("catalog.identity:"+path,[&]{return official_catalog_->ReadAdventureIdentity(path);});};
     readers.document=[this](auto kind,const auto& path){return Measure("catalog.document:"+path,[&]{return official_catalog_->ReadActionConfig(kind,path);});};
     readers.npc_motions=[this](void* component){return Measure("catalog.npc-motions",[&]{return official_catalog_->ReadNpcMotionsFromComponent(component);});};
@@ -99,7 +109,13 @@ void FrameworkHost::Prepare(api::RuntimeMetadata& metadata,api::RuntimeCapabilit
     auto browser=std::make_unique<CatalogBrowser>(std::move(readers),[this](const CatalogWork& work){
             Trace("catalog completed slices="+std::to_string(work.slices)+" total_us="+std::to_string(work.total_us)+
                 " max_us="+std::to_string(work.max_us)+" source_steps="+std::to_string(work.source_steps)+
-                " action_steps="+std::to_string(work.action_steps));
+                " action_steps="+std::to_string(work.action_steps)+" elapsed_us="+std::to_string(work.elapsed_us));
+            if(source_store_) {
+                const auto stats=source_store_->Statistics();
+                Trace("action sources reads document_hits="+std::to_string(stats.document_hits)+
+                    " ability_hits="+std::to_string(stats.ability_hits)+" document_misses="+std::to_string(stats.document_misses)+
+                    " ability_misses="+std::to_string(stats.ability_misses));
+            }
         });
     PrepareApplication(std::move(browser));
     application_.Post(SetCameraPresentations{false});
