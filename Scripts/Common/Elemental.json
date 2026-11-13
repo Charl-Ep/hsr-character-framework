@@ -1,0 +1,2749 @@
+{
+  "templates": {
+    "common.elemental.responses": {
+      "run": [
+        {
+          "op": "switch",
+          "name": "event",
+          "cases": [
+            {
+              "is": 1,
+              "run": [
+                {
+                  "op": "if",
+                  "condition": {
+                    "op": "value",
+                    "name": "callback.1065.condition.ByCompareStanceCount.33",
+                    "is": true
+                  },
+                  "then": [
+                    {
+                      "op": "if",
+                      "condition": {
+                        "op": "value",
+                        "name": "callback.1065.condition.ByCharacterDamageType.3",
+                        "is": 1
+                      },
+                      "then": [
+                        {
+                          "op": "effect.create",
+                          "effects": [
+                            "common.elemental.outerskin_common_physical.2"
+                          ],
+                          "as": "callback.1065.effect.8"
+                        },
+                        {
+                          "op": "wait",
+                          "for": "callback.1065.effect.8",
+                          "until": "accepted"
+                        }
+                      ],
+                      "else": []
+                    },
+                    {
+                      "op": "if",
+                      "condition": {
+                        "op": "value",
+                        "name": "callback.1065.condition.ByCharacterDamageType.3",
+                        "is": 4
+                      },
+                      "then": [
+                        {
+                          "op": "effect.create",
+                          "effects": [
+                            "common.elemental.outerskin_common_ice.2"
+                          ],
+                          "as": "callback.1065.effect.12"
+                        },
+                        {
+                          "op": "wait",
+                          "for": "callback.1065.effect.12",
+                          "until": "accepted"
+                        }
+                      ],
+                      "else": []
+                    },
+                    {
+                      "op": "if",
+                      "condition": {
+                        "op": "value",
+                        "name": "callback.1065.condition.ByCharacterDamageType.3",
+                        "is": 2
+                      },
+                      "then": [
+                        {
+                          "op": "effect.create",
+                          "effects": [
+                            "common.elemental.outerskin_common_fire.2"
+                          ],
+                          "as": "callback.1065.effect.16"
+                        },
+                        {
+                          "op": "wait",
+                          "for": "callback.1065.effect.16",
+                          "until": "accepted"
+                        }
+                      ],
+                      "else": []
+                    },
+                    {
+                      "op": "if",
+                      "condition": {
+                        "op": "value",
+                        "name": "callback.1065.condition.ByCharacterDamageType.3",
+                        "is": 16
+                      },
+                      "then": [
+                        {
+                          "op": "effect.create",
+                          "effects": [
+                            "common.elemental.outerskin_common_wind.2"
+                          ],
+                          "as": "callback.1065.effect.20"
+                        },
+                        {
+                          "op": "wait",
+                          "for": "callback.1065.effect.20",
+                          "until": "accepted"
+                        }
+                      ],
+                      "else": []
+                    },
+                    {
+                      "op": "if",
+                      "condition": {
+                        "op": "value",
+                        "name": "callback.1065.condition.ByCharacterDamageType.3",
+                        "is": 8
+                      },
+                      "then": [
+                        {
+                          "op": "effect.create",
+                          "effects": [
+                            "common.elemental.outerskin_common_thunder.2"
+                          ],
+                          "as": "callback.1065.effect.24"
+                        },
+                        {
+                          "op": "wait",
+                          "for": "callback.1065.effect.24",
+                          "until": "accepted"
+                        }
+                      ],
+                      "else": []
+                    },
+                    {
+                      "op": "if",
+                      "condition": {
+                        "op": "value",
+                        "name": "callback.1065.condition.ByCharacterDamageType.3",
+                        "is": 64
+                      },
+                      "then": [
+                        {
+                          "op": "effect.create",
+                          "effects": [
+                            "common.elemental.outerskin_common_imaginary.2"
+                          ],
+                          "as": "callback.1065.effect.28"
+                        },
+                        {
+                          "op": "wait",
+                          "for": "callback.1065.effect.28",
+                          "until": "accepted"
+                        }
+                      ],
+                      "else": []
+                    },
+                    {
+                      "op": "if",
+                      "condition": {
+                        "op": "value",
+                        "name": "callback.1065.condition.ByCharacterDamageType.3",
+                        "is": 32
+                      },
+                      "then": [
+                        {
+                          "op": "effect.create",
+                          "effects": [
+                            "common.elemental.outerskin_common_quantum.2"
+                          ],
+                          "as": "callback.1065.effect.32"
+                        },
+                        {
+                          "op": "wait",
+                          "for": "callback.1065.effect.32",
+                          "until": "accepted"
+                        }
+                      ],
+                      "else": []
+                    }
+                  ],
+                  "else": []
+                },
+                {
+                  "op": "join"
+                },
+                {
+                  "op": "repeat",
+                  "until_finish": true,
+                  "run": [
+                    {
+                      "op": "wait",
+                      "frame": true
+                    }
+                  ]
+                },
+                {
+                  "op": "effect.remove",
+                  "effects": [
+                    "common.elemental.outerskin_common_physical.2",
+                    "common.elemental.outerskin_common_ice.2",
+                    "common.elemental.outerskin_common_fire.2",
+                    "common.elemental.outerskin_common_wind.2",
+                    "common.elemental.outerskin_common_thunder.2",
+                    "common.elemental.outerskin_common_imaginary.2",
+                    "common.elemental.outerskin_common_quantum.2"
+                  ],
+                  "optional": [
+                    "common.elemental.outerskin_common_physical.2",
+                    "common.elemental.outerskin_common_ice.2",
+                    "common.elemental.outerskin_common_fire.2",
+                    "common.elemental.outerskin_common_wind.2",
+                    "common.elemental.outerskin_common_thunder.2",
+                    "common.elemental.outerskin_common_imaginary.2",
+                    "common.elemental.outerskin_common_quantum.2"
+                  ],
+                  "as": "callback.1065.remove-effects"
+                },
+                {
+                  "op": "wait",
+                  "for": "callback.1065.remove-effects",
+                  "until": "accepted"
+                },
+                {
+                  "op": "call",
+                  "function": "@return.return.pose"
+                },
+                {
+                  "op": "wait",
+                  "for": "return.pose",
+                  "until": "submitted"
+                },
+                {
+                  "op": "movement",
+                  "clock": "instant",
+                  "segments": [
+                    {
+                      "destination": "origin",
+                      "preserve_height": false
+                    }
+                  ],
+                  "as": "return.position"
+                },
+                {
+                  "op": "wait",
+                  "for": "return.position"
+                }
+              ],
+              "label": "Weakness break update"
+            },
+            {
+              "is": 2,
+              "run": [
+                {
+                  "op": "effect.create",
+                  "effects": [
+                    "common.elemental.hit_common_wound_triger"
+                  ],
+                  "as": "callback.5354.effect.1"
+                },
+                {
+                  "op": "wait",
+                  "for": "callback.5354.effect.1",
+                  "until": "accepted"
+                },
+                {
+                  "op": "wait",
+                  "seconds": 0.1
+                },
+                {
+                  "op": "wait",
+                  "seconds": 0.1
+                },
+                {
+                  "op": "join"
+                },
+                {
+                  "op": "repeat",
+                  "until_finish": true,
+                  "run": [
+                    {
+                      "op": "wait",
+                      "frame": true
+                    }
+                  ]
+                },
+                {
+                  "op": "effect.remove",
+                  "effects": [
+                    "common.elemental.hit_common_wound_triger"
+                  ],
+                  "optional": [
+                    "common.elemental.hit_common_wound_triger"
+                  ],
+                  "as": "callback.5354.remove-effects"
+                },
+                {
+                  "op": "wait",
+                  "for": "callback.5354.remove-effects",
+                  "until": "accepted"
+                },
+                {
+                  "op": "call",
+                  "function": "@return.return.pose"
+                },
+                {
+                  "op": "wait",
+                  "for": "return.pose",
+                  "until": "submitted"
+                },
+                {
+                  "op": "movement",
+                  "clock": "instant",
+                  "segments": [
+                    {
+                      "destination": "origin",
+                      "preserve_height": false
+                    }
+                  ],
+                  "as": "return.position"
+                },
+                {
+                  "op": "wait",
+                  "for": "return.position"
+                }
+              ],
+              "label": "Bleed"
+            },
+            {
+              "is": 3,
+              "run": [
+                {
+                  "op": "sound",
+                  "event": "Ev_monster_combat_pause",
+                  "as": "callback.5356.sound.1"
+                },
+                {
+                  "op": "effect.create",
+                  "effects": [
+                    "common.elemental.buff_common_freeze"
+                  ],
+                  "as": "callback.5356.effect.3"
+                },
+                {
+                  "op": "wait",
+                  "for": "callback.5356.effect.3",
+                  "until": "accepted"
+                },
+                {
+                  "op": "effect.create",
+                  "effects": [
+                    "common.elemental.buff_common_freeze_loop"
+                  ],
+                  "as": "callback.5356.effect.5"
+                },
+                {
+                  "op": "wait",
+                  "for": "callback.5356.effect.5",
+                  "until": "accepted"
+                },
+                {
+                  "op": "effect.create",
+                  "effects": [
+                    "common.elemental.buff_common_freeze_outlinecolor_02"
+                  ],
+                  "as": "callback.5356.effect.7"
+                },
+                {
+                  "op": "wait",
+                  "for": "callback.5356.effect.7",
+                  "until": "accepted"
+                },
+                {
+                  "op": "join"
+                },
+                {
+                  "op": "repeat",
+                  "until_finish": true,
+                  "run": [
+                    {
+                      "op": "wait",
+                      "frame": true
+                    }
+                  ]
+                },
+                {
+                  "op": "effect.remove",
+                  "effects": [
+                    "common.elemental.buff_common_freeze",
+                    "common.elemental.buff_common_freeze_loop",
+                    "common.elemental.buff_common_freeze_outlinecolor_02"
+                  ],
+                  "optional": [
+                    "common.elemental.buff_common_freeze",
+                    "common.elemental.buff_common_freeze_loop",
+                    "common.elemental.buff_common_freeze_outlinecolor_02"
+                  ],
+                  "as": "callback.5356.remove-effects"
+                },
+                {
+                  "op": "wait",
+                  "for": "callback.5356.remove-effects",
+                  "until": "accepted"
+                },
+                {
+                  "op": "call",
+                  "function": "@return.return.pose"
+                },
+                {
+                  "op": "wait",
+                  "for": "return.pose",
+                  "until": "submitted"
+                },
+                {
+                  "op": "movement",
+                  "clock": "instant",
+                  "segments": [
+                    {
+                      "destination": "origin",
+                      "preserve_height": false
+                    }
+                  ],
+                  "as": "return.position"
+                },
+                {
+                  "op": "wait",
+                  "for": "return.position"
+                }
+              ],
+              "label": "Frozen update"
+            },
+            {
+              "is": 4,
+              "run": [
+                {
+                  "op": "effect.create",
+                  "effects": [
+                    "common.elemental.buff_common_ice_trigger"
+                  ],
+                  "as": "callback.5357.effect.1"
+                },
+                {
+                  "op": "wait",
+                  "for": "callback.5357.effect.1",
+                  "until": "accepted"
+                },
+                {
+                  "op": "wait",
+                  "seconds": 0.1
+                },
+                {
+                  "op": "wait",
+                  "seconds": 0.1
+                },
+                {
+                  "op": "join"
+                },
+                {
+                  "op": "repeat",
+                  "until_finish": true,
+                  "run": [
+                    {
+                      "op": "wait",
+                      "frame": true
+                    }
+                  ]
+                },
+                {
+                  "op": "effect.remove",
+                  "effects": [
+                    "common.elemental.buff_common_ice_trigger"
+                  ],
+                  "optional": [
+                    "common.elemental.buff_common_ice_trigger"
+                  ],
+                  "as": "callback.5357.remove-effects"
+                },
+                {
+                  "op": "wait",
+                  "for": "callback.5357.remove-effects",
+                  "until": "accepted"
+                },
+                {
+                  "op": "call",
+                  "function": "@return.return.pose"
+                },
+                {
+                  "op": "wait",
+                  "for": "return.pose",
+                  "until": "submitted"
+                },
+                {
+                  "op": "movement",
+                  "clock": "instant",
+                  "segments": [
+                    {
+                      "destination": "origin",
+                      "preserve_height": false
+                    }
+                  ],
+                  "as": "return.position"
+                },
+                {
+                  "op": "wait",
+                  "for": "return.position"
+                }
+              ],
+              "label": "Frozen pulse"
+            },
+            {
+              "is": 5,
+              "run": [
+                {
+                  "op": "if",
+                  "condition": {
+                    "op": "value",
+                    "name": "callback.5358.condition.ByIsTargetValid.1",
+                    "is": true
+                  },
+                  "then": [
+                    {
+                      "op": "wait",
+                      "seconds": 0.1500000001
+                    },
+                    {
+                      "op": "if",
+                      "condition": {
+                        "op": "value",
+                        "name": "callback.5358.condition.ByContainBehaviorFlag.3",
+                        "is": true
+                      },
+                      "then": [
+                        {
+                          "op": "sound",
+                          "event": "Ev_monster_combat_resume",
+                          "as": "callback.5358.sound.4"
+                        },
+                        {
+                          "op": "wait",
+                          "seconds": 0.7500000006
+                        }
+                      ],
+                      "else": []
+                    }
+                  ],
+                  "else": []
+                },
+                {
+                  "op": "join"
+                },
+                {
+                  "op": "call",
+                  "function": "@return.return.pose"
+                },
+                {
+                  "op": "wait",
+                  "for": "return.pose",
+                  "until": "submitted"
+                },
+                {
+                  "op": "movement",
+                  "clock": "instant",
+                  "segments": [
+                    {
+                      "destination": "origin",
+                      "preserve_height": false
+                    }
+                  ],
+                  "as": "return.position"
+                },
+                {
+                  "op": "wait",
+                  "for": "return.position"
+                }
+              ],
+              "label": "MCommon_Element_Frozen: OnDestroy"
+            },
+            {
+              "is": 6,
+              "run": [
+                {
+                  "op": "if",
+                  "condition": {
+                    "op": "value",
+                    "name": "callback.5359.condition.ByInTurnBasedGameModeState.1",
+                    "is": true
+                  },
+                  "then": [],
+                  "else": [
+                    {
+                      "op": "effect.create",
+                      "effects": [
+                        "common.elemental.buff_common_ice_add"
+                      ],
+                      "as": "callback.5359.effect.2"
+                    },
+                    {
+                      "op": "wait",
+                      "for": "callback.5359.effect.2",
+                      "until": "accepted"
+                    }
+                  ]
+                },
+                {
+                  "op": "state.enter",
+                  "name": "common.elemental.frozen-hit",
+                  "as": "callback.5359.receiver-property.3"
+                },
+                {
+                  "op": "wait",
+                  "for": "callback.5359.receiver-property.3"
+                },
+                {
+                  "op": "join"
+                },
+                {
+                  "op": "repeat",
+                  "until_finish": true,
+                  "run": [
+                    {
+                      "op": "wait",
+                      "frame": true
+                    }
+                  ]
+                },
+                {
+                  "op": "effect.remove",
+                  "effects": [
+                    "common.elemental.buff_common_ice_add"
+                  ],
+                  "optional": [
+                    "common.elemental.buff_common_ice_add"
+                  ],
+                  "as": "callback.5359.remove-effects"
+                },
+                {
+                  "op": "wait",
+                  "for": "callback.5359.remove-effects",
+                  "until": "accepted"
+                },
+                {
+                  "op": "call",
+                  "function": "@return.return.pose"
+                },
+                {
+                  "op": "wait",
+                  "for": "return.pose",
+                  "until": "submitted"
+                },
+                {
+                  "op": "movement",
+                  "clock": "instant",
+                  "segments": [
+                    {
+                      "destination": "origin",
+                      "preserve_height": false
+                    }
+                  ],
+                  "as": "return.position"
+                },
+                {
+                  "op": "wait",
+                  "for": "return.position"
+                }
+              ],
+              "label": "Frozen effect"
+            },
+            {
+              "is": 7,
+              "run": [
+                {
+                  "op": "effect.create",
+                  "effects": [
+                    "common.elemental.buff_common_fire_trigger"
+                  ],
+                  "as": "callback.5362.effect.1"
+                },
+                {
+                  "op": "wait",
+                  "for": "callback.5362.effect.1",
+                  "until": "accepted"
+                },
+                {
+                  "op": "wait",
+                  "seconds": 0.1
+                },
+                {
+                  "op": "wait",
+                  "seconds": 0.1
+                },
+                {
+                  "op": "join"
+                },
+                {
+                  "op": "repeat",
+                  "until_finish": true,
+                  "run": [
+                    {
+                      "op": "wait",
+                      "frame": true
+                    }
+                  ]
+                },
+                {
+                  "op": "effect.remove",
+                  "effects": [
+                    "common.elemental.buff_common_fire_trigger"
+                  ],
+                  "optional": [
+                    "common.elemental.buff_common_fire_trigger"
+                  ],
+                  "as": "callback.5362.remove-effects"
+                },
+                {
+                  "op": "wait",
+                  "for": "callback.5362.remove-effects",
+                  "until": "accepted"
+                },
+                {
+                  "op": "call",
+                  "function": "@return.return.pose"
+                },
+                {
+                  "op": "wait",
+                  "for": "return.pose",
+                  "until": "submitted"
+                },
+                {
+                  "op": "movement",
+                  "clock": "instant",
+                  "segments": [
+                    {
+                      "destination": "origin",
+                      "preserve_height": false
+                    }
+                  ],
+                  "as": "return.position"
+                },
+                {
+                  "op": "wait",
+                  "for": "return.position"
+                }
+              ],
+              "label": "Burn"
+            },
+            {
+              "is": 8,
+              "run": [
+                {
+                  "op": "effect.create",
+                  "effects": [
+                    "common.elemental.hit_common_wind_triger"
+                  ],
+                  "as": "callback.5365.effect.1"
+                },
+                {
+                  "op": "wait",
+                  "for": "callback.5365.effect.1",
+                  "until": "accepted"
+                },
+                {
+                  "op": "wait",
+                  "seconds": 0.1
+                },
+                {
+                  "op": "join"
+                },
+                {
+                  "op": "repeat",
+                  "until_finish": true,
+                  "run": [
+                    {
+                      "op": "wait",
+                      "frame": true
+                    }
+                  ]
+                },
+                {
+                  "op": "effect.remove",
+                  "effects": [
+                    "common.elemental.hit_common_wind_triger"
+                  ],
+                  "optional": [
+                    "common.elemental.hit_common_wind_triger"
+                  ],
+                  "as": "callback.5365.remove-effects"
+                },
+                {
+                  "op": "wait",
+                  "for": "callback.5365.remove-effects",
+                  "until": "accepted"
+                },
+                {
+                  "op": "call",
+                  "function": "@return.return.pose"
+                },
+                {
+                  "op": "wait",
+                  "for": "return.pose",
+                  "until": "submitted"
+                },
+                {
+                  "op": "movement",
+                  "clock": "instant",
+                  "segments": [
+                    {
+                      "destination": "origin",
+                      "preserve_height": false
+                    }
+                  ],
+                  "as": "return.position"
+                },
+                {
+                  "op": "wait",
+                  "for": "return.position"
+                }
+              ],
+              "label": "Wind shear"
+            },
+            {
+              "is": 9,
+              "run": [
+                {
+                  "op": "effect.create",
+                  "effects": [
+                    "common.elemental.buff_common_lightning"
+                  ],
+                  "as": "callback.5369.effect.1"
+                },
+                {
+                  "op": "wait",
+                  "for": "callback.5369.effect.1",
+                  "until": "accepted"
+                },
+                {
+                  "op": "wait",
+                  "seconds": 0.1
+                },
+                {
+                  "op": "wait",
+                  "seconds": 0.1
+                },
+                {
+                  "op": "join"
+                },
+                {
+                  "op": "repeat",
+                  "until_finish": true,
+                  "run": [
+                    {
+                      "op": "wait",
+                      "frame": true
+                    }
+                  ]
+                },
+                {
+                  "op": "effect.remove",
+                  "effects": [
+                    "common.elemental.buff_common_lightning"
+                  ],
+                  "optional": [
+                    "common.elemental.buff_common_lightning"
+                  ],
+                  "as": "callback.5369.remove-effects"
+                },
+                {
+                  "op": "wait",
+                  "for": "callback.5369.remove-effects",
+                  "until": "accepted"
+                },
+                {
+                  "op": "call",
+                  "function": "@return.return.pose"
+                },
+                {
+                  "op": "wait",
+                  "for": "return.pose",
+                  "until": "submitted"
+                },
+                {
+                  "op": "movement",
+                  "clock": "instant",
+                  "segments": [
+                    {
+                      "destination": "origin",
+                      "preserve_height": false
+                    }
+                  ],
+                  "as": "return.position"
+                },
+                {
+                  "op": "wait",
+                  "for": "return.position"
+                }
+              ],
+              "label": "Shock"
+            },
+            {
+              "is": 10,
+              "run": [
+                {
+                  "op": "effect.create",
+                  "effects": [
+                    "common.elemental.buff_common_confine"
+                  ],
+                  "as": "callback.5371.effect.4"
+                },
+                {
+                  "op": "wait",
+                  "for": "callback.5371.effect.4",
+                  "until": "accepted"
+                },
+                {
+                  "op": "join"
+                },
+                {
+                  "op": "repeat",
+                  "until_finish": true,
+                  "run": [
+                    {
+                      "op": "wait",
+                      "frame": true
+                    }
+                  ]
+                },
+                {
+                  "op": "effect.remove",
+                  "effects": [
+                    "common.elemental.buff_common_confine"
+                  ],
+                  "optional": [
+                    "common.elemental.buff_common_confine"
+                  ],
+                  "as": "callback.5371.remove-effects"
+                },
+                {
+                  "op": "wait",
+                  "for": "callback.5371.remove-effects",
+                  "until": "accepted"
+                },
+                {
+                  "op": "call",
+                  "function": "@return.return.pose"
+                },
+                {
+                  "op": "wait",
+                  "for": "return.pose",
+                  "until": "submitted"
+                },
+                {
+                  "op": "movement",
+                  "clock": "instant",
+                  "segments": [
+                    {
+                      "destination": "origin",
+                      "preserve_height": false
+                    }
+                  ],
+                  "as": "return.position"
+                },
+                {
+                  "op": "wait",
+                  "for": "return.position"
+                }
+              ],
+              "label": "Imprisonment"
+            },
+            {
+              "is": 11,
+              "run": [
+                {
+                  "op": "effect.create",
+                  "effects": [
+                    "common.elemental.buff_common_confineout"
+                  ],
+                  "as": "callback.5372.effect.1"
+                },
+                {
+                  "op": "wait",
+                  "for": "callback.5372.effect.1",
+                  "until": "accepted"
+                },
+                {
+                  "op": "join"
+                },
+                {
+                  "op": "repeat",
+                  "until_finish": true,
+                  "run": [
+                    {
+                      "op": "wait",
+                      "frame": true
+                    }
+                  ]
+                },
+                {
+                  "op": "effect.remove",
+                  "effects": [
+                    "common.elemental.buff_common_confineout"
+                  ],
+                  "optional": [
+                    "common.elemental.buff_common_confineout"
+                  ],
+                  "as": "callback.5372.remove-effects"
+                },
+                {
+                  "op": "wait",
+                  "for": "callback.5372.remove-effects",
+                  "until": "accepted"
+                },
+                {
+                  "op": "call",
+                  "function": "@return.return.pose"
+                },
+                {
+                  "op": "wait",
+                  "for": "return.pose",
+                  "until": "submitted"
+                },
+                {
+                  "op": "movement",
+                  "clock": "instant",
+                  "segments": [
+                    {
+                      "destination": "origin",
+                      "preserve_height": false
+                    }
+                  ],
+                  "as": "return.position"
+                },
+                {
+                  "op": "wait",
+                  "for": "return.position"
+                }
+              ],
+              "label": "Imprisonment end"
+            },
+            {
+              "is": 12,
+              "run": [
+                {
+                  "op": "if",
+                  "condition": {
+                    "op": "value",
+                    "name": "callback.5373.condition.ByCompareDynamicValue.1",
+                    "is": true
+                  },
+                  "then": [
+                    {
+                      "op": "if",
+                      "condition": {
+                        "op": "value",
+                        "name": "callback.5373.condition.ByCompareDynamicValue.2",
+                        "is": true
+                      },
+                      "then": [],
+                      "else": [
+                        {
+                          "op": "effect.create",
+                          "effects": [
+                            "common.elemental.stancebreak_common_quantum_hit"
+                          ],
+                          "as": "callback.5373.effect.4"
+                        },
+                        {
+                          "op": "wait",
+                          "for": "callback.5373.effect.4",
+                          "until": "accepted"
+                        }
+                      ]
+                    }
+                  ],
+                  "else": []
+                },
+                {
+                  "op": "if",
+                  "condition": {
+                    "op": "value",
+                    "name": "callback.5373.condition.ByCompareDynamicValue.10",
+                    "is": true
+                  },
+                  "then": [],
+                  "elif": [
+                    {
+                      "condition": {
+                        "op": "value",
+                        "name": "callback.5373.condition.ByCompareDynamicValue.11",
+                        "is": true
+                      },
+                      "then": [
+                        {
+                          "op": "effect.create",
+                          "effects": [
+                            "common.elemental.stancebreak_common_quantum_loop_01"
+                          ],
+                          "as": "callback.5373.effect.14"
+                        },
+                        {
+                          "op": "wait",
+                          "for": "callback.5373.effect.14",
+                          "until": "accepted"
+                        }
+                      ]
+                    }
+                  ],
+                  "else": [
+                    {
+                      "op": "effect.create",
+                      "effects": [
+                        "common.elemental.stancebreak_common_quantum_loop_02"
+                      ],
+                      "as": "callback.5373.effect.17"
+                    },
+                    {
+                      "op": "wait",
+                      "for": "callback.5373.effect.17",
+                      "until": "accepted"
+                    }
+                  ]
+                },
+                {
+                  "op": "join"
+                },
+                {
+                  "op": "repeat",
+                  "until_finish": true,
+                  "run": [
+                    {
+                      "op": "wait",
+                      "frame": true
+                    }
+                  ]
+                },
+                {
+                  "op": "effect.remove",
+                  "effects": [
+                    "common.elemental.stancebreak_common_quantum_hit",
+                    "common.elemental.stancebreak_common_quantum_loop_01",
+                    "common.elemental.stancebreak_common_quantum_loop_02"
+                  ],
+                  "optional": [
+                    "common.elemental.stancebreak_common_quantum_hit",
+                    "common.elemental.stancebreak_common_quantum_loop_01",
+                    "common.elemental.stancebreak_common_quantum_loop_02"
+                  ],
+                  "as": "callback.5373.remove-effects"
+                },
+                {
+                  "op": "wait",
+                  "for": "callback.5373.remove-effects",
+                  "until": "accepted"
+                },
+                {
+                  "op": "call",
+                  "function": "@return.return.pose"
+                },
+                {
+                  "op": "wait",
+                  "for": "return.pose",
+                  "until": "submitted"
+                },
+                {
+                  "op": "movement",
+                  "clock": "instant",
+                  "segments": [
+                    {
+                      "destination": "origin",
+                      "preserve_height": false
+                    }
+                  ],
+                  "as": "return.position"
+                },
+                {
+                  "op": "wait",
+                  "for": "return.position"
+                }
+              ],
+              "label": "Entanglement hit"
+            },
+            {
+              "is": 13,
+              "run": [
+                {
+                  "op": "effect.create",
+                  "effects": [
+                    "common.elemental.stancebreak_common_quantum_loop_00"
+                  ],
+                  "as": "callback.5375.effect.3"
+                },
+                {
+                  "op": "wait",
+                  "for": "callback.5375.effect.3",
+                  "until": "accepted"
+                },
+                {
+                  "op": "join"
+                },
+                {
+                  "op": "repeat",
+                  "until_finish": true,
+                  "run": [
+                    {
+                      "op": "wait",
+                      "frame": true
+                    }
+                  ]
+                },
+                {
+                  "op": "effect.remove",
+                  "effects": [
+                    "common.elemental.stancebreak_common_quantum_loop_00"
+                  ],
+                  "optional": [
+                    "common.elemental.stancebreak_common_quantum_loop_00"
+                  ],
+                  "as": "callback.5375.remove-effects"
+                },
+                {
+                  "op": "wait",
+                  "for": "callback.5375.remove-effects",
+                  "until": "accepted"
+                },
+                {
+                  "op": "call",
+                  "function": "@return.return.pose"
+                },
+                {
+                  "op": "wait",
+                  "for": "return.pose",
+                  "until": "submitted"
+                },
+                {
+                  "op": "movement",
+                  "clock": "instant",
+                  "segments": [
+                    {
+                      "destination": "origin",
+                      "preserve_height": false
+                    }
+                  ],
+                  "as": "return.position"
+                },
+                {
+                  "op": "wait",
+                  "for": "return.position"
+                }
+              ],
+              "label": "Entanglement update"
+            },
+            {
+              "is": 14,
+              "run": [
+                {
+                  "op": "wait",
+                  "seconds": 0.1100000001
+                },
+                {
+                  "op": "if",
+                  "condition": {
+                    "op": "value",
+                    "name": "callback.5376.condition.ByCompareDynamicValue.3",
+                    "is": true
+                  },
+                  "then": [
+                    {
+                      "op": "effect.create",
+                      "effects": [
+                        "common.elemental.stancebreak_common_quantum_explosion_00"
+                      ],
+                      "as": "callback.5376.effect.6"
+                    },
+                    {
+                      "op": "wait",
+                      "for": "callback.5376.effect.6",
+                      "until": "accepted"
+                    }
+                  ],
+                  "elif": [
+                    {
+                      "condition": {
+                        "op": "value",
+                        "name": "callback.5376.condition.ByCompareDynamicValue.7",
+                        "is": true
+                      },
+                      "then": [
+                        {
+                          "op": "effect.create",
+                          "effects": [
+                            "common.elemental.stancebreak_common_quantum_explosion_01"
+                          ],
+                          "as": "callback.5376.effect.10"
+                        },
+                        {
+                          "op": "wait",
+                          "for": "callback.5376.effect.10",
+                          "until": "accepted"
+                        }
+                      ]
+                    }
+                  ],
+                  "else": [
+                    {
+                      "op": "effect.create",
+                      "effects": [
+                        "common.elemental.stancebreak_common_quantum_explosion_02"
+                      ],
+                      "as": "callback.5376.effect.13"
+                    },
+                    {
+                      "op": "wait",
+                      "for": "callback.5376.effect.13",
+                      "until": "accepted"
+                    }
+                  ]
+                },
+                {
+                  "op": "join"
+                },
+                {
+                  "op": "repeat",
+                  "until_finish": true,
+                  "run": [
+                    {
+                      "op": "wait",
+                      "frame": true
+                    }
+                  ]
+                },
+                {
+                  "op": "repeat",
+                  "until_finish": true,
+                  "run": [
+                    {
+                      "op": "wait",
+                      "frame": true
+                    }
+                  ]
+                },
+                {
+                  "op": "effect.remove",
+                  "effects": [
+                    "common.elemental.stancebreak_common_quantum_explosion_00",
+                    "common.elemental.stancebreak_common_quantum_explosion_01",
+                    "common.elemental.stancebreak_common_quantum_explosion_02"
+                  ],
+                  "optional": [
+                    "common.elemental.stancebreak_common_quantum_explosion_00",
+                    "common.elemental.stancebreak_common_quantum_explosion_01",
+                    "common.elemental.stancebreak_common_quantum_explosion_02"
+                  ],
+                  "as": "callback.5376.remove-effects"
+                },
+                {
+                  "op": "wait",
+                  "for": "callback.5376.remove-effects",
+                  "until": "accepted"
+                },
+                {
+                  "op": "call",
+                  "function": "@return.return.pose"
+                },
+                {
+                  "op": "wait",
+                  "for": "return.pose",
+                  "until": "submitted"
+                },
+                {
+                  "op": "movement",
+                  "clock": "instant",
+                  "segments": [
+                    {
+                      "destination": "origin",
+                      "preserve_height": false
+                    }
+                  ],
+                  "as": "return.position"
+                },
+                {
+                  "op": "wait",
+                  "for": "return.position"
+                }
+              ],
+              "label": "MCommon_Element_Entangle: OnPhase1"
+            }
+          ],
+          "default": [
+            {
+              "op": "if",
+              "condition": {
+                "op": "value",
+                "name": "callback.1064.condition.ByCharacterDamageType.2",
+                "is": 1
+              },
+              "then": [
+                {
+                  "op": "effect.create",
+                  "effects": [
+                    "common.elemental.outerskin_common_physical"
+                  ],
+                  "as": "callback.1064.effect.8"
+                },
+                {
+                  "op": "wait",
+                  "for": "callback.1064.effect.8",
+                  "until": "accepted"
+                }
+              ],
+              "else": []
+            },
+            {
+              "op": "if",
+              "condition": {
+                "op": "value",
+                "name": "callback.1064.condition.ByCharacterDamageType.2",
+                "is": 4
+              },
+              "then": [
+                {
+                  "op": "effect.create",
+                  "effects": [
+                    "common.elemental.outerskin_common_ice"
+                  ],
+                  "as": "callback.1064.effect.13"
+                },
+                {
+                  "op": "wait",
+                  "for": "callback.1064.effect.13",
+                  "until": "accepted"
+                }
+              ],
+              "else": []
+            },
+            {
+              "op": "if",
+              "condition": {
+                "op": "value",
+                "name": "callback.1064.condition.ByCharacterDamageType.2",
+                "is": 2
+              },
+              "then": [
+                {
+                  "op": "effect.create",
+                  "effects": [
+                    "common.elemental.outerskin_common_fire"
+                  ],
+                  "as": "callback.1064.effect.18"
+                },
+                {
+                  "op": "wait",
+                  "for": "callback.1064.effect.18",
+                  "until": "accepted"
+                }
+              ],
+              "else": []
+            },
+            {
+              "op": "if",
+              "condition": {
+                "op": "value",
+                "name": "callback.1064.condition.ByCharacterDamageType.2",
+                "is": 16
+              },
+              "then": [
+                {
+                  "op": "effect.create",
+                  "effects": [
+                    "common.elemental.outerskin_common_wind"
+                  ],
+                  "as": "callback.1064.effect.25"
+                },
+                {
+                  "op": "wait",
+                  "for": "callback.1064.effect.25",
+                  "until": "accepted"
+                }
+              ],
+              "else": []
+            },
+            {
+              "op": "if",
+              "condition": {
+                "op": "value",
+                "name": "callback.1064.condition.ByCharacterDamageType.2",
+                "is": 8
+              },
+              "then": [
+                {
+                  "op": "effect.create",
+                  "effects": [
+                    "common.elemental.outerskin_common_thunder"
+                  ],
+                  "as": "callback.1064.effect.30"
+                },
+                {
+                  "op": "wait",
+                  "for": "callback.1064.effect.30",
+                  "until": "accepted"
+                }
+              ],
+              "else": []
+            },
+            {
+              "op": "if",
+              "condition": {
+                "op": "value",
+                "name": "callback.1064.condition.ByCharacterDamageType.2",
+                "is": 64
+              },
+              "then": [
+                {
+                  "op": "effect.create",
+                  "effects": [
+                    "common.elemental.outerskin_common_imaginary"
+                  ],
+                  "as": "callback.1064.effect.35"
+                },
+                {
+                  "op": "wait",
+                  "for": "callback.1064.effect.35",
+                  "until": "accepted"
+                }
+              ],
+              "else": []
+            },
+            {
+              "op": "if",
+              "condition": {
+                "op": "value",
+                "name": "callback.1064.condition.ByCharacterDamageType.2",
+                "is": 32
+              },
+              "then": [
+                {
+                  "op": "effect.create",
+                  "effects": [
+                    "common.elemental.outerskin_common_quantum"
+                  ],
+                  "as": "callback.1064.effect.40"
+                },
+                {
+                  "op": "wait",
+                  "for": "callback.1064.effect.40",
+                  "until": "accepted"
+                }
+              ],
+              "else": []
+            },
+            {
+              "op": "join"
+            },
+            {
+              "op": "repeat",
+              "until_finish": true,
+              "run": [
+                {
+                  "op": "wait",
+                  "frame": true
+                }
+              ]
+            },
+            {
+              "op": "effect.remove",
+              "effects": [
+                "common.elemental.outerskin_common_physical",
+                "common.elemental.outerskin_common_ice",
+                "common.elemental.outerskin_common_fire",
+                "common.elemental.outerskin_common_wind",
+                "common.elemental.outerskin_common_thunder",
+                "common.elemental.outerskin_common_imaginary",
+                "common.elemental.outerskin_common_quantum"
+              ],
+              "optional": [
+                "common.elemental.outerskin_common_physical",
+                "common.elemental.outerskin_common_ice",
+                "common.elemental.outerskin_common_fire",
+                "common.elemental.outerskin_common_wind",
+                "common.elemental.outerskin_common_thunder",
+                "common.elemental.outerskin_common_imaginary",
+                "common.elemental.outerskin_common_quantum"
+              ],
+              "as": "callback.1064.remove-effects"
+            },
+            {
+              "op": "wait",
+              "for": "callback.1064.remove-effects",
+              "until": "accepted"
+            },
+            {
+              "op": "call",
+              "function": "@return.return.pose"
+            },
+            {
+              "op": "wait",
+              "for": "return.pose",
+              "until": "submitted"
+            },
+            {
+              "op": "movement",
+              "clock": "instant",
+              "segments": [
+                {
+                  "destination": "origin",
+                  "preserve_height": false
+                }
+              ],
+              "as": "return.position"
+            },
+            {
+              "op": "wait",
+              "for": "return.position"
+            }
+          ]
+        }
+      ],
+      "on_interrupt": [
+        {
+          "op": "switch",
+          "name": "event",
+          "cases": [
+            {
+              "is": 1,
+              "run": [
+                {
+                  "op": "effect.remove",
+                  "effects": [
+                    "common.elemental.outerskin_common_physical.2",
+                    "common.elemental.outerskin_common_ice.2",
+                    "common.elemental.outerskin_common_fire.2",
+                    "common.elemental.outerskin_common_wind.2",
+                    "common.elemental.outerskin_common_thunder.2",
+                    "common.elemental.outerskin_common_imaginary.2",
+                    "common.elemental.outerskin_common_quantum.2"
+                  ],
+                  "optional": [
+                    "common.elemental.outerskin_common_physical.2",
+                    "common.elemental.outerskin_common_ice.2",
+                    "common.elemental.outerskin_common_fire.2",
+                    "common.elemental.outerskin_common_wind.2",
+                    "common.elemental.outerskin_common_thunder.2",
+                    "common.elemental.outerskin_common_imaginary.2",
+                    "common.elemental.outerskin_common_quantum.2"
+                  ],
+                  "as": "callback.1065.remove-effects"
+                },
+                {
+                  "op": "wait",
+                  "for": "callback.1065.remove-effects",
+                  "until": "accepted"
+                },
+                {
+                  "op": "call",
+                  "function": "@return.return.pose"
+                },
+                {
+                  "op": "wait",
+                  "for": "return.pose",
+                  "until": "submitted"
+                },
+                {
+                  "op": "movement",
+                  "clock": "instant",
+                  "segments": [
+                    {
+                      "destination": "origin",
+                      "preserve_height": false
+                    }
+                  ],
+                  "as": "return.position"
+                },
+                {
+                  "op": "wait",
+                  "for": "return.position"
+                }
+              ],
+              "label": "Weakness break update"
+            },
+            {
+              "is": 2,
+              "run": [
+                {
+                  "op": "effect.remove",
+                  "effects": [
+                    "common.elemental.hit_common_wound_triger"
+                  ],
+                  "optional": [
+                    "common.elemental.hit_common_wound_triger"
+                  ],
+                  "as": "callback.5354.remove-effects"
+                },
+                {
+                  "op": "wait",
+                  "for": "callback.5354.remove-effects",
+                  "until": "accepted"
+                },
+                {
+                  "op": "call",
+                  "function": "@return.return.pose"
+                },
+                {
+                  "op": "wait",
+                  "for": "return.pose",
+                  "until": "submitted"
+                },
+                {
+                  "op": "movement",
+                  "clock": "instant",
+                  "segments": [
+                    {
+                      "destination": "origin",
+                      "preserve_height": false
+                    }
+                  ],
+                  "as": "return.position"
+                },
+                {
+                  "op": "wait",
+                  "for": "return.position"
+                }
+              ],
+              "label": "Bleed"
+            },
+            {
+              "is": 3,
+              "run": [
+                {
+                  "op": "effect.remove",
+                  "effects": [
+                    "common.elemental.buff_common_freeze",
+                    "common.elemental.buff_common_freeze_loop",
+                    "common.elemental.buff_common_freeze_outlinecolor_02"
+                  ],
+                  "optional": [
+                    "common.elemental.buff_common_freeze",
+                    "common.elemental.buff_common_freeze_loop",
+                    "common.elemental.buff_common_freeze_outlinecolor_02"
+                  ],
+                  "as": "callback.5356.remove-effects"
+                },
+                {
+                  "op": "wait",
+                  "for": "callback.5356.remove-effects",
+                  "until": "accepted"
+                },
+                {
+                  "op": "call",
+                  "function": "@return.return.pose"
+                },
+                {
+                  "op": "wait",
+                  "for": "return.pose",
+                  "until": "submitted"
+                },
+                {
+                  "op": "movement",
+                  "clock": "instant",
+                  "segments": [
+                    {
+                      "destination": "origin",
+                      "preserve_height": false
+                    }
+                  ],
+                  "as": "return.position"
+                },
+                {
+                  "op": "wait",
+                  "for": "return.position"
+                }
+              ],
+              "label": "Frozen update"
+            },
+            {
+              "is": 4,
+              "run": [
+                {
+                  "op": "effect.remove",
+                  "effects": [
+                    "common.elemental.buff_common_ice_trigger"
+                  ],
+                  "optional": [
+                    "common.elemental.buff_common_ice_trigger"
+                  ],
+                  "as": "callback.5357.remove-effects"
+                },
+                {
+                  "op": "wait",
+                  "for": "callback.5357.remove-effects",
+                  "until": "accepted"
+                },
+                {
+                  "op": "call",
+                  "function": "@return.return.pose"
+                },
+                {
+                  "op": "wait",
+                  "for": "return.pose",
+                  "until": "submitted"
+                },
+                {
+                  "op": "movement",
+                  "clock": "instant",
+                  "segments": [
+                    {
+                      "destination": "origin",
+                      "preserve_height": false
+                    }
+                  ],
+                  "as": "return.position"
+                },
+                {
+                  "op": "wait",
+                  "for": "return.position"
+                }
+              ],
+              "label": "Frozen pulse"
+            },
+            {
+              "is": 5,
+              "run": [
+                {
+                  "op": "call",
+                  "function": "@return.return.pose"
+                },
+                {
+                  "op": "wait",
+                  "for": "return.pose",
+                  "until": "submitted"
+                },
+                {
+                  "op": "movement",
+                  "clock": "instant",
+                  "segments": [
+                    {
+                      "destination": "origin",
+                      "preserve_height": false
+                    }
+                  ],
+                  "as": "return.position"
+                },
+                {
+                  "op": "wait",
+                  "for": "return.position"
+                }
+              ],
+              "label": "MCommon_Element_Frozen: OnDestroy"
+            },
+            {
+              "is": 6,
+              "run": [
+                {
+                  "op": "effect.remove",
+                  "effects": [
+                    "common.elemental.buff_common_ice_add"
+                  ],
+                  "optional": [
+                    "common.elemental.buff_common_ice_add"
+                  ],
+                  "as": "callback.5359.remove-effects"
+                },
+                {
+                  "op": "wait",
+                  "for": "callback.5359.remove-effects",
+                  "until": "accepted"
+                },
+                {
+                  "op": "call",
+                  "function": "@return.return.pose"
+                },
+                {
+                  "op": "wait",
+                  "for": "return.pose",
+                  "until": "submitted"
+                },
+                {
+                  "op": "movement",
+                  "clock": "instant",
+                  "segments": [
+                    {
+                      "destination": "origin",
+                      "preserve_height": false
+                    }
+                  ],
+                  "as": "return.position"
+                },
+                {
+                  "op": "wait",
+                  "for": "return.position"
+                }
+              ],
+              "label": "Frozen effect"
+            },
+            {
+              "is": 7,
+              "run": [
+                {
+                  "op": "effect.remove",
+                  "effects": [
+                    "common.elemental.buff_common_fire_trigger"
+                  ],
+                  "optional": [
+                    "common.elemental.buff_common_fire_trigger"
+                  ],
+                  "as": "callback.5362.remove-effects"
+                },
+                {
+                  "op": "wait",
+                  "for": "callback.5362.remove-effects",
+                  "until": "accepted"
+                },
+                {
+                  "op": "call",
+                  "function": "@return.return.pose"
+                },
+                {
+                  "op": "wait",
+                  "for": "return.pose",
+                  "until": "submitted"
+                },
+                {
+                  "op": "movement",
+                  "clock": "instant",
+                  "segments": [
+                    {
+                      "destination": "origin",
+                      "preserve_height": false
+                    }
+                  ],
+                  "as": "return.position"
+                },
+                {
+                  "op": "wait",
+                  "for": "return.position"
+                }
+              ],
+              "label": "Burn"
+            },
+            {
+              "is": 8,
+              "run": [
+                {
+                  "op": "effect.remove",
+                  "effects": [
+                    "common.elemental.hit_common_wind_triger"
+                  ],
+                  "optional": [
+                    "common.elemental.hit_common_wind_triger"
+                  ],
+                  "as": "callback.5365.remove-effects"
+                },
+                {
+                  "op": "wait",
+                  "for": "callback.5365.remove-effects",
+                  "until": "accepted"
+                },
+                {
+                  "op": "call",
+                  "function": "@return.return.pose"
+                },
+                {
+                  "op": "wait",
+                  "for": "return.pose",
+                  "until": "submitted"
+                },
+                {
+                  "op": "movement",
+                  "clock": "instant",
+                  "segments": [
+                    {
+                      "destination": "origin",
+                      "preserve_height": false
+                    }
+                  ],
+                  "as": "return.position"
+                },
+                {
+                  "op": "wait",
+                  "for": "return.position"
+                }
+              ],
+              "label": "Wind shear"
+            },
+            {
+              "is": 9,
+              "run": [
+                {
+                  "op": "effect.remove",
+                  "effects": [
+                    "common.elemental.buff_common_lightning"
+                  ],
+                  "optional": [
+                    "common.elemental.buff_common_lightning"
+                  ],
+                  "as": "callback.5369.remove-effects"
+                },
+                {
+                  "op": "wait",
+                  "for": "callback.5369.remove-effects",
+                  "until": "accepted"
+                },
+                {
+                  "op": "call",
+                  "function": "@return.return.pose"
+                },
+                {
+                  "op": "wait",
+                  "for": "return.pose",
+                  "until": "submitted"
+                },
+                {
+                  "op": "movement",
+                  "clock": "instant",
+                  "segments": [
+                    {
+                      "destination": "origin",
+                      "preserve_height": false
+                    }
+                  ],
+                  "as": "return.position"
+                },
+                {
+                  "op": "wait",
+                  "for": "return.position"
+                }
+              ],
+              "label": "Shock"
+            },
+            {
+              "is": 10,
+              "run": [
+                {
+                  "op": "effect.remove",
+                  "effects": [
+                    "common.elemental.buff_common_confine"
+                  ],
+                  "optional": [
+                    "common.elemental.buff_common_confine"
+                  ],
+                  "as": "callback.5371.remove-effects"
+                },
+                {
+                  "op": "wait",
+                  "for": "callback.5371.remove-effects",
+                  "until": "accepted"
+                },
+                {
+                  "op": "call",
+                  "function": "@return.return.pose"
+                },
+                {
+                  "op": "wait",
+                  "for": "return.pose",
+                  "until": "submitted"
+                },
+                {
+                  "op": "movement",
+                  "clock": "instant",
+                  "segments": [
+                    {
+                      "destination": "origin",
+                      "preserve_height": false
+                    }
+                  ],
+                  "as": "return.position"
+                },
+                {
+                  "op": "wait",
+                  "for": "return.position"
+                }
+              ],
+              "label": "Imprisonment"
+            },
+            {
+              "is": 11,
+              "run": [
+                {
+                  "op": "effect.remove",
+                  "effects": [
+                    "common.elemental.buff_common_confineout"
+                  ],
+                  "optional": [
+                    "common.elemental.buff_common_confineout"
+                  ],
+                  "as": "callback.5372.remove-effects"
+                },
+                {
+                  "op": "wait",
+                  "for": "callback.5372.remove-effects",
+                  "until": "accepted"
+                },
+                {
+                  "op": "call",
+                  "function": "@return.return.pose"
+                },
+                {
+                  "op": "wait",
+                  "for": "return.pose",
+                  "until": "submitted"
+                },
+                {
+                  "op": "movement",
+                  "clock": "instant",
+                  "segments": [
+                    {
+                      "destination": "origin",
+                      "preserve_height": false
+                    }
+                  ],
+                  "as": "return.position"
+                },
+                {
+                  "op": "wait",
+                  "for": "return.position"
+                }
+              ],
+              "label": "Imprisonment end"
+            },
+            {
+              "is": 12,
+              "run": [
+                {
+                  "op": "effect.remove",
+                  "effects": [
+                    "common.elemental.stancebreak_common_quantum_hit",
+                    "common.elemental.stancebreak_common_quantum_loop_01",
+                    "common.elemental.stancebreak_common_quantum_loop_02"
+                  ],
+                  "optional": [
+                    "common.elemental.stancebreak_common_quantum_hit",
+                    "common.elemental.stancebreak_common_quantum_loop_01",
+                    "common.elemental.stancebreak_common_quantum_loop_02"
+                  ],
+                  "as": "callback.5373.remove-effects"
+                },
+                {
+                  "op": "wait",
+                  "for": "callback.5373.remove-effects",
+                  "until": "accepted"
+                },
+                {
+                  "op": "call",
+                  "function": "@return.return.pose"
+                },
+                {
+                  "op": "wait",
+                  "for": "return.pose",
+                  "until": "submitted"
+                },
+                {
+                  "op": "movement",
+                  "clock": "instant",
+                  "segments": [
+                    {
+                      "destination": "origin",
+                      "preserve_height": false
+                    }
+                  ],
+                  "as": "return.position"
+                },
+                {
+                  "op": "wait",
+                  "for": "return.position"
+                }
+              ],
+              "label": "Entanglement hit"
+            },
+            {
+              "is": 13,
+              "run": [
+                {
+                  "op": "effect.remove",
+                  "effects": [
+                    "common.elemental.stancebreak_common_quantum_loop_00"
+                  ],
+                  "optional": [
+                    "common.elemental.stancebreak_common_quantum_loop_00"
+                  ],
+                  "as": "callback.5375.remove-effects"
+                },
+                {
+                  "op": "wait",
+                  "for": "callback.5375.remove-effects",
+                  "until": "accepted"
+                },
+                {
+                  "op": "call",
+                  "function": "@return.return.pose"
+                },
+                {
+                  "op": "wait",
+                  "for": "return.pose",
+                  "until": "submitted"
+                },
+                {
+                  "op": "movement",
+                  "clock": "instant",
+                  "segments": [
+                    {
+                      "destination": "origin",
+                      "preserve_height": false
+                    }
+                  ],
+                  "as": "return.position"
+                },
+                {
+                  "op": "wait",
+                  "for": "return.position"
+                }
+              ],
+              "label": "Entanglement update"
+            },
+            {
+              "is": 14,
+              "run": [
+                {
+                  "op": "effect.remove",
+                  "effects": [
+                    "common.elemental.stancebreak_common_quantum_explosion_00",
+                    "common.elemental.stancebreak_common_quantum_explosion_01",
+                    "common.elemental.stancebreak_common_quantum_explosion_02"
+                  ],
+                  "optional": [
+                    "common.elemental.stancebreak_common_quantum_explosion_00",
+                    "common.elemental.stancebreak_common_quantum_explosion_01",
+                    "common.elemental.stancebreak_common_quantum_explosion_02"
+                  ],
+                  "as": "callback.5376.remove-effects"
+                },
+                {
+                  "op": "wait",
+                  "for": "callback.5376.remove-effects",
+                  "until": "accepted"
+                },
+                {
+                  "op": "call",
+                  "function": "@return.return.pose"
+                },
+                {
+                  "op": "wait",
+                  "for": "return.pose",
+                  "until": "submitted"
+                },
+                {
+                  "op": "movement",
+                  "clock": "instant",
+                  "segments": [
+                    {
+                      "destination": "origin",
+                      "preserve_height": false
+                    }
+                  ],
+                  "as": "return.position"
+                },
+                {
+                  "op": "wait",
+                  "for": "return.position"
+                }
+              ],
+              "label": "MCommon_Element_Entangle: OnPhase1"
+            }
+          ],
+          "default": [
+            {
+              "op": "effect.remove",
+              "effects": [
+                "common.elemental.outerskin_common_physical",
+                "common.elemental.outerskin_common_ice",
+                "common.elemental.outerskin_common_fire",
+                "common.elemental.outerskin_common_wind",
+                "common.elemental.outerskin_common_thunder",
+                "common.elemental.outerskin_common_imaginary",
+                "common.elemental.outerskin_common_quantum"
+              ],
+              "optional": [
+                "common.elemental.outerskin_common_physical",
+                "common.elemental.outerskin_common_ice",
+                "common.elemental.outerskin_common_fire",
+                "common.elemental.outerskin_common_wind",
+                "common.elemental.outerskin_common_thunder",
+                "common.elemental.outerskin_common_imaginary",
+                "common.elemental.outerskin_common_quantum"
+              ],
+              "as": "callback.1064.remove-effects"
+            },
+            {
+              "op": "wait",
+              "for": "callback.1064.remove-effects",
+              "until": "accepted"
+            },
+            {
+              "op": "call",
+              "function": "@return.return.pose"
+            },
+            {
+              "op": "wait",
+              "for": "return.pose",
+              "until": "submitted"
+            },
+            {
+              "op": "movement",
+              "clock": "instant",
+              "segments": [
+                {
+                  "destination": "origin",
+                  "preserve_height": false
+                }
+              ],
+              "as": "return.position"
+            },
+            {
+              "op": "wait",
+              "for": "return.position"
+            }
+          ]
+        }
+      ],
+      "inputs": {
+        "event": {
+          "type": "integer",
+          "default": 0,
+          "label": "Callback",
+          "choices": [
+            {
+              "value": 0,
+              "label": "Weakness break"
+            },
+            {
+              "value": 1,
+              "label": "Weakness break update"
+            },
+            {
+              "value": 2,
+              "label": "Bleed"
+            },
+            {
+              "value": 3,
+              "label": "Frozen update"
+            },
+            {
+              "value": 4,
+              "label": "Frozen pulse"
+            },
+            {
+              "value": 5,
+              "label": "MCommon_Element_Frozen: OnDestroy"
+            },
+            {
+              "value": 6,
+              "label": "Frozen effect"
+            },
+            {
+              "value": 7,
+              "label": "Burn"
+            },
+            {
+              "value": 8,
+              "label": "Wind shear"
+            },
+            {
+              "value": 9,
+              "label": "Shock"
+            },
+            {
+              "value": 10,
+              "label": "Imprisonment"
+            },
+            {
+              "value": 11,
+              "label": "Imprisonment end"
+            },
+            {
+              "value": 12,
+              "label": "Entanglement hit"
+            },
+            {
+              "value": 13,
+              "label": "Entanglement update"
+            },
+            {
+              "value": 14,
+              "label": "MCommon_Element_Entangle: OnPhase1"
+            }
+          ]
+        },
+        "callback.1064.condition.ByCharacterDamageType.2": {
+          "type": "integer",
+          "default": 32,
+          "label": "Element",
+          "choices": [
+            {
+              "value": 1,
+              "label": "Physical"
+            },
+            {
+              "value": 2,
+              "label": "Fire"
+            },
+            {
+              "value": 4,
+              "label": "Ice"
+            },
+            {
+              "value": 8,
+              "label": "Thunder"
+            },
+            {
+              "value": 16,
+              "label": "Wind"
+            },
+            {
+              "value": 32,
+              "label": "Quantum"
+            },
+            {
+              "value": 64,
+              "label": "Imaginary"
+            }
+          ]
+        },
+        "callback.1065.condition.ByCharacterDamageType.3": {
+          "type": "integer",
+          "default": 32,
+          "label": "Element",
+          "choices": [
+            {
+              "value": 1,
+              "label": "Physical"
+            },
+            {
+              "value": 2,
+              "label": "Fire"
+            },
+            {
+              "value": 4,
+              "label": "Ice"
+            },
+            {
+              "value": 8,
+              "label": "Thunder"
+            },
+            {
+              "value": 16,
+              "label": "Wind"
+            },
+            {
+              "value": 32,
+              "label": "Quantum"
+            },
+            {
+              "value": 64,
+              "label": "Imaginary"
+            }
+          ]
+        },
+        "callback.1065.condition.ByCompareStanceCount.33": {
+          "type": "bool",
+          "default": true,
+          "label": "ByCompareStanceCount",
+          "description": "Manual source condition: $.GlobalModifiers[1].value._CallbackList[0].CallbackConfig[0].Predicate.PredicateList[0]",
+          "diagnostic": true
+        },
+        "callback.5358.condition.ByIsTargetValid.1": {
+          "type": "bool",
+          "default": true,
+          "label": "ByIsTargetValid",
+          "description": "Manual source condition: $.ModifierMap[45].value._CallbackList[1].CallbackConfig[0].Predicate"
+        },
+        "callback.5358.condition.ByContainBehaviorFlag.3": {
+          "type": "bool",
+          "default": true,
+          "label": "ByContainBehaviorFlag",
+          "description": "Manual source condition: $.ModifierMap[45].value._CallbackList[1].CallbackConfig[0].SuccessTaskList[2].Predicate"
+        },
+        "callback.5359.condition.ByInTurnBasedGameModeState.1": {
+          "type": "bool",
+          "default": false,
+          "label": "ByInTurnBasedGameModeState",
+          "description": "Manual source condition: $.ModifierMap[45].value._CallbackList[0].CallbackConfig[0].Predicate",
+          "diagnostic": true
+        },
+        "callback.5373.condition.ByCompareDynamicValue.1": {
+          "type": "bool",
+          "default": true,
+          "label": "ByCompareDynamicValue",
+          "description": "Manual source condition: $.ModifierMap[50].value._CallbackList[4].CallbackConfig[0].Predicate",
+          "diagnostic": true
+        },
+        "callback.5373.condition.ByCompareDynamicValue.2": {
+          "type": "bool",
+          "default": false,
+          "label": "ByCompareDynamicValue",
+          "description": "Manual source condition: $.ModifierMap[50].value._CallbackList[4].CallbackConfig[0].SuccessTaskList[0].Predicate",
+          "diagnostic": true
+        },
+        "callback.5373.condition.ByCompareDynamicValue.10": {
+          "type": "bool",
+          "default": false,
+          "label": "ByCompareDynamicValue",
+          "description": "Manual source condition: $.ModifierMap[50].value._CallbackList[4].CallbackConfig[1].Predicate",
+          "diagnostic": true
+        },
+        "callback.5373.condition.ByCompareDynamicValue.11": {
+          "type": "bool",
+          "default": false,
+          "label": "ByCompareDynamicValue",
+          "description": "Manual source condition: $.ModifierMap[50].value._CallbackList[4].CallbackConfig[1].FailedTaskList[0].Predicate",
+          "diagnostic": true
+        },
+        "callback.5376.condition.ByCompareDynamicValue.3": {
+          "type": "bool",
+          "default": false,
+          "label": "ByCompareDynamicValue",
+          "description": "Manual source condition: $.ModifierMap[50].value._CallbackList[1].CallbackConfig[3].Predicate"
+        },
+        "callback.5376.condition.ByCompareDynamicValue.7": {
+          "type": "bool",
+          "default": false,
+          "label": "ByCompareDynamicValue",
+          "description": "Manual source condition: $.ModifierMap[50].value._CallbackList[1].CallbackConfig[3].FailedTaskList[0].Predicate"
+        }
+      },
+      "requires": [
+        {
+          "op": "number",
+          "name": "event",
+          "compare": "ge",
+          "value": 0
+        },
+        {
+          "op": "number",
+          "name": "event",
+          "compare": "lt",
+          "value": 15
+        }
+      ],
+      "bindings": {
+        "targets": [
+          "Recipient",
+          "common.elemental.target.1",
+          "common.elemental.target.2"
+        ]
+      },
+      "presentation": {
+        "label": "PassiveSkill02",
+        "omissions": [
+          "Manual visual callback selection; no native combat modifier or automatic event simulation.",
+          "event: 0=Weakness break, 1=Weakness break update, 2=Bleed, 3=Frozen update, 4=Frozen pulse, 5=MCommon_Element_Frozen: OnDestroy, 6=Frozen effect, 7=Burn, 8=Wind shear, 9=Shock, 10=Imprisonment, 11=Imprisonment end, 12=Entanglement hit, 13=Entanglement update, 14=MCommon_Element_Entangle: OnPhase1",
+          "TargetTimeSlow: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "SetDynamicValueByBreakBaseDamage: not included in the visual sequence projection",
+          "DamageByAttackProperty: no literal hit animation/effect; receiver defaults are not assumed",
+          "TriggerEffect: callback target ParamEntity is a selected owned actor input, defaulting to this actor; native event payload is not assumed",
+          "ModifierAttachEffect: manual bound-effect preview; modifier flags, collider-height offset, native mutex and automatic visibility/lifetime are not applied",
+          "HideCharacterFilteredEffect: not included in the visual sequence projection",
+          "ShowEntityFloatMessage: not included in the visual sequence projection",
+          "TriggerSound: sound emitter DefaultEmitter is not the owned actor; no body or real-player substitution",
+          "ModifierOverrideOnHitEffect: owned visual receiver override only; no shield value, expiry, native modifier or automatic death/break transition",
+          "RemoveEffect: effect removal has no owned target binding",
+          "TriggerAnimState: animation has no literal owned-body binding"
+        ]
+      },
+      "tags": [
+        "manual-visual-callback",
+        "partial-presentation"
+      ]
+    }
+  },
+  "resources": {
+    "effects": {
+      "common.elemental.outerskin_common_physical": {
+        "path": "Effects/Eff_Prefab/Eff_Common/Eff_OuterSkin_Common_Physical.prefab",
+        "target": "common.elemental.target.1"
+      },
+      "common.elemental.outerskin_common_ice": {
+        "path": "Effects/Eff_Prefab/Eff_Common/Eff_OuterSkin_Common_Ice.prefab",
+        "target": "common.elemental.target.1"
+      },
+      "common.elemental.outerskin_common_fire": {
+        "path": "Effects/Eff_Prefab/Eff_Common/Eff_OuterSkin_Common_Fire.prefab",
+        "target": "common.elemental.target.1"
+      },
+      "common.elemental.outerskin_common_wind": {
+        "path": "Effects/Eff_Prefab/Eff_Common/Eff_OuterSkin_Common_Wind.prefab",
+        "target": "common.elemental.target.1"
+      },
+      "common.elemental.outerskin_common_thunder": {
+        "path": "Effects/Eff_Prefab/Eff_Common/Eff_OuterSkin_Common_Thunder.prefab",
+        "target": "common.elemental.target.1"
+      },
+      "common.elemental.outerskin_common_imaginary": {
+        "path": "Effects/Eff_Prefab/Eff_Common/Eff_OuterSkin_Common_Imaginary.prefab",
+        "target": "common.elemental.target.1"
+      },
+      "common.elemental.outerskin_common_quantum": {
+        "path": "Effects/Eff_Prefab/Eff_Common/Eff_OuterSkin_Common_Quantum.prefab",
+        "target": "common.elemental.target.1"
+      },
+      "common.elemental.stancebreak_common_quantum_explosion_02": {
+        "path": "Effects/Eff_Prefab/Eff_Common/Eff_StanceBreak_Common_Quantum_Explosion_02.prefab",
+        "target": "Recipient"
+      },
+      "common.elemental.stancebreak_common_quantum_explosion_01": {
+        "path": "Effects/Eff_Prefab/Eff_Common/Eff_StanceBreak_Common_Quantum_Explosion_01.prefab",
+        "target": "Recipient"
+      },
+      "common.elemental.stancebreak_common_quantum_explosion_00": {
+        "path": "Effects/Eff_Prefab/Eff_Common/Eff_StanceBreak_Common_Quantum_Explosion_00.prefab",
+        "target": "Recipient"
+      },
+      "common.elemental.stancebreak_common_quantum_loop_00": {
+        "path": "Effects/Eff_Prefab/Eff_Common/Eff_StanceBreak_Common_Quantum_Loop_00.prefab",
+        "target": "Recipient",
+        "attach_to_target": true
+      },
+      "common.elemental.stancebreak_common_quantum_hit": {
+        "path": "Effects/Eff_Prefab/Eff_Common/Eff_StanceBreak_Common_Quantum_Hit.prefab",
+        "target": "Recipient"
+      },
+      "common.elemental.stancebreak_common_quantum_loop_02": {
+        "path": "Effects/Eff_Prefab/Eff_Common/Eff_StanceBreak_Common_Quantum_Loop_02.prefab",
+        "target": "Recipient",
+        "attach_to_target": true
+      },
+      "common.elemental.stancebreak_common_quantum_loop_01": {
+        "path": "Effects/Eff_Prefab/Eff_Common/Eff_StanceBreak_Common_Quantum_Loop_01.prefab",
+        "target": "Recipient",
+        "attach_to_target": true
+      },
+      "common.elemental.buff_common_confineout": {
+        "path": "Effects/Eff_Prefab/Eff_Common/Eff_Buff_Common_ConfineOut.prefab",
+        "target": "Recipient",
+        "attach_point": "SelectRoot"
+      },
+      "common.elemental.buff_common_confine": {
+        "path": "Effects/Eff_Prefab/Eff_Common/Eff_Buff_Common_Confine.prefab",
+        "target": "Recipient",
+        "attach_to_target": true,
+        "attach_point": "SelectRoot"
+      },
+      "common.elemental.buff_common_lightning": {
+        "path": "Effects/Eff_Prefab/Eff_Common/Eff_Buff_Common_Lightning.prefab",
+        "target": "Recipient",
+        "attach_point": "SelectRoot"
+      },
+      "common.elemental.hit_common_wind_triger": {
+        "path": "Effects/Eff_Prefab/Eff_Common/Eff_Hit_Common_Wind_Triger.prefab",
+        "target": "Recipient",
+        "attach_point": "SelectRoot"
+      },
+      "common.elemental.buff_common_fire_trigger": {
+        "path": "Effects/Eff_Prefab/Eff_Common/Eff_Buff_Common_Fire_Trigger.prefab",
+        "target": "Recipient",
+        "attach_point": "SelectRoot"
+      },
+      "common.elemental.buff_common_ice_add": {
+        "path": "Effects/Eff_Prefab/Eff_Common/Eff_Buff_Common_Ice_Add.prefab",
+        "target": "Recipient",
+        "attach_point": "SelectRoot"
+      },
+      "common.elemental.buff_common_ice_trigger": {
+        "path": "Effects/Eff_Prefab/Eff_Common/Eff_Buff_Common_Ice_Trigger.prefab",
+        "target": "Recipient",
+        "attach_point": "SelectRoot"
+      },
+      "common.elemental.buff_common_freeze": {
+        "path": "Effects/Eff_Prefab/Eff_Common/Eff_Buff_Common_Freeze.prefab",
+        "target": "Caster",
+        "attach_to_target": true
+      },
+      "common.elemental.buff_common_freeze_loop": {
+        "path": "Effects/Eff_Prefab/Eff_Common/Eff_Buff_Common_Freeze_Loop.prefab",
+        "target": "Recipient",
+        "attach_to_target": true,
+        "attach_point": "SelectRoot"
+      },
+      "common.elemental.buff_common_freeze_outlinecolor_02": {
+        "path": "Effects/Eff_Prefab/Eff_Common/Eff_Buff_Common_Freeze_OutlineColor_02.prefab",
+        "target": "Recipient",
+        "attach_to_target": true
+      },
+      "common.elemental.hit_common_wound_triger": {
+        "path": "Effects/Eff_Prefab/Eff_Common/Eff_Hit_Common_Wound_Triger.prefab",
+        "target": "Recipient",
+        "attach_point": "SelectRoot"
+      },
+      "common.elemental.outerskin_common_physical.2": {
+        "path": "Effects/Eff_Prefab/Eff_Common/Eff_OuterSkin_Common_Physical.prefab",
+        "target": "common.elemental.target.2"
+      },
+      "common.elemental.outerskin_common_ice.2": {
+        "path": "Effects/Eff_Prefab/Eff_Common/Eff_OuterSkin_Common_Ice.prefab",
+        "target": "common.elemental.target.2"
+      },
+      "common.elemental.outerskin_common_fire.2": {
+        "path": "Effects/Eff_Prefab/Eff_Common/Eff_OuterSkin_Common_Fire.prefab",
+        "target": "common.elemental.target.2"
+      },
+      "common.elemental.outerskin_common_wind.2": {
+        "path": "Effects/Eff_Prefab/Eff_Common/Eff_OuterSkin_Common_Wind.prefab",
+        "target": "common.elemental.target.2"
+      },
+      "common.elemental.outerskin_common_thunder.2": {
+        "path": "Effects/Eff_Prefab/Eff_Common/Eff_OuterSkin_Common_Thunder.prefab",
+        "target": "common.elemental.target.2"
+      },
+      "common.elemental.outerskin_common_imaginary.2": {
+        "path": "Effects/Eff_Prefab/Eff_Common/Eff_OuterSkin_Common_Imaginary.prefab",
+        "target": "common.elemental.target.2"
+      },
+      "common.elemental.outerskin_common_quantum.2": {
+        "path": "Effects/Eff_Prefab/Eff_Common/Eff_OuterSkin_Common_Quantum.prefab",
+        "target": "common.elemental.target.2"
+      }
+    }
+  },
+  "states": {
+    "common.elemental.frozen-hit": {
+      "callbacks": {},
+      "hit_effects": [
+        {
+          "stacking": "multiple",
+          "path": "Effects/Eff_Prefab/Eff_Common/Eff_Buff_Common_Freeze_Hit.prefab",
+          "priority": 0,
+          "count": 1,
+          "death_count": 0,
+          "death_path": "",
+          "keep_original": true,
+          "replay_on_mutex": false
+        }
+      ],
+      "instances": {
+        "name": "callback.5359.receiver-property.3",
+        "receiver": "Recipient",
+        "match": "receiver_caster"
+      },
+      "restore": []
+    }
+  },
+  "defaults": {
+    "targets": {
+      "Recipient": {
+        "alias": "Caster"
+      },
+      "common.elemental.target.1": {
+        "alias": "Caster"
+      },
+      "common.elemental.target.2": {
+        "alias": "Caster"
+      }
+    }
+  }
+}

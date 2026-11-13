@@ -1,0 +1,12 @@
+{
+  "format": "hksr.script",
+  "id": "standby-example",
+  "applies_to": "Config/ConfigCharacter/Avatar/Avatar_Huohuo_00_Config.json",
+  "actions": {
+    "standby": {
+      "run": [
+        {"op": "animation", "state": "StandBy", "wait": "accepted"}
+      ]
+    }
+  }
+}

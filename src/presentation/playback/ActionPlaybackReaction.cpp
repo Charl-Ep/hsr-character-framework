@@ -1,0 +1,280 @@
+#include <hksr/framework/presentation/playback/ActionPlayback.hpp>
+#include <hksr/framework/catalog/VisualActionCatalog.hpp>
+#include <cmath>
+#include <stdexcept>
+
+namespace hksr::framework {
+std::optional<VisualState> ResolveVisualState(const api::VisualConfigSources& sources, std::int32_t flag,
+                                              bool recover) {
+    std::optional<VisualState> result;
+    if (!sources.context_available)
+        return result;
+    for (const auto* config : {&sources.defaults, &sources.character})
+        for (const auto& row : config->behaviors.rows)
+            if (row.flag.available && row.flag.value == flag) {
+                VisualState value;
+                value.source = config->source;
+                value.value = row;
+                value.recover = recover;
+                value.character_config = sources.character_config;
+                value.expression_source = sources.defaults.source;
+                value.expression_transition = sources.expression_transition;
+                value.expression = {true, "", {}};
+                if (!sources.defaults.loaded || !sources.defaults.behaviors.enumerated)
+                    value.expression = {false, "", "global expression table unread"};
+                else
+                    for (const auto& global : sources.defaults.behaviors.rows)
+                        if (global.flag.available && global.flag.value == flag)
+                            value.expression = global.emotion;
+                if (sources.blink_source.available && sources.blink_suppressed_expression.available &&
+                    value.expression.available && value.expression.value == sources.blink_suppressed_expression.value)
+                    value.blink_source = sources.blink_source.value;
+                result = std::move(value);
+            }
+    return result;
+}
+namespace {
+bool Matches(const api::AnimatorStateObservation& state, int hash) {
+    return state.read.returned && (state.short_name_hash == hash || state.full_path_hash == hash);
+}
+const api::VisualPhaseInput& Phase(const api::VisualBehaviorInput& row, int phase) {
+    return phase == 0 ? row.occur : phase == 1 ? row.loop : row.recover;
+}
+}
+int ActionPlayback::HashName(const std::string& name, api::ManagedObjects& objects) {
+    if (name.empty() || name.find('\0') != std::string::npos)
+        throw std::runtime_error("invalid visual state name");
+    const auto hash = actions_.StateHash(resources_.Text(name, objects));
+    if (!hash.read.returned)
+        throw std::runtime_error("visual state hash unavailable");
+    return hash.value;
+}
+void ActionPlayback::ReleaseVisual(void* animator) {
+    if (!visual_)
+        return;
+    const auto old = *visual_;
+    visual_.reset();
+    visual_cancelled_ = false;
+    auto live = [&] { return !Ended() && !status_.closing; };
+    // Independent sources: failure to release blink must not skip expression.
+    if (old.blink)
+        try {
+            status_.blink_note = old.blink->Release(live).detail;
+        } catch (const std::exception& e) {
+            status_.blink_note = e.what();
+        }
+    if (old.expression && animator == old.animator)
+        try {
+            status_.visual_note = old.expression->Release(live).detail;
+        } catch (const std::exception& e) {
+            status_.visual_note = e.what();
+        }
+}
+bool ActionPlayback::OwnsVisualState() const {
+    if (!visual_ || visual_->request.recover || !visual_->request.value.flag.available || !hit_control_ ||
+        status_.closing || Ended())
+        return false;
+    const auto control = hit_control_(false);
+    return control.visual_flag == std::optional<std::int32_t>(visual_->request.value.flag.value) &&
+           !control.visual_source.empty() && control.visual_source == visual_->request.character_config &&
+           control.visual_occurrence == visual_->request.occurrence;
+}
+void ActionPlayback::YieldVisualBody(void* animator) {
+    if (OwnsVisualState()) {
+        // The task owns only the body clock. The still-active visual state
+        // retains its expression baseline across ordinary actions and hits.
+        visual_->body_suspended = true;
+        visual_cancelled_ = false;
+    } else
+        ReleaseVisual(animator);
+}
+void ActionPlayback::StartVisual(const VisualState& input, void* animator, void* style, const api::WorldFrame& frame,
+                                 api::ManagedObjects& objects, ActionReceipt& receipt) {
+    VisualState request = input;
+    if (presentation_enabled_ && program_)
+        if (const auto phase = program_->CurrentPhase()) {
+            if (!phase->visuals.character.behaviors.enumerated || !input.value.flag.available)
+                throw std::runtime_error("active phase visual table or requested flag unread");
+            const auto selected = ResolveVisualState(phase->visuals, input.value.flag.value, input.recover);
+            if (!selected)
+                throw std::runtime_error("requested visual flag absent from active phase");
+            request = *selected;
+            if (input.occurrence != DeathOccurrence::Configured) {
+                if (!input.death_defaults)
+                    throw std::runtime_error("death animation sources are not prepared");
+                ApplyDeathOccurrence(request, input.occurrence, *input.death_defaults, &phase->reactions);
+            }
+        }
+    const auto revision = intent_revision_;
+    auto live = [&] { return !Ended() && !status_.closing && revision == intent_revision_; };
+    VisualPlayback next;
+    next.request = request;
+    next.animator = animator;
+    next.phase = request.recover ? 2 : 0;
+    next.boundary = frame.sequence;
+    next.serial = receipt.serial;
+    next.task_owned = receipt.task_owned;
+    if (!request.recover && !request.expression.available)
+        throw std::runtime_error("configured expression unread: " + request.expression.error);
+    const int begin = request.recover ? 2 : 0, end = request.recover ? 3 : 2;
+    for (int i = begin; i < end; ++i) {
+        const auto& phase = Phase(request.value, i);
+        if (!phase.resolved_state.available)
+            throw std::runtime_error("visual phase unresolved: " + phase.resolved_state.error);
+        if (phase.resolved_state.value.empty())
+            continue;
+        if (!phase.transition.available || !std::isfinite(phase.transition.value) || phase.transition.value < 0)
+            throw std::runtime_error("visual phase transition unavailable/invalid");
+        next.body[i] = HashName(phase.resolved_state.value, objects);
+        const auto present = actions_.HasState(animator, 0, next.body[i]);
+        if (!live()) {
+            receipt.outcome = ActionOutcome::Cancelled;
+            return;
+        }
+        if (!present.read.returned)
+            throw std::runtime_error("visual body state query failed");
+        if (!present.value) {
+            receipt.outcome = ActionOutcome::StateAbsent;
+            receipt.detail = phase.resolved_state.value;
+            return;
+        }
+    }
+    if (!next.body[next.phase]) {
+        if (!request.recover && next.body[1])
+            next.phase = 1;
+        else {
+            receipt.outcome = ActionOutcome::Unavailable;
+            receipt.detail = "no body phase in selected visual row; non-animation effects are not implemented";
+            return;
+        }
+    }
+    // Recover exits this visual effect. Official CFF schedules recovery and
+    // reevaluates the expression in the same update, not at clip completion.
+    // Release our expression below; do not apply the outgoing one again.
+    if (!request.recover && !request.expression.value.empty()) {
+        if (!request.expression_transition.available || !std::isfinite(request.expression_transition.value) ||
+            request.expression_transition.value < 0)
+            throw std::runtime_error("expression transition unavailable/invalid");
+        const auto face = HashName(request.expression.value, objects);
+        next.expression = std::make_shared<api::ExpressionOverride>(OverrideTarget(), animator, face,
+                                                                    request.expression_transition.value, live,
+                                                                    visual_ ? visual_->expression.get() : nullptr);
+    }
+    if (!live()) {
+        receipt.outcome = ActionOutcome::Cancelled;
+        return;
+    }
+    ReleaseVisual(animator);
+    if (!live()) {
+        receipt.outcome = ActionOutcome::Cancelled;
+        return;
+    }
+    visual_ = next;
+    visual_cancelled_ = false;
+    const auto& phase = Phase(request.value, next.phase);
+    receipt.hash = {next.body[next.phase], {true, 0}};
+    receipt.call = actions_.PlayFreeStyleState(style, next.body[next.phase], phase.transition.value, 0);
+    receipt.outcome = receipt.call.returned ? ActionOutcome::Returned : ActionOutcome::CallFailed;
+    if (!live() || !receipt.call.returned) {
+        visual_cancelled_ = true;
+        return;
+    }
+    if (next.expression) {
+        const auto applied = next.expression->Apply(live);
+        if (!applied.call.returned) {
+            visual_cancelled_ = true;
+            receipt.outcome = live() ? ActionOutcome::CallFailed : ActionOutcome::Cancelled;
+            receipt.detail = applied.detail;
+            return;
+        }
+    }
+    if (!request.recover && next.expression && request.blink_source >= 0 && live())
+        try {
+            auto blink = std::make_shared<api::BlinkOverride>(OverrideTarget(), request.blink_source);
+            visual_->blink = blink; // retain partial-write cleanup before the call
+            const auto applied = blink->Apply(objects, live);
+            status_.blink_note = applied.detail;
+            if (applied.attempted && !applied.call.returned) {
+                blink->Release(live);
+                status_.blink_note = applied.detail;
+            }
+        } catch (const std::exception& e) {
+            status_.blink_note = e.what();
+        }
+    status_.visual_note = request.source + " flag=" + std::to_string(request.value.flag.value) +
+                          (request.recover ? " recovery requested" : " occurrence/hold requested") +
+                          "; body/expression only";
+    if (request.recover)
+        receipt.accepted_effect = ReactionRecovered{request.character_config, request.value.flag.value};
+    else
+        receipt.accepted_effect =
+            ReactionEntered{request.character_config, request.value.flag.value, request.occurrence};
+}
+void ActionPlayback::TickVisual(void* animator, void* style, const api::WorldFrame& frame,
+                                api::ManagedObjects& objects) {
+    if (!visual_ || visual_->body_suspended || frame.sequence <= visual_->boundary)
+        return;
+    const auto tracking = *visual_;
+    const auto revision = intent_revision_;
+    const auto current = actions_.CurrentState(animator, 0);
+    const auto transition = actions_.InTransition(animator, 0);
+    if (Ended() || revision != intent_revision_)
+        return;
+    if (!current.read.returned || !transition.read.returned)
+        throw std::runtime_error("visual phase observation failed");
+    if (transition.value)
+        return;
+    if (!Matches(current, tracking.body[tracking.phase])) {
+        if (tracking.phase == 0 && tracking.body[1] && Matches(current, tracking.body[1])) {
+            ObservePose(tracking.serial);
+            visual_->phase = 1;
+            visual_->body_seen = true;
+            status_.visual_note = "official occurrence -> loop observed";
+            return;
+        }
+        if (tracking.body_seen) {
+            ObservePose(tracking.serial, true);
+            if (tracking.phase == 2)
+                ReleaseVisual(animator);
+            else
+                YieldVisualBody(animator);
+            status_.visual_note = "official body successor retained";
+            if (!tracking.task_owned && tracking.phase == 2 && !Ended() && revision == intent_revision_ &&
+                !CompletionState().empty()) {
+                const auto idle = CompletionState();
+                const auto hash = HashName(idle, objects);
+                if (!Ended() && revision == intent_revision_ && Matches(current, hash))
+                    status_.successor = AutomaticSuccessor{tracking.serial, 0, idle, false, true};
+            }
+        }
+        return;
+    }
+    visual_->body_seen = true;
+    ObservePose(tracking.serial);
+    if (current.loop || !std::isfinite(current.normalized_time) || current.normalized_time < 1)
+        return;
+    if (tracking.phase == 0 && tracking.body[1]) {
+        const auto call =
+            actions_.PlayFreeStyleState(style, tracking.body[1], tracking.request.value.loop.transition.value, 0);
+        if (Ended() || revision != intent_revision_)
+            return;
+        if (!call.returned)
+            throw std::runtime_error("visual loop transition failed");
+        visual_->phase = 1;
+        visual_->body_seen = false;
+        visual_->boundary = frame.sequence;
+        status_.visual_note = "occurrence completed; configured loop requested";
+    } else if (tracking.phase == 2) {
+        ObservePose(tracking.serial, true);
+        ReleaseVisual(animator);
+        if (!tracking.task_owned && !Ended() && !status_.closing && revision == intent_revision_ &&
+            !CompletionState().empty()) {
+            const auto idle = CompletionState();
+            const auto serial = Queue(FreeStyleState{idle});
+            status_.successor = AutomaticSuccessor{tracking.serial, serial, idle, false};
+        }
+    }
+    // No inferred duration: without a loop clip, hold the occurrence's final
+    // pose until the next user intent rather than apply gameplay modifiers.
+}
+}

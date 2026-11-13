@@ -1,0 +1,487 @@
+{
+  "format": "hksr.script",
+  "id": "official-scripts:Config/ConfigCharacter/Avatar/Avatar_PlayerGirl_20_Config.json",
+  "applies_to": "Config/ConfigCharacter/Avatar/Avatar_PlayerGirl_20_Config.json",
+  "default": true,
+  "imports": ["Common/Elemental.json"],
+  "defaults": {
+    "targets": {
+      "PreviewTarget": {
+        "local_position": [0, 0, 6]
+      }
+    }
+  },
+  "actions": {
+    "rest": {
+      "trigger": "internal",
+      "run": [
+        {"op": "call", "function": "@return.rest.pose"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["stable-return", "idle-provider"]
+    },
+    "skill.0.perform": {
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_PlayerGirl_20_Skill01_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_PlayerGirl_20_Skill01_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.0.clock.1", "progress": 0.2610000001},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit",
+              "direction": {},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_PlayerBoy_20/Eff_Avatar_PlayerBoy_20_Skill01_Hit.prefab",
+                "height": 1.5,
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.0.hit.10"
+            },
+            {"op": "wait", "for": "skill.0.hit.10", "until": "accepted"}
+          ],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill01", "end": 0.0, "track": {"logic": 3}, "as": "skill.0.clock.1"},
+        {
+          "op": "movement",
+          "animation": "skill.0.clock.1",
+          "segments": [
+            {
+              "destination": "target",
+              "name": "PreviewTarget",
+              "target_geometry": true,
+              "start": 0.0209999999,
+              "end": 0.0879999995,
+              "sample": {"distance": 4.0, "percentage": 1.0, "include_radii": true}
+            },
+            {
+              "destination": "origin",
+              "start": 0.5960000001,
+              "end": 0.749,
+              "sample": {"distance": 0.0, "percentage": 1.0, "include_radii": true}
+            }
+          ],
+          "as": "skill.0.clock.1.movement"
+        },
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.0},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.03},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.2510000001},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.3310000002},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.7850000003},
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "Skill01",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "TriggerSound: sound emitter DefaultEmitter is not the owned actor; no body or real-player substitution",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "LookAt: not included in the visual sequence projection",
+          "RadialBlurEffect: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "skill.0.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_PlayerGirl_20_Config.json", "skill": 0, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "skill.1.perform": {
+      "inputs": {
+        "skill.1.condition.BySkillPointActivated.19": {"type": "bool", "default": false, "label": "BySkillPointActivated", "description": "Manual source condition: $.AbilityList[3].OnStart[4].Predicate"}
+      },
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_PlayerGirl_20_Skill02_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_PlayerGirl_20_Skill02_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.182},
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.5110000004},
+            {
+              "op": "if",
+              "condition": {"op": "value", "name": "skill.1.condition.BySkillPointActivated.19", "is": true},
+              "then": [
+                {
+                  "op": "hit",
+                  "target": "PreviewTarget",
+                  "animation": "Hit",
+                  "direction": {},
+                  "effect": {
+                    "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_PlayerBoy_20/Eff_Avatar_PlayerBoy_20_Skill02_Hit.prefab",
+                    "minimum_interval": 0.0500000007,
+                    "maximum_count": 1
+                  },
+                  "allow_position": true,
+                  "as": "skill.1.hit.21"
+                },
+                {"op": "wait", "for": "skill.1.hit.21", "until": "accepted"}
+              ],
+              "else": [
+                {
+                  "op": "hit",
+                  "target": "PreviewTarget",
+                  "animation": "Hit",
+                  "direction": {},
+                  "effect": {
+                    "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_PlayerBoy_20/Eff_Avatar_PlayerBoy_20_Skill02_Hit.prefab",
+                    "minimum_interval": 0.0500000007,
+                    "maximum_count": 1
+                  },
+                  "allow_position": true,
+                  "as": "skill.1.hit.23"
+                },
+                {"op": "wait", "for": "skill.1.hit.23", "until": "accepted"}
+              ]
+            }
+          ],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill02", "end": 1.0, "track": {"logic": 3}, "as": "skill.1.clock.1"},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.0},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.182},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.4540000001},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.7210000006},
+        {"op": "join"},
+        {"op": "wait", "for": "skill.1.clock.1", "until": "animation_end"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "Skill02",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "TriggerEffect: effect needs a non-owned target, dynamic path, or Timeline attachment",
+          "RadialBlurEffect: not included in the visual sequence projection",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "LoopExecuteTaskList: not included in the visual sequence projection",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "LookAt: not included in the visual sequence projection",
+          "HideLevelStage: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "skill.1.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_PlayerGirl_20_Config.json", "skill": 1, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "skill.2.perform": {
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_PlayerGirl_20_Skill03_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_PlayerGirl_20_Skill03_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.8480000002}
+          ]
+        },
+        {"op": "animation", "state": "Skill03", "end": -1.0, "track": {"logic": 3}, "as": "skill.2.clock.1"},
+        {"op": "wait", "for": "skill.2.clock.1", "until": "animation_end"},
+        {"op": "wait", "for": "skill.2.clock.1", "progress": 0.8000000007},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "Skill03",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "SyncCharLightAndCameraDir: not included in the visual sequence projection",
+          "HideLevelStage: not included in the visual sequence projection",
+          "GlobalMainIntensityEffect: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "CharacterPlayVO: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "WaitTimelineFinish: not included in the visual sequence projection",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "GlobalMainIntensityEffect: serial step depends on an unavailable source clock; no timing is inferred",
+          "HideLevelStage: serial step depends on an unavailable source clock; no timing is inferred"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "skill.2.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_PlayerGirl_20_Config.json", "skill": 2, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "callback.3357": {
+      "bindings": {
+        "targets": ["Recipient"]
+      },
+      "run": [
+        {"op": "effect.create", "effects": ["callback.3357.effect.1"], "as": "callback.3357.effect.1"},
+        {"op": "wait", "for": "callback.3357.effect.1", "until": "accepted"},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "effect.remove", "effects": ["callback.3357.effect.1"], "optional": ["callback.3357.effect.1"], "as": "callback.3357.remove-effects"},
+        {"op": "wait", "for": "callback.3357.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "effect.remove", "effects": ["callback.3357.effect.1"], "optional": ["callback.3357.effect.1"], "as": "callback.3357.remove-effects"},
+        {"op": "wait", "for": "callback.3357.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "MAvatar_PlayerGirl_20_SkillP01_ListenBreakDamage: OnStack",
+        "omissions": ["Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects."]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "callback.3362": {
+      "bindings": {
+        "targets": ["Recipient"]
+      },
+      "run": [
+        {"op": "effect.create", "effects": ["callback.3362.effect.2"], "as": "callback.3362.effect.2"},
+        {"op": "wait", "for": "callback.3362.effect.2", "until": "accepted"},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "effect.remove", "effects": ["callback.3362.effect.2"], "optional": ["callback.3362.effect.2"], "as": "callback.3362.remove-effects"},
+        {"op": "wait", "for": "callback.3362.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "effect.remove", "effects": ["callback.3362.effect.2"], "optional": ["callback.3362.effect.2"], "as": "callback.3362.remove-effects"},
+        {"op": "wait", "for": "callback.3362.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "MAvatar_PlayerGirl_20_SkillP01_ListenBreakDamage_Self: OnStack",
+        "omissions": [
+          "Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects.",
+          "SetModifierOverrideNameForStatus: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "skill.5.perform": {"use": "common.elemental.responses", "next": "rest"},
+    "preview.hit": {
+      "inputs": {
+        "kind": {
+          "type": "text",
+          "default": "Hit",
+          "label": "Hit type",
+          "choices": [
+            {"value": "Hit", "label": "Hit"},
+            {"value": "Hit_H", "label": "Hit_H"}
+          ]
+        }
+      },
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "kind", "is": "Hit_H"},
+          "then": [
+            {"op": "hit", "target": "Caster", "animation": "Hit_H", "as": "hit-heavy"},
+            {"op": "wait", "for": "hit-heavy"}
+          ],
+          "else": [
+            {"op": "hit", "target": "Caster", "animation": "Hit", "as": "hit"},
+            {"op": "wait", "for": "hit"}
+          ]
+        }
+      ],
+      "next": "rest",
+      "presentation": {"label": "Hit"},
+      "tags": ["manual-visual-callback"]
+    },
+    "source.3": {
+      "requires": [
+        {
+          "op": "unresolved",
+          "source": "Config/ConfigCharacter/Avatar/Avatar_PlayerGirl_20_Config.json:$.SkillList[3]",
+          "detail": "Retained source has no independently bound presentation unit"
+        }
+      ],
+      "trigger": "internal",
+      "run": [],
+      "presentation": {
+        "label": "SkillP01",
+        "listed": false,
+        "omissions": ["Retained source has no independently bound presentation unit"]
+      },
+      "tags": ["retained-source"]
+    },
+    "source.4": {
+      "requires": [
+        {
+          "op": "unresolved",
+          "source": "Config/ConfigCharacter/Avatar/Avatar_PlayerGirl_20_Config.json:$.SkillList[4]",
+          "detail": "Retained source has no independently bound presentation unit"
+        }
+      ],
+      "trigger": "internal",
+      "run": [],
+      "presentation": {
+        "label": "SkillMaze",
+        "listed": false,
+        "omissions": ["Retained source has no independently bound presentation unit"]
+      },
+      "tags": ["retained-source"]
+    },
+    "@receiver-clear/callback.5359.receiver-property.3": {
+      "requires": [
+        {"op": "state", "name": "common.elemental.frozen-hit"}
+      ],
+      "mode": "input",
+      "run": [
+        {"op": "state.exit", "name": "common.elemental.frozen-hit", "only_caster": true, "as": "clear"},
+        {"op": "wait", "for": "clear"}
+      ],
+      "presentation": {
+        "label": "Clear hit effect override",
+        "kind": "setting",
+        "contexts": ["common.elemental.frozen-hit"]
+      },
+      "tags": ["visual-receiver-clear"]
+    }
+  },
+  "functions": {
+    "@return.rest.pose": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "rest.pose.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "rest.pose"
+      }
+    ],
+    "@return.return.pose": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "return.pose.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "return.pose"
+      }
+    ]
+  },
+  "states": {},
+  "resources": {
+    "effects": {
+      "callback.3357.effect.1": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_PlayerBoy_20/Eff_Avatar_PlayerBoy_20_Skill03_Buff_01.prefab", "target": "Recipient"},
+      "callback.3362.effect.2": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_PlayerBoy_20/Eff_Avatar_PlayerBoy_20_Skill03_Buff_01.prefab", "target": "Recipient"}
+    }
+  }
+}

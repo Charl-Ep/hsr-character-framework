@@ -1,0 +1,580 @@
+{
+  "format": "hksr.script",
+  "id": "official-scripts:Config/ConfigCharacter/Avatar/Avatar_Castorice_00_Config.json",
+  "applies_to": "Config/ConfigCharacter/Avatar/Avatar_Castorice_00_Config.json",
+  "default": true,
+  "imports": ["Common/Elemental.json"],
+  "defaults": {
+    "targets": {
+      "PreviewTarget": {
+        "local_position": [0, 0, 6]
+      }
+    }
+  },
+  "actions": {
+    "rest": {
+      "trigger": "internal",
+      "run": [
+        {"op": "call", "function": "@return.rest.pose"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["stable-return", "idle-provider"]
+    },
+    "skill.0.perform": {
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Castorice_00_Skill01_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Castorice_00_Skill01_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.0.clock.1", "progress": 0.1629999999},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit",
+              "direction": {},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Castorice_00/Eff_Avatar_Castorice_00_Skill01_Hit01.prefab",
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.0.hit.12"
+            },
+            {"op": "wait", "for": "skill.0.hit.12", "until": "accepted"},
+            {"op": "wait", "for": "skill.0.clock.1", "progress": 0.3420000001},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit",
+              "direction": {},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Castorice_00/Eff_Avatar_Castorice_00_Skill01_Hit02.prefab",
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.0.hit.14"
+            },
+            {"op": "wait", "for": "skill.0.hit.14", "until": "accepted"},
+            {"op": "wait", "for": "skill.0.clock.1", "progress": 0.3600000003}
+          ],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill01", "end": 0.0, "track": {"logic": 3}, "as": "skill.0.clock.1"},
+        {
+          "op": "movement",
+          "animation": "skill.0.clock.1",
+          "segments": [
+            {
+              "destination": "target",
+              "name": "PreviewTarget",
+              "target_geometry": true,
+              "start": 0.081,
+              "end": 0.1649999998,
+              "sample": {"distance": 1.4500000004, "percentage": 1.0, "include_radii": true}
+            },
+            {
+              "destination": "origin",
+              "start": 0.5830000003,
+              "end": 0.7010000005,
+              "sample": {"distance": 0.0, "percentage": 1.0, "include_radii": true}
+            }
+          ],
+          "as": "skill.0.clock.1.movement"
+        },
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.0},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.0749999997},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.1479999995},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.4700000004},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.7800000007},
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "Skill01",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "LookAt: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "TargetTimeSlow: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "RadialBlurEffect: not included in the visual sequence projection",
+          "StopEffectFollow: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "skill.0.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Castorice_00_Config.json", "skill": 0, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "skill.1.perform": {
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Castorice_00_Skill02_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Castorice_00_Skill02_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.3389999996},
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.3410000002},
+            {"op": "effect.create", "effects": ["skill.1.effect.12"], "as": "skill.1.effect.12"},
+            {"op": "wait", "for": "skill.1.effect.12", "until": "accepted"},
+            {"op": "effect.create", "effects": ["skill.1.effect.13"], "as": "skill.1.effect.13"},
+            {"op": "wait", "for": "skill.1.effect.13", "until": "accepted"},
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.3459999999},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit_H",
+              "direction": {},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Castorice_00/Eff_Avatar_Castorice_00_Skill02_V1_Hit02.prefab",
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.1.hit.15"
+            },
+            {"op": "wait", "for": "skill.1.hit.15", "until": "accepted"},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit_H",
+              "direction": {},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Castorice_00/Eff_Avatar_Castorice_00_Skill02_V1_Hit02.prefab",
+                "height": 1.0,
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.1.hit.17"
+            },
+            {"op": "wait", "for": "skill.1.hit.17", "until": "accepted"}
+          ],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill02", "end": -1.0, "track": {"logic": 3}, "as": "skill.1.clock.1"},
+        {"op": "wait", "for": "skill.1.clock.1", "until": "animation_end"},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.7000000006},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {
+          "op": "effect.remove",
+          "effects": ["skill.1.effect.12", "skill.1.effect.13"],
+          "optional": ["skill.1.effect.12", "skill.1.effect.13"],
+          "as": "skill.1.remove-effects"
+        },
+        {"op": "wait", "for": "skill.1.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {
+          "op": "effect.remove",
+          "effects": ["skill.1.effect.12", "skill.1.effect.13"],
+          "optional": ["skill.1.effect.12", "skill.1.effect.13"],
+          "as": "skill.1.remove-effects"
+        },
+        {"op": "wait", "for": "skill.1.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "Skill02",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "LookAt: not included in the visual sequence projection",
+          "PlayTimeline: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "LoseHPByRatio: not included in the visual sequence projection",
+          "TriggerAnimState: animation has no literal owned-body binding",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "skill.1.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Castorice_00_Config.json", "skill": 1, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "skill.2.perform": {
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Castorice_00_Skill03_Camera",
+          "run": [
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.6300000005}
+          ],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Castorice_00_Skill03_Phase02",
+          "run": [
+            {
+              "op": "for_each",
+              "bind": "skill.2.member.31",
+              "targets": ["PreviewTarget"],
+              "collection": "skill.2.targets.32",
+              "run": [],
+              "empty": []
+            }
+          ]
+        },
+        {"op": "animation", "state": "Skill03", "end": -1.0, "track": {"logic": 3}, "as": "skill.2.clock.1"},
+        {"op": "wait", "for": "skill.2.clock.1", "until": "animation_end"},
+        {"op": "wait", "for": "skill.2.clock.1", "progress": 0.9900000009},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "Skill03",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "LevelAudioState: not included in the visual sequence projection",
+          "SyncCharLightAndCameraDir: not included in the visual sequence projection",
+          "AlignTargetToTeamCenter: not included in the visual sequence projection",
+          "LookAt: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "HideLevelStage: not included in the visual sequence projection",
+          "CreateServant: not included in the visual sequence projection",
+          "TriggerAnimState: animation has no literal owned-body binding",
+          "Retarget: recipient collection is explicitly selected; native filtering, random selection and count limits are not simulated",
+          "SetActionDelayNearTarget: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "SwitchBattleArea: not included in the visual sequence projection",
+          "WaitTimelineFinish: not included in the visual sequence projection",
+          "TriggerAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "TriggerAbility: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitTimelineFinish: serial step depends on an unavailable source clock; no timing is inferred",
+          "HideLevelStage: serial step depends on an unavailable source clock; no timing is inferred",
+          "MoveToTargetPosition: serial step depends on an unavailable source clock; no timing is inferred",
+          "wait_request: wait depends on an omitted source producer"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "skill.2.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Castorice_00_Config.json", "skill": 2, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "skill.3.perform": {
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Castorice_00_Skill21_Camera",
+          "run": [],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill21", "end": -1.0, "track": {"logic": 3}, "as": "skill.3.clock.1"},
+        {"op": "wait", "for": "skill.3.clock.1", "until": "animation_end"},
+        {"op": "wait", "for": "skill.3.clock.1", "progress": 0.7900000007},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "Skill21",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "PlayTimeline: not included in the visual sequence projection",
+          "LookAt: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "TriggerAnimState: animation has no literal owned-body binding",
+          "TriggerParallelAbility: not included in the visual sequence projection",
+          "WaitFor: not included in the visual sequence projection",
+          "TriggerAnimState: serial step depends on an unavailable source clock; no timing is inferred"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "skill.3.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Castorice_00_Config.json", "skill": 3, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "skill.5.perform": {
+      "inputs": {
+        "event": {
+          "type": "integer",
+          "default": 0,
+          "label": "Callback",
+          "choices": [
+            {"value": 0, "label": "MAvatar_Castorice_00_Skill03_Field: OnStack", "diagnostic": true},
+            {"value": 1, "label": "MAvatar_Castorice_00_Skill03_Field: OnDestroy", "diagnostic": true}
+          ],
+          "diagnostic": true
+        }
+      },
+      "requires": [
+        {"op": "number", "name": "event", "compare": "ge", "value": 0},
+        {"op": "number", "name": "event", "compare": "lt", "value": 2}
+      ],
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "event", "is": 1},
+          "then": [
+            {"op": "join"},
+            {"op": "call", "function": "@return.return.pose"},
+            {"op": "wait", "for": "return.pose", "until": "submitted"},
+            {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+            {"op": "wait", "for": "return.position"}
+          ],
+          "else": [
+            {"op": "join"},
+            {"op": "call", "function": "@return.return.pose"},
+            {"op": "wait", "for": "return.pose", "until": "submitted"},
+            {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+            {"op": "wait", "for": "return.position"}
+          ]
+        }
+      ],
+      "on_interrupt": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "event", "is": 1},
+          "then": [
+            {"op": "call", "function": "@return.return.pose"},
+            {"op": "wait", "for": "return.pose", "until": "submitted"},
+            {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+            {"op": "wait", "for": "return.position"}
+          ],
+          "else": [
+            {"op": "call", "function": "@return.return.pose"},
+            {"op": "wait", "for": "return.pose", "until": "submitted"},
+            {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+            {"op": "wait", "for": "return.position"}
+          ]
+        }
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "SkillMaze",
+        "listed": false,
+        "omissions": [
+          "Manual visual callback selection; no native combat modifier or automatic event simulation.",
+          "event: 0=MAvatar_Castorice_00_Skill03_Field: OnStack, 1=MAvatar_Castorice_00_Skill03_Field: OnDestroy",
+          "LevelAudioState: not included in the visual sequence projection",
+          "CreateServant: not included in the visual sequence projection",
+          "Retarget: recipient collection is explicitly selected; native filtering, random selection and count limits are not simulated",
+          "SetActionDelayNearTarget: not included in the visual sequence projection",
+          "SetControlSkillMapping: Skill mapping is configuration, not a request to play its destination ready pose; native mapping is not executed"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation", "diagnostic-omission-only"]
+    },
+    "skill.6.perform": {"use": "common.elemental.responses", "next": "rest"},
+    "preview.hit": {
+      "inputs": {
+        "kind": {
+          "type": "text",
+          "default": "Hit",
+          "label": "Hit type",
+          "choices": [
+            {"value": "Hit", "label": "Hit"},
+            {"value": "Hit_H", "label": "Hit_H"}
+          ]
+        }
+      },
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "kind", "is": "Hit_H"},
+          "then": [
+            {"op": "hit", "target": "Caster", "animation": "Hit_H", "as": "hit-heavy"},
+            {"op": "wait", "for": "hit-heavy"}
+          ],
+          "else": [
+            {"op": "hit", "target": "Caster", "animation": "Hit", "as": "hit"},
+            {"op": "wait", "for": "hit"}
+          ]
+        }
+      ],
+      "next": "rest",
+      "presentation": {"label": "Hit"},
+      "tags": ["manual-visual-callback"]
+    },
+    "source.4": {
+      "requires": [
+        {
+          "op": "unresolved",
+          "source": "Config/ConfigCharacter/Avatar/Avatar_Castorice_00_Config.json:$.SkillList[4]",
+          "detail": "Retained source has no independently bound presentation unit"
+        }
+      ],
+      "trigger": "internal",
+      "run": [],
+      "presentation": {
+        "label": "SkillP01",
+        "listed": false,
+        "omissions": ["Retained source has no independently bound presentation unit"]
+      },
+      "tags": ["retained-source"]
+    },
+    "source.7": {
+      "requires": [
+        {
+          "op": "unresolved",
+          "source": "Config/ConfigCharacter/Avatar/Avatar_Castorice_00_Config.json:$.SkillList[7]",
+          "detail": "Retained source has no independently bound presentation unit"
+        }
+      ],
+      "trigger": "internal",
+      "run": [],
+      "presentation": {
+        "label": "PassiveSkillSummoner",
+        "listed": false,
+        "omissions": ["Retained source has no independently bound presentation unit"]
+      },
+      "tags": ["retained-source"]
+    },
+    "@receiver-clear/callback.5359.receiver-property.3": {
+      "requires": [
+        {"op": "state", "name": "common.elemental.frozen-hit"}
+      ],
+      "mode": "input",
+      "run": [
+        {"op": "state.exit", "name": "common.elemental.frozen-hit", "only_caster": true, "as": "clear"},
+        {"op": "wait", "for": "clear"}
+      ],
+      "presentation": {
+        "label": "Clear hit effect override",
+        "kind": "setting",
+        "contexts": ["common.elemental.frozen-hit"]
+      },
+      "tags": ["visual-receiver-clear"]
+    }
+  },
+  "functions": {
+    "@return.rest.pose": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "rest.pose.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "rest.pose"
+      }
+    ],
+    "@return.return.pose": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "return.pose.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "return.pose"
+      }
+    ]
+  },
+  "states": {},
+  "resources": {
+    "effects": {
+      "skill.1.effect.12": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Castorice_00/Eff_Avatar_Castorice_00_Skill02_V1_Hit01.prefab", "target": "Caster"},
+      "skill.1.effect.13": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Castorice_00/Eff_Avatar_Castorice_00_Skill02_V1_eye.prefab", "target": "Caster"}
+    }
+  }
+}

@@ -1,0 +1,2512 @@
+{
+  "format": "hksr.script",
+  "id": "official-scripts:Config/ConfigCharacter/Avatar/Avatar_SilverWolf999_00_Config.json",
+  "applies_to": "Config/ConfigCharacter/Avatar/Avatar_SilverWolf999_00_Config.json",
+  "default": true,
+  "scope": "partner-preview",
+  "imports": ["Common/Elemental.json"],
+  "defaults": {
+    "targets": {
+      "PreviewTarget": {
+        "local_position": [0, 0, 6]
+      },
+      "callback.3921.target.AllTeamCenter": {"alias": "Caster"},
+      "cue.3904.4651.target.DarkTeamEntity": {"alias": "Caster"},
+      "cue.3904.4658.target.DarkTeamEntity": {"alias": "Caster"},
+      "cue.3977.7245.target.DarkTeamEntity": {"alias": "Caster"},
+      "cue.3977.7261.target.DarkTeamEntity": {"alias": "Caster"},
+      "cue.3977.7683.target.DarkTeamEntity": {"alias": "Caster"},
+      "cue.3977.7719.target.DarkTeamEntity": {"alias": "Caster"}
+    }
+  },
+  "actions": {
+    "base.rest": {
+      "trigger": "internal",
+      "run": [
+        {"op": "call", "function": "@return.rest.pose"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["stable-return", "idle-provider"]
+    },
+    "base.skill.0.perform": {
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_SilverWolf999_00_Skill01_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_SilverWolf999_00_Skill01_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.0.clock.1", "progress": 0.1479999995}
+          ],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill01", "end": 1.0, "track": {"logic": 3}, "as": "skill.0.clock.1"},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.0},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.668},
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill01",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "LookAt: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "DamageByAttackProperty: hit presentation not projected: hit requires an explicit motion/source binding: HitMotion",
+          "DamageByAttackProperty: no literal hit animation/effect; receiver defaults are not assumed",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.0.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_SilverWolf999_00_Config.json", "skill": 0, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "base.skill.1.perform": {
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_SilverWolf999_00_Skill02_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_SilverWolf999_00_Skill02_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.5900000005},
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.658},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit_H",
+              "direction": {"vertical": -60.0},
+              "effect": {"path": "", "minimum_interval": 0.0500000007, "maximum_count": 1},
+              "allow_position": true,
+              "as": "skill.1.hit.16"
+            },
+            {"op": "wait", "for": "skill.1.hit.16", "until": "accepted"},
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.9990000003}
+          ],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill02", "end": 1.0, "track": {"logic": 3}, "as": "skill.1.clock.1"},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.0},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.1049999997},
+        {
+          "op": "effect.remove_event",
+          "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_SilverWolf999_00/Eff_Avatar_SilverWolf999_00_Skill02_Ready_Start01.prefab",
+          "fade": false,
+          "immediate": true,
+          "as": "skill.1.remove.27.0"
+        },
+        {"op": "wait", "for": "skill.1.remove.27.0", "until": "accepted"},
+        {
+          "op": "effect.remove_event",
+          "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_SilverWolf999_00/Eff_Avatar_SilverWolf999_00_Skill02_Ready_Hand01.prefab",
+          "fade": false,
+          "immediate": true,
+          "as": "skill.1.remove.28.0"
+        },
+        {"op": "wait", "for": "skill.1.remove.28.0", "until": "accepted"},
+        {
+          "op": "effect.remove_event",
+          "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_SilverWolf999_00/Eff_Avatar_SilverWolf999_00_Skill02_Ready_Weapon01.prefab",
+          "fade": false,
+          "immediate": true,
+          "as": "skill.1.remove.29.0"
+        },
+        {"op": "wait", "for": "skill.1.remove.29.0", "until": "accepted"},
+        {
+          "op": "effect.remove_event",
+          "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_SilverWolf999_00/Eff_Avatar_SilverWolf999_00_Skill02_Ready_Weapon02.prefab",
+          "fade": false,
+          "immediate": true,
+          "as": "skill.1.remove.30.0"
+        },
+        {"op": "wait", "for": "skill.1.remove.30.0", "until": "accepted"},
+        {
+          "op": "effect.remove_event",
+          "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_SilverWolf999_00/Eff_Avatar_SilverWolf999_00_Skill02_Ready_Weapon03.prefab",
+          "fade": false,
+          "immediate": true,
+          "as": "skill.1.remove.31.0"
+        },
+        {"op": "wait", "for": "skill.1.remove.31.0", "until": "accepted"},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.3330000001},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.5250000001},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.7000000006},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.9990000003},
+        {
+          "op": "effect.remove_event",
+          "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_SilverWolf999_00/Eff_Avatar_SilverWolf999_00_Skill02_Scene01.prefab",
+          "fade": false,
+          "immediate": true,
+          "as": "skill.1.remove.36.0"
+        },
+        {"op": "wait", "for": "skill.1.remove.36.0", "until": "accepted"},
+        {
+          "op": "effect.remove_event",
+          "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_SilverWolf999_00/Eff_Avatar_SilverWolf999_00_Skill02_Scene02.prefab",
+          "fade": false,
+          "immediate": true,
+          "as": "skill.1.remove.37.0"
+        },
+        {"op": "wait", "for": "skill.1.remove.37.0", "until": "accepted"},
+        {"op": "animation", "state": "StandBy", "end": -1.0, "track": {"logic": 1}, "as": "skill.1.clock.2"},
+        {"op": "wait", "for": "skill.1.clock.2", "until": "animation_end"},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill02",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "LookAt: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "TriggerAnimState: animation has no literal owned-body binding",
+          "TargetTimeSlow: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "JDOLDFECMPL: not included in the visual sequence projection",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "DamageByAttackProperty: no literal hit animation/effect; receiver defaults are not assumed",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "ClearTargetTimeSlow: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "SetSkillTargetFormationByPos: not included in the visual sequence projection",
+          "PlayTimeline: not included in the visual sequence projection",
+          "HideLevelStage: not included in the visual sequence projection",
+          "StopTimeline: not included in the visual sequence projection",
+          "SetTeamFormation: not included in the visual sequence projection",
+          "TriggerEffect: effect needs a non-owned target, dynamic path, or Timeline attachment"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.1.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_SilverWolf999_00_Config.json", "skill": 1, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "base.skill.2.perform": {
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_SilverWolf999_00_Skill03_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_SilverWolf999_00_Skill03_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.8060000003}
+          ],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill03", "end": -1.0, "track": {"logic": 3}, "as": "skill.2.clock.1"},
+        {"op": "wait", "for": "skill.2.clock.1", "until": "animation_end"},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill03",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "HideLevelStage: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "WaitTimelineFinish: not included in the visual sequence projection",
+          "SkillPerformFinish: serial step depends on an unavailable source clock; no timing is inferred",
+          "SetComponentAssetLoadState: serial step depends on an unavailable source clock; no timing is inferred",
+          "SetTargetCustomAssetPreloadState: serial step depends on an unavailable source clock; no timing is inferred",
+          "HideLevelStage: serial step depends on an unavailable source clock; no timing is inferred"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.2.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_SilverWolf999_00_Config.json", "skill": 2, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "base.skill.3.perform": {
+      "inputs": {
+        "skill.3.condition.ByHaveEnemyAlive.52": {"type": "bool", "default": false, "label": "ByHaveEnemyAlive", "description": "Manual source condition: $.AbilityList[21].OnStart[16].Predicate"},
+        "skill.3.condition.ByIsContainModifier.84": {"type": "bool", "default": false, "label": "ByIsContainModifier", "description": "Manual source condition: $.AbilityList[10].OnStart[0].Predicate"},
+        "skill.3.condition.ByCompareDynamicValue.104": {
+          "type": "bool",
+          "default": false,
+          "label": "ByCompareDynamicValue",
+          "description": "Manual source condition: $.AbilityList[8].OnStart[2].Predicate.PredicateList[1]"
+        }
+      },
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "skill.3.condition.ByIsContainModifier.84", "is": true},
+          "then": [
+            {
+              "op": "if",
+              "condition": {"op": "value", "name": "skill.3.condition.ByCompareDynamicValue.104", "is": true},
+              "then": [
+                {
+                  "op": "start",
+                  "id": "Avatar_SilverWolf999_00_Skill11_End_Phase01",
+                  "run": [
+                    {
+                      "op": "effect.remove_event",
+                      "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_SilverWolf999_00/Eff_Avatar_SilverWolf999_00_Skill11_Scene.prefab",
+                      "immediate": true,
+                      "as": "skill.3.remove.15.0"
+                    },
+                    {"op": "wait", "for": "skill.3.remove.15.0", "until": "accepted"},
+                    {
+                      "op": "effect.remove_event",
+                      "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_SilverWolf999_00/Eff_Avatar_SilverWolf999_00_Skill11_Scene_Loop.prefab",
+                      "immediate": true,
+                      "as": "skill.3.remove.16.0"
+                    },
+                    {"op": "wait", "for": "skill.3.remove.16.0", "until": "accepted"},
+                    {
+                      "op": "effect.remove_event",
+                      "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_SilverWolf999_00/Eff_Avatar_SilverWolf999_00_Skill11_Scene02.prefab",
+                      "immediate": true,
+                      "as": "skill.3.remove.17.0"
+                    },
+                    {"op": "wait", "for": "skill.3.remove.17.0", "until": "accepted"},
+                    {
+                      "op": "effect.remove_event",
+                      "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_SilverWolf999_00/Eff_Avatar_SilverWolf999_00_Skill11_Scene02_02.prefab",
+                      "immediate": true,
+                      "as": "skill.3.remove.18.0"
+                    },
+                    {"op": "wait", "for": "skill.3.remove.18.0", "until": "accepted"},
+                    {
+                      "op": "effect.remove_event",
+                      "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_SilverWolf999_00/Eff_Avatar_SilverWolf999_00_Skill11_Scene03.prefab",
+                      "immediate": true,
+                      "as": "skill.3.remove.19.0"
+                    },
+                    {"op": "wait", "for": "skill.3.remove.19.0", "until": "accepted"},
+                    {
+                      "op": "effect.remove_event",
+                      "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_SilverWolf999_00/Eff_Avatar_SilverWolf999_00_Skill11_Scene03_02.prefab",
+                      "immediate": true,
+                      "as": "skill.3.remove.20.0"
+                    },
+                    {"op": "wait", "for": "skill.3.remove.20.0", "until": "accepted"},
+                    {
+                      "op": "effect.remove_event",
+                      "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_SilverWolf999_00/Eff_Avatar_SilverWolf999_00_Skill11_Scene03_03.prefab",
+                      "immediate": true,
+                      "as": "skill.3.remove.21.0"
+                    },
+                    {"op": "wait", "for": "skill.3.remove.21.0", "until": "accepted"},
+                    {
+                      "op": "effect.remove_event",
+                      "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_SilverWolf999_00/Eff_Avatar_SilverWolf999_00_Skill11_Trail_Loop.prefab",
+                      "immediate": true,
+                      "as": "skill.3.remove.22.0"
+                    },
+                    {"op": "wait", "for": "skill.3.remove.22.0", "until": "accepted"},
+                    {"op": "attachment.visibility", "points": ["Wings"], "visible": false, "as": "skill.3.attachment.29"},
+                    {"op": "wait", "for": "skill.3.attachment.29", "until": "accepted"},
+                    {"op": "animation", "state": "Skill11_End", "end": -1.0, "track": {"logic": 3, "force": true}, "as": "skill.3.clock.4"},
+                    {"op": "wait", "for": "skill.3.clock.4", "until": "animation_end"},
+                    {
+                      "op": "start",
+                      "id": "Avatar_SilverWolf999_00_Skill11_End_Camera",
+                      "run": [
+                        {"op": "wait", "for": "skill.3.clock.4", "progress": 0.3800000003}
+                      ],
+                      "join": true
+                    },
+                    {
+                      "op": "start",
+                      "id": "Avatar_SilverWolf999_00_Skill11_End_Phase02",
+                      "run": [
+                        {"op": "wait", "for": "skill.3.clock.4", "progress": 0.4500000004},
+                        {"op": "wait", "for": "skill.3.clock.4", "progress": 0.496},
+                        {"op": "wait", "for": "skill.3.clock.4", "progress": 0.5420000003},
+                        {"op": "wait", "for": "skill.3.clock.4", "progress": 0.5879999999},
+                        {"op": "wait", "for": "skill.3.clock.4", "progress": 0.6340000003},
+                        {"op": "wait", "for": "skill.3.clock.4", "progress": 0.6700000006},
+                        {
+                          "op": "if",
+                          "condition": {"op": "value", "name": "skill.3.condition.ByHaveEnemyAlive.52", "is": true},
+                          "then": [],
+                          "else": [
+                            {"op": "sound", "event": "Ev_vo_avatar_skill04_cast_silverwolf999_06", "as": "skill.3.sound.53"}
+                          ]
+                        }
+                      ],
+                      "join": true
+                    },
+                    {"op": "wait", "for": "skill.3.clock.4", "progress": 0.658}
+                  ],
+                  "join": true
+                }
+              ],
+              "else": [
+                {
+                  "op": "start",
+                  "id": "Avatar_SilverWolf999_00_Skill11_Phase01",
+                  "run": [
+                    {
+                      "op": "start",
+                      "id": "Avatar_SilverWolf999_00_Skill11_Start_Camera",
+                      "run": [],
+                      "join": true
+                    },
+                    {
+                      "op": "start",
+                      "id": "Avatar_SilverWolf999_00_Skill11_Phase02",
+                      "run": [],
+                      "join": true
+                    },
+                    {"op": "effect.create", "effects": ["base.skill.3.effect.96"], "as": "skill.3.effect.96"},
+                    {"op": "wait", "for": "skill.3.effect.96", "until": "accepted"},
+                    {"op": "effect.create", "effects": ["base.skill.3.effect.97"], "as": "skill.3.effect.97"},
+                    {"op": "wait", "for": "skill.3.effect.97", "until": "accepted"},
+                    {"op": "effect.create", "effects": ["base.skill.3.effect.98"], "as": "skill.3.effect.98"},
+                    {"op": "wait", "for": "skill.3.effect.98", "until": "accepted"},
+                    {"op": "animation", "state": "Skill11_Start", "end": 1.0, "track": {"logic": 3}, "as": "skill.3.clock.71"},
+                    {"op": "wait", "for": "skill.3.clock.71", "progress": 0.0},
+                    {"op": "wait", "for": "skill.3.clock.71", "progress": 0.06},
+                    {"op": "wait", "for": "skill.3.clock.71", "progress": 0.5000000004}
+                  ],
+                  "join": true
+                }
+              ]
+            }
+          ],
+          "else": [
+            {
+              "op": "start",
+              "id": "Avatar_SilverWolf999_00_Skill11_Phase01",
+              "run": [
+                {
+                  "op": "start",
+                  "id": "Avatar_SilverWolf999_00_Skill11_Start_Camera",
+                  "run": [],
+                  "join": true
+                },
+                {
+                  "op": "start",
+                  "id": "Avatar_SilverWolf999_00_Skill11_Phase02",
+                  "run": [],
+                  "join": true
+                },
+                {"op": "effect.create", "effects": ["base.skill.3.effect.96"], "as": "skill.3.effect.96"},
+                {"op": "wait", "for": "skill.3.effect.96", "until": "accepted"},
+                {"op": "effect.create", "effects": ["base.skill.3.effect.97"], "as": "skill.3.effect.97"},
+                {"op": "wait", "for": "skill.3.effect.97", "until": "accepted"},
+                {"op": "effect.create", "effects": ["base.skill.3.effect.98"], "as": "skill.3.effect.98"},
+                {"op": "wait", "for": "skill.3.effect.98", "until": "accepted"},
+                {"op": "animation", "state": "Skill11_Start", "end": 1.0, "track": {"logic": 3}, "as": "skill.3.clock.71"},
+                {"op": "wait", "for": "skill.3.clock.71", "progress": 0.0},
+                {"op": "wait", "for": "skill.3.clock.71", "progress": 0.06},
+                {"op": "wait", "for": "skill.3.clock.71", "progress": 0.5000000004}
+              ],
+              "join": true
+            }
+          ]
+        },
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {
+          "op": "effect.remove",
+          "effects": ["base.skill.3.effect.96", "base.skill.3.effect.97", "base.skill.3.effect.98"],
+          "optional": ["base.skill.3.effect.96", "base.skill.3.effect.97", "base.skill.3.effect.98"],
+          "as": "skill.3.remove-effects"
+        },
+        {"op": "wait", "for": "skill.3.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {
+          "op": "effect.remove",
+          "effects": ["base.skill.3.effect.96", "base.skill.3.effect.97", "base.skill.3.effect.98"],
+          "optional": ["base.skill.3.effect.96", "base.skill.3.effect.97", "base.skill.3.effect.98"],
+          "as": "skill.3.remove-effects"
+        },
+        {"op": "wait", "for": "skill.3.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill11",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "MakeCharacterHUDVisible: not included in the visual sequence projection",
+          "ClearEntityDamageText: not included in the visual sequence projection",
+          "OLCFDLCNOHH: not included in the visual sequence projection",
+          "KJNHIELIFEK: not included in the visual sequence projection",
+          "RadialBlurEffect: not included in the visual sequence projection",
+          "StopTimeline: not included in the visual sequence projection",
+          "RemoveEffect: effect removal has no owned target binding",
+          "SetEntityVisible: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "AddGlobalDynamicOffsetIgnoreEntity: not included in the visual sequence projection",
+          "ReleaseEnvProfile: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "SetSkillTargetFormationByPos: not included in the visual sequence projection",
+          "LookAt: not included in the visual sequence projection",
+          "ScaleCharacterModel: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "TriggerAnimState: animation has no literal owned-body binding",
+          "DamageByAttackProperty: hit presentation not projected: hit requires an explicit motion/source binding: HitMotion",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "TargetTimeSlow: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "TriggerSkipDeadHandler: not included in the visual sequence projection",
+          "ShowEntityFloatMessage: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "HideLevelStage: not included in the visual sequence projection",
+          "WaitTimelineFinish: not included in the visual sequence projection",
+          "SetAttachmentVisibility: serial step depends on an unavailable source clock; no timing is inferred",
+          "HideLevelStage: serial step depends on an unavailable source clock; no timing is inferred",
+          "ScaleCharacterModel: serial step depends on an unavailable source clock; no timing is inferred",
+          "TriggerAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "SetTeamFormation: serial step depends on an unavailable source clock; no timing is inferred",
+          "CharacterDisableLookAt: serial step depends on an unavailable source clock; no timing is inferred",
+          "RemoveEffect: serial step depends on an unavailable source clock; no timing is inferred",
+          "TriggerEffect: serial step depends on an unavailable source clock; no timing is inferred",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: NormalizedTimeEnd: timing is not a retained constant",
+          "IncludeTaskListTemplate: serial step depends on an unavailable source clock; no timing is inferred",
+          "TransitEnvProfile: not included in the visual sequence projection",
+          "PlayTimeline: not included in the visual sequence projection",
+          "TriggerEffect: effect needs a non-owned target, dynamic path, or Timeline attachment",
+          "MMBPCMGMMIH: not included in the visual sequence projection",
+          "SetEffectAnimatorState: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.3.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_SilverWolf999_00_Config.json", "skill": 3, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "base.skill.4.perform": {
+      "run": [
+        {"op": "animation", "state": "Skill11_Item1", "end": 0.0, "track": {"logic": 3}, "as": "skill.4.clock.1"},
+        {"op": "wait", "for": "skill.4.clock.1", "progress": 0.0},
+        {
+          "op": "start",
+          "id": "Avatar_SilverWolf999_00_Skill11_Item1_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_SilverWolf999_00_Skill11_Item1_Phase02",
+          "run": [],
+          "join": true
+        },
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill12",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "SetEffectAnimatorState: not included in the visual sequence projection",
+          "WaitAnimState: wait uses an unprojected clock policy",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: NormalizedTimeEnd: timing is not a retained constant",
+          "TriggerEffect: serial step depends on an unavailable source clock; no timing is inferred",
+          "LoopExecuteTaskListWithInterval: serial step depends on an unavailable source clock; no timing is inferred",
+          "PredicateTaskList: serial step depends on an unavailable source clock; no timing is inferred",
+          "IncludeTaskListTemplate: serial step depends on an unavailable source clock; no timing is inferred",
+          "GlobalTimeSlow: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitSecond: serial step depends on an unavailable source clock; no timing is inferred",
+          "RemoveGlobalTimeSlow: serial step depends on an unavailable source clock; no timing is inferred",
+          "BALFAPGPFGA: serial step depends on an unavailable source clock; no timing is inferred",
+          "KJNHIELIFEK: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.4.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_SilverWolf999_00_Config.json", "skill": 4, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "base.skill.5.perform": {
+      "inputs": {
+        "skill.5.condition.ByCompareCharacterNumber.13": {
+          "type": "bool",
+          "default": false,
+          "label": "ByCompareCharacterNumber",
+          "description": "Manual source condition: $.GlobalTemplates[9].TaskList[0].Predicate"
+        }
+      },
+      "run": [
+        {"op": "animation", "state": "Skill11_Item2", "end": 0.0, "track": {"logic": 3}, "as": "skill.5.clock.1"},
+        {"op": "wait", "for": "skill.5.clock.1", "progress": 0.0},
+        {
+          "op": "start",
+          "id": "Avatar_SilverWolf999_00_Skill11_Item2_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_SilverWolf999_00_Skill11_Item2_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.5.clock.1", "progress": 0.3000000002},
+            {
+              "op": "if",
+              "condition": {"op": "value", "name": "skill.5.condition.ByCompareCharacterNumber.13", "is": true},
+              "then": [],
+              "else": [
+                {"op": "sound", "event": "Ev_vo_avatar_skill04_cast_silverwolf999_06", "as": "skill.5.sound.17"}
+              ]
+            }
+          ],
+          "join": true
+        },
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill13",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "SetEffectAnimatorState: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "TriggerAnimState: animation has no literal owned-body binding",
+          "DamageByAttackProperty: hit presentation not projected: hit requires an explicit motion/source binding: HitMotion",
+          "TriggerUINotify: not included in the visual sequence projection",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "ShowEntityFloatMessage: not included in the visual sequence projection",
+          "WaitAnimState: NormalizedTimeEnd: timing is not a retained constant",
+          "BALFAPGPFGA: serial step depends on an unavailable source clock; no timing is inferred",
+          "PredicateTaskList: serial step depends on an unavailable source clock; no timing is inferred",
+          "KJNHIELIFEK: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.5.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_SilverWolf999_00_Config.json", "skill": 5, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "base.skill.6.perform": {
+      "inputs": {
+        "skill.6.condition.ByCompareCharacterNumber.27": {
+          "type": "bool",
+          "default": false,
+          "label": "ByCompareCharacterNumber",
+          "description": "Manual source condition: $.GlobalTemplates[9].TaskList[0].Predicate"
+        }
+      },
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "run": [
+        {"op": "animation", "state": "Skill11_Item3", "end": 0.0, "track": {"logic": 3}, "as": "skill.6.clock.1"},
+        {"op": "wait", "for": "skill.6.clock.1", "progress": 0.0},
+        {
+          "op": "start",
+          "id": "Avatar_SilverWolf999_00_Skill11_Item3_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_SilverWolf999_00_Skill11_Item3_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.6.clock.1", "progress": 0.263},
+            {
+              "op": "for_each",
+              "bind": "skill.6.member.19",
+              "targets": ["PreviewTarget"],
+              "collection": "skill.6.targets.20",
+              "run": [],
+              "empty": []
+            },
+            {
+              "op": "if",
+              "condition": {"op": "value", "name": "skill.6.condition.ByCompareCharacterNumber.27", "is": true},
+              "then": [],
+              "else": [
+                {"op": "sound", "event": "Ev_vo_avatar_skill04_cast_silverwolf999_06", "as": "skill.6.sound.31"}
+              ]
+            },
+            {"op": "wait", "for": "skill.6.clock.1", "progress": 0.4279999998},
+            {"op": "wait", "for": "skill.6.clock.1", "progress": 0.4400000004}
+          ],
+          "join": true
+        },
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill14",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "SetEffectAnimatorParameter: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "JDOLDFECMPL: not included in the visual sequence projection",
+          "SwitchCaseByDynamicValue: not included in the visual sequence projection",
+          "DamageByAttackProperty: hit presentation not projected: $.AbilityList[19].OnStart[7].TaskList[2].SuccessTaskList[0].PerformanceDelay: no constant value observation",
+          "PerformDelayExecute: not included in the visual sequence projection",
+          "Retarget: recipient collection is explicitly selected; native filtering, random selection and count limits are not simulated",
+          "TriggerUINotify: not included in the visual sequence projection",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "ShowEntityFloatMessage: not included in the visual sequence projection",
+          "WaitAnimState: NormalizedTimeEnd: timing is not a retained constant",
+          "BALFAPGPFGA: serial step depends on an unavailable source clock; no timing is inferred",
+          "PredicateTaskList: serial step depends on an unavailable source clock; no timing is inferred",
+          "KJNHIELIFEK: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.6.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_SilverWolf999_00_Config.json", "skill": 6, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "base.skill.7.perform": {
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_SilverWolf999_00_Skill04_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_SilverWolf999_00_Skill04_Phase02",
+          "run": [],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill04", "end": -1.0, "track": {"logic": 3}, "as": "skill.7.clock.1"},
+        {"op": "wait", "for": "skill.7.clock.1", "until": "animation_end"},
+        {"op": "effect.create", "effects": ["base.skill.7.effect.10"], "as": "skill.7.effect.10"},
+        {"op": "wait", "for": "skill.7.effect.10", "until": "accepted"},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "effect.remove", "effects": ["base.skill.7.effect.10"], "optional": ["base.skill.7.effect.10"], "as": "skill.7.remove-effects"},
+        {"op": "wait", "for": "skill.7.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "effect.remove", "effects": ["base.skill.7.effect.10"], "optional": ["base.skill.7.effect.10"], "as": "skill.7.remove-effects"},
+        {"op": "wait", "for": "skill.7.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill04",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "HideLevelStage: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "WaitAnimState: NormalizedTimeEnd: timing is not a retained constant",
+          "NGLKHNKNBDC: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "PredicateTaskList: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitTimelineFinish: serial step depends on an unavailable source clock; no timing is inferred",
+          "SkillPerformFinish: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitTimelineFinish: not included in the visual sequence projection",
+          "HideLevelStage: serial step depends on an unavailable source clock; no timing is inferred"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.8.perform": {
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_SilverWolf999_00_Skill41_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_SilverWolf999_00_Skill41_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.8.clock.1", "progress": 0.5940000002},
+            {"op": "wait", "for": "skill.8.clock.1", "progress": 0.8700000008}
+          ],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill41", "end": -1.0, "track": {"logic": 3}, "as": "skill.8.clock.1"},
+        {"op": "wait", "for": "skill.8.clock.1", "until": "animation_end"},
+        {"op": "attachment.visibility", "points": ["Wings"], "visible": false, "as": "skill.8.attachment.36"},
+        {"op": "wait", "for": "skill.8.attachment.36", "until": "accepted"},
+        {"op": "wait", "for": "skill.8.clock.1", "progress": 0.2600000002},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill41",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "ResetHeadLookAt: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "TriggerAnimState: animation has no literal owned-body binding",
+          "LoopExecuteTaskList: not included in the visual sequence projection",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "TargetTimeSlow: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "WaitTimelineFinish: not included in the visual sequence projection",
+          "SkillPerformFinish: serial step depends on an unavailable source clock; no timing is inferred",
+          "HideLevelStage: not included in the visual sequence projection",
+          "ScaleCharacterModel: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "SetSkillTargetFormationByPos: not included in the visual sequence projection",
+          "SetAttachmentVisibility: serial step depends on an unavailable source clock; no timing is inferred",
+          "ScaleCharacterModel: serial step depends on an unavailable source clock; no timing is inferred",
+          "SetTeamFormation: serial step depends on an unavailable source clock; no timing is inferred",
+          "HideLevelStage: serial step depends on an unavailable source clock; no timing is inferred",
+          "MoveToTargetPosition: serial step depends on an unavailable source clock; no timing is inferred"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.callback.3909": {
+      "inputs": {
+        "callback.3909.condition.ByCheckFightFinish.2": {
+          "type": "bool",
+          "default": false,
+          "label": "ByCheckFightFinish",
+          "description": "Manual source condition: $.GlobalModifiers[0].value._CallbackList[6].CallbackConfig[0].Predicate"
+        }
+      },
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "callback.3909.condition.ByCheckFightFinish.2", "is": true},
+          "then": [],
+          "else": [
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_SilverWolf999_00/Eff_Avatar_SilverWolf999_00_Skill11_Scene.prefab",
+              "immediate": true,
+              "as": "callback.3909.remove.9.0"
+            },
+            {"op": "wait", "for": "callback.3909.remove.9.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_SilverWolf999_00/Eff_Avatar_SilverWolf999_00_Skill11_Scene_Loop.prefab",
+              "immediate": true,
+              "as": "callback.3909.remove.10.0"
+            },
+            {"op": "wait", "for": "callback.3909.remove.10.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_SilverWolf999_00/Eff_Avatar_SilverWolf999_00_Skill11_Scene02.prefab",
+              "immediate": true,
+              "as": "callback.3909.remove.11.0"
+            },
+            {"op": "wait", "for": "callback.3909.remove.11.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_SilverWolf999_00/Eff_Avatar_SilverWolf999_00_Skill11_Scene02_02.prefab",
+              "immediate": true,
+              "as": "callback.3909.remove.12.0"
+            },
+            {"op": "wait", "for": "callback.3909.remove.12.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_SilverWolf999_00/Eff_Avatar_SilverWolf999_00_Skill11_Scene03.prefab",
+              "immediate": true,
+              "as": "callback.3909.remove.13.0"
+            },
+            {"op": "wait", "for": "callback.3909.remove.13.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_SilverWolf999_00/Eff_Avatar_SilverWolf999_00_Skill11_Scene03_02.prefab",
+              "immediate": true,
+              "as": "callback.3909.remove.14.0"
+            },
+            {"op": "wait", "for": "callback.3909.remove.14.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_SilverWolf999_00/Eff_Avatar_SilverWolf999_00_Skill11_Scene03_03.prefab",
+              "immediate": true,
+              "as": "callback.3909.remove.15.0"
+            },
+            {"op": "wait", "for": "callback.3909.remove.15.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_SilverWolf999_00/Eff_Avatar_SilverWolf999_00_Skill11_Trail_Loop.prefab",
+              "immediate": true,
+              "as": "callback.3909.remove.16.0"
+            },
+            {"op": "wait", "for": "callback.3909.remove.16.0", "until": "accepted"},
+            {"op": "animation", "state": "StandBy", "end": -1.0, "track": {"logic": 1}, "as": "callback.3909.clock.1"},
+            {"op": "wait", "for": "callback.3909.clock.1", "until": "animation_end"}
+          ]
+        },
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "MAvatar_SilverWolf999_00_Ultra: OnInsertActionFinish",
+        "omissions": [
+          "Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects.",
+          "HideLevelStage: not included in the visual sequence projection",
+          "SetEffectAnimatorState: not included in the visual sequence projection",
+          "KJNHIELIFEK: not included in the visual sequence projection",
+          "RadialBlurEffect: not included in the visual sequence projection",
+          "StopTimeline: not included in the visual sequence projection",
+          "RemoveEffect: effect removal has no owned target binding",
+          "SetEntityVisible: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "AddGlobalDynamicOffsetIgnoreEntity: not included in the visual sequence projection",
+          "ReleaseEnvProfile: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "base.callback.3912": {
+      "inputs": {
+        "callback.3912.condition.ByCheckFightFinish.2": {
+          "type": "bool",
+          "default": false,
+          "label": "ByCheckFightFinish",
+          "description": "Manual source condition: $.GlobalModifiers[0].value._CallbackList[3].CallbackConfig[0].Predicate"
+        }
+      },
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "callback.3912.condition.ByCheckFightFinish.2", "is": true},
+          "then": [],
+          "else": [
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_SilverWolf999_00/Eff_Avatar_SilverWolf999_00_Skill11_Scene.prefab",
+              "immediate": true,
+              "as": "callback.3912.remove.9.0"
+            },
+            {"op": "wait", "for": "callback.3912.remove.9.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_SilverWolf999_00/Eff_Avatar_SilverWolf999_00_Skill11_Scene_Loop.prefab",
+              "immediate": true,
+              "as": "callback.3912.remove.10.0"
+            },
+            {"op": "wait", "for": "callback.3912.remove.10.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_SilverWolf999_00/Eff_Avatar_SilverWolf999_00_Skill11_Scene02.prefab",
+              "immediate": true,
+              "as": "callback.3912.remove.11.0"
+            },
+            {"op": "wait", "for": "callback.3912.remove.11.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_SilverWolf999_00/Eff_Avatar_SilverWolf999_00_Skill11_Scene02_02.prefab",
+              "immediate": true,
+              "as": "callback.3912.remove.12.0"
+            },
+            {"op": "wait", "for": "callback.3912.remove.12.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_SilverWolf999_00/Eff_Avatar_SilverWolf999_00_Skill11_Scene03.prefab",
+              "immediate": true,
+              "as": "callback.3912.remove.13.0"
+            },
+            {"op": "wait", "for": "callback.3912.remove.13.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_SilverWolf999_00/Eff_Avatar_SilverWolf999_00_Skill11_Scene03_02.prefab",
+              "immediate": true,
+              "as": "callback.3912.remove.14.0"
+            },
+            {"op": "wait", "for": "callback.3912.remove.14.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_SilverWolf999_00/Eff_Avatar_SilverWolf999_00_Skill11_Scene03_03.prefab",
+              "immediate": true,
+              "as": "callback.3912.remove.15.0"
+            },
+            {"op": "wait", "for": "callback.3912.remove.15.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_SilverWolf999_00/Eff_Avatar_SilverWolf999_00_Skill11_Trail_Loop.prefab",
+              "immediate": true,
+              "as": "callback.3912.remove.16.0"
+            },
+            {"op": "wait", "for": "callback.3912.remove.16.0", "until": "accepted"},
+            {"op": "animation", "state": "StandBy", "end": -1.0, "track": {"logic": 1}, "as": "callback.3912.clock.1"},
+            {"op": "wait", "for": "callback.3912.clock.1", "until": "animation_end"}
+          ]
+        },
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "MAvatar_SilverWolf999_00_Ultra: OnPhase2",
+        "omissions": [
+          "Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects.",
+          "HideLevelStage: not included in the visual sequence projection",
+          "SetEffectAnimatorState: not included in the visual sequence projection",
+          "KJNHIELIFEK: not included in the visual sequence projection",
+          "RadialBlurEffect: not included in the visual sequence projection",
+          "StopTimeline: not included in the visual sequence projection",
+          "RemoveEffect: effect removal has no owned target binding",
+          "SetEntityVisible: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "AddGlobalDynamicOffsetIgnoreEntity: not included in the visual sequence projection",
+          "ReleaseEnvProfile: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "base.callback.3921": {
+      "bindings": {
+        "targets": ["callback.3921.target.AllTeamCenter"]
+      },
+      "run": [
+        {"op": "effect.create", "effects": ["base.callback.3921.effect.2"], "as": "callback.3921.effect.2"},
+        {"op": "wait", "for": "callback.3921.effect.2", "until": "accepted"},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "effect.remove", "effects": ["base.callback.3921.effect.2"], "optional": ["base.callback.3921.effect.2"], "as": "callback.3921.remove-effects"},
+        {"op": "wait", "for": "callback.3921.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "effect.remove", "effects": ["base.callback.3921.effect.2"], "optional": ["base.callback.3921.effect.2"], "as": "callback.3921.remove-effects"},
+        {"op": "wait", "for": "callback.3921.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "MAvatar_SilverWolf999_00_Ultra_Aura: OnCreate",
+        "omissions": [
+          "Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects.",
+          "TriggerEffect: callback target AllTeamCenter is a selected owned actor input, defaulting to this actor; native event payload is not assumed"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "base.callback.3927": {
+      "inputs": {
+        "enabled": {"type": "bool", "default": true, "label": "Enabled"}
+      },
+      "bindings": {
+        "targets": ["Recipient"]
+      },
+      "mode": "input",
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "enabled", "is": true},
+          "then": [
+            {"op": "state.enter", "name": "base.callback.3927.receiver-property.9", "as": "setting.1"},
+            {"op": "wait", "for": "setting.1"},
+            {"op": "state.enter", "name": "base.callback.3927.receiver-property.11", "as": "setting.2"},
+            {"op": "wait", "for": "setting.2"},
+            {"op": "state.exit", "name": "base.callback.3927.phase.13", "as": "setting.3.phase-replace.0"},
+            {"op": "wait", "for": "setting.3.phase-replace.0"},
+            {"op": "state.exit", "name": "base.callback.3928.phase.10", "as": "setting.3.phase-replace.1"},
+            {"op": "wait", "for": "setting.3.phase-replace.1"},
+            {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[3].value._CallbackList[0].CallbackConfig[9]", "as": "setting.3.phase-replace.2"},
+            {"op": "wait", "for": "setting.3.phase-replace.2", "until": "accepted"},
+            {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[3].value._CallbackList[1].CallbackConfig[10]", "as": "setting.3.phase-replace.3"},
+            {"op": "wait", "for": "setting.3.phase-replace.3", "until": "accepted"},
+            {"op": "state.enter", "name": "base.callback.3927.phase.13", "as": "setting.3"},
+            {"op": "wait", "for": "setting.3"}
+          ],
+          "else": [
+            {"op": "state.exit", "name": "base.callback.3927.receiver-property.9", "as": "setting.1"},
+            {"op": "wait", "for": "setting.1"},
+            {"op": "state.exit", "name": "base.callback.3927.receiver-property.11", "as": "setting.2"},
+            {"op": "wait", "for": "setting.2"},
+            {"op": "state.exit", "name": "base.callback.3927.phase.13", "as": "setting.3"},
+            {"op": "wait", "for": "setting.3"}
+          ]
+        }
+      ],
+      "presentation": {
+        "label": "_M_SilverWolf999_00_Ultra_VisualManager: OnStack",
+        "kind": "setting",
+        "contexts": ["base.callback.3927.receiver-property.9", "base.callback.3927.receiver-property.11", "base.callback.3927.phase.13"],
+        "omissions": [
+          "DisableCharacterVO: not included in the visual sequence projection",
+          "ShowActionBarEffect: not included in the visual sequence projection",
+          "AOMNGKKKCOI: not included in the visual sequence projection",
+          "AFGOLNPFJIF: not included in the visual sequence projection",
+          "SetHeadButtonEff: not included in the visual sequence projection",
+          "ChangeCharacterConfigParam: not included in the visual sequence projection",
+          "SetResilience: owned visual receiver override only; no shield value, expiry, native modifier or automatic death/break transition",
+          "ModifierOverrideOnHitEffect: owned visual receiver override only; no shield value, expiry, native modifier or automatic death/break transition",
+          "LevelAudioState: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "base.callback.3928": {
+      "inputs": {
+        "enabled": {"type": "bool", "default": true, "label": "Enabled"}
+      },
+      "mode": "input",
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "enabled", "is": true},
+          "then": [
+            {"op": "state.exit", "name": "base.callback.3927.phase.13", "as": "setting.1.phase-replace.0"},
+            {"op": "wait", "for": "setting.1.phase-replace.0"},
+            {"op": "state.exit", "name": "base.callback.3928.phase.10", "as": "setting.1.phase-replace.1"},
+            {"op": "wait", "for": "setting.1.phase-replace.1"},
+            {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[3].value._CallbackList[0].CallbackConfig[9]", "as": "setting.1.phase-replace.2"},
+            {"op": "wait", "for": "setting.1.phase-replace.2", "until": "accepted"},
+            {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[3].value._CallbackList[1].CallbackConfig[10]", "as": "setting.1.phase-replace.3"},
+            {"op": "wait", "for": "setting.1.phase-replace.3", "until": "accepted"},
+            {"op": "state.enter", "name": "base.callback.3928.phase.10", "as": "setting.1"},
+            {"op": "wait", "for": "setting.1"}
+          ],
+          "else": [
+            {"op": "state.exit", "name": "base.callback.3928.phase.10", "as": "setting.1"},
+            {"op": "wait", "for": "setting.1"}
+          ]
+        }
+      ],
+      "presentation": {
+        "label": "_M_SilverWolf999_00_Ultra_VisualManager: OnDestroy",
+        "kind": "setting",
+        "contexts": ["base.callback.3928.phase.10"],
+        "omissions": [
+          "DisableCharacterVO: not included in the visual sequence projection",
+          "ShowActionBarEffect: not included in the visual sequence projection",
+          "AOMNGKKKCOI: not included in the visual sequence projection",
+          "AFGOLNPFJIF: not included in the visual sequence projection",
+          "SetHeadButtonEff: not included in the visual sequence projection",
+          "SetResilience: resilience reset uses the prior owner; Finish withdraws this preview instead",
+          "ChangeCharacterConfigParam: not included in the visual sequence projection",
+          "SetComponentAssetLoadState: not included in the visual sequence projection",
+          "LevelAudioState: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "base.callback.3944": {
+      "run": [
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "_M_SilverWolf999_00_AutoSkill11: OnStack",
+        "listed": false,
+        "omissions": [
+          "Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects.",
+          "SetControlSkillMapping: Skill mapping is configuration, not a request to play its destination ready pose; native mapping is not executed",
+          "StackCrazyAIBehavior: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation", "diagnostic-omission-only"]
+    },
+    "base.callback.3945": {
+      "run": [
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "_M_SilverWolf999_00_DuringSkill11_DisableControlSkillForUI: OnStack",
+        "listed": false,
+        "omissions": [
+          "Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects.",
+          "SetControlSkillMapping: Skill mapping is configuration, not a request to play its destination ready pose; native mapping is not executed"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation", "diagnostic-omission-only"]
+    },
+    "base.callback.5155": {
+      "inputs": {
+        "callback.5155.condition.ByCheckModifierCallBackBehaviorFlag.1": {
+          "type": "bool",
+          "default": true,
+          "label": "ByCheckModifierCallBackBehaviorFlag",
+          "description": "Manual source condition: $.GlobalModifiers[0].value._CallbackList[1].CallbackConfig[0].Predicate"
+        }
+      },
+      "bindings": {
+        "targets": ["Recipient"]
+      },
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "callback.5155.condition.ByCheckModifierCallBackBehaviorFlag.1", "is": true},
+          "then": [
+            {"op": "effect.create", "effects": ["base.callback.5155.effect.2"], "as": "callback.5155.effect.2"},
+            {"op": "wait", "for": "callback.5155.effect.2", "until": "accepted"}
+          ],
+          "else": []
+        },
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "effect.remove", "effects": ["base.callback.5155.effect.2"], "optional": ["base.callback.5155.effect.2"], "as": "callback.5155.remove-effects"},
+        {"op": "wait", "for": "callback.5155.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "effect.remove", "effects": ["base.callback.5155.effect.2"], "optional": ["base.callback.5155.effect.2"], "as": "callback.5155.remove-effects"},
+        {"op": "wait", "for": "callback.5155.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "MAvatar_GlobalSkill_SilverWolf999_00_ImmuneCTRL: OnImmuneDebuff",
+        "omissions": [
+          "Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects.",
+          "ShowAvatarHUDSpecialEffect: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "base.callback.5156": {
+      "bindings": {
+        "targets": ["Recipient"]
+      },
+      "run": [
+        {"op": "effect.create", "effects": ["base.callback.5156.effect.1"], "as": "callback.5156.effect.1"},
+        {"op": "wait", "for": "callback.5156.effect.1", "until": "accepted"},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "effect.remove", "effects": ["base.callback.5156.effect.1"], "optional": ["base.callback.5156.effect.1"], "as": "callback.5156.remove-effects"},
+        {"op": "wait", "for": "callback.5156.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "effect.remove", "effects": ["base.callback.5156.effect.1"], "optional": ["base.callback.5156.effect.1"], "as": "callback.5156.remove-effects"},
+        {"op": "wait", "for": "callback.5156.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "MAvatar_GlobalSkill_SilverWolf999_00_ImmuneCTRL: OnStack",
+        "omissions": [
+          "Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects.",
+          "ShowAvatarHUDSpecialEffect: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "base.followup.2": {
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_SilverWolf999_00_UltraEnd_Insert_Camera",
+          "run": [],
+          "join": true
+        },
+        {"op": "animation", "state": "StandBy01toStandBy", "end": -1.0, "track": {"logic": 1}, "as": "followup.2.clock.1"},
+        {"op": "wait", "for": "followup.2.clock.1", "until": "animation_end"},
+        {"op": "wait", "for": "followup.2.clock.1", "progress": 0.2500000002},
+        {"op": "wait", "for": "followup.2.clock.1", "progress": 0.8750000004},
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Avatar_SilverWolf999_00_UltraEnd_Insert",
+        "omissions": [
+          "Manual follow-up presentation; no native action queue or combat condition evaluation.",
+          "retained visual sequence",
+          "SetEffectAnimatorState: not included in the visual sequence projection",
+          "SetComponentAssetLoadState: not included in the visual sequence projection",
+          "SetTargetAssetPreloadState: not included in the visual sequence projection",
+          "SetTargetCustomAssetPreloadState: not included in the visual sequence projection",
+          "SetEntityVisible: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "WaitAnimState: wait uses an unprojected clock policy",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "ShowEntityFloatMessage: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "base.skill.10.perform": {
+      "inputs": {
+        "event": {
+          "type": "integer",
+          "default": 0,
+          "label": "Callback",
+          "choices": [
+            {"value": 0, "label": "Eff_Avatar_SilverWolf999_00_BattleEvent_Item03.prefab"},
+            {"value": 1, "label": "Eff_Avatar_SilverWolf999_00_BattleEvent_Item03_01.prefab"},
+            {"value": 2, "label": "Eff_Avatar_SilverWolf999_00_BattleEvent_Item03_01.prefab"},
+            {"value": 3, "label": "Eff_Avatar_SilverWolf999_00_BattleEvent_Item03_Hit01.prefab"},
+            {"value": 4, "label": "Eff_Avatar_SilverWolf999_00_BattleEvent_Item03_Hit01.prefab"},
+            {"value": 5, "label": "Eff_Avatar_SilverWolf999_00_BattleEvent_Item03_Hit01.prefab"}
+          ]
+        }
+      },
+      "requires": [
+        {"op": "number", "name": "event", "compare": "ge", "value": 0},
+        {"op": "number", "name": "event", "compare": "lt", "value": 6}
+      ],
+      "bindings": {
+        "targets": [
+          "cue.3904.4651.target.DarkTeamEntity",
+          "cue.3904.4658.target.DarkTeamEntity",
+          "cue.3977.7245.target.DarkTeamEntity",
+          "cue.3977.7261.target.DarkTeamEntity",
+          "cue.3977.7683.target.DarkTeamEntity",
+          "cue.3977.7719.target.DarkTeamEntity"
+        ]
+      },
+      "run": [
+        {
+          "op": "switch",
+          "name": "event",
+          "cases": [
+            {
+              "is": 1,
+              "run": [
+                {"op": "effect.create", "effects": ["base.cue.3904.4658.effect.2"], "as": "cue.3904.4658.effect.2"},
+                {"op": "wait", "for": "cue.3904.4658.effect.2", "until": "accepted"},
+                {"op": "join"},
+                {
+                  "op": "repeat",
+                  "until_finish": true,
+                  "run": [
+                    {"op": "wait", "frame": true}
+                  ]
+                },
+                {
+                  "op": "effect.remove",
+                  "effects": ["base.cue.3904.4658.effect.2"],
+                  "optional": ["base.cue.3904.4658.effect.2"],
+                  "as": "cue.3904.4658.remove-effects"
+                },
+                {"op": "wait", "for": "cue.3904.4658.remove-effects", "until": "accepted"},
+                {"op": "call", "function": "@return.return.pose"},
+                {"op": "wait", "for": "return.pose", "until": "submitted"},
+                {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+                {"op": "wait", "for": "return.position"}
+              ],
+              "label": "Eff_Avatar_SilverWolf999_00_BattleEvent_Item03_01.prefab"
+            },
+            {
+              "is": 2,
+              "run": [
+                {"op": "effect.create", "effects": ["base.cue.3977.7245.effect.2"], "as": "cue.3977.7245.effect.2"},
+                {"op": "wait", "for": "cue.3977.7245.effect.2", "until": "accepted"},
+                {"op": "join"},
+                {
+                  "op": "repeat",
+                  "until_finish": true,
+                  "run": [
+                    {"op": "wait", "frame": true}
+                  ]
+                },
+                {
+                  "op": "effect.remove",
+                  "effects": ["base.cue.3977.7245.effect.2"],
+                  "optional": ["base.cue.3977.7245.effect.2"],
+                  "as": "cue.3977.7245.remove-effects"
+                },
+                {"op": "wait", "for": "cue.3977.7245.remove-effects", "until": "accepted"},
+                {"op": "call", "function": "@return.return.pose"},
+                {"op": "wait", "for": "return.pose", "until": "submitted"},
+                {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+                {"op": "wait", "for": "return.position"}
+              ],
+              "label": "Eff_Avatar_SilverWolf999_00_BattleEvent_Item03_01.prefab"
+            },
+            {
+              "is": 3,
+              "run": [
+                {"op": "effect.create", "effects": ["base.cue.3977.7261.effect.2"], "as": "cue.3977.7261.effect.2"},
+                {"op": "wait", "for": "cue.3977.7261.effect.2", "until": "accepted"},
+                {"op": "join"},
+                {
+                  "op": "repeat",
+                  "until_finish": true,
+                  "run": [
+                    {"op": "wait", "frame": true}
+                  ]
+                },
+                {
+                  "op": "effect.remove",
+                  "effects": ["base.cue.3977.7261.effect.2"],
+                  "optional": ["base.cue.3977.7261.effect.2"],
+                  "as": "cue.3977.7261.remove-effects"
+                },
+                {"op": "wait", "for": "cue.3977.7261.remove-effects", "until": "accepted"},
+                {"op": "call", "function": "@return.return.pose"},
+                {"op": "wait", "for": "return.pose", "until": "submitted"},
+                {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+                {"op": "wait", "for": "return.position"}
+              ],
+              "label": "Eff_Avatar_SilverWolf999_00_BattleEvent_Item03_Hit01.prefab"
+            },
+            {
+              "is": 4,
+              "run": [
+                {"op": "effect.create", "effects": ["base.cue.3977.7683.effect.2"], "as": "cue.3977.7683.effect.2"},
+                {"op": "wait", "for": "cue.3977.7683.effect.2", "until": "accepted"},
+                {"op": "join"},
+                {
+                  "op": "repeat",
+                  "until_finish": true,
+                  "run": [
+                    {"op": "wait", "frame": true}
+                  ]
+                },
+                {
+                  "op": "effect.remove",
+                  "effects": ["base.cue.3977.7683.effect.2"],
+                  "optional": ["base.cue.3977.7683.effect.2"],
+                  "as": "cue.3977.7683.remove-effects"
+                },
+                {"op": "wait", "for": "cue.3977.7683.remove-effects", "until": "accepted"},
+                {"op": "call", "function": "@return.return.pose"},
+                {"op": "wait", "for": "return.pose", "until": "submitted"},
+                {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+                {"op": "wait", "for": "return.position"}
+              ],
+              "label": "Eff_Avatar_SilverWolf999_00_BattleEvent_Item03_Hit01.prefab"
+            },
+            {
+              "is": 5,
+              "run": [
+                {"op": "effect.create", "effects": ["base.cue.3977.7719.effect.2"], "as": "cue.3977.7719.effect.2"},
+                {"op": "wait", "for": "cue.3977.7719.effect.2", "until": "accepted"},
+                {"op": "join"},
+                {
+                  "op": "repeat",
+                  "until_finish": true,
+                  "run": [
+                    {"op": "wait", "frame": true}
+                  ]
+                },
+                {
+                  "op": "effect.remove",
+                  "effects": ["base.cue.3977.7719.effect.2"],
+                  "optional": ["base.cue.3977.7719.effect.2"],
+                  "as": "cue.3977.7719.remove-effects"
+                },
+                {"op": "wait", "for": "cue.3977.7719.remove-effects", "until": "accepted"},
+                {"op": "call", "function": "@return.return.pose"},
+                {"op": "wait", "for": "return.pose", "until": "submitted"},
+                {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+                {"op": "wait", "for": "return.position"}
+              ],
+              "label": "Eff_Avatar_SilverWolf999_00_BattleEvent_Item03_Hit01.prefab"
+            }
+          ],
+          "default": [
+            {"op": "effect.create", "effects": ["base.cue.3904.4651.effect.2"], "as": "cue.3904.4651.effect.2"},
+            {"op": "wait", "for": "cue.3904.4651.effect.2", "until": "accepted"},
+            {"op": "join"},
+            {
+              "op": "repeat",
+              "until_finish": true,
+              "run": [
+                {"op": "wait", "frame": true}
+              ]
+            },
+            {
+              "op": "effect.remove",
+              "effects": ["base.cue.3904.4651.effect.2"],
+              "optional": ["base.cue.3904.4651.effect.2"],
+              "as": "cue.3904.4651.remove-effects"
+            },
+            {"op": "wait", "for": "cue.3904.4651.remove-effects", "until": "accepted"},
+            {"op": "call", "function": "@return.return.pose"},
+            {"op": "wait", "for": "return.pose", "until": "submitted"},
+            {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+            {"op": "wait", "for": "return.position"}
+          ]
+        }
+      ],
+      "on_interrupt": [
+        {
+          "op": "switch",
+          "name": "event",
+          "cases": [
+            {
+              "is": 1,
+              "run": [
+                {
+                  "op": "effect.remove",
+                  "effects": ["base.cue.3904.4658.effect.2"],
+                  "optional": ["base.cue.3904.4658.effect.2"],
+                  "as": "cue.3904.4658.remove-effects"
+                },
+                {"op": "wait", "for": "cue.3904.4658.remove-effects", "until": "accepted"},
+                {"op": "call", "function": "@return.return.pose"},
+                {"op": "wait", "for": "return.pose", "until": "submitted"},
+                {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+                {"op": "wait", "for": "return.position"}
+              ],
+              "label": "Eff_Avatar_SilverWolf999_00_BattleEvent_Item03_01.prefab"
+            },
+            {
+              "is": 2,
+              "run": [
+                {
+                  "op": "effect.remove",
+                  "effects": ["base.cue.3977.7245.effect.2"],
+                  "optional": ["base.cue.3977.7245.effect.2"],
+                  "as": "cue.3977.7245.remove-effects"
+                },
+                {"op": "wait", "for": "cue.3977.7245.remove-effects", "until": "accepted"},
+                {"op": "call", "function": "@return.return.pose"},
+                {"op": "wait", "for": "return.pose", "until": "submitted"},
+                {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+                {"op": "wait", "for": "return.position"}
+              ],
+              "label": "Eff_Avatar_SilverWolf999_00_BattleEvent_Item03_01.prefab"
+            },
+            {
+              "is": 3,
+              "run": [
+                {
+                  "op": "effect.remove",
+                  "effects": ["base.cue.3977.7261.effect.2"],
+                  "optional": ["base.cue.3977.7261.effect.2"],
+                  "as": "cue.3977.7261.remove-effects"
+                },
+                {"op": "wait", "for": "cue.3977.7261.remove-effects", "until": "accepted"},
+                {"op": "call", "function": "@return.return.pose"},
+                {"op": "wait", "for": "return.pose", "until": "submitted"},
+                {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+                {"op": "wait", "for": "return.position"}
+              ],
+              "label": "Eff_Avatar_SilverWolf999_00_BattleEvent_Item03_Hit01.prefab"
+            },
+            {
+              "is": 4,
+              "run": [
+                {
+                  "op": "effect.remove",
+                  "effects": ["base.cue.3977.7683.effect.2"],
+                  "optional": ["base.cue.3977.7683.effect.2"],
+                  "as": "cue.3977.7683.remove-effects"
+                },
+                {"op": "wait", "for": "cue.3977.7683.remove-effects", "until": "accepted"},
+                {"op": "call", "function": "@return.return.pose"},
+                {"op": "wait", "for": "return.pose", "until": "submitted"},
+                {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+                {"op": "wait", "for": "return.position"}
+              ],
+              "label": "Eff_Avatar_SilverWolf999_00_BattleEvent_Item03_Hit01.prefab"
+            },
+            {
+              "is": 5,
+              "run": [
+                {
+                  "op": "effect.remove",
+                  "effects": ["base.cue.3977.7719.effect.2"],
+                  "optional": ["base.cue.3977.7719.effect.2"],
+                  "as": "cue.3977.7719.remove-effects"
+                },
+                {"op": "wait", "for": "cue.3977.7719.remove-effects", "until": "accepted"},
+                {"op": "call", "function": "@return.return.pose"},
+                {"op": "wait", "for": "return.pose", "until": "submitted"},
+                {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+                {"op": "wait", "for": "return.position"}
+              ],
+              "label": "Eff_Avatar_SilverWolf999_00_BattleEvent_Item03_Hit01.prefab"
+            }
+          ],
+          "default": [
+            {
+              "op": "effect.remove",
+              "effects": ["base.cue.3904.4651.effect.2"],
+              "optional": ["base.cue.3904.4651.effect.2"],
+              "as": "cue.3904.4651.remove-effects"
+            },
+            {"op": "wait", "for": "cue.3904.4651.remove-effects", "until": "accepted"},
+            {"op": "call", "function": "@return.return.pose"},
+            {"op": "wait", "for": "return.pose", "until": "submitted"},
+            {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+            {"op": "wait", "for": "return.position"}
+          ]
+        }
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "SkillMaze",
+        "omissions": [
+          "Manual visual callback selection; no native combat modifier or automatic event simulation.",
+          "event: 0=Eff_Avatar_SilverWolf999_00_BattleEvent_Item03.prefab, 1=Eff_Avatar_SilverWolf999_00_BattleEvent_Item03_01.prefab, 2=Eff_Avatar_SilverWolf999_00_BattleEvent_Item03_01.prefab, 3=Eff_Avatar_SilverWolf999_00_BattleEvent_Item03_Hit01.prefab, 4=Eff_Avatar_SilverWolf999_00_BattleEvent_Item03_Hit01.prefab, 5=Eff_Avatar_SilverWolf999_00_BattleEvent_Item03_Hit01.prefab",
+          "TriggerEffect: callback target DarkTeamEntity is a selected owned actor input, defaulting to this actor; native event payload is not assumed",
+          "Source: Selected visual fragment only; source timing, conditions and other participants are not replayed."
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "base.skill.11.perform": {"use": "common.elemental.responses", "next": "base.rest"},
+    "base.preview.hit": {
+      "inputs": {
+        "kind": {
+          "type": "text",
+          "default": "Hit",
+          "label": "Hit type",
+          "choices": [
+            {"value": "Hit", "label": "Hit"},
+            {"value": "Hit_H", "label": "Hit_H"}
+          ]
+        }
+      },
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "kind", "is": "Hit_H"},
+          "then": [
+            {"op": "hit", "target": "Caster", "animation": "Hit_H", "as": "hit-heavy"},
+            {"op": "wait", "for": "hit-heavy"}
+          ],
+          "else": [
+            {"op": "hit", "target": "Caster", "animation": "Hit", "as": "hit"},
+            {"op": "wait", "for": "hit"}
+          ]
+        }
+      ],
+      "next": "base.rest",
+      "presentation": {"label": "Hit"},
+      "tags": ["manual-visual-callback"]
+    },
+    "base.source.9": {
+      "requires": [
+        {
+          "op": "unresolved",
+          "source": "Config/ConfigCharacter/Avatar/Avatar_SilverWolf999_00_Config.json:$.SkillList[9]",
+          "detail": "Retained source has no independently bound presentation unit"
+        }
+      ],
+      "trigger": "internal",
+      "run": [],
+      "presentation": {
+        "label": "SkillP01",
+        "listed": false,
+        "omissions": ["Retained source has no independently bound presentation unit"]
+      },
+      "tags": ["retained-source"]
+    },
+    "compiled.0.reset_phase": {
+      "mode": "input",
+      "run": [
+        {"op": "state.exit", "name": "base.callback.3927.phase.13", "as": "phase.reset.0"},
+        {"op": "wait", "for": "phase.reset.0"},
+        {"op": "state.exit", "name": "base.callback.3928.phase.10", "as": "phase.reset.1"},
+        {"op": "wait", "for": "phase.reset.1"},
+        {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[3].value._CallbackList[0].CallbackConfig[9]", "as": "phase.reset.2"},
+        {"op": "wait", "for": "phase.reset.2", "until": "accepted"},
+        {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[3].value._CallbackList[1].CallbackConfig[10]", "as": "phase.reset.3"},
+        {"op": "wait", "for": "phase.reset.3", "until": "accepted"}
+      ],
+      "presentation": {
+        "kind": "setting",
+        "contexts": [
+          "base.callback.3927.phase.13",
+          "base.callback.3928.phase.10",
+          "compiled.0.phase/GlobalModifiers[3].value._CallbackList[0].CallbackConfig[9]",
+          "compiled.0.phase/GlobalModifiers[3].value._CallbackList[1].CallbackConfig[10]"
+        ]
+      },
+      "tags": ["visual-phase-reset"]
+    },
+    "compiled.0.select/GlobalModifiers[3].value._CallbackList[0].CallbackConfig[9]": {
+      "run": [
+        {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[3].value._CallbackList[0].CallbackConfig[9]", "as": "phase.select.0"},
+        {"op": "wait", "for": "phase.select.0", "until": "accepted"},
+        {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[3].value._CallbackList[1].CallbackConfig[10]", "as": "phase.select.1"},
+        {"op": "wait", "for": "phase.select.1", "until": "accepted"},
+        {"op": "state.exit", "name": "base.callback.3927.phase.13", "as": "phase.select.2.phase-replace.0"},
+        {"op": "wait", "for": "phase.select.2.phase-replace.0"},
+        {"op": "state.exit", "name": "base.callback.3928.phase.10", "as": "phase.select.2.phase-replace.1"},
+        {"op": "wait", "for": "phase.select.2.phase-replace.1"},
+        {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[3].value._CallbackList[0].CallbackConfig[9]", "as": "phase.select.2.phase-replace.2"},
+        {"op": "wait", "for": "phase.select.2.phase-replace.2", "until": "accepted"},
+        {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[3].value._CallbackList[1].CallbackConfig[10]", "as": "phase.select.2.phase-replace.3"},
+        {"op": "wait", "for": "phase.select.2.phase-replace.3", "until": "accepted"},
+        {"op": "scope.enter", "name": "compiled.0.phase/GlobalModifiers[3].value._CallbackList[0].CallbackConfig[9]", "as": "phase.select.2"},
+        {"op": "wait", "for": "phase.select.2", "until": "accepted"}
+      ],
+      "presentation": {}
+    },
+    "compiled.0.standby/GlobalModifiers[3].value._CallbackList[0].CallbackConfig[9]": {
+      "requires": [
+        {"op": "value", "name": "phase_binding", "is": "GlobalModifiers[3].value._CallbackList[0].CallbackConfig[9]"}
+      ],
+      "run": [
+        {"op": "animation", "state": "StandBy", "as": "body"},
+        {"op": "wait", "for": "body", "until": "accepted"}
+      ],
+      "presentation": {}
+    },
+    "compiled.0.select/GlobalModifiers[3].value._CallbackList[1].CallbackConfig[10]": {
+      "run": [
+        {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[3].value._CallbackList[0].CallbackConfig[9]", "as": "phase.select.0"},
+        {"op": "wait", "for": "phase.select.0", "until": "accepted"},
+        {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[3].value._CallbackList[1].CallbackConfig[10]", "as": "phase.select.1"},
+        {"op": "wait", "for": "phase.select.1", "until": "accepted"},
+        {"op": "state.exit", "name": "base.callback.3927.phase.13", "as": "phase.select.2.phase-replace.0"},
+        {"op": "wait", "for": "phase.select.2.phase-replace.0"},
+        {"op": "state.exit", "name": "base.callback.3928.phase.10", "as": "phase.select.2.phase-replace.1"},
+        {"op": "wait", "for": "phase.select.2.phase-replace.1"},
+        {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[3].value._CallbackList[0].CallbackConfig[9]", "as": "phase.select.2.phase-replace.2"},
+        {"op": "wait", "for": "phase.select.2.phase-replace.2", "until": "accepted"},
+        {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[3].value._CallbackList[1].CallbackConfig[10]", "as": "phase.select.2.phase-replace.3"},
+        {"op": "wait", "for": "phase.select.2.phase-replace.3", "until": "accepted"},
+        {"op": "scope.enter", "name": "compiled.0.phase/GlobalModifiers[3].value._CallbackList[1].CallbackConfig[10]", "as": "phase.select.2"},
+        {"op": "wait", "for": "phase.select.2", "until": "accepted"}
+      ],
+      "presentation": {}
+    },
+    "compiled.0.standby/GlobalModifiers[3].value._CallbackList[1].CallbackConfig[10]": {
+      "requires": [
+        {"op": "value", "name": "phase_binding", "is": "GlobalModifiers[3].value._CallbackList[1].CallbackConfig[10]"}
+      ],
+      "run": [
+        {"op": "animation", "state": "StandBy_Transfer", "as": "body"},
+        {"op": "wait", "for": "body", "until": "accepted"}
+      ],
+      "presentation": {}
+    },
+    "@receiver-clear/base.callback.5359.receiver-property.3": {
+      "requires": [
+        {"op": "state", "name": "common.elemental.frozen-hit"}
+      ],
+      "mode": "input",
+      "run": [
+        {"op": "state.exit", "name": "common.elemental.frozen-hit", "only_caster": true, "as": "clear"},
+        {"op": "wait", "for": "clear"}
+      ],
+      "presentation": {
+        "label": "Clear hit effect override",
+        "kind": "setting",
+        "contexts": ["common.elemental.frozen-hit"]
+      },
+      "tags": ["visual-receiver-clear"]
+    },
+    "enter": {
+      "run": [
+        {
+          "op": "animation.cued",
+          "state": "StandBy",
+          "prepare": [
+            {"op": "scope.enter", "name": "partners"}
+          ],
+          "restart_scope": true
+        }
+      ]
+    },
+    "hide": {
+      "run": [
+        {
+          "op": "animation.cued",
+          "state": "StandBy",
+          "prepare": [
+            {"op": "scope.enter", "name": "partners"},
+            {"op": "partner.visibility", "context": "partners", "partner": "left", "key": "shooters-hidden", "visible": false, "mute_collider": true},
+            {"op": "partner.visibility", "context": "partners", "partner": "right", "key": "shooters-hidden", "visible": false, "mute_collider": true},
+            {"op": "effect.create", "effects": ["left_end", "right_end"]},
+            {
+              "op": "effect.remove",
+              "context": "partners",
+              "effects": ["left_start", "right_start", "left_bullet", "right_bullet"],
+              "optional": ["left_start", "right_start", "left_bullet", "right_bullet"],
+              "immediate": true
+            }
+          ],
+          "restart_scope": true
+        }
+      ]
+    },
+    "shoot_start": {
+      "run": [
+        {
+          "op": "animation.cued",
+          "state": "Skill11_Start",
+          "prepare": [
+            {"op": "scope.enter", "name": "partners"},
+            {
+              "op": "effect.remove",
+              "context": "partners",
+              "effects": ["left_start", "right_start", "left_bullet", "right_bullet"],
+              "optional": ["left_start", "right_start", "left_bullet", "right_bullet"],
+              "immediate": true
+            }
+          ],
+          "tracks": [
+            [
+              {
+                "at": 0.06338028169014084,
+                "run": [
+                  {"op": "partner.visibility", "context": "partners", "partner": "left", "key": "shooters-hidden", "visible": true},
+                  {"op": "partner.visibility", "context": "partners", "partner": "right", "key": "shooters-hidden", "visible": true},
+                  {"op": "effect.create", "context": "partners", "effects": ["left_start", "right_start"]},
+                  {"op": "effect.create", "context": "partners", "effects": ["left_bullet", "right_bullet"]}
+                ]
+              }
+            ]
+          ],
+          "restart_scope": true
+        }
+      ]
+    },
+    "prepare_item1": {
+      "run": [
+        {
+          "op": "animation.cued",
+          "state": "Skill11_Item1_Ready",
+          "prepare": [
+            {"op": "scope.enter", "name": "partners"}
+          ],
+          "tracks": [
+            [
+              {
+                "at": 0.5000000004,
+                "run": [
+                  {"op": "partner.visibility", "context": "partners", "partner": "left", "key": "shooters-hidden", "visible": false, "mute_collider": true},
+                  {"op": "partner.visibility", "context": "partners", "partner": "right", "key": "shooters-hidden", "visible": false, "mute_collider": true},
+                  {"op": "effect.create", "effects": ["left_end", "right_end"]},
+                  {
+                    "op": "effect.remove",
+                    "context": "partners",
+                    "effects": ["left_start", "right_start", "left_bullet", "right_bullet"],
+                    "optional": ["left_start", "right_start", "left_bullet", "right_bullet"],
+                    "immediate": true
+                  }
+                ]
+              }
+            ]
+          ],
+          "restart_scope": true
+        }
+      ]
+    },
+    "prepare_item2": {
+      "run": [
+        {
+          "op": "animation.cued",
+          "state": "Skill11_Item2_Ready",
+          "prepare": [
+            {"op": "scope.enter", "name": "partners"}
+          ],
+          "tracks": [
+            [
+              {
+                "at": 0.5000000004,
+                "run": [
+                  {"op": "partner.visibility", "context": "partners", "partner": "left", "key": "shooters-hidden", "visible": false, "mute_collider": true},
+                  {"op": "partner.visibility", "context": "partners", "partner": "right", "key": "shooters-hidden", "visible": false, "mute_collider": true},
+                  {"op": "effect.create", "effects": ["left_end", "right_end"]},
+                  {
+                    "op": "effect.remove",
+                    "context": "partners",
+                    "effects": ["left_start", "right_start", "left_bullet", "right_bullet"],
+                    "optional": ["left_start", "right_start", "left_bullet", "right_bullet"],
+                    "immediate": true
+                  }
+                ]
+              }
+            ]
+          ],
+          "restart_scope": true
+        }
+      ]
+    },
+    "prepare_item3": {
+      "run": [
+        {
+          "op": "animation.cued",
+          "state": "Skill11_Item3_Ready",
+          "prepare": [
+            {"op": "scope.enter", "name": "partners"}
+          ],
+          "tracks": [
+            [
+              {
+                "at": 0.5000000004,
+                "run": [
+                  {"op": "partner.visibility", "context": "partners", "partner": "left", "key": "shooters-hidden", "visible": false, "mute_collider": true},
+                  {"op": "partner.visibility", "context": "partners", "partner": "right", "key": "shooters-hidden", "visible": false, "mute_collider": true},
+                  {"op": "effect.create", "effects": ["left_end", "right_end"]},
+                  {
+                    "op": "effect.remove",
+                    "context": "partners",
+                    "effects": ["left_start", "right_start", "left_bullet", "right_bullet"],
+                    "optional": ["left_start", "right_start", "left_bullet", "right_bullet"],
+                    "immediate": true
+                  }
+                ]
+              }
+            ]
+          ],
+          "restart_scope": true
+        }
+      ]
+    },
+    "enhanced_idle": {
+      "run": [
+        {
+          "op": "animation.cued",
+          "state": "StandBy_Transfer",
+          "prepare": [
+            {"op": "scope.enter", "name": "partners"},
+            {"op": "partner.visibility", "context": "partners", "partner": "left", "key": "shooters-hidden", "visible": false, "mute_collider": true},
+            {"op": "partner.visibility", "context": "partners", "partner": "right", "key": "shooters-hidden", "visible": false, "mute_collider": true},
+            {
+              "op": "effect.remove",
+              "context": "partners",
+              "effects": ["left_start", "right_start", "left_bullet", "right_bullet"],
+              "optional": ["left_start", "right_start", "left_bullet", "right_bullet"],
+              "immediate": true
+            }
+          ],
+          "restart_scope": true
+        }
+      ]
+    },
+    "exit": {
+      "run": [
+        {
+          "op": "animation.cued",
+          "state": "StandBy",
+          "prepare": [
+            {"op": "scope.exit", "name": "partners"}
+          ],
+          "restart_scope": true
+        }
+      ]
+    }
+  },
+  "functions": {
+    "@return.rest.pose": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "rest.pose.expression"},
+      {
+        "op": "if",
+        "condition": {"op": "phase", "is": "@return/base.callback.3927.phase.13"},
+        "then": [
+          {
+            "op": "animation",
+            "state": "StandBy_Transfer",
+            "current_idle": true,
+            "end": 0,
+            "restart": false,
+            "track": {"logic": 1, "extra": 6, "previous_end": 1},
+            "as": "rest.pose"
+          }
+        ],
+        "elif": [
+          {
+            "condition": {"op": "phase", "is": "@return/base.callback.3928.phase.10"},
+            "then": [
+              {
+                "op": "animation",
+                "state": "StandBy",
+                "current_idle": true,
+                "end": 0,
+                "restart": false,
+                "track": {"logic": 1, "extra": 6, "previous_end": 1},
+                "as": "rest.pose"
+              }
+            ]
+          },
+          {
+            "condition": {"op": "phase", "is": "@return/compiled.0.phase/GlobalModifiers[3].value._CallbackList[0].CallbackConfig[9]"},
+            "then": [
+              {
+                "op": "animation",
+                "state": "StandBy",
+                "current_idle": true,
+                "end": 0,
+                "restart": false,
+                "track": {"logic": 1, "extra": 6, "previous_end": 1},
+                "as": "rest.pose"
+              }
+            ]
+          },
+          {
+            "condition": {"op": "phase", "is": "@return/compiled.0.phase/GlobalModifiers[3].value._CallbackList[1].CallbackConfig[10]"},
+            "then": [
+              {
+                "op": "animation",
+                "state": "StandBy_Transfer",
+                "current_idle": true,
+                "end": 0,
+                "restart": false,
+                "track": {"logic": 1, "extra": 6, "previous_end": 1},
+                "as": "rest.pose"
+              }
+            ]
+          }
+        ],
+        "else": [
+          {
+            "op": "animation",
+            "state": "StandBy",
+            "current_idle": true,
+            "end": 0,
+            "restart": false,
+            "track": {"logic": 1, "extra": 6, "previous_end": 1},
+            "as": "rest.pose"
+          }
+        ]
+      }
+    ],
+    "@return.return.pose": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "return.pose.expression"},
+      {
+        "op": "if",
+        "condition": {"op": "phase", "is": "@return/base.callback.3927.phase.13"},
+        "then": [
+          {
+            "op": "animation",
+            "state": "StandBy_Transfer",
+            "current_idle": true,
+            "end": 0,
+            "restart": false,
+            "track": {"logic": 1, "extra": 6, "previous_end": 1},
+            "as": "return.pose"
+          }
+        ],
+        "elif": [
+          {
+            "condition": {"op": "phase", "is": "@return/base.callback.3928.phase.10"},
+            "then": [
+              {
+                "op": "animation",
+                "state": "StandBy",
+                "current_idle": true,
+                "end": 0,
+                "restart": false,
+                "track": {"logic": 1, "extra": 6, "previous_end": 1},
+                "as": "return.pose"
+              }
+            ]
+          },
+          {
+            "condition": {"op": "phase", "is": "@return/compiled.0.phase/GlobalModifiers[3].value._CallbackList[0].CallbackConfig[9]"},
+            "then": [
+              {
+                "op": "animation",
+                "state": "StandBy",
+                "current_idle": true,
+                "end": 0,
+                "restart": false,
+                "track": {"logic": 1, "extra": 6, "previous_end": 1},
+                "as": "return.pose"
+              }
+            ]
+          },
+          {
+            "condition": {"op": "phase", "is": "@return/compiled.0.phase/GlobalModifiers[3].value._CallbackList[1].CallbackConfig[10]"},
+            "then": [
+              {
+                "op": "animation",
+                "state": "StandBy_Transfer",
+                "current_idle": true,
+                "end": 0,
+                "restart": false,
+                "track": {"logic": 1, "extra": 6, "previous_end": 1},
+                "as": "return.pose"
+              }
+            ]
+          }
+        ],
+        "else": [
+          {
+            "op": "animation",
+            "state": "StandBy",
+            "current_idle": true,
+            "end": 0,
+            "restart": false,
+            "track": {"logic": 1, "extra": 6, "previous_end": 1},
+            "as": "return.pose"
+          }
+        ]
+      }
+    ]
+  },
+  "states": {
+    "base.callback.3927.phase.13": {
+      "callbacks": {},
+      "values": {"phase_source": "Config/ConfigAbility/Avatar/Avatar_SilverWolf999_00_Ability.json:$.GlobalModifiers[3].value._CallbackList[1].CallbackConfig[10]"},
+      "phase": "@return/base.callback.3927.phase.13",
+      "configuration": "base.callback.3927.phase.13",
+      "restore": []
+    },
+    "base.callback.3927.receiver-property.11": {
+      "callbacks": {},
+      "hit_effects": [
+        {
+          "stacking": "multiple",
+          "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_SilverWolf999_00/Eff_Avatar_SilverWolf999_00_Common_BeHit.prefab",
+          "priority": 0,
+          "count": 1,
+          "death_count": 0,
+          "death_path": "",
+          "keep_original": false,
+          "replay_on_mutex": false
+        }
+      ],
+      "instances": {"name": "callback.3927.receiver-property.11", "receiver": "Recipient", "match": "receiver_caster"},
+      "restore": []
+    },
+    "base.callback.3927.receiver-property.9": {
+      "callbacks": {},
+      "resilience": 0,
+      "instances": {"name": "callback.3927.receiver-property.9", "receiver": "Recipient", "match": "receiver_caster"},
+      "restore": []
+    },
+    "base.callback.3928.phase.10": {
+      "callbacks": {},
+      "values": {"phase_source": "Config/ConfigAbility/Avatar/Avatar_SilverWolf999_00_Ability.json:$.GlobalModifiers[3].value._CallbackList[0].CallbackConfig[9]"},
+      "phase": "@return/base.callback.3928.phase.10",
+      "configuration": "base.callback.3928.phase.10",
+      "restore": []
+    },
+    "compiled.0.phase/GlobalModifiers[3].value._CallbackList[0].CallbackConfig[9]": {
+      "phase": "@return/compiled.0.phase/GlobalModifiers[3].value._CallbackList[0].CallbackConfig[9]",
+      "values": {"phase_binding": "GlobalModifiers[3].value._CallbackList[0].CallbackConfig[9]"},
+      "configuration": "compiled.0.phase/GlobalModifiers[3].value._CallbackList[0].CallbackConfig[9]",
+      "restore": []
+    },
+    "compiled.0.phase/GlobalModifiers[3].value._CallbackList[1].CallbackConfig[10]": {
+      "phase": "@return/compiled.0.phase/GlobalModifiers[3].value._CallbackList[1].CallbackConfig[10]",
+      "values": {"phase_binding": "GlobalModifiers[3].value._CallbackList[1].CallbackConfig[10]"},
+      "configuration": "compiled.0.phase/GlobalModifiers[3].value._CallbackList[1].CallbackConfig[10]",
+      "restore": []
+    },
+    "partners": {
+      "enter": [
+        {"op": "partner.create", "partner": "left"},
+        {"op": "partner.create", "partner": "right"},
+        {"op": "partner.visibility", "partner": "left", "key": "shooters-hidden", "visible": false, "mute_collider": true},
+        {"op": "partner.visibility", "partner": "right", "key": "shooters-hidden", "visible": false, "mute_collider": true},
+        {"op": "partner.attach", "partner": "left", "target": "Caster", "self_point": "EffectScale", "target_point": "PartnerPos01"},
+        {"op": "partner.attach", "partner": "right", "target": "Caster", "self_point": "EffectScale", "target_point": "PartnerPos02"},
+        {"op": "partner.animation_follow", "partner": "left", "target": null},
+        {"op": "partner.animation_follow", "partner": "right", "target": null},
+        {"op": "partner.visibility_follow", "partner": "left", "target": "Caster"},
+        {"op": "partner.visibility_follow", "partner": "right", "target": "Caster"},
+        {"op": "partner.idle", "partner": "left", "state": "Skill11_Loop"},
+        {"op": "partner.idle", "partner": "right", "state": "Skill11_Loop"}
+      ],
+      "restore": [
+        {"op": "partner.create", "partner": "left"},
+        {"op": "partner.create", "partner": "right"},
+        {"op": "partner.visibility", "partner": "left", "key": "shooters-hidden", "visible": false, "mute_collider": true},
+        {"op": "partner.visibility", "partner": "right", "key": "shooters-hidden", "visible": false, "mute_collider": true},
+        {"op": "partner.attach", "partner": "left", "target": "Caster", "self_point": "EffectScale", "target_point": "PartnerPos01"},
+        {"op": "partner.attach", "partner": "right", "target": "Caster", "self_point": "EffectScale", "target_point": "PartnerPos02"},
+        {"op": "partner.animation_follow", "partner": "left", "target": null},
+        {"op": "partner.animation_follow", "partner": "right", "target": null},
+        {"op": "partner.visibility_follow", "partner": "left", "target": null},
+        {"op": "partner.visibility_follow", "partner": "right", "target": null},
+        {"op": "partner.idle", "partner": "left", "state": "Skill11_Loop"},
+        {"op": "partner.idle", "partner": "right", "state": "Skill11_Loop"}
+      ]
+    }
+  },
+  "resources": {
+    "effects": {
+      "base.skill.3.effect.96": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_SilverWolf999_00/Eff_Avatar_SilverWolf999_00_Skill11_Scene.prefab",
+        "target": "Caster",
+        "simulate_immediately": true,
+        "unique_name": "Skill11_Scene"
+      },
+      "base.skill.3.effect.97": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_SilverWolf999_00/Eff_Avatar_SilverWolf999_00_Skill11_Scene_Loop.prefab",
+        "target": "Caster",
+        "simulate_immediately": true
+      },
+      "base.skill.3.effect.98": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_SilverWolf999_00/Eff_Avatar_SilverWolf999_00_Skill11_Trail_Loop.prefab",
+        "target": "Caster",
+        "simulate_immediately": true
+      },
+      "base.skill.7.effect.10": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_SilverWolf999_00/Eff_Avatar_SilverWolf999_00_Skill04_UIPosition.prefab",
+        "target": "Caster",
+        "simulate_immediately": true,
+        "unique_name": "Skill04_UIPos",
+        "position_offset": [0.0, 1.4199999570846558, 0.7699999809265137]
+      },
+      "base.callback.3921.effect.2": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_SilverWolf999_00/Eff_Avatar_SilverWolf999_00_BattleArea_Ground.prefab",
+        "target": "callback.3921.target.AllTeamCenter",
+        "unique_name": "SilverWolf999_Aura"
+      },
+      "base.callback.5155.effect.2": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_SilverWolf999_00/GlobalSkill/Eff_Avatar_SilverWolf999_00_GlobalSkill01_Buff_01.prefab", "target": "Recipient"},
+      "base.callback.5156.effect.1": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_SilverWolf999_00/GlobalSkill/Eff_Avatar_SilverWolf999_00_GlobalSkill01_Buff_01.prefab",
+        "target": "Recipient",
+        "simulate_immediately": true
+      },
+      "base.cue.3904.4651.effect.2": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_SilverWolf999_00/Eff_Avatar_SilverWolf999_00_BattleEvent_Item03.prefab",
+        "target": "cue.3904.4651.target.DarkTeamEntity",
+        "simulate_immediately": true
+      },
+      "base.cue.3904.4658.effect.2": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_SilverWolf999_00/Eff_Avatar_SilverWolf999_00_BattleEvent_Item03_01.prefab",
+        "target": "cue.3904.4658.target.DarkTeamEntity",
+        "simulate_immediately": true
+      },
+      "base.cue.3977.7245.effect.2": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_SilverWolf999_00/Eff_Avatar_SilverWolf999_00_BattleEvent_Item03_01.prefab",
+        "target": "cue.3977.7245.target.DarkTeamEntity",
+        "simulate_immediately": true
+      },
+      "base.cue.3977.7261.effect.2": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_SilverWolf999_00/Eff_Avatar_SilverWolf999_00_BattleEvent_Item03_Hit01.prefab",
+        "target": "cue.3977.7261.target.DarkTeamEntity",
+        "simulate_immediately": true,
+        "position_offset": [6.0, 0.0, 0.0]
+      },
+      "base.cue.3977.7683.effect.2": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_SilverWolf999_00/Eff_Avatar_SilverWolf999_00_BattleEvent_Item03_Hit01.prefab",
+        "target": "cue.3977.7683.target.DarkTeamEntity",
+        "simulate_immediately": true,
+        "position_offset": [1.399999976158142, 0.0, 0.0]
+      },
+      "base.cue.3977.7719.effect.2": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_SilverWolf999_00/Eff_Avatar_SilverWolf999_00_BattleEvent_Item03_Hit01.prefab",
+        "target": "cue.3977.7719.target.DarkTeamEntity",
+        "simulate_immediately": true,
+        "position_offset": [-3.799999952316284, 0.0, 0.0]
+      },
+      "left_start": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_SilverWolf999_00/Eff_Avatar_SilverWolf999_00_Skill11_WeaponStart.prefab",
+        "target": "partner:left",
+        "simulate_immediately": true
+      },
+      "right_start": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_SilverWolf999_00/Eff_Avatar_SilverWolf999_00_Skill11_WeaponStart.prefab",
+        "target": "partner:right",
+        "simulate_immediately": true
+      },
+      "left_bullet": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_SilverWolf999_00/Eff_Avatar_SilverWolf999_00_Skill11_Bullet02.prefab",
+        "target": "partner:left",
+        "simulate_immediately": true,
+        "resident": true
+      },
+      "right_bullet": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_SilverWolf999_00/Eff_Avatar_SilverWolf999_00_Skill11_Bullet02.prefab",
+        "target": "partner:right",
+        "simulate_immediately": true,
+        "resident": true
+      },
+      "left_end": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_SilverWolf999_00/Eff_Avatar_SilverWolf999_00_Skill11_WeaponEnd.prefab",
+        "target": "partner:left",
+        "simulate_immediately": true
+      },
+      "right_end": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_SilverWolf999_00/Eff_Avatar_SilverWolf999_00_Skill11_WeaponEnd.prefab",
+        "target": "partner:right",
+        "simulate_immediately": true
+      }
+    },
+    "partners": {
+      "left": {
+        "model": "Characters/CharacterPrefabs/Servant/SilverWolf999Servant_00/Servant_SilverWolf999Servant_A_00.prefab",
+        "config": "Config/ConfigCharacter/Servant/Servant_SilverWolf999Servant_A_00_Config.json",
+        "member": "SilverWolf999_Shooter_01"
+      },
+      "right": {
+        "model": "Characters/CharacterPrefabs/Servant/SilverWolf999Servant_00/Servant_SilverWolf999Servant_A_00.prefab",
+        "config": "Config/ConfigCharacter/Servant/Servant_SilverWolf999Servant_A_00_Config.json",
+        "member": "SilverWolf999_Shooter_02"
+      }
+    },
+    "phases": {
+      "base.callback.3927.phase.13": {
+        "root": {"kind": "global_modifier", "name": "_M_SilverWolf999_00_Ultra_VisualManager"},
+        "path": [
+          {"owner": "RPG.GameCore.TurnBasedModifierConfig", "field": "_CallbackList", "index": 1},
+          {"owner": "RPG.GameCore.TurnBasedModifierCallbackConfig", "field": "CallbackConfig", "index": 10},
+          {"owner": "RPG.GameCore.CharacterChangePhase", "field": "PhaseAnimConfig"}
+        ]
+      },
+      "base.callback.3928.phase.10": {
+        "root": {"kind": "global_modifier", "name": "_M_SilverWolf999_00_Ultra_VisualManager"},
+        "path": [
+          {"owner": "RPG.GameCore.TurnBasedModifierConfig", "field": "_CallbackList", "index": 0},
+          {"owner": "RPG.GameCore.TurnBasedModifierCallbackConfig", "field": "CallbackConfig", "index": 9},
+          {"owner": "RPG.GameCore.CharacterChangePhase", "field": "PhaseAnimConfig"}
+        ]
+      },
+      "compiled.0.phase/GlobalModifiers[3].value._CallbackList[0].CallbackConfig[9]": {
+        "root": {"kind": "global_modifier", "name": "_M_SilverWolf999_00_Ultra_VisualManager"},
+        "path": [
+          {"owner": "RPG.GameCore.TurnBasedModifierConfig", "field": "_CallbackList", "index": 0},
+          {"owner": "RPG.GameCore.TurnBasedModifierCallbackConfig", "field": "CallbackConfig", "index": 9},
+          {"owner": "RPG.GameCore.CharacterChangePhase", "field": "PhaseAnimConfig"}
+        ]
+      },
+      "compiled.0.phase/GlobalModifiers[3].value._CallbackList[1].CallbackConfig[10]": {
+        "root": {"kind": "global_modifier", "name": "_M_SilverWolf999_00_Ultra_VisualManager"},
+        "path": [
+          {"owner": "RPG.GameCore.TurnBasedModifierConfig", "field": "_CallbackList", "index": 1},
+          {"owner": "RPG.GameCore.TurnBasedModifierCallbackConfig", "field": "CallbackConfig", "index": 10},
+          {"owner": "RPG.GameCore.CharacterChangePhase", "field": "PhaseAnimConfig"}
+        ]
+      }
+    }
+  },
+  "restore": []
+}

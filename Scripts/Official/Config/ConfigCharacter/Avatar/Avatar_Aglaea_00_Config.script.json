@@ -1,0 +1,980 @@
+{
+  "format": "hksr.script",
+  "id": "official-scripts:Config/ConfigCharacter/Avatar/Avatar_Aglaea_00_Config.json",
+  "applies_to": "Config/ConfigCharacter/Avatar/Avatar_Aglaea_00_Config.json",
+  "default": true,
+  "imports": ["Common/Elemental.json"],
+  "defaults": {
+    "targets": {
+      "PreviewTarget": {
+        "local_position": [0, 0, 6]
+      }
+    }
+  },
+  "actions": {
+    "rest": {
+      "trigger": "internal",
+      "run": [
+        {"op": "call", "function": "@return.rest.pose"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["stable-return", "idle-provider"]
+    },
+    "skill.0.perform": {
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Aglaea_00_Skill01_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Aglaea_00_Skill01_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.0.clock.1", "progress": 0.07},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit",
+              "direction": {"vertical": 20.0},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Aglaea_00/Eff_Avatar_Aglaea_00_Skill01_Hit_01.prefab",
+                "height": 1.4500000476837158,
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.0.hit.12"
+            },
+            {"op": "wait", "for": "skill.0.hit.12", "until": "accepted"},
+            {"op": "wait", "for": "skill.0.clock.1", "progress": 0.1189999994},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit",
+              "direction": {"horizontal": -60.0},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Aglaea_00/Eff_Avatar_Aglaea_00_Skill01_Hit_02.prefab",
+                "height": 1.059999942779541,
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.0.hit.14"
+            },
+            {"op": "wait", "for": "skill.0.hit.14", "until": "accepted"},
+            {"op": "wait", "for": "skill.0.clock.1", "progress": 0.232},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit_H",
+              "direction": {},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Aglaea_00/Eff_Avatar_Aglaea_00_Skill01_Hit_03.prefab",
+                "height": 1.4600000381469727,
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.0.hit.16"
+            },
+            {"op": "wait", "for": "skill.0.hit.16", "until": "accepted"}
+          ],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill01", "end": 0.0, "track": {"logic": 3}, "as": "skill.0.clock.1"},
+        {
+          "op": "movement",
+          "animation": "skill.0.clock.1",
+          "segments": [
+            {
+              "destination": "target",
+              "name": "PreviewTarget",
+              "target_geometry": true,
+              "start": 0.01,
+              "end": 0.081,
+              "sample": {"distance": 1.0, "percentage": 1.0, "include_radii": true}
+            },
+            {
+              "destination": "origin",
+              "start": 0.6010000004,
+              "end": 0.7370000001,
+              "sample": {"distance": 0.0, "percentage": 1.0, "include_radii": true}
+            }
+          ],
+          "as": "skill.0.clock.1.movement"
+        },
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.0},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.263},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.3179999997},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.6600000006},
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "Skill01",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "LookAt: not included in the visual sequence projection",
+          "RadialBlurEffect: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "skill.0.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Aglaea_00_Config.json", "skill": 0, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "skill.1.perform": {
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Aglaea_00_Skill02_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.324}
+          ],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Aglaea_00_Skill02_Camera",
+          "run": [],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill02", "end": -1.0, "track": {"logic": 3}, "as": "skill.1.clock.1"},
+        {"op": "wait", "for": "skill.1.clock.1", "until": "animation_end"},
+        {"op": "sound", "event": "Ev_vo_avatar_skill_cast01_aglaea", "as": "skill.1.sound.23"},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "Skill02",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "SyncCharLightAndCameraDir: not included in the visual sequence projection",
+          "CreateServant: not included in the visual sequence projection",
+          "SetEntityPosition: not included in the visual sequence projection",
+          "TriggerAnimState: animation has no literal owned-body binding",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "TriggerEffect: serial step depends on an unavailable source clock; no timing is inferred",
+          "SetCharacterPartsVisibility: serial step depends on an unavailable source clock; no timing is inferred",
+          "SetAttachmentVisibility: serial step depends on an unavailable source clock; no timing is inferred",
+          "SetCameraRootFollow: not included in the visual sequence projection",
+          "WaitTimelineFinish: not included in the visual sequence projection",
+          "TriggerAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "SkillPerformFinish: serial step depends on an unavailable source clock; no timing is inferred",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "GlobalMainIntensityEffect: not included in the visual sequence projection",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "TriggerAbility: serial step depends on an unavailable source clock; no timing is inferred",
+          "RadialBlurEffect: serial step depends on an unavailable source clock; no timing is inferred",
+          "GlobalMainIntensityEffect: serial step depends on an unavailable source clock; no timing is inferred",
+          "MoveToTargetPosition: serial step depends on an unavailable source clock; no timing is inferred",
+          "SyncCharLightAndCameraDir: serial step depends on an unavailable source clock; no timing is inferred"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "skill.2.perform": {
+      "run": [
+        {"op": "animation", "state": "Skill11", "end": -1.0, "track": {"logic": 3}, "as": "skill.2.clock.1"},
+        {"op": "wait", "for": "skill.2.clock.1", "until": "animation_end"},
+        {
+          "op": "start",
+          "id": "Avatar_Aglaea_00_Skill11_Camera",
+          "run": [],
+          "join": true
+        },
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "Skill11",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "SetCharacterAnimFollow: not included in the visual sequence projection",
+          "AlignTargetToTeamCenter: not included in the visual sequence projection",
+          "LookAt: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "TriggerParallelAbility: not included in the visual sequence projection",
+          "WaitTimelineFinish: not included in the visual sequence projection",
+          "HideLevelStage: serial step depends on an unavailable source clock; no timing is inferred",
+          "TriggerAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "SetTeamFormation: serial step depends on an unavailable source clock; no timing is inferred",
+          "SetCharacterAnimFollow: serial step depends on an unavailable source clock; no timing is inferred"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "skill.2.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Aglaea_00_Config.json", "skill": 2, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "skill.3.perform": {
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Aglaea_00_Skill03_Camera",
+          "run": [],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill03", "end": -1.0, "track": {"logic": 3}, "as": "skill.3.clock.1"},
+        {"op": "wait", "for": "skill.3.clock.1", "until": "animation_end"},
+        {
+          "op": "start",
+          "id": "Avatar_Aglaea_00_Skill03_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.3.clock.1", "progress": 0.7200000006},
+            {"op": "effect.create", "effects": ["skill.3.effect.22"], "as": "skill.3.effect.22"},
+            {"op": "wait", "for": "skill.3.effect.22", "until": "accepted"},
+            {"op": "effect.create", "effects": ["skill.3.effect.23"], "as": "skill.3.effect.23"},
+            {"op": "wait", "for": "skill.3.effect.23", "until": "accepted"},
+            {"op": "effect.create", "effects": ["skill.3.effect.24"], "as": "skill.3.effect.24"},
+            {"op": "wait", "for": "skill.3.effect.24", "until": "accepted"}
+          ],
+          "join": true
+        },
+        {"op": "wait", "for": "skill.3.clock.1", "progress": 0.2600000002},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {
+          "op": "effect.remove",
+          "effects": ["skill.3.effect.22", "skill.3.effect.23", "skill.3.effect.24"],
+          "optional": ["skill.3.effect.22", "skill.3.effect.23", "skill.3.effect.24"],
+          "as": "skill.3.remove-effects"
+        },
+        {"op": "wait", "for": "skill.3.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {
+          "op": "effect.remove",
+          "effects": ["skill.3.effect.22", "skill.3.effect.23", "skill.3.effect.24"],
+          "optional": ["skill.3.effect.22", "skill.3.effect.23", "skill.3.effect.24"],
+          "as": "skill.3.remove-effects"
+        },
+        {"op": "wait", "for": "skill.3.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "Skill03",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "AlignTargetToTeamCenter: not included in the visual sequence projection",
+          "SetEntityVisible: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "SyncCharLightAndCameraDir: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "ForceKill: not included in the visual sequence projection",
+          "CreateServant: not included in the visual sequence projection",
+          "TriggerAnimState: animation has no literal owned-body binding",
+          "HealHP: not included in the visual sequence projection",
+          "SetCharacterAnimFollow: not included in the visual sequence projection",
+          "GlobalMainIntensityEffect: not included in the visual sequence projection",
+          "CreateBattleEvent: not included in the visual sequence projection",
+          "WaitTimelineFinish: not included in the visual sequence projection",
+          "TriggerAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "SkillPerformFinish: serial step depends on an unavailable source clock; no timing is inferred",
+          "HideLevelStage: not included in the visual sequence projection",
+          "HideLevelStage: serial step depends on an unavailable source clock; no timing is inferred",
+          "GlobalMainIntensityEffect: serial step depends on an unavailable source clock; no timing is inferred",
+          "MoveToTargetPosition: serial step depends on an unavailable source clock; no timing is inferred"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "skill.3.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Aglaea_00_Config.json", "skill": 3, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "skill.4.perform": {
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Aglaea_00_Skill21_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.4.clock.1", "progress": 0.324},
+            {"op": "wait", "for": "skill.4.clock.1", "progress": 0.3369999998},
+            {"op": "wait", "for": "skill.4.clock.1", "progress": 0.5279999999}
+          ],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Aglaea_00_Skill02_Camera",
+          "run": [],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill02", "end": -1.0, "track": {"logic": 3}, "as": "skill.4.clock.1"},
+        {"op": "wait", "for": "skill.4.clock.1", "until": "animation_end"},
+        {"op": "sound", "event": "Ev_vo_avatar_skill_cast02_aglaea", "as": "skill.4.sound.17"},
+        {"op": "effect.create", "effects": ["skill.4.effect.19"], "as": "skill.4.effect.19"},
+        {"op": "wait", "for": "skill.4.effect.19", "until": "accepted"},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "effect.remove", "effects": ["skill.4.effect.19"], "optional": ["skill.4.effect.19"], "as": "skill.4.remove-effects"},
+        {"op": "wait", "for": "skill.4.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "effect.remove", "effects": ["skill.4.effect.19"], "optional": ["skill.4.effect.19"], "as": "skill.4.remove-effects"},
+        {"op": "wait", "for": "skill.4.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "Skill21",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "SetEntityPosition: not included in the visual sequence projection",
+          "SetEntityVisible: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "TriggerAnimState: animation has no literal owned-body binding",
+          "TriggerEffect: effect needs a non-owned target, dynamic path, or Timeline attachment",
+          "HealHP: not included in the visual sequence projection",
+          "WaitTimelineFinish: not included in the visual sequence projection",
+          "TriggerAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "SkillPerformFinish: serial step depends on an unavailable source clock; no timing is inferred",
+          "SyncCharLightAndCameraDir: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "GlobalMainIntensityEffect: not included in the visual sequence projection",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "TriggerAbility: serial step depends on an unavailable source clock; no timing is inferred",
+          "RadialBlurEffect: serial step depends on an unavailable source clock; no timing is inferred",
+          "GlobalMainIntensityEffect: serial step depends on an unavailable source clock; no timing is inferred",
+          "MoveToTargetPosition: serial step depends on an unavailable source clock; no timing is inferred",
+          "SyncCharLightAndCameraDir: serial step depends on an unavailable source clock; no timing is inferred"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "skill.5.perform": {
+      "inputs": {
+        "cue": {
+          "type": "integer",
+          "default": 0,
+          "label": "Effect",
+          "choices": [
+            {"value": 0, "label": "OnEnterBattle"}
+          ]
+        }
+      },
+      "requires": [
+        {"op": "number", "name": "cue", "compare": "ge", "value": 0},
+        {"op": "number", "name": "cue", "compare": "lt", "value": 1}
+      ],
+      "run": [
+        {"op": "effect.create", "effects": ["skill.5.effect.0"], "as": "effect"},
+        {"op": "wait", "for": "effect", "until": "accepted"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "effect.remove", "effects": ["skill.5.effect.0"], "optional": ["skill.5.effect.0"], "as": "remove"},
+        {"op": "wait", "for": "remove", "until": "accepted"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "SkillP01",
+        "omissions": [
+          "Actor-owned effect cue only. Original callback conditions and timing are manual inputs; use Finish to end.",
+          "cue: 0=OnEnterBattle",
+          "SetCharacterPartsVisibility: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["manual-effect-cue", "partial-presentation"]
+    },
+    "callback.364": {
+      "inputs": {
+        "callback.364.condition.BySkillPointActivated.7": {
+          "type": "bool",
+          "default": true,
+          "label": "BySkillPointActivated",
+          "description": "Manual source condition: $.AbilityList[14].Modifiers[0].value._CallbackList[2].CallbackConfig[3].Predicate.PredicateList[0]"
+        },
+        "callback.364.condition.ByCompareWaveCount.8": {
+          "type": "bool",
+          "default": true,
+          "label": "ByCompareWaveCount",
+          "description": "Manual source condition: $.AbilityList[14].Modifiers[0].value._CallbackList[2].CallbackConfig[3].Predicate.PredicateList[1]"
+        },
+        "callback.364.condition.ByCompareDynamicValue.9": {
+          "type": "bool",
+          "default": true,
+          "label": "ByCompareDynamicValue",
+          "description": "Manual source condition: $.AbilityList[14].Modifiers[0].value._CallbackList[2].CallbackConfig[3].Predicate.PredicateList[2]"
+        }
+      },
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "callback.364.condition.BySkillPointActivated.7", "is": true},
+          "then": [
+            {
+              "op": "if",
+              "condition": {"op": "value", "name": "callback.364.condition.ByCompareWaveCount.8", "is": true},
+              "then": [
+                {
+                  "op": "if",
+                  "condition": {"op": "value", "name": "callback.364.condition.ByCompareDynamicValue.9", "is": true},
+                  "then": [
+                    {"op": "effect.create", "effects": ["callback.364.effect.6"], "as": "callback.364.effect.6"},
+                    {"op": "wait", "for": "callback.364.effect.6", "until": "accepted"}
+                  ],
+                  "else": []
+                }
+              ],
+              "else": []
+            }
+          ],
+          "else": []
+        },
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "effect.remove", "effects": ["callback.364.effect.6"], "optional": ["callback.364.effect.6"], "as": "callback.364.remove-effects"},
+        {"op": "wait", "for": "callback.364.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "effect.remove", "effects": ["callback.364.effect.6"], "optional": ["callback.364.effect.6"], "as": "callback.364.remove-effects"},
+        {"op": "wait", "for": "callback.364.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "MAvatar_Aglaea_Passive: OnEnterBattle",
+        "omissions": ["Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects."]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "callback.389": {
+      "bindings": {
+        "targets": ["Recipient"]
+      },
+      "run": [
+        {"op": "effect.create", "effects": ["callback.389.effect.11"], "as": "callback.389.effect.11"},
+        {"op": "wait", "for": "callback.389.effect.11", "until": "accepted"},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "effect.remove", "effects": ["callback.389.effect.11"], "optional": ["callback.389.effect.11"], "as": "callback.389.remove-effects"},
+        {"op": "wait", "for": "callback.389.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "effect.remove", "effects": ["callback.389.effect.11"], "optional": ["callback.389.effect.11"], "as": "callback.389.remove-effects"},
+        {"op": "wait", "for": "callback.389.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "MAvatar_Aglaea_Skill03: OnStack",
+        "omissions": [
+          "Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects.",
+          "ModifierAttachEffect: manual bound-effect preview; modifier flags, collider-height offset, native mutex and automatic visibility/lifetime are not applied",
+          "SetCharacterPartsVisibility: not included in the visual sequence projection",
+          "SetAttachmentVisibility: attachment visibility requires the owned body outside a parallel target scope"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "callback.392": {
+      "inputs": {
+        "callback.392.condition.ByContainBehaviorFlag.1": {
+          "type": "bool",
+          "default": false,
+          "label": "ByContainBehaviorFlag",
+          "description": "Manual source condition: $.GlobalModifiers[14].value._CallbackList[3].CallbackConfig[0].Predicate",
+          "diagnostic": true
+        }
+      },
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "callback.392.condition.ByContainBehaviorFlag.1", "is": true},
+          "then": [],
+          "else": []
+        },
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "MAvatar_Aglaea_Skill03_Sub: OnModifierRemove",
+        "listed": false,
+        "omissions": [
+          "Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects.",
+          "SetControlSkillMapping: Skill mapping is configuration, not a request to play its destination ready pose; native mapping is not executed"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation", "diagnostic-omission-only"]
+    },
+    "callback.393": {
+      "inputs": {
+        "callback.393.condition.ByContainBehaviorFlag.1": {
+          "type": "bool",
+          "default": false,
+          "label": "ByContainBehaviorFlag",
+          "description": "Manual source condition: $.GlobalModifiers[14].value._CallbackList[2].CallbackConfig[0].Predicate",
+          "diagnostic": true
+        }
+      },
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "callback.393.condition.ByContainBehaviorFlag.1", "is": true},
+          "then": [],
+          "else": []
+        },
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "MAvatar_Aglaea_Skill03_Sub: OnModifierAdd",
+        "listed": false,
+        "omissions": [
+          "Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects.",
+          "SetControlSkillMapping: Skill mapping is configuration, not a request to play its destination ready pose; native mapping is not executed"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation", "diagnostic-omission-only"]
+    },
+    "callback.394": {
+      "run": [
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "MAvatar_Aglaea_Skill03_Sub: OnStack",
+        "listed": false,
+        "omissions": [
+          "Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects.",
+          "SetControlSkillMapping: Skill mapping is configuration, not a request to play its destination ready pose; native mapping is not executed"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation", "diagnostic-omission-only"]
+    },
+    "callback.395": {
+      "run": [
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "MAvatar_Aglaea_Skill03_Sub: OnDestroy",
+        "listed": false,
+        "omissions": [
+          "Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects.",
+          "SetControlSkillMapping: Skill mapping is configuration, not a request to play its destination ready pose; native mapping is not executed",
+          "SetControlSkillMapping: slot visual destination has no owned character source",
+          "SetCharacterPartsVisibility: not included in the visual sequence projection",
+          "SetAttachmentVisibility: attachment visibility requires the owned body outside a parallel target scope"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation", "diagnostic-omission-only"]
+    },
+    "callback.396": {
+      "bindings": {
+        "targets": ["Recipient"]
+      },
+      "run": [
+        {"op": "effect.create", "effects": ["callback.396.effect.3"], "as": "callback.396.effect.3"},
+        {"op": "wait", "for": "callback.396.effect.3", "until": "accepted"},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "effect.remove", "effects": ["callback.396.effect.3"], "optional": ["callback.396.effect.3"], "as": "callback.396.remove-effects"},
+        {"op": "wait", "for": "callback.396.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "effect.remove", "effects": ["callback.396.effect.3"], "optional": ["callback.396.effect.3"], "as": "callback.396.remove-effects"},
+        {"op": "wait", "for": "callback.396.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "MServant_Aglaea_Skill03_Summon: OnStack",
+        "omissions": [
+          "Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects.",
+          "ModifierAttachEffect: manual bound-effect preview; modifier flags, collider-height offset, native mutex and automatic visibility/lifetime are not applied"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "skill.6.perform": {
+      "inputs": {
+        "event": {
+          "type": "integer",
+          "default": 0,
+          "label": "Callback",
+          "choices": [
+            {"value": 0, "label": "StageAbility_Maze_Aglaea_Modifier: OnEnterBattle"}
+          ]
+        },
+        "callback.372.condition.ByIsMazeSkillAffectCurrentWave.10": {
+          "type": "bool",
+          "default": true,
+          "label": "ByIsMazeSkillAffectCurrentWave",
+          "description": "Manual source condition: $.AbilityList[15].Modifiers[0].value._CallbackList[0].CallbackConfig[0].Predicate.PredicateList[0]"
+        },
+        "callback.372.condition.ByCompareWaveCount.11": {
+          "type": "bool",
+          "default": true,
+          "label": "ByCompareWaveCount",
+          "description": "Manual source condition: $.AbilityList[15].Modifiers[0].value._CallbackList[0].CallbackConfig[0].Predicate.PredicateList[1]"
+        }
+      },
+      "requires": [
+        {"op": "number", "name": "event", "compare": "ge", "value": 0},
+        {"op": "number", "name": "event", "compare": "lt", "value": 1}
+      ],
+      "bindings": {
+        "targets": ["PreviewTarget", "Recipient"]
+      },
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "callback.372.condition.ByIsMazeSkillAffectCurrentWave.10", "is": true},
+          "then": [
+            {
+              "op": "if",
+              "condition": {"op": "value", "name": "callback.372.condition.ByCompareWaveCount.11", "is": true},
+              "then": [
+                {"op": "wait", "seconds": 0.5000000004},
+                {
+                  "op": "hit",
+                  "target": "PreviewTarget",
+                  "animation": "Hit",
+                  "direction": {},
+                  "effect": {
+                    "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Aglaea_00/Servant/Eff_Servant_AglaeaServant_00_Skill01_Hit01.prefab",
+                    "height": 1.2000000476837158,
+                    "minimum_interval": 0.0500000007,
+                    "maximum_count": 1
+                  },
+                  "allow_position": true,
+                  "as": "callback.372.hit.4"
+                },
+                {"op": "wait", "for": "callback.372.hit.4", "until": "accepted"},
+                {
+                  "op": "for_each",
+                  "bind": "callback.372.member.6",
+                  "targets": ["Recipient"],
+                  "collection": "callback.372.targets.7",
+                  "run": [],
+                  "empty": []
+                }
+              ],
+              "else": []
+            }
+          ],
+          "else": []
+        },
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "SkillMaze",
+        "omissions": [
+          "Manual visual callback selection; no native combat modifier or automatic event simulation.",
+          "event: 0=StageAbility_Maze_Aglaea_Modifier: OnEnterBattle",
+          "CreateServant: not included in the visual sequence projection",
+          "HideEntityForCurrentCamera: not included in the visual sequence projection",
+          "SetEntityPosition: not included in the visual sequence projection",
+          "SetCharacterPartsVisibility: not included in the visual sequence projection",
+          "SetAttachmentVisibility: attachment visibility requires the owned body outside a parallel target scope",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "Retarget: recipient collection is explicitly selected; native filtering, random selection and count limits are not simulated"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "skill.7.perform": {"use": "common.elemental.responses", "next": "rest"},
+    "preview.hit": {
+      "inputs": {
+        "kind": {
+          "type": "text",
+          "default": "Hit",
+          "label": "Hit type",
+          "choices": [
+            {"value": "Hit", "label": "Hit"},
+            {"value": "Hit_H", "label": "Hit_H"}
+          ]
+        }
+      },
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "kind", "is": "Hit_H"},
+          "then": [
+            {"op": "hit", "target": "Caster", "animation": "Hit_H", "as": "hit-heavy"},
+            {"op": "wait", "for": "hit-heavy"}
+          ],
+          "else": [
+            {"op": "hit", "target": "Caster", "animation": "Hit", "as": "hit"},
+            {"op": "wait", "for": "hit"}
+          ]
+        }
+      ],
+      "next": "rest",
+      "presentation": {"label": "Hit"},
+      "tags": ["manual-visual-callback"]
+    },
+    "source.8": {
+      "requires": [
+        {
+          "op": "unresolved",
+          "source": "Config/ConfigCharacter/Avatar/Avatar_Aglaea_00_Config.json:$.SkillList[8]",
+          "detail": "Retained source has no independently bound presentation unit"
+        }
+      ],
+      "trigger": "internal",
+      "run": [],
+      "presentation": {
+        "label": "PassiveSkillSummoner",
+        "listed": false,
+        "omissions": ["Retained source has no independently bound presentation unit"]
+      },
+      "tags": ["retained-source"]
+    },
+    "@receiver-clear/callback.5359.receiver-property.3": {
+      "requires": [
+        {"op": "state", "name": "common.elemental.frozen-hit"}
+      ],
+      "mode": "input",
+      "run": [
+        {"op": "state.exit", "name": "common.elemental.frozen-hit", "only_caster": true, "as": "clear"},
+        {"op": "wait", "for": "clear"}
+      ],
+      "presentation": {
+        "label": "Clear hit effect override",
+        "kind": "setting",
+        "contexts": ["common.elemental.frozen-hit"]
+      },
+      "tags": ["visual-receiver-clear"]
+    }
+  },
+  "functions": {
+    "@return.rest.pose": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "rest.pose.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "rest.pose"
+      }
+    ],
+    "@return.return.pose": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "return.pose.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "return.pose"
+      }
+    ]
+  },
+  "states": {},
+  "resources": {
+    "effects": {
+      "skill.5.effect.0": {"path": "Effects/Eff_Prefab/Eff_Common/Eff_Common_MAZ_RecoverSP.prefab", "target": "Caster"},
+      "skill.3.effect.22": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Aglaea_00/Eff_Avatar_Aglaea_00_Skill03_AglaeaServant_02.prefab", "target": "Caster"},
+      "skill.3.effect.23": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Aglaea_00/Eff_Avatar_Aglaea_00_Skill03_AglaeaServant_03.prefab", "target": "Caster"},
+      "skill.3.effect.24": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Aglaea_00/Eff_Avatar_Aglaea_00_Skill03_AglaeaServant_04.prefab", "target": "Caster"},
+      "skill.4.effect.19": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Aglaea_00/Eff_Avatar_Aglaea_00_Skill02_Attack01_V02.prefab", "target": "Caster"},
+      "callback.364.effect.6": {"path": "Effects/Eff_Prefab/Eff_Common/Eff_Common_MAZ_RecoverSP.prefab", "target": "Caster"},
+      "callback.389.effect.11": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Aglaea_00/Eff_Avatar_Aglaea_00_Weapon.prefab", "target": "Recipient", "attach_to_target": true},
+      "callback.396.effect.3": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Aglaea_00/Eff_Avatar_Aglaea_00_Weapon.prefab",
+        "target": "Recipient",
+        "attach_to_target": true,
+        "attach_point": "EffectWeapon"
+      }
+    }
+  }
+}

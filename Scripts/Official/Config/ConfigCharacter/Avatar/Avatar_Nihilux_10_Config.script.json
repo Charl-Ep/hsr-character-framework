@@ -1,0 +1,1160 @@
+{
+  "format": "hksr.script",
+  "id": "official-scripts:Config/ConfigCharacter/Avatar/Avatar_Nihilux_10_Config.json",
+  "applies_to": "Config/ConfigCharacter/Avatar/Avatar_Nihilux_10_Config.json",
+  "default": true,
+  "imports": ["Common/Elemental.json"],
+  "defaults": {
+    "targets": {
+      "PreviewTarget": {
+        "local_position": [0, 0, 6]
+      }
+    }
+  },
+  "actions": {
+    "rest": {
+      "trigger": "internal",
+      "run": [
+        {"op": "call", "function": "@return.rest.pose"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["stable-return", "idle-provider"]
+    },
+    "skill.0.perform": {
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Nihilux_10_Skill01_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Nihilux_10_Skill01_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.0.clock.1", "progress": 0.2820000001},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit",
+              "direction": {},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Nihilux_10/Eff_Avatar_Nihilux_10_Skill01_Hit02.prefab",
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.0.hit.5"
+            },
+            {"op": "wait", "for": "skill.0.hit.5", "until": "accepted"},
+            {"op": "wait", "for": "skill.0.clock.1", "progress": 0.6689999999}
+          ],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill01", "end": -1.0, "track": {"logic": 3}, "as": "skill.0.clock.1"},
+        {"op": "wait", "for": "skill.0.clock.1", "until": "animation_end"},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.0329999998},
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "Skill01",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "LookAt: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "StopTimeline: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "TriggerEffect: effect needs a non-owned target, dynamic path, or Timeline attachment"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "skill.0.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Nihilux_10_Config.json", "skill": 0, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "skill.1.perform": {
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Nihilux_10_Skill02_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.2810000001},
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.7250000003}
+          ],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Nihilux_10_Skill02_Camera",
+          "run": [],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill02", "end": 1.0, "track": {"logic": 3}, "as": "skill.1.clock.1"},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.2849999999},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.7200000006},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.7370000001},
+        {"op": "join"},
+        {"op": "wait", "for": "skill.1.clock.1", "until": "animation_end"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "Skill02",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "HideLevelStage: not included in the visual sequence projection",
+          "SetEntityVisible: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "SetSkillTargetFormationByPos: not included in the visual sequence projection",
+          "SetTargetAssetPreloadState: not included in the visual sequence projection",
+          "TriggerEffect: effect needs a non-owned target, dynamic path, or Timeline attachment",
+          "WaitTimelineFinish: not included in the visual sequence projection",
+          "TurnInsertAbility: serial step depends on an unavailable source clock; no timing is inferred",
+          "SkillPerformFinish: serial step depends on an unavailable source clock; no timing is inferred",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "ScaleCharacterModel: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "RemoveEffect: serial step depends on an unavailable source clock; no timing is inferred",
+          "HideLevelStage: serial step depends on an unavailable source clock; no timing is inferred",
+          "TriggerAnimState: serial step depends on an unavailable source clock; no timing is inferred"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "skill.1.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Nihilux_10_Config.json", "skill": 1, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "skill.2.perform": {
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Nihilux_10_Skill03_Start_Camera",
+          "run": [],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill03_Start", "end": -1.0, "track": {"logic": 3}, "as": "skill.2.clock.1"},
+        {"op": "wait", "for": "skill.2.clock.1", "until": "animation_end"},
+        {"op": "effect.create", "effects": ["skill.2.effect.9"], "as": "skill.2.effect.9"},
+        {"op": "wait", "for": "skill.2.effect.9", "until": "accepted"},
+        {"op": "effect.create", "effects": ["skill.2.effect.10"], "as": "skill.2.effect.10"},
+        {"op": "wait", "for": "skill.2.effect.10", "until": "accepted"},
+        {"op": "wait", "for": "skill.2.clock.1", "progress": 0.6900000006},
+        {"op": "wait", "for": "skill.2.clock.1", "progress": 0.7000000006},
+        {"op": "effect.create", "effects": ["skill.2.effect.16"], "as": "skill.2.effect.16"},
+        {"op": "wait", "for": "skill.2.effect.16", "until": "accepted"},
+        {"op": "effect.create", "effects": ["skill.2.effect.17"], "as": "skill.2.effect.17"},
+        {"op": "wait", "for": "skill.2.effect.17", "until": "accepted"},
+        {"op": "effect.create", "effects": ["skill.2.effect.18"], "as": "skill.2.effect.18"},
+        {"op": "wait", "for": "skill.2.effect.18", "until": "accepted"},
+        {"op": "effect.create", "effects": ["skill.2.effect.19"], "as": "skill.2.effect.19"},
+        {"op": "wait", "for": "skill.2.effect.19", "until": "accepted"},
+        {
+          "op": "start",
+          "id": "Avatar_Nihilux_10_Skill03_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.2.clock.2", "progress": 0.7000000006},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit",
+              "direction": {},
+              "effect": {"path": "", "height": 1.2000000476837158, "minimum_interval": 0.0500000007, "maximum_count": 1},
+              "allow_position": true,
+              "as": "skill.2.hit.30"
+            },
+            {"op": "wait", "for": "skill.2.hit.30", "until": "accepted"}
+          ],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Nihilux_10_Skill03_End_Camera",
+          "run": [
+            {"op": "wait", "for": "skill.2.clock.2", "progress": 0.7000000006}
+          ],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill03_End", "end": -1.0, "track": {"logic": 3}, "as": "skill.2.clock.2"},
+        {"op": "wait", "for": "skill.2.clock.2", "until": "animation_end"},
+        {"op": "effect.remove", "effects": ["skill.2.effect.9"], "optional": ["skill.2.effect.9"], "as": "skill.2.remove.41.0"},
+        {"op": "wait", "for": "skill.2.remove.41.0", "until": "accepted"},
+        {
+          "op": "effect.remove_event",
+          "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Nihilux_10/Eff_Avatar_Nihilux_10_Skill03_Aha_01_Fade.prefab",
+          "immediate": true,
+          "as": "skill.2.remove.41.1"
+        },
+        {"op": "wait", "for": "skill.2.remove.41.1", "until": "accepted"},
+        {"op": "effect.remove", "effects": ["skill.2.effect.10"], "optional": ["skill.2.effect.10"], "as": "skill.2.remove.42.0"},
+        {"op": "wait", "for": "skill.2.remove.42.0", "until": "accepted"},
+        {
+          "op": "effect.remove_event",
+          "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Nihilux_10/Eff_Avatar_Nihilux_10_Skill03_PaperBook_01_Fade.prefab",
+          "immediate": true,
+          "as": "skill.2.remove.42.1"
+        },
+        {"op": "wait", "for": "skill.2.remove.42.1", "until": "accepted"},
+        {"op": "wait", "for": "skill.2.clock.2", "progress": 0.08},
+        {"op": "wait", "for": "skill.2.clock.2", "progress": 0.1200000001},
+        {"op": "wait", "for": "skill.2.clock.2", "progress": 0.2100000001},
+        {"op": "wait", "for": "skill.2.clock.2", "progress": 0.7000000006},
+        {"op": "effect.remove", "effects": ["skill.2.effect.17"], "optional": ["skill.2.effect.17"], "as": "skill.2.remove.60.0"},
+        {"op": "wait", "for": "skill.2.remove.60.0", "until": "accepted"},
+        {
+          "op": "effect.remove_event",
+          "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Nihilux_10/Eff_Avatar_Nihilux_10_Skill03_EnemyFollow_Left.prefab",
+          "fade": false,
+          "immediate": true,
+          "as": "skill.2.remove.60.1"
+        },
+        {"op": "wait", "for": "skill.2.remove.60.1", "until": "accepted"},
+        {"op": "effect.remove", "effects": ["skill.2.effect.16"], "optional": ["skill.2.effect.16"], "as": "skill.2.remove.61.0"},
+        {"op": "wait", "for": "skill.2.remove.61.0", "until": "accepted"},
+        {
+          "op": "effect.remove_event",
+          "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Nihilux_10/Eff_Avatar_Nihilux_10_Skill03_EnemyFollow_Left_1.prefab",
+          "fade": false,
+          "immediate": true,
+          "as": "skill.2.remove.61.1"
+        },
+        {"op": "wait", "for": "skill.2.remove.61.1", "until": "accepted"},
+        {"op": "effect.remove", "effects": ["skill.2.effect.18"], "optional": ["skill.2.effect.18"], "as": "skill.2.remove.62.0"},
+        {"op": "wait", "for": "skill.2.remove.62.0", "until": "accepted"},
+        {
+          "op": "effect.remove_event",
+          "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Nihilux_10/Eff_Avatar_Nihilux_10_Skill03_EnemyFollow_Right_1.prefab",
+          "fade": false,
+          "immediate": true,
+          "as": "skill.2.remove.62.1"
+        },
+        {"op": "wait", "for": "skill.2.remove.62.1", "until": "accepted"},
+        {"op": "effect.remove", "effects": ["skill.2.effect.19"], "optional": ["skill.2.effect.19"], "as": "skill.2.remove.63.0"},
+        {"op": "wait", "for": "skill.2.remove.63.0", "until": "accepted"},
+        {
+          "op": "effect.remove_event",
+          "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Nihilux_10/Eff_Avatar_Nihilux_10_Skill03_EnemyFollow_Right.prefab",
+          "fade": false,
+          "immediate": true,
+          "as": "skill.2.remove.63.1"
+        },
+        {"op": "wait", "for": "skill.2.remove.63.1", "until": "accepted"},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {
+          "op": "effect.remove",
+          "effects": ["skill.2.effect.9", "skill.2.effect.10", "skill.2.effect.16", "skill.2.effect.17", "skill.2.effect.18", "skill.2.effect.19"],
+          "optional": ["skill.2.effect.9", "skill.2.effect.10", "skill.2.effect.16", "skill.2.effect.17", "skill.2.effect.18", "skill.2.effect.19"],
+          "as": "skill.2.remove-effects"
+        },
+        {"op": "wait", "for": "skill.2.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {
+          "op": "effect.remove",
+          "effects": ["skill.2.effect.9", "skill.2.effect.10", "skill.2.effect.16", "skill.2.effect.17", "skill.2.effect.18", "skill.2.effect.19"],
+          "optional": ["skill.2.effect.9", "skill.2.effect.10", "skill.2.effect.16", "skill.2.effect.17", "skill.2.effect.18", "skill.2.effect.19"],
+          "as": "skill.2.remove-effects"
+        },
+        {"op": "wait", "for": "skill.2.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "Skill03",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "LevelAudioState: not included in the visual sequence projection",
+          "HideLevelStage: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "TriggerEffect: effect needs a non-owned target, dynamic path, or Timeline attachment",
+          "TargetTimeSlow: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "ScaleCharacterModel: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "SetSkillTargetFormationByPos: not included in the visual sequence projection",
+          "WaitTimelineFinish: not included in the visual sequence projection",
+          "DisableCharacterVO: not included in the visual sequence projection",
+          "StartBattleQTE: not included in the visual sequence projection",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "LoopExecuteTaskListWithInterval: not included in the visual sequence projection",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "RemoveGlobalTimeSlow: not included in the visual sequence projection",
+          "StopTimeline: not included in the visual sequence projection",
+          "SwitchCaseByTeammateCount: not included in the visual sequence projection",
+          "RemoveEffect: effect removal has no owned target binding",
+          "SetEffectAnimatorState: not included in the visual sequence projection",
+          "ClearTargetTimeSlow: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "CAJDCGPFPBA: not included in the visual sequence projection",
+          "SetTeamFormation: not included in the visual sequence projection",
+          "ACNFHAKPMIK: not included in the visual sequence projection",
+          "LookAt: serial step depends on an unavailable source clock; no timing is inferred",
+          "ScaleCharacterModel: serial step depends on an unavailable source clock; no timing is inferred",
+          "HideLevelStage: serial step depends on an unavailable source clock; no timing is inferred",
+          "SetTeamFormation: serial step depends on an unavailable source clock; no timing is inferred",
+          "TriggerAnimState: serial step depends on an unavailable source clock; no timing is inferred"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "skill.2.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Nihilux_10_Config.json", "skill": 2, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "skill.3.perform": {
+      "inputs": {
+        "skill.3.condition.ByIsContainModifier.2": {"type": "bool", "default": false, "label": "ByIsContainModifier", "description": "Manual source condition: $.AbilityList[11].OnStart[0].Predicate"},
+        "skill.3.condition.DCGNLKPJHKF.5": {
+          "type": "bool",
+          "default": true,
+          "label": "DCGNLKPJHKF",
+          "description": "Manual source condition: $.AbilityList[11].OnStart[0].FailedTaskList[0].Predicate"
+        },
+        "skill.3.condition.ByIsInElationTime.20": {"type": "bool", "default": true, "label": "ByIsInElationTime", "description": "Manual source condition: $.AbilityList[12].OnStart[4].Predicate"},
+        "skill.3.condition.ByCompareDynamicValue.22": {
+          "type": "bool",
+          "default": false,
+          "label": "ByCompareDynamicValue",
+          "description": "Manual source condition: $.AbilityList[12].OnStart[4].SuccessTaskList[1].Predicate"
+        }
+      },
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "skill.3.condition.ByIsContainModifier.2", "is": true},
+          "then": [
+            {"op": "sound", "event": "Ev_sfx_avatar_Nihilux_Skill04_cut", "as": "skill.3.sound.3"},
+            {"op": "sound", "event": "Ev_vo_avatar_skill03_cast_nihilux_wuhuanyujuese", "as": "skill.3.sound.4"}
+          ],
+          "else": [
+            {
+              "op": "if",
+              "condition": {"op": "value", "name": "skill.3.condition.DCGNLKPJHKF.5", "is": true},
+              "then": [
+                {"op": "sound", "event": "Ev_sfx_combat_Nihilux_Elation_Accelerate_End", "as": "skill.3.sound.6"}
+              ],
+              "else": []
+            },
+            {"op": "sound", "event": "Ev_sfx_avatar_Nihilux_Skill04", "as": "skill.3.sound.7"},
+            {"op": "sound", "event": "Ev_vo_avatar_skill03_cast_nihilux", "as": "skill.3.sound.8"}
+          ]
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Nihilux_10_Skill04_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.3.clock.1", "progress": 0.8838000011},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit_H",
+              "direction": {},
+              "effect": {"path": "", "minimum_interval": 0.0500000007, "maximum_count": 1},
+              "allow_position": true,
+              "as": "skill.3.hit.19"
+            },
+            {"op": "wait", "for": "skill.3.hit.19", "until": "accepted"},
+            {
+              "op": "if",
+              "condition": {"op": "value", "name": "skill.3.condition.ByIsInElationTime.20", "is": true},
+              "then": [
+                {
+                  "op": "if",
+                  "condition": {"op": "value", "name": "skill.3.condition.ByCompareDynamicValue.22", "is": true},
+                  "then": [
+                    {
+                      "op": "hit",
+                      "target": "PreviewTarget",
+                      "animation": "Hit_H",
+                      "direction": {},
+                      "effect": {"path": "", "minimum_interval": 0.0500000007, "maximum_count": 1},
+                      "allow_position": true,
+                      "as": "skill.3.hit.24"
+                    },
+                    {"op": "wait", "for": "skill.3.hit.24", "until": "accepted"}
+                  ],
+                  "else": [
+                    {
+                      "op": "hit",
+                      "target": "PreviewTarget",
+                      "animation": "Hit_H",
+                      "direction": {},
+                      "effect": {"path": "", "minimum_interval": 0.0500000007, "maximum_count": 1},
+                      "allow_position": true,
+                      "as": "skill.3.hit.27"
+                    },
+                    {"op": "wait", "for": "skill.3.hit.27", "until": "accepted"}
+                  ]
+                }
+              ],
+              "else": []
+            }
+          ],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Nihilux_10_Skill04_Camera",
+          "run": [
+            {"op": "wait", "for": "skill.3.clock.1", "progress": 0.465}
+          ],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill04", "end": -1.0, "track": {"logic": 3}, "as": "skill.3.clock.1"},
+        {"op": "wait", "for": "skill.3.clock.1", "until": "animation_end"},
+        {"op": "wait", "for": "skill.3.clock.1", "progress": 0.2000000001},
+        {"op": "wait", "for": "skill.3.clock.1", "progress": 0.3512700009},
+        {
+          "op": "effect.remove_event",
+          "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Nihilux_10/Eff_Avatar_Nihilux_10_Skill04_Card.prefab",
+          "fade": false,
+          "immediate": true,
+          "as": "skill.3.remove.36.0"
+        },
+        {"op": "wait", "for": "skill.3.remove.36.0", "until": "accepted"},
+        {"op": "wait", "for": "skill.3.clock.1", "progress": 0.4700000004},
+        {"op": "wait", "for": "skill.3.clock.1", "progress": 0.8328000011},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "Skill04",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "ShowBattleScreenEffect: not included in the visual sequence projection",
+          "MFHGBPDJJPE: not included in the visual sequence projection",
+          "MakeCharacterHUDVisible: not included in the visual sequence projection",
+          "HideLevelStage: not included in the visual sequence projection",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "TriggerSkipDeadHandler: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "ScaleCharacterModel: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "SetSkillTargetFormationByPos: not included in the visual sequence projection",
+          "WaitTimelineFinish: not included in the visual sequence projection",
+          "ScaleCharacterModel: serial step depends on an unavailable source clock; no timing is inferred",
+          "SetTeamFormation: serial step depends on an unavailable source clock; no timing is inferred",
+          "HideLevelStage: serial step depends on an unavailable source clock; no timing is inferred",
+          "PredicateTaskList: serial step depends on an unavailable source clock; no timing is inferred"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "callback.87": {
+      "inputs": {
+        "callback.87.condition.ByCurrentAudioLanguage.2": {
+          "type": "bool",
+          "default": false,
+          "label": "ByCurrentAudioLanguage",
+          "description": "Manual source condition: $.GlobalModifiers[4].value._CallbackList[4].CallbackConfig[0].SuccessTaskList[0].Predicate"
+        },
+        "callback.87.condition.ByCurrentAudioLanguage.5": {
+          "type": "bool",
+          "default": false,
+          "label": "ByCurrentAudioLanguage",
+          "description": "Manual source condition: $.GlobalModifiers[4].value._CallbackList[4].CallbackConfig[0].SuccessTaskList[0].FailedTaskList[0].Predicate"
+        },
+        "callback.87.condition.ByCurrentAudioLanguage.8": {
+          "type": "bool",
+          "default": false,
+          "label": "ByCurrentAudioLanguage",
+          "description": "Manual source condition: $.GlobalModifiers[4].value._CallbackList[4].CallbackConfig[0].SuccessTaskList[0].FailedTaskList[0].FailedTaskList[0].Predicate"
+        },
+        "callback.87.condition.ByCompareTarget.13": {
+          "type": "bool",
+          "default": true,
+          "label": "ByCompareTarget",
+          "description": "Manual source condition: $.GlobalModifiers[4].value._CallbackList[4].CallbackConfig[0].Predicate.PredicateList[0]"
+        },
+        "callback.87.condition.ByCurrentSkillName.14": {
+          "type": "bool",
+          "default": true,
+          "label": "ByCurrentSkillName",
+          "description": "Manual source condition: $.GlobalModifiers[4].value._CallbackList[4].CallbackConfig[0].Predicate.PredicateList[1]"
+        }
+      },
+      "bindings": {
+        "targets": ["Recipient"]
+      },
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "callback.87.condition.ByCompareTarget.13", "is": true},
+          "then": [
+            {
+              "op": "if",
+              "condition": {"op": "value", "name": "callback.87.condition.ByCurrentSkillName.14", "is": true},
+              "then": [
+                {
+                  "op": "if",
+                  "condition": {"op": "value", "name": "callback.87.condition.ByCurrentAudioLanguage.2", "is": true},
+                  "then": [
+                    {"op": "effect.create", "effects": ["callback.87.effect.4"], "as": "callback.87.effect.4"},
+                    {"op": "wait", "for": "callback.87.effect.4", "until": "accepted"}
+                  ],
+                  "elif": [
+                    {
+                      "condition": {"op": "value", "name": "callback.87.condition.ByCurrentAudioLanguage.5", "is": true},
+                      "then": [
+                        {"op": "effect.create", "effects": ["callback.87.effect.7"], "as": "callback.87.effect.7"},
+                        {"op": "wait", "for": "callback.87.effect.7", "until": "accepted"}
+                      ]
+                    },
+                    {
+                      "condition": {"op": "value", "name": "callback.87.condition.ByCurrentAudioLanguage.8", "is": true},
+                      "then": [
+                        {"op": "effect.create", "effects": ["callback.87.effect.10"], "as": "callback.87.effect.10"},
+                        {"op": "wait", "for": "callback.87.effect.10", "until": "accepted"}
+                      ]
+                    }
+                  ],
+                  "else": [
+                    {"op": "effect.create", "effects": ["callback.87.effect.12"], "as": "callback.87.effect.12"},
+                    {"op": "wait", "for": "callback.87.effect.12", "until": "accepted"}
+                  ]
+                }
+              ],
+              "else": []
+            }
+          ],
+          "else": []
+        },
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {
+          "op": "effect.remove",
+          "effects": ["callback.87.effect.4", "callback.87.effect.7", "callback.87.effect.10", "callback.87.effect.12"],
+          "optional": ["callback.87.effect.4", "callback.87.effect.7", "callback.87.effect.10", "callback.87.effect.12"],
+          "as": "callback.87.remove-effects"
+        },
+        {"op": "wait", "for": "callback.87.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {
+          "op": "effect.remove",
+          "effects": ["callback.87.effect.4", "callback.87.effect.7", "callback.87.effect.10", "callback.87.effect.12"],
+          "optional": ["callback.87.effect.4", "callback.87.effect.7", "callback.87.effect.10", "callback.87.effect.12"],
+          "as": "callback.87.remove-effects"
+        },
+        {"op": "wait", "for": "callback.87.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "MAvatar_Nihilux_10_Skill02_Buff_LingShi: OnListenAfterSkillUse",
+        "omissions": [
+          "Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects.",
+          "ModifierAttachEffect: manual bound-effect preview; modifier flags, collider-height offset, native mutex and automatic visibility/lifetime are not applied"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "callback.89": {
+      "inputs": {
+        "callback.89.condition.ByCurrentAudioLanguage.1": {
+          "type": "bool",
+          "default": false,
+          "label": "ByCurrentAudioLanguage",
+          "description": "Manual source condition: $.GlobalModifiers[4].value._CallbackList[2].CallbackConfig[0].Predicate"
+        },
+        "callback.89.condition.ByCurrentAudioLanguage.4": {
+          "type": "bool",
+          "default": false,
+          "label": "ByCurrentAudioLanguage",
+          "description": "Manual source condition: $.GlobalModifiers[4].value._CallbackList[2].CallbackConfig[0].FailedTaskList[0].Predicate"
+        },
+        "callback.89.condition.ByCurrentAudioLanguage.7": {
+          "type": "bool",
+          "default": false,
+          "label": "ByCurrentAudioLanguage",
+          "description": "Manual source condition: $.GlobalModifiers[4].value._CallbackList[2].CallbackConfig[0].FailedTaskList[0].FailedTaskList[0].Predicate"
+        }
+      },
+      "bindings": {
+        "targets": ["Recipient"]
+      },
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "callback.89.condition.ByCurrentAudioLanguage.1", "is": true},
+          "then": [
+            {"op": "effect.create", "effects": ["callback.89.effect.3"], "as": "callback.89.effect.3"},
+            {"op": "wait", "for": "callback.89.effect.3", "until": "accepted"}
+          ],
+          "elif": [
+            {
+              "condition": {"op": "value", "name": "callback.89.condition.ByCurrentAudioLanguage.4", "is": true},
+              "then": [
+                {"op": "effect.create", "effects": ["callback.89.effect.6"], "as": "callback.89.effect.6"},
+                {"op": "wait", "for": "callback.89.effect.6", "until": "accepted"}
+              ]
+            },
+            {
+              "condition": {"op": "value", "name": "callback.89.condition.ByCurrentAudioLanguage.7", "is": true},
+              "then": [
+                {"op": "effect.create", "effects": ["callback.89.effect.9"], "as": "callback.89.effect.9"},
+                {"op": "wait", "for": "callback.89.effect.9", "until": "accepted"}
+              ]
+            }
+          ],
+          "else": [
+            {"op": "effect.create", "effects": ["callback.89.effect.11"], "as": "callback.89.effect.11"},
+            {"op": "wait", "for": "callback.89.effect.11", "until": "accepted"}
+          ]
+        },
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {
+          "op": "effect.remove",
+          "effects": ["callback.89.effect.3", "callback.89.effect.6", "callback.89.effect.9", "callback.89.effect.11"],
+          "optional": ["callback.89.effect.3", "callback.89.effect.6", "callback.89.effect.9", "callback.89.effect.11"],
+          "as": "callback.89.remove-effects"
+        },
+        {"op": "wait", "for": "callback.89.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {
+          "op": "effect.remove",
+          "effects": ["callback.89.effect.3", "callback.89.effect.6", "callback.89.effect.9", "callback.89.effect.11"],
+          "optional": ["callback.89.effect.3", "callback.89.effect.6", "callback.89.effect.9", "callback.89.effect.11"],
+          "as": "callback.89.remove-effects"
+        },
+        {"op": "wait", "for": "callback.89.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "MAvatar_Nihilux_10_Skill02_Buff_LingShi: OnStack",
+        "omissions": [
+          "Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects.",
+          "ModifierAttachEffect: manual bound-effect preview; modifier flags, collider-height offset, native mutex and automatic visibility/lifetime are not applied"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "followup.0": {
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Nihilux_10_Skill21_Camera",
+          "run": [
+            {"op": "wait", "for": "followup.0.clock.1", "progress": 0.7210000006}
+          ],
+          "join": true
+        },
+        {"op": "animation", "state": "Insert", "end": -1.0, "track": {"logic": 3}, "as": "followup.0.clock.1"},
+        {"op": "wait", "for": "followup.0.clock.1", "until": "animation_end"},
+        {"op": "effect.create", "effects": ["followup.0.effect.21"], "as": "followup.0.effect.21"},
+        {"op": "wait", "for": "followup.0.effect.21", "until": "accepted"},
+        {"op": "effect.create", "effects": ["followup.0.effect.25"], "as": "followup.0.effect.25"},
+        {"op": "wait", "for": "followup.0.effect.25", "until": "accepted"},
+        {"op": "wait", "for": "followup.0.clock.1", "progress": 0.1678320004},
+        {"op": "effect.create", "effects": ["followup.0.effect.26"], "as": "followup.0.effect.26"},
+        {"op": "wait", "for": "followup.0.effect.26", "until": "accepted"},
+        {"op": "wait", "for": "followup.0.clock.1", "progress": 0.1700000001},
+        {"op": "effect.create", "effects": ["followup.0.effect.27"], "as": "followup.0.effect.27"},
+        {"op": "wait", "for": "followup.0.effect.27", "until": "accepted"},
+        {"op": "wait", "for": "followup.0.clock.1", "progress": 0.1748000003},
+        {"op": "wait", "for": "followup.0.clock.1", "progress": 0.6600000006},
+        {"op": "wait", "for": "followup.0.clock.1", "progress": 0.6670000001},
+        {"op": "wait", "for": "followup.0.clock.1", "progress": 0.6923000006},
+        {"op": "wait", "for": "followup.0.clock.1", "progress": 0.7030000004},
+        {
+          "op": "hit",
+          "target": "PreviewTarget",
+          "animation": "Hit",
+          "direction": {},
+          "effect": {"path": "", "minimum_interval": 0.0500000007, "maximum_count": 1},
+          "allow_position": true,
+          "as": "followup.0.hit.36"
+        },
+        {"op": "wait", "for": "followup.0.hit.36", "until": "accepted"},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {
+          "op": "effect.remove",
+          "effects": ["followup.0.effect.21", "followup.0.effect.25", "followup.0.effect.26", "followup.0.effect.27"],
+          "optional": ["followup.0.effect.21", "followup.0.effect.25", "followup.0.effect.26", "followup.0.effect.27"],
+          "as": "followup.0.remove-effects"
+        },
+        {"op": "wait", "for": "followup.0.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {
+          "op": "effect.remove",
+          "effects": ["followup.0.effect.21", "followup.0.effect.25", "followup.0.effect.26", "followup.0.effect.27"],
+          "optional": ["followup.0.effect.21", "followup.0.effect.25", "followup.0.effect.26", "followup.0.effect.27"],
+          "as": "followup.0.remove-effects"
+        },
+        {"op": "wait", "for": "followup.0.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "Avatar_Nihilux_10_Skill21_Phase01",
+        "omissions": [
+          "Manual follow-up presentation; no native action queue or combat condition evaluation.",
+          "retained visual sequence",
+          "HideModifierEffect: not included in the visual sequence projection",
+          "AlignTargetToTeamCenter: not included in the visual sequence projection",
+          "HideLevelStage: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "SetSkillTargetFormationByPos: not included in the visual sequence projection",
+          "SetEntityVisible: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "TriggerEffect: effect needs a non-owned target, dynamic path, or Timeline attachment",
+          "ScaleCharacterModel: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "DamageByAttackProperty: hit presentation not projected: hit requires an explicit callback/attacker binding: OverrideAttacker",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "WaitTimelineFinish: not included in the visual sequence projection",
+          "SetEntityVisible: serial step depends on an unavailable source clock; no timing is inferred",
+          "ScaleCharacterModel: serial step depends on an unavailable source clock; no timing is inferred",
+          "TriggerAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "LookAt: serial step depends on an unavailable source clock; no timing is inferred",
+          "HideLevelStage: serial step depends on an unavailable source clock; no timing is inferred",
+          "SetTeamFormation: serial step depends on an unavailable source clock; no timing is inferred",
+          "HideModifierEffect: serial step depends on an unavailable source clock; no timing is inferred",
+          "SetTargetAssetPreloadState: serial step depends on an unavailable source clock; no timing is inferred"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "skill.4.perform": {
+      "inputs": {
+        "event": {
+          "type": "integer",
+          "default": 0,
+          "label": "Callback",
+          "choices": [
+            {"value": 0, "label": "Avatar_Nihilux_10_Passive_Insert_Phase01"}
+          ]
+        }
+      },
+      "requires": [
+        {"op": "number", "name": "event", "compare": "ge", "value": 0},
+        {"op": "number", "name": "event", "compare": "lt", "value": 1}
+      ],
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Nihilux_10_Passive_Insert_Phase02",
+          "run": [
+            {"op": "wait", "for": "followup.1.clock.1", "progress": 0.6340000003},
+            {"op": "wait", "for": "followup.1.clock.1", "progress": 0.7000000006}
+          ],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Nihilux_10_Passive_Insert_Camera",
+          "run": [],
+          "join": true
+        },
+        {"op": "animation", "state": "Passive", "end": -1.0, "track": {"logic": 3}, "as": "followup.1.clock.1"},
+        {"op": "wait", "for": "followup.1.clock.1", "until": "animation_end"},
+        {"op": "wait", "for": "followup.1.clock.1", "progress": 0.6340000003},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "SkillP01",
+        "omissions": [
+          "Manual visual callback selection; no native combat modifier or automatic event simulation.",
+          "event: 0=Avatar_Nihilux_10_Passive_Insert_Phase01",
+          "LevelAudioState: not included in the visual sequence projection",
+          "EJPOBFLDHIA: not included in the visual sequence projection",
+          "LODGEMFGOHI: not included in the visual sequence projection",
+          "AutoUseUltraSkill: not included in the visual sequence projection",
+          "HideLevelStage: not included in the visual sequence projection",
+          "TriggerEffect: effect needs a non-owned target, dynamic path, or Timeline attachment",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "LoopExecuteTaskListWithInterval: not included in the visual sequence projection",
+          "AKNGLJOKHJN: not included in the visual sequence projection",
+          "SetSkillTargetFormationByPos: not included in the visual sequence projection",
+          "WaitTimelineFinish: not included in the visual sequence projection",
+          "AKNGLJOKHJN: serial step depends on an unavailable source clock; no timing is inferred",
+          "TriggerAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "RemoveEffect: serial step depends on an unavailable source clock; no timing is inferred",
+          "LookAt: serial step depends on an unavailable source clock; no timing is inferred",
+          "HideLevelStage: serial step depends on an unavailable source clock; no timing is inferred",
+          "SetTeamFormation: serial step depends on an unavailable source clock; no timing is inferred"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "skill.7.perform": {"use": "common.elemental.responses", "next": "rest"},
+    "preview.hit": {
+      "inputs": {
+        "kind": {
+          "type": "text",
+          "default": "Hit",
+          "label": "Hit type",
+          "choices": [
+            {"value": "Hit", "label": "Hit"},
+            {"value": "Hit_H", "label": "Hit_H"}
+          ]
+        }
+      },
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "kind", "is": "Hit_H"},
+          "then": [
+            {"op": "hit", "target": "Caster", "animation": "Hit_H", "as": "hit-heavy"},
+            {"op": "wait", "for": "hit-heavy"}
+          ],
+          "else": [
+            {"op": "hit", "target": "Caster", "animation": "Hit", "as": "hit"},
+            {"op": "wait", "for": "hit"}
+          ]
+        }
+      ],
+      "next": "rest",
+      "presentation": {"label": "Hit"},
+      "tags": ["manual-visual-callback"]
+    },
+    "source.5": {
+      "requires": [
+        {
+          "op": "unresolved",
+          "source": "Config/ConfigCharacter/Avatar/Avatar_Nihilux_10_Config.json:$.SkillList[5]",
+          "detail": "Retained activation has no enabled projected task; empty source is not a visual action"
+        }
+      ],
+      "trigger": "internal",
+      "run": [],
+      "presentation": {
+        "label": "SkillAha",
+        "listed": false,
+        "omissions": ["Retained activation has no enabled projected task; empty source is not a visual action"]
+      },
+      "tags": ["retained-source"]
+    },
+    "source.6": {
+      "requires": [
+        {
+          "op": "unresolved",
+          "source": "Config/ConfigCharacter/Avatar/Avatar_Nihilux_10_Config.json:$.SkillList[6]",
+          "detail": "Retained source has no independently bound presentation unit"
+        }
+      ],
+      "trigger": "internal",
+      "run": [],
+      "presentation": {
+        "label": "SkillAeon",
+        "listed": false,
+        "omissions": ["Retained source has no independently bound presentation unit"]
+      },
+      "tags": ["retained-source"]
+    },
+    "source.8": {
+      "requires": [
+        {
+          "op": "unresolved",
+          "source": "Config/ConfigCharacter/Avatar/Avatar_Nihilux_10_Config.json:$.SkillList[8]",
+          "detail": "Retained source has no independently bound presentation unit"
+        }
+      ],
+      "trigger": "internal",
+      "run": [],
+      "presentation": {
+        "label": "SkillMaze",
+        "listed": false,
+        "omissions": ["Retained source has no independently bound presentation unit"]
+      },
+      "tags": ["retained-source"]
+    },
+    "@receiver-clear/callback.180.receiver-property.3": {
+      "requires": [
+        {"op": "state", "name": "common.elemental.frozen-hit"}
+      ],
+      "mode": "input",
+      "run": [
+        {"op": "state.exit", "name": "common.elemental.frozen-hit", "only_caster": true, "as": "clear"},
+        {"op": "wait", "for": "clear"}
+      ],
+      "presentation": {
+        "label": "Clear hit effect override",
+        "kind": "setting",
+        "contexts": ["common.elemental.frozen-hit"]
+      },
+      "tags": ["visual-receiver-clear"]
+    }
+  },
+  "functions": {
+    "@return.rest.pose": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "rest.pose.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "rest.pose"
+      }
+    ],
+    "@return.return.pose": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "return.pose.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "return.pose"
+      }
+    ]
+  },
+  "states": {
+    "common.elemental.frozen-hit": {
+      "instances": {"name": "callback.180.receiver-property.3", "receiver": "Recipient", "match": "receiver_caster"}
+    }
+  },
+  "resources": {
+    "effects": {
+      "skill.2.effect.9": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Nihilux_10/Eff_Avatar_Nihilux_10_Skill03_Aha_01_Fade.prefab",
+        "target": "Caster",
+        "simulate_immediately": true,
+        "unique_name": "Eff_Avatar_Nihilux_10_Skill03_Aha_01_Fade"
+      },
+      "skill.2.effect.10": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Nihilux_10/Eff_Avatar_Nihilux_10_Skill03_PaperBook_01_Fade.prefab",
+        "target": "Caster",
+        "simulate_immediately": true,
+        "unique_name": "Eff_Avatar_Nihilux_10_Skill03_PaperBook_01_Fade"
+      },
+      "skill.2.effect.16": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Nihilux_10/Eff_Avatar_Nihilux_10_Skill03_EnemyFollow_Left_1.prefab",
+        "target": "Caster",
+        "simulate_immediately": true,
+        "unique_name": "Eff_Avatar_Nihilux_10_Skill03_EnemyFollow_Left_1"
+      },
+      "skill.2.effect.17": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Nihilux_10/Eff_Avatar_Nihilux_10_Skill03_EnemyFollow_Left.prefab",
+        "target": "Caster",
+        "simulate_immediately": true,
+        "unique_name": "Eff_Avatar_Nihilux_10_Skill03_EnemyFollow_Left"
+      },
+      "skill.2.effect.18": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Nihilux_10/Eff_Avatar_Nihilux_10_Skill03_EnemyFollow_Right_1.prefab",
+        "target": "Caster",
+        "simulate_immediately": true,
+        "unique_name": "Eff_Avatar_Nihilux_10_Skill03_EnemyFollow_Right_1"
+      },
+      "skill.2.effect.19": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Nihilux_10/Eff_Avatar_Nihilux_10_Skill03_EnemyFollow_Right.prefab",
+        "target": "Caster",
+        "simulate_immediately": true,
+        "unique_name": "Eff_Avatar_Nihilux_10_Skill03_EnemyFollow_Right"
+      },
+      "callback.87.effect.4": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Nihilux_10/Eff_Avatar_Nihilux_10_Skill02_UiLoop_CN.prefab",
+        "target": "Recipient",
+        "attach_to_target": true,
+        "attach_point": "HeadPoint"
+      },
+      "callback.87.effect.7": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Nihilux_10/Eff_Avatar_Nihilux_10_Skill02_UiLoop_EN.prefab",
+        "target": "Recipient",
+        "attach_to_target": true,
+        "attach_point": "HeadPoint"
+      },
+      "callback.87.effect.10": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Nihilux_10/Eff_Avatar_Nihilux_10_Skill02_UiLoop_JP.prefab",
+        "target": "Recipient",
+        "attach_to_target": true,
+        "attach_point": "HeadPoint"
+      },
+      "callback.87.effect.12": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Nihilux_10/Eff_Avatar_Nihilux_10_Skill02_UiLoop_KR.prefab",
+        "target": "Recipient",
+        "attach_to_target": true,
+        "attach_point": "HeadPoint"
+      },
+      "callback.89.effect.3": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Nihilux_10/Eff_Avatar_Nihilux_10_Skill02_UiLoop_CN.prefab",
+        "target": "Recipient",
+        "attach_to_target": true,
+        "attach_point": "HeadPoint"
+      },
+      "callback.89.effect.6": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Nihilux_10/Eff_Avatar_Nihilux_10_Skill02_UiLoop_EN.prefab",
+        "target": "Recipient",
+        "attach_to_target": true,
+        "attach_point": "HeadPoint"
+      },
+      "callback.89.effect.9": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Nihilux_10/Eff_Avatar_Nihilux_10_Skill02_UiLoop_JP.prefab",
+        "target": "Recipient",
+        "attach_to_target": true,
+        "attach_point": "HeadPoint"
+      },
+      "callback.89.effect.11": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Nihilux_10/Eff_Avatar_Nihilux_10_Skill02_UiLoop_KR.prefab",
+        "target": "Recipient",
+        "attach_to_target": true,
+        "attach_point": "HeadPoint"
+      },
+      "followup.0.effect.21": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Nihilux_10/Eff_Avatar_Nihilux_10_Skill21_eff_01.prefab",
+        "target": "Caster",
+        "simulate_immediately": true,
+        "unique_name": "Eff_Avatar_Nihilux_10_Skill21_eff_01"
+      },
+      "followup.0.effect.25": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Nihilux_10/Eff_Avatar_Nihilux_10_Skill21_cam1.prefab",
+        "target": "Caster",
+        "simulate_immediately": true,
+        "unique_name": "Eff_Avatar_Nihilux_10_Skill21_cam1"
+      },
+      "followup.0.effect.26": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Nihilux_10/Eff_Avatar_Nihilux_10_Skill21_scene.prefab",
+        "target": "Caster",
+        "simulate_immediately": true,
+        "unique_name": "Eff_Avatar_Nihilux_10_Skill21_scene"
+      },
+      "followup.0.effect.27": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Nihilux_10/Eff_Avatar_Nihilux_10_Skill21_eff_02.prefab",
+        "target": "Caster",
+        "simulate_immediately": true,
+        "unique_name": "Eff_Avatar_Nihilux_10_Skill21_eff_02"
+      }
+    }
+  }
+}

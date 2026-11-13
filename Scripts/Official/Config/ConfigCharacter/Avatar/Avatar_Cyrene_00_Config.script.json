@@ -1,0 +1,1028 @@
+{
+  "format": "hksr.script",
+  "id": "official-scripts:Config/ConfigCharacter/Avatar/Avatar_Cyrene_00_Config.json",
+  "applies_to": "Config/ConfigCharacter/Avatar/Avatar_Cyrene_00_Config.json",
+  "default": true,
+  "imports": ["Common/Elemental.json"],
+  "defaults": {
+    "targets": {
+      "PreviewTarget": {
+        "local_position": [0, 0, 6]
+      },
+      "callback.1182.target.AllTeamCenter": {"alias": "Caster"}
+    }
+  },
+  "actions": {
+    "base.rest": {
+      "trigger": "internal",
+      "run": [
+        {"op": "call", "function": "@return.rest.pose"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["stable-return", "idle-provider"]
+    },
+    "base.skill.0.perform": {
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Cyrene_00_Skill01_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Cyrene_00_Skill01_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.0.clock.1", "progress": 0.2489999996},
+            {"op": "wait", "for": "skill.0.clock.1", "progress": 0.3200000002}
+          ],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill01", "end": -1.0, "track": {"logic": 3}, "as": "skill.0.clock.1"},
+        {"op": "wait", "for": "skill.0.clock.1", "until": "animation_end"},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.6550000002},
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill01",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "FireProjectile: not included in the visual sequence projection",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "RadialBlurEffect: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "LookAt: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.0.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Cyrene_00_Config.json", "skill": 0, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "base.skill.1.perform": {
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Cyrene_00_Skill02_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Cyrene_00_Skill02_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.6100000005},
+            {"op": "effect.create", "effects": ["base.skill.1.effect.15"], "as": "skill.1.effect.15"},
+            {"op": "wait", "for": "skill.1.effect.15", "until": "accepted"},
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.9400000008},
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.9900000009}
+          ],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill02", "end": 1.0, "track": {"logic": 3}, "as": "skill.1.clock.1"},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 1.0},
+        {
+          "op": "effect.remove_event",
+          "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Cyrene_00/Eff_Avatar_Cyrene_00_Skill02_Scence_03.prefab",
+          "as": "skill.1.remove.22.0"
+        },
+        {"op": "wait", "for": "skill.1.remove.22.0", "until": "accepted"},
+        {"op": "join"},
+        {"op": "effect.remove", "effects": ["base.skill.1.effect.15"], "optional": ["base.skill.1.effect.15"], "as": "skill.1.remove-effects"},
+        {"op": "wait", "for": "skill.1.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "effect.remove", "effects": ["base.skill.1.effect.15"], "optional": ["base.skill.1.effect.15"], "as": "skill.1.remove-effects"},
+        {"op": "wait", "for": "skill.1.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill02",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "HideLevelStage: not included in the visual sequence projection",
+          "SetTeamFormation: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "WaitTimelineFinish: not included in the visual sequence projection",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "HideFieldEffect: not included in the visual sequence projection",
+          "TryStartConnectUltraSkillFrameCapture: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "PlayTimeline: not included in the visual sequence projection",
+          "StopTimeline: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.1.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Cyrene_00_Config.json", "skill": 1, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "base.skill.2.perform": {
+      "inputs": {
+        "skill.2.condition.ByIsGenderType.49": {"type": "bool", "default": false, "label": "ByIsGenderType", "description": "Manual source condition: $.AbilityList[7].OnStart[16].Predicate"}
+      },
+      "run": [
+        {"op": "attachment.visibility", "points": ["Effect_04"], "visible": false, "as": "skill.2.attachment.5"},
+        {"op": "wait", "for": "skill.2.attachment.5", "until": "accepted"},
+        {"op": "animation", "state": "Skill03_A", "end": -1.0, "track": {"logic": 3}, "as": "skill.2.clock.1"},
+        {"op": "wait", "for": "skill.2.clock.1", "until": "animation_end"},
+        {
+          "op": "start",
+          "id": "Avatar_Cyrene_00_Skill03_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Cyrene_00_Skill03_Phase02",
+          "run": [],
+          "join": true
+        },
+        {"op": "wait", "for": "skill.2.clock.1", "progress": 0.2705880012},
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "skill.2.condition.ByIsGenderType.49", "is": true},
+          "then": [
+            {"op": "effect.create", "effects": ["base.skill.2.effect.50"], "as": "skill.2.effect.50"},
+            {"op": "wait", "for": "skill.2.effect.50", "until": "accepted"}
+          ],
+          "else": [
+            {"op": "effect.create", "effects": ["base.skill.2.effect.51"], "as": "skill.2.effect.51"},
+            {"op": "wait", "for": "skill.2.effect.51", "until": "accepted"}
+          ]
+        },
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {
+          "op": "effect.remove",
+          "effects": ["base.skill.2.effect.50", "base.skill.2.effect.51"],
+          "optional": ["base.skill.2.effect.50", "base.skill.2.effect.51"],
+          "as": "skill.2.remove-effects"
+        },
+        {"op": "wait", "for": "skill.2.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {
+          "op": "effect.remove",
+          "effects": ["base.skill.2.effect.50", "base.skill.2.effect.51"],
+          "optional": ["base.skill.2.effect.50", "base.skill.2.effect.51"],
+          "as": "skill.2.remove-effects"
+        },
+        {"op": "wait", "for": "skill.2.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill03",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "SetComponentAssetLoadState: not included in the visual sequence projection",
+          "SetTargetCustomAssetPreloadState: not included in the visual sequence projection",
+          "HideLevelStage: not included in the visual sequence projection",
+          "GlobalMainIntensityEffect: not included in the visual sequence projection",
+          "AlignTargetToTeamCenter: not included in the visual sequence projection",
+          "SetTeamFormation: not included in the visual sequence projection",
+          "DisableCharacterVO: not included in the visual sequence projection",
+          "TriggerAdditiveAnimState: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "TriggerCustomString: not included in the visual sequence projection",
+          "TriggerUINotify: not included in the visual sequence projection",
+          "LMHLABELCDJ: not included in the visual sequence projection",
+          "WaitTimelineFinish: not included in the visual sequence projection",
+          "CreateServant: serial step depends on an unavailable source clock; no timing is inferred",
+          "FCCIDFIMONC: serial step depends on an unavailable source clock; no timing is inferred",
+          "LAPKGFCDPCD: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitFrameForBattleServer: serial step depends on an unavailable source clock; no timing is inferred",
+          "PredicateTaskList: serial step depends on an unavailable source clock; no timing is inferred",
+          "SetComponentAssetLoadState: serial step depends on an unavailable source clock; no timing is inferred",
+          "SetAttachmentVisibility: serial step depends on an unavailable source clock; no timing is inferred",
+          "LevelAudioState: serial step depends on an unavailable source clock; no timing is inferred",
+          "SkillPerformFinish: serial step depends on an unavailable source clock; no timing is inferred",
+          "TriggerAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "TriggerEffect: serial step depends on an unavailable source clock; no timing is inferred",
+          "RemoveEffect: serial step depends on an unavailable source clock; no timing is inferred",
+          "StopTimeline: serial step depends on an unavailable source clock; no timing is inferred",
+          "RemoveGlobalTimeSlow: serial step depends on an unavailable source clock; no timing is inferred",
+          "DisableCharacterVO: serial step depends on an unavailable source clock; no timing is inferred",
+          "TriggerAdditiveAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "TriggerAbility: serial step depends on an unavailable source clock; no timing is inferred",
+          "SetEntityVisible: serial step depends on an unavailable source clock; no timing is inferred",
+          "GlobalMainIntensityEffect: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitTimelineFinish: serial step depends on an unavailable source clock; no timing is inferred",
+          "wait_request: wait depends on an omitted source producer"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.2.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Cyrene_00_Config.json", "skill": 2, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "base.skill.3.perform": {
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Cyrene_00_Skill31_Phase02",
+          "run": [
+            {"op": "attachment.visibility", "points": ["Weapon"], "visible": false, "as": "skill.3.attachment.9"},
+            {"op": "wait", "for": "skill.3.attachment.9", "until": "accepted"}
+          ],
+          "join": true
+        },
+        {"op": "effect.create", "effects": ["base.skill.3.effect.28"], "as": "skill.3.effect.28"},
+        {"op": "wait", "for": "skill.3.effect.28", "until": "accepted"},
+        {
+          "op": "start",
+          "id": "Avatar_Cyrene_00_Skill31_Camera",
+          "run": [],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill03_2", "end": -1.0, "track": {"logic": 3}, "as": "skill.3.clock.1"},
+        {"op": "wait", "for": "skill.3.clock.1", "until": "animation_end"},
+        {"op": "wait", "for": "skill.3.clock.1", "progress": 0.4950000001},
+        {"op": "effect.create", "effects": ["base.skill.3.effect.31"], "as": "skill.3.effect.31"},
+        {"op": "wait", "for": "skill.3.effect.31", "until": "accepted"},
+        {"op": "wait", "for": "skill.3.clock.1", "progress": 1.0},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {
+          "op": "effect.remove",
+          "effects": ["base.skill.3.effect.28", "base.skill.3.effect.31"],
+          "optional": ["base.skill.3.effect.28", "base.skill.3.effect.31"],
+          "as": "skill.3.remove-effects"
+        },
+        {"op": "wait", "for": "skill.3.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {
+          "op": "effect.remove",
+          "effects": ["base.skill.3.effect.28", "base.skill.3.effect.31"],
+          "optional": ["base.skill.3.effect.28", "base.skill.3.effect.31"],
+          "as": "skill.3.remove-effects"
+        },
+        {"op": "wait", "for": "skill.3.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill31",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "SetTargetCustomAssetPreloadState: not included in the visual sequence projection",
+          "AlignTargetToTeamCenter: not included in the visual sequence projection",
+          "SetTeamFormation: not included in the visual sequence projection",
+          "HideLevelStage: not included in the visual sequence projection",
+          "WaitTimelineFinish: not included in the visual sequence projection",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "SetEntityVisible: serial step depends on an unavailable source clock; no timing is inferred",
+          "SetAttachmentVisibility: serial step depends on an unavailable source clock; no timing is inferred",
+          "FCCIDFIMONC: serial step depends on an unavailable source clock; no timing is inferred",
+          "LAPKGFCDPCD: serial step depends on an unavailable source clock; no timing is inferred",
+          "PredicateTaskList: serial step depends on an unavailable source clock; no timing is inferred",
+          "SkillPerformFinish: serial step depends on an unavailable source clock; no timing is inferred",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "LevelAudioState: not included in the visual sequence projection",
+          "GlobalMainIntensityEffect: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.3.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Cyrene_00_Config.json", "skill": 3, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "base.skill.4.perform": {
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Cyrene_00_Skill11_Charm_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Cyrene_00_Skill11_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Cyrene_00_Skill11_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.4.clock.1", "progress": 0.0779999995},
+            {"op": "wait", "for": "skill.4.clock.1", "progress": 0.4220000002},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit",
+              "direction": {},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Cyrene_00/Eff_Avatar_Cyrene_00_Skill011_Hit01.prefab",
+                "height": 1.2000000476837158,
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.4.hit.45"
+            },
+            {"op": "wait", "for": "skill.4.hit.45", "until": "accepted"},
+            {"op": "wait", "for": "skill.4.clock.1", "progress": 0.6000000005},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit",
+              "direction": {},
+              "effect": {"path": "", "height": 1.2000000476837158, "minimum_interval": 0.0500000007, "maximum_count": 1},
+              "allow_position": true,
+              "as": "skill.4.hit.48"
+            },
+            {"op": "wait", "for": "skill.4.hit.48", "until": "accepted"},
+            {"op": "wait", "for": "skill.4.clock.1", "progress": 0.8050000004}
+          ],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill11", "end": 0.0, "track": {"logic": 3}, "as": "skill.4.clock.1"},
+        {"op": "wait", "for": "skill.4.clock.1", "progress": 0.0},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill11",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "PlayTimeline: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "LookAt: not included in the visual sequence projection",
+          "EnableFieldEffectSoftZOffset: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "GlobalMainIntensityEffect: not included in the visual sequence projection",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "LoopExecuteTaskListWithInterval: not included in the visual sequence projection",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.4.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Cyrene_00_Config.json", "skill": 4, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "base.callback.1188": {
+      "bindings": {
+        "targets": ["Recipient"]
+      },
+      "run": [
+        {"op": "state.enter", "name": "base.callback.1188.receiver-property.9", "as": "callback.1188.receiver-property.9"},
+        {"op": "wait", "for": "callback.1188.receiver-property.9"},
+        {"op": "state.enter", "name": "base.callback.1188.receiver-property.11", "as": "callback.1188.receiver-property.11"},
+        {"op": "wait", "for": "callback.1188.receiver-property.11"},
+        {"op": "state.exit", "name": "base.callback.1188.phase.13", "as": "callback.1188.phase.13.phase-replace.0"},
+        {"op": "wait", "for": "callback.1188.phase.13.phase-replace.0"},
+        {"op": "state.exit", "name": "base.callback.1189.phase.1", "as": "callback.1188.phase.13.phase-replace.1"},
+        {"op": "wait", "for": "callback.1188.phase.13.phase-replace.1"},
+        {
+          "op": "scope.exit",
+          "name": "compiled.0.phase/GlobalModifiers[4].value._CallbackList[0].CallbackConfig[0]",
+          "as": "callback.1188.phase.13.phase-replace.2"
+        },
+        {"op": "wait", "for": "callback.1188.phase.13.phase-replace.2", "until": "accepted"},
+        {
+          "op": "scope.exit",
+          "name": "compiled.0.phase/GlobalModifiers[4].value._CallbackList[1].CallbackConfig[10]",
+          "as": "callback.1188.phase.13.phase-replace.3"
+        },
+        {"op": "wait", "for": "callback.1188.phase.13.phase-replace.3", "until": "accepted"},
+        {"op": "state.enter", "name": "base.callback.1188.phase.13", "as": "callback.1188.phase.13"},
+        {"op": "wait", "for": "callback.1188.phase.13"},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "MAvatar_Cyrene_00_Skill03: OnStack",
+        "omissions": [
+          "Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects.",
+          "SetControlSkillMapping: Skill mapping is configuration, not a request to play its destination ready pose; native mapping is not executed",
+          "SetCustomLocationConfig: not included in the visual sequence projection",
+          "SetResilience: owned visual receiver override only; no shield value, expiry, native modifier or automatic death/break transition",
+          "ModifierOverrideOnHitEffect: owned visual receiver override only; no shield value, expiry, native modifier or automatic death/break transition"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "base.callback.1189": {
+      "inputs": {
+        "enabled": {"type": "bool", "default": true, "label": "Enabled"}
+      },
+      "mode": "input",
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "enabled", "is": true},
+          "then": [
+            {"op": "state.exit", "name": "base.callback.1188.phase.13", "as": "setting.1.phase-replace.0"},
+            {"op": "wait", "for": "setting.1.phase-replace.0"},
+            {"op": "state.exit", "name": "base.callback.1189.phase.1", "as": "setting.1.phase-replace.1"},
+            {"op": "wait", "for": "setting.1.phase-replace.1"},
+            {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[4].value._CallbackList[0].CallbackConfig[0]", "as": "setting.1.phase-replace.2"},
+            {"op": "wait", "for": "setting.1.phase-replace.2", "until": "accepted"},
+            {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[4].value._CallbackList[1].CallbackConfig[10]", "as": "setting.1.phase-replace.3"},
+            {"op": "wait", "for": "setting.1.phase-replace.3", "until": "accepted"},
+            {"op": "state.enter", "name": "base.callback.1189.phase.1", "as": "setting.1"},
+            {"op": "wait", "for": "setting.1"}
+          ],
+          "else": [
+            {"op": "state.exit", "name": "base.callback.1189.phase.1", "as": "setting.1"},
+            {"op": "wait", "for": "setting.1"}
+          ]
+        }
+      ],
+      "presentation": {
+        "label": "MAvatar_Cyrene_00_Skill03: OnDestroy",
+        "kind": "setting",
+        "contexts": ["base.callback.1189.phase.1"],
+        "omissions": ["RemoveEffect: effect removal has no owned target binding"]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "base.skill.5.perform": {
+      "inputs": {
+        "event": {
+          "type": "integer",
+          "default": 0,
+          "label": "Callback",
+          "choices": [
+            {"value": 0, "label": "MAvatar_Cyrene_00_PassiveSkill: OnBeforeBeingHit"}
+          ]
+        },
+        "callback.1163.condition.ByIsContainModifier.1": {
+          "type": "bool",
+          "default": true,
+          "label": "ByIsContainModifier",
+          "description": "Manual source condition: $.AbilityList[12].Modifiers[1].value._CallbackList[0].CallbackConfig[0].Predicate"
+        }
+      },
+      "requires": [
+        {"op": "number", "name": "event", "compare": "ge", "value": 0},
+        {"op": "number", "name": "event", "compare": "lt", "value": 1}
+      ],
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "callback.1163.condition.ByIsContainModifier.1", "is": true},
+          "then": [
+            {"op": "animation.layer_weight", "layer": "HitAdditive", "weight": 0.0, "as": "callback.1163.layer-weight.2"},
+            {"op": "wait", "for": "callback.1163.layer-weight.2", "until": "accepted"}
+          ],
+          "else": []
+        },
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "SkillP01",
+        "omissions": [
+          "Manual visual callback selection; no native combat modifier or automatic event simulation.",
+          "event: 0=MAvatar_Cyrene_00_PassiveSkill: OnBeforeBeingHit",
+          "LevelAudioState: not included in the visual sequence projection",
+          "SetComponentAssetLoadState: not included in the visual sequence projection",
+          "AutoUseUltraSkill: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "base.skill.6.perform": {
+      "inputs": {
+        "event": {
+          "type": "integer",
+          "default": 0,
+          "label": "Callback",
+          "choices": [
+            {"value": 0, "label": "MAvatar_Cyrene_00_Skill02_Buff_Main: OnStack"}
+          ]
+        },
+        "callback.1182.condition.ByIsContainModifier.1": {
+          "type": "bool",
+          "default": false,
+          "label": "ByIsContainModifier",
+          "description": "Manual source condition: $.GlobalModifiers[2].value._CallbackList[2].CallbackConfig[0].Predicate"
+        }
+      },
+      "requires": [
+        {"op": "number", "name": "event", "compare": "ge", "value": 0},
+        {"op": "number", "name": "event", "compare": "lt", "value": 1}
+      ],
+      "bindings": {
+        "targets": ["callback.1182.target.AllTeamCenter"]
+      },
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "callback.1182.condition.ByIsContainModifier.1", "is": true},
+          "then": [
+            {"op": "effect.create", "effects": ["base.callback.1182.effect.4"], "as": "callback.1182.effect.4"},
+            {"op": "wait", "for": "callback.1182.effect.4", "until": "accepted"}
+          ],
+          "else": [
+            {"op": "effect.create", "effects": ["base.callback.1182.effect.6"], "as": "callback.1182.effect.6"},
+            {"op": "wait", "for": "callback.1182.effect.6", "until": "accepted"}
+          ]
+        },
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {
+          "op": "effect.remove",
+          "effects": ["base.callback.1182.effect.4", "base.callback.1182.effect.6"],
+          "optional": ["base.callback.1182.effect.4", "base.callback.1182.effect.6"],
+          "as": "callback.1182.remove-effects"
+        },
+        {"op": "wait", "for": "callback.1182.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {
+          "op": "effect.remove",
+          "effects": ["base.callback.1182.effect.4", "base.callback.1182.effect.6"],
+          "optional": ["base.callback.1182.effect.4", "base.callback.1182.effect.6"],
+          "as": "callback.1182.remove-effects"
+        },
+        {"op": "wait", "for": "callback.1182.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "SkillMaze",
+        "omissions": [
+          "Manual visual callback selection; no native combat modifier or automatic event simulation.",
+          "event: 0=MAvatar_Cyrene_00_Skill02_Buff_Main: OnStack",
+          "RemoveEffect: effect removal has no owned target binding",
+          "TriggerEffect: callback target AllTeamCenter is a selected owned actor input, defaulting to this actor; native event payload is not assumed"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "base.skill.7.perform": {"use": "common.elemental.responses", "next": "base.rest"},
+    "base.preview.hit": {
+      "inputs": {
+        "kind": {
+          "type": "text",
+          "default": "Hit",
+          "label": "Hit type",
+          "choices": [
+            {"value": "Hit", "label": "Hit"},
+            {"value": "Hit_H", "label": "Hit_H"}
+          ]
+        }
+      },
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "kind", "is": "Hit_H"},
+          "then": [
+            {"op": "hit", "target": "Caster", "animation": "Hit_H", "as": "hit-heavy"},
+            {"op": "wait", "for": "hit-heavy"}
+          ],
+          "else": [
+            {"op": "hit", "target": "Caster", "animation": "Hit", "as": "hit"},
+            {"op": "wait", "for": "hit"}
+          ]
+        }
+      ],
+      "next": "base.rest",
+      "presentation": {"label": "Hit"},
+      "tags": ["manual-visual-callback"]
+    },
+    "compiled.0.reset_phase": {
+      "mode": "input",
+      "run": [
+        {"op": "state.exit", "name": "base.callback.1188.phase.13", "as": "phase.reset.0"},
+        {"op": "wait", "for": "phase.reset.0"},
+        {"op": "state.exit", "name": "base.callback.1189.phase.1", "as": "phase.reset.1"},
+        {"op": "wait", "for": "phase.reset.1"},
+        {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[4].value._CallbackList[0].CallbackConfig[0]", "as": "phase.reset.2"},
+        {"op": "wait", "for": "phase.reset.2", "until": "accepted"},
+        {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[4].value._CallbackList[1].CallbackConfig[10]", "as": "phase.reset.3"},
+        {"op": "wait", "for": "phase.reset.3", "until": "accepted"}
+      ],
+      "presentation": {
+        "kind": "setting",
+        "contexts": [
+          "base.callback.1188.phase.13",
+          "base.callback.1189.phase.1",
+          "compiled.0.phase/GlobalModifiers[4].value._CallbackList[0].CallbackConfig[0]",
+          "compiled.0.phase/GlobalModifiers[4].value._CallbackList[1].CallbackConfig[10]"
+        ]
+      },
+      "tags": ["visual-phase-reset"]
+    },
+    "compiled.0.select/GlobalModifiers[4].value._CallbackList[0].CallbackConfig[0]": {
+      "run": [
+        {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[4].value._CallbackList[0].CallbackConfig[0]", "as": "phase.select.0"},
+        {"op": "wait", "for": "phase.select.0", "until": "accepted"},
+        {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[4].value._CallbackList[1].CallbackConfig[10]", "as": "phase.select.1"},
+        {"op": "wait", "for": "phase.select.1", "until": "accepted"},
+        {"op": "state.exit", "name": "base.callback.1188.phase.13", "as": "phase.select.2.phase-replace.0"},
+        {"op": "wait", "for": "phase.select.2.phase-replace.0"},
+        {"op": "state.exit", "name": "base.callback.1189.phase.1", "as": "phase.select.2.phase-replace.1"},
+        {"op": "wait", "for": "phase.select.2.phase-replace.1"},
+        {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[4].value._CallbackList[0].CallbackConfig[0]", "as": "phase.select.2.phase-replace.2"},
+        {"op": "wait", "for": "phase.select.2.phase-replace.2", "until": "accepted"},
+        {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[4].value._CallbackList[1].CallbackConfig[10]", "as": "phase.select.2.phase-replace.3"},
+        {"op": "wait", "for": "phase.select.2.phase-replace.3", "until": "accepted"},
+        {"op": "scope.enter", "name": "compiled.0.phase/GlobalModifiers[4].value._CallbackList[0].CallbackConfig[0]", "as": "phase.select.2"},
+        {"op": "wait", "for": "phase.select.2", "until": "accepted"}
+      ],
+      "presentation": {}
+    },
+    "compiled.0.select/GlobalModifiers[4].value._CallbackList[1].CallbackConfig[10]": {
+      "run": [
+        {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[4].value._CallbackList[0].CallbackConfig[0]", "as": "phase.select.0"},
+        {"op": "wait", "for": "phase.select.0", "until": "accepted"},
+        {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[4].value._CallbackList[1].CallbackConfig[10]", "as": "phase.select.1"},
+        {"op": "wait", "for": "phase.select.1", "until": "accepted"},
+        {"op": "state.exit", "name": "base.callback.1188.phase.13", "as": "phase.select.2.phase-replace.0"},
+        {"op": "wait", "for": "phase.select.2.phase-replace.0"},
+        {"op": "state.exit", "name": "base.callback.1189.phase.1", "as": "phase.select.2.phase-replace.1"},
+        {"op": "wait", "for": "phase.select.2.phase-replace.1"},
+        {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[4].value._CallbackList[0].CallbackConfig[0]", "as": "phase.select.2.phase-replace.2"},
+        {"op": "wait", "for": "phase.select.2.phase-replace.2", "until": "accepted"},
+        {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[4].value._CallbackList[1].CallbackConfig[10]", "as": "phase.select.2.phase-replace.3"},
+        {"op": "wait", "for": "phase.select.2.phase-replace.3", "until": "accepted"},
+        {"op": "scope.enter", "name": "compiled.0.phase/GlobalModifiers[4].value._CallbackList[1].CallbackConfig[10]", "as": "phase.select.2"},
+        {"op": "wait", "for": "phase.select.2", "until": "accepted"}
+      ],
+      "presentation": {}
+    },
+    "@receiver-clear/base.callback.1188.receiver-property.9": {
+      "requires": [
+        {"op": "state", "name": "base.callback.1188.receiver-property.9"}
+      ],
+      "mode": "input",
+      "run": [
+        {"op": "state.exit", "name": "base.callback.1188.receiver-property.9", "only_caster": true, "as": "clear"},
+        {"op": "wait", "for": "clear"}
+      ],
+      "presentation": {
+        "label": "Clear resilience override",
+        "kind": "setting",
+        "contexts": ["base.callback.1188.receiver-property.9"]
+      },
+      "tags": ["visual-receiver-clear"]
+    },
+    "@receiver-clear/base.callback.1188.receiver-property.11": {
+      "requires": [
+        {"op": "state", "name": "base.callback.1188.receiver-property.11"}
+      ],
+      "mode": "input",
+      "run": [
+        {"op": "state.exit", "name": "base.callback.1188.receiver-property.11", "only_caster": true, "as": "clear"},
+        {"op": "wait", "for": "clear"}
+      ],
+      "presentation": {
+        "label": "Clear hit effect override",
+        "kind": "setting",
+        "contexts": ["base.callback.1188.receiver-property.11"]
+      },
+      "tags": ["visual-receiver-clear"]
+    },
+    "@receiver-clear/base.callback.5359.receiver-property.3": {
+      "requires": [
+        {"op": "state", "name": "common.elemental.frozen-hit"}
+      ],
+      "mode": "input",
+      "run": [
+        {"op": "state.exit", "name": "common.elemental.frozen-hit", "only_caster": true, "as": "clear"},
+        {"op": "wait", "for": "clear"}
+      ],
+      "presentation": {
+        "label": "Clear hit effect override",
+        "kind": "setting",
+        "contexts": ["common.elemental.frozen-hit"]
+      },
+      "tags": ["visual-receiver-clear"]
+    }
+  },
+  "functions": {
+    "@return.rest.pose": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "rest.pose.expression"},
+      {
+        "op": "if",
+        "condition": {"op": "phase", "is": "@return/base.callback.1188.phase.13"},
+        "then": [
+          {"op": "skip", "as": "rest.pose", "reason": "omitted"}
+        ],
+        "elif": [
+          {
+            "condition": {"op": "phase", "is": "@return/base.callback.1189.phase.1"},
+            "then": [
+              {"op": "skip", "as": "rest.pose", "reason": "omitted"}
+            ]
+          },
+          {
+            "condition": {"op": "phase", "is": "@return/compiled.0.phase/GlobalModifiers[4].value._CallbackList[0].CallbackConfig[0]"},
+            "then": [
+              {"op": "skip", "as": "rest.pose", "reason": "omitted"}
+            ]
+          },
+          {
+            "condition": {"op": "phase", "is": "@return/compiled.0.phase/GlobalModifiers[4].value._CallbackList[1].CallbackConfig[10]"},
+            "then": [
+              {"op": "skip", "as": "rest.pose", "reason": "omitted"}
+            ]
+          }
+        ],
+        "else": [
+          {
+            "op": "animation",
+            "state": "StandBy",
+            "current_idle": true,
+            "end": 0,
+            "restart": false,
+            "track": {"logic": 1, "extra": 6, "previous_end": 1},
+            "as": "rest.pose"
+          }
+        ]
+      }
+    ],
+    "@return.return.pose": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "return.pose.expression"},
+      {
+        "op": "if",
+        "condition": {"op": "phase", "is": "@return/base.callback.1188.phase.13"},
+        "then": [
+          {"op": "skip", "as": "return.pose", "reason": "omitted"}
+        ],
+        "elif": [
+          {
+            "condition": {"op": "phase", "is": "@return/base.callback.1189.phase.1"},
+            "then": [
+              {"op": "skip", "as": "return.pose", "reason": "omitted"}
+            ]
+          },
+          {
+            "condition": {"op": "phase", "is": "@return/compiled.0.phase/GlobalModifiers[4].value._CallbackList[0].CallbackConfig[0]"},
+            "then": [
+              {"op": "skip", "as": "return.pose", "reason": "omitted"}
+            ]
+          },
+          {
+            "condition": {"op": "phase", "is": "@return/compiled.0.phase/GlobalModifiers[4].value._CallbackList[1].CallbackConfig[10]"},
+            "then": [
+              {"op": "skip", "as": "return.pose", "reason": "omitted"}
+            ]
+          }
+        ],
+        "else": [
+          {
+            "op": "animation",
+            "state": "StandBy",
+            "current_idle": true,
+            "end": 0,
+            "restart": false,
+            "track": {"logic": 1, "extra": 6, "previous_end": 1},
+            "as": "return.pose"
+          }
+        ]
+      }
+    ]
+  },
+  "states": {
+    "base.callback.1188.phase.13": {
+      "callbacks": {},
+      "values": {"phase_source": "Config/ConfigAbility/Avatar/Avatar_Cyrene_00_Ability.json:$.GlobalModifiers[4].value._CallbackList[1].CallbackConfig[10]"},
+      "phase": "@return/base.callback.1188.phase.13",
+      "configuration": "base.callback.1188.phase.13",
+      "restore": []
+    },
+    "base.callback.1188.receiver-property.11": {
+      "callbacks": {},
+      "hit_effects": [
+        {
+          "stacking": "multiple",
+          "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Cyrene_00/Eff_Avatar_Cyrene_00_Passive_Hit.prefab",
+          "priority": 0,
+          "count": 1,
+          "death_count": 0,
+          "death_path": "",
+          "keep_original": false,
+          "replay_on_mutex": false
+        }
+      ],
+      "instances": {"name": "callback.1188.receiver-property.11", "receiver": "Recipient", "match": "receiver_caster"},
+      "restore": []
+    },
+    "base.callback.1188.receiver-property.9": {
+      "callbacks": {},
+      "resilience": 0,
+      "instances": {"name": "callback.1188.receiver-property.9", "receiver": "Recipient", "match": "receiver_caster"},
+      "restore": []
+    },
+    "base.callback.1189.phase.1": {
+      "callbacks": {},
+      "values": {"phase_source": "Config/ConfigAbility/Avatar/Avatar_Cyrene_00_Ability.json:$.GlobalModifiers[4].value._CallbackList[0].CallbackConfig[0]"},
+      "phase": "@return/base.callback.1189.phase.1",
+      "configuration": "base.callback.1189.phase.1",
+      "restore": []
+    },
+    "compiled.0.phase/GlobalModifiers[4].value._CallbackList[0].CallbackConfig[0]": {
+      "phase": "@return/compiled.0.phase/GlobalModifiers[4].value._CallbackList[0].CallbackConfig[0]",
+      "values": {"phase_binding": "GlobalModifiers[4].value._CallbackList[0].CallbackConfig[0]"},
+      "configuration": "compiled.0.phase/GlobalModifiers[4].value._CallbackList[0].CallbackConfig[0]",
+      "restore": []
+    },
+    "compiled.0.phase/GlobalModifiers[4].value._CallbackList[1].CallbackConfig[10]": {
+      "phase": "@return/compiled.0.phase/GlobalModifiers[4].value._CallbackList[1].CallbackConfig[10]",
+      "values": {"phase_binding": "GlobalModifiers[4].value._CallbackList[1].CallbackConfig[10]"},
+      "configuration": "compiled.0.phase/GlobalModifiers[4].value._CallbackList[1].CallbackConfig[10]",
+      "restore": []
+    }
+  },
+  "resources": {
+    "effects": {
+      "base.skill.1.effect.15": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Cyrene_00/Eff_Avatar_Cyrene_00_Skill02_Buff_01.prefab", "target": "Caster", "simulate_immediately": true},
+      "base.skill.2.effect.50": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Cyrene_00/Eff_Avatar_Cyrene_00_Skill03_A_Glass.prefab", "target": "Caster", "simulate_immediately": true},
+      "base.skill.2.effect.51": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Cyrene_00/Eff_Avatar_Cyrene_00_Skill03_A_Glass_Variant.prefab",
+        "target": "Caster",
+        "simulate_immediately": true
+      },
+      "base.skill.3.effect.28": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Cyrene_00/Eff_Avatar_Cyrene_00_Skill03_2_Veil.prefab", "target": "Caster"},
+      "base.skill.3.effect.31": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Cyrene_00/Eff_Avatar_Cyrene_00_Skill03_2_Camera.prefab", "target": "Caster"},
+      "base.callback.1182.effect.4": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Cyrene_00/Eff_Avatar_Cyrene_00_BattleArea_Scened.prefab", "target": "callback.1182.target.AllTeamCenter"},
+      "base.callback.1182.effect.6": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Cyrene_00/Eff_Avatar_Cyrene_00_BattleArea_Scened_02.prefab", "target": "callback.1182.target.AllTeamCenter"}
+    },
+    "phases": {
+      "base.callback.1188.phase.13": {
+        "root": {"kind": "global_modifier", "name": "MAvatar_Cyrene_00_Skill03"},
+        "path": [
+          {"owner": "RPG.GameCore.TurnBasedModifierConfig", "field": "_CallbackList", "index": 1},
+          {"owner": "RPG.GameCore.TurnBasedModifierCallbackConfig", "field": "CallbackConfig", "index": 10},
+          {"owner": "RPG.GameCore.CharacterChangePhase", "field": "PhaseAnimConfig"}
+        ]
+      },
+      "base.callback.1189.phase.1": {
+        "root": {"kind": "global_modifier", "name": "MAvatar_Cyrene_00_Skill03"},
+        "path": [
+          {"owner": "RPG.GameCore.TurnBasedModifierConfig", "field": "_CallbackList", "index": 0},
+          {"owner": "RPG.GameCore.TurnBasedModifierCallbackConfig", "field": "CallbackConfig", "index": 0},
+          {"owner": "RPG.GameCore.CharacterChangePhase", "field": "PhaseAnimConfig"}
+        ]
+      },
+      "compiled.0.phase/GlobalModifiers[4].value._CallbackList[0].CallbackConfig[0]": {
+        "root": {"kind": "global_modifier", "name": "MAvatar_Cyrene_00_Skill03"},
+        "path": [
+          {"owner": "RPG.GameCore.TurnBasedModifierConfig", "field": "_CallbackList", "index": 0},
+          {"owner": "RPG.GameCore.TurnBasedModifierCallbackConfig", "field": "CallbackConfig", "index": 0},
+          {"owner": "RPG.GameCore.CharacterChangePhase", "field": "PhaseAnimConfig"}
+        ]
+      },
+      "compiled.0.phase/GlobalModifiers[4].value._CallbackList[1].CallbackConfig[10]": {
+        "root": {"kind": "global_modifier", "name": "MAvatar_Cyrene_00_Skill03"},
+        "path": [
+          {"owner": "RPG.GameCore.TurnBasedModifierConfig", "field": "_CallbackList", "index": 1},
+          {"owner": "RPG.GameCore.TurnBasedModifierCallbackConfig", "field": "CallbackConfig", "index": 10},
+          {"owner": "RPG.GameCore.CharacterChangePhase", "field": "PhaseAnimConfig"}
+        ]
+      }
+    }
+  }
+}

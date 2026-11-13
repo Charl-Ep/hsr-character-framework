@@ -1,0 +1,2164 @@
+{
+  "format": "hksr.script",
+  "id": "official-scripts:Config/ConfigCharacter/Avatar/Avatar_Acheron_00_Config.json",
+  "applies_to": "Config/ConfigCharacter/Avatar/Avatar_Acheron_00_Config.json",
+  "default": true,
+  "imports": ["Common/Elemental.json"],
+  "defaults": {
+    "targets": {
+      "PreviewTarget": {
+        "local_position": [0, 0, 6]
+      },
+      "callback.313.target.DarkTeamEntity": {"alias": "Caster"}
+    }
+  },
+  "actions": {
+    "base.rest": {
+      "trigger": "internal",
+      "run": [
+        {"op": "call", "function": "@return.rest.pose"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["stable-return", "idle-provider"]
+    },
+    "base.skill.0.perform": {
+      "inputs": {
+        "skill.0.condition.BySkillPointActivated.13": {"type": "bool", "default": false, "label": "BySkillPointActivated", "description": "Manual source condition: $.AbilityList[1].OnStart[2].Predicate"}
+      },
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Acheron_00_Skill01_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Acheron_00_Skill01_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.0.clock.1", "progress": 0.2179999996},
+            {
+              "op": "if",
+              "condition": {"op": "value", "name": "skill.0.condition.BySkillPointActivated.13", "is": true},
+              "then": [
+                {
+                  "op": "hit",
+                  "target": "PreviewTarget",
+                  "animation": "Hit",
+                  "direction": {"horizontal": -70.0, "vertical": 30.0},
+                  "effect": {
+                    "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Acheron_00/Eff_Avatar_Acheron_00_Skill01_Hit_01.prefab",
+                    "minimum_interval": 0.0500000007,
+                    "maximum_count": 1
+                  },
+                  "allow_position": true,
+                  "as": "skill.0.hit.15"
+                },
+                {"op": "wait", "for": "skill.0.hit.15", "until": "accepted"}
+              ],
+              "else": [
+                {
+                  "op": "hit",
+                  "target": "PreviewTarget",
+                  "animation": "Hit",
+                  "direction": {"horizontal": -70.0, "vertical": 30.0},
+                  "effect": {
+                    "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Acheron_00/Eff_Avatar_Acheron_00_Skill01_Hit_01.prefab",
+                    "minimum_interval": 0.0500000007,
+                    "maximum_count": 1
+                  },
+                  "allow_position": true,
+                  "as": "skill.0.hit.17"
+                },
+                {"op": "wait", "for": "skill.0.hit.17", "until": "accepted"}
+              ]
+            }
+          ],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill01", "end": 0.0, "track": {"logic": 3}, "as": "skill.0.clock.1"},
+        {
+          "op": "movement",
+          "animation": "skill.0.clock.1",
+          "segments": [
+            {
+              "destination": "target",
+              "name": "PreviewTarget",
+              "target_geometry": true,
+              "start": 0.0949999997,
+              "end": 0.1500000001,
+              "sample": {"distance": 1.3000000002, "percentage": 1.0, "include_radii": true}
+            },
+            {
+              "destination": "origin",
+              "start": 0.5500000005,
+              "end": 0.6700000006,
+              "sample": {"distance": 0.0, "percentage": 1.0, "include_radii": true}
+            }
+          ],
+          "as": "skill.0.clock.1.movement"
+        },
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.0},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.09},
+        {"op": "render.visibility", "key": "SetEntityVisible.reason.0", "visible": false, "as": "skill.0.entity_visible.23"},
+        {"op": "wait", "for": "skill.0.entity_visible.23", "until": "accepted"},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.0949999997},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.1479999995},
+        {"op": "render.visibility", "key": "SetEntityVisible.reason.0", "visible": true, "as": "skill.0.entity_visible.27"},
+        {"op": "wait", "for": "skill.0.entity_visible.27", "until": "accepted"},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.7000000006},
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill01",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "LookAt: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "SetEntityVisible: Non-render visibility side effects intentionally excluded: MuteColliderWhenInvisible",
+          "RadialBlurEffect: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.0.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Acheron_00_Config.json", "skill": 0, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "base.skill.1.perform": {
+      "inputs": {
+        "skill.1.condition.ByContainBehaviorFlag.9": {"type": "bool", "default": false, "label": "ByContainBehaviorFlag", "description": "Manual source condition: $.AbilityList[3].OnStart[1].Predicate"},
+        "skill.1.condition.BySkillPointActivated.32": {"type": "bool", "default": false, "label": "BySkillPointActivated", "description": "Manual source condition: $.AbilityList[3].OnStart[3].Predicate"},
+        "skill.1.condition.BySkillPointActivated.51": {"type": "bool", "default": false, "label": "BySkillPointActivated", "description": "Manual source condition: $.AbilityList[3].OnStart[9].Predicate"}
+      },
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Acheron_00_Skill02_Camera",
+          "run": [],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill02", "end": 0.0, "track": {"logic": 3}, "as": "skill.1.clock.1"},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.0},
+        {
+          "op": "start",
+          "id": "Avatar_Acheron_00_Skill02_Phase02",
+          "run": [
+            {
+              "op": "if",
+              "condition": {"op": "value", "name": "skill.1.condition.ByContainBehaviorFlag.9", "is": true},
+              "then": [
+                {"op": "wait", "for": "skill.1.clock.1", "progress": 0.1},
+                {
+                  "op": "for_each",
+                  "bind": "skill.1.member.12",
+                  "targets": ["PreviewTarget"],
+                  "collection": "skill.1.targets.13",
+                  "run": [
+                    {
+                      "op": "for_each",
+                      "bind": "skill.1.member.14",
+                      "targets": ["PreviewTarget"],
+                      "collection": "skill.1.targets.15",
+                      "run": [],
+                      "empty": []
+                    }
+                  ],
+                  "empty": []
+                }
+              ],
+              "else": []
+            },
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.1049999997},
+            {
+              "op": "if",
+              "condition": {"op": "value", "name": "skill.1.condition.BySkillPointActivated.32", "is": true},
+              "then": [
+                {
+                  "op": "hit",
+                  "target": "PreviewTarget",
+                  "animation": "",
+                  "direction": {},
+                  "effect": {
+                    "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Acheron_00/Eff_Avatar_Acheron_00_Skill02_Hit01.prefab",
+                    "minimum_interval": 0.0500000007,
+                    "maximum_count": 1
+                  },
+                  "allow_position": true,
+                  "as": "skill.1.hit.34"
+                },
+                {"op": "wait", "for": "skill.1.hit.34", "until": "accepted"},
+                {
+                  "op": "hit",
+                  "target": "PreviewTarget",
+                  "animation": "",
+                  "direction": {},
+                  "effect": {
+                    "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Acheron_00/Eff_Avatar_Acheron_00_Skill02_Hit01.prefab",
+                    "minimum_interval": 0.0500000007,
+                    "maximum_count": 1
+                  },
+                  "allow_position": true,
+                  "as": "skill.1.hit.36"
+                },
+                {"op": "wait", "for": "skill.1.hit.36", "until": "accepted"}
+              ],
+              "else": [
+                {
+                  "op": "hit",
+                  "target": "PreviewTarget",
+                  "animation": "",
+                  "direction": {},
+                  "effect": {
+                    "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Acheron_00/Eff_Avatar_Acheron_00_Skill02_Hit01.prefab",
+                    "minimum_interval": 0.0500000007,
+                    "maximum_count": 1
+                  },
+                  "allow_position": true,
+                  "as": "skill.1.hit.38"
+                },
+                {"op": "wait", "for": "skill.1.hit.38", "until": "accepted"},
+                {
+                  "op": "hit",
+                  "target": "PreviewTarget",
+                  "animation": "",
+                  "direction": {},
+                  "effect": {
+                    "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Acheron_00/Eff_Avatar_Acheron_00_Skill02_Hit01.prefab",
+                    "minimum_interval": 0.0500000007,
+                    "maximum_count": 1
+                  },
+                  "allow_position": true,
+                  "as": "skill.1.hit.40"
+                },
+                {"op": "wait", "for": "skill.1.hit.40", "until": "accepted"}
+              ]
+            },
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.1200000001},
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.1400000001},
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.759},
+            {
+              "op": "if",
+              "condition": {"op": "value", "name": "skill.1.condition.BySkillPointActivated.51", "is": true},
+              "then": [
+                {
+                  "op": "hit",
+                  "target": "PreviewTarget",
+                  "animation": "Hit_H",
+                  "direction": {},
+                  "effect": {"path": "", "height": 1.0, "minimum_interval": 0.0500000007, "maximum_count": 1},
+                  "allow_position": true,
+                  "as": "skill.1.hit.53"
+                },
+                {"op": "wait", "for": "skill.1.hit.53", "until": "accepted"},
+                {
+                  "op": "hit",
+                  "target": "PreviewTarget",
+                  "animation": "Hit_H",
+                  "direction": {},
+                  "effect": {"path": "", "height": 1.0, "minimum_interval": 0.0500000007, "maximum_count": 1},
+                  "allow_position": true,
+                  "as": "skill.1.hit.55"
+                },
+                {"op": "wait", "for": "skill.1.hit.55", "until": "accepted"}
+              ],
+              "else": [
+                {
+                  "op": "hit",
+                  "target": "PreviewTarget",
+                  "animation": "Hit_H",
+                  "direction": {},
+                  "effect": {"path": "", "height": 1.0, "minimum_interval": 0.0500000007, "maximum_count": 1},
+                  "allow_position": true,
+                  "as": "skill.1.hit.57"
+                },
+                {"op": "wait", "for": "skill.1.hit.57", "until": "accepted"},
+                {
+                  "op": "hit",
+                  "target": "PreviewTarget",
+                  "animation": "Hit_H",
+                  "direction": {},
+                  "effect": {"path": "", "height": 1.0, "minimum_interval": 0.0500000007, "maximum_count": 1},
+                  "allow_position": true,
+                  "as": "skill.1.hit.59"
+                },
+                {"op": "wait", "for": "skill.1.hit.59", "until": "accepted"}
+              ]
+            },
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 1.0}
+          ],
+          "join": true
+        },
+        {"op": "effect.create", "effects": ["base.skill.1.effect.66"], "as": "skill.1.effect.66"},
+        {"op": "wait", "for": "skill.1.effect.66", "until": "accepted"},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.09},
+        {"op": "render.visibility", "key": "SetEntityVisible.reason.0", "visible": false, "as": "skill.1.entity_visible.69"},
+        {"op": "wait", "for": "skill.1.entity_visible.69", "until": "accepted"},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.0989999994},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.1200000001},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.1459999997},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.1639999998},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.2769999997},
+        {"op": "render.visibility", "key": "SetEntityVisible.reason.0", "visible": true, "as": "skill.1.entity_visible.75"},
+        {"op": "wait", "for": "skill.1.entity_visible.75", "until": "accepted"},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.7200000006},
+        {"op": "effect.remove", "effects": ["base.skill.1.effect.66"], "optional": ["base.skill.1.effect.66"], "as": "skill.1.remove.76.0"},
+        {"op": "wait", "for": "skill.1.remove.76.0", "until": "accepted"},
+        {
+          "op": "effect.remove_event",
+          "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Acheron_00/Eff_Avatar_Acheron_00_Skill02_Shadow00.prefab",
+          "as": "skill.1.remove.76.1"
+        },
+        {"op": "wait", "for": "skill.1.remove.76.1", "until": "accepted"},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.7580000001},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "effect.remove", "effects": ["base.skill.1.effect.66"], "optional": ["base.skill.1.effect.66"], "as": "skill.1.remove-effects"},
+        {"op": "wait", "for": "skill.1.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "effect.remove", "effects": ["base.skill.1.effect.66"], "optional": ["base.skill.1.effect.66"], "as": "skill.1.remove-effects"},
+        {"op": "wait", "for": "skill.1.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill02",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "LookAt: not included in the visual sequence projection",
+          "SetTeamFormation: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "Retarget: recipient collection is explicitly selected; native filtering, random selection and count limits are not simulated",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "DamageByAttackProperty: no literal hit animation/effect; receiver defaults are not assumed",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "TriggerSkipDeadHandler: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "SetSkillTargetFormationByPos: not included in the visual sequence projection",
+          "GlobalMainIntensityEffect: not included in the visual sequence projection",
+          "SetEntityVisible: Non-render visibility side effects intentionally excluded: MuteColliderWhenInvisible",
+          "TriggerAnimState: animation has no literal owned-body binding",
+          "TargetTimeSlow: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "ClearTargetTimeSlow: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "RadialBlurEffect: not included in the visual sequence projection",
+          "WaitTimelineFinish: not included in the visual sequence projection",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.1.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Acheron_00_Config.json", "skill": 1, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "base.skill.2.perform": {
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Acheron_00_Skill03_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Acheron_00_Skill03_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.6000000005},
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.8350000004},
+            {
+              "op": "for_each",
+              "bind": "skill.2.member.21",
+              "targets": ["PreviewTarget"],
+              "collection": "skill.2.targets.22",
+              "run": [],
+              "empty": []
+            },
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 1.0}
+          ],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill03", "end": -1.0, "track": {"logic": 3}, "as": "skill.2.clock.1"},
+        {"op": "wait", "for": "skill.2.clock.1", "until": "animation_end"},
+        {"op": "wait", "for": "skill.2.clock.1", "progress": 0.6400000005},
+        {"op": "wait", "for": "skill.2.clock.1", "progress": 0.6700000006},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill03",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "AddGlobalDynamicOffsetIgnoreEntity: not included in the visual sequence projection",
+          "HideFieldEffect: not included in the visual sequence projection",
+          "ShowBattleAvatarPanel: not included in the visual sequence projection",
+          "SetCharacterVisibleInViewMode: not included in the visual sequence projection",
+          "SetTeamFormation: not included in the visual sequence projection",
+          "ScaleCharacterModel: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "SetSkillTargetFormationByPos: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "SortTargets: not included in the visual sequence projection",
+          "Retarget: recipient collection is explicitly selected; native filtering, random selection and count limits are not simulated",
+          "PlayCrossHairPreviewFadeIn: not included in the visual sequence projection",
+          "TargetTimeSlow: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "CameraFollowEntityTimeScale: not included in the visual sequence projection",
+          "UseSkillOneMore: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "SetUltraSkillAssetPreload: not included in the visual sequence projection",
+          "AutoUseUltraSkill: not included in the visual sequence projection",
+          "HideLevelStage: not included in the visual sequence projection",
+          "LevelAudioState: not included in the visual sequence projection",
+          "WaitTimelineFinish: not included in the visual sequence projection",
+          "RPGColorGradingCurveEffect: serial step depends on an unavailable source clock; no timing is inferred",
+          "TriggerAnimState: serial step depends on an unavailable source clock; no timing is inferred"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.2.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Acheron_00_Config.json", "skill": 2, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "base.skill.3.perform": {
+      "inputs": {
+        "skill.3.condition.BySkillPointActivated.14": {"type": "bool", "default": false, "label": "BySkillPointActivated", "description": "Manual source condition: $.AbilityList[8].OnStart[6].Predicate"},
+        "skill.3.condition.BySkillPointActivated.20": {"type": "bool", "default": false, "label": "BySkillPointActivated", "description": "Manual source condition: $.AbilityList[8].OnStart[9].Predicate"},
+        "skill.3.condition.ByIsContainModifier.25": {"type": "bool", "default": true, "label": "ByIsContainModifier", "description": "Manual source condition: $.AbilityList[8].OnStart[10].Predicate"},
+        "skill.3.condition.BySkillPointActivated.44": {
+          "type": "bool",
+          "default": false,
+          "label": "BySkillPointActivated",
+          "description": "Manual source condition: $.GlobalTemplates[5].TaskList[3].Predicate"
+        }
+      },
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "run": [
+        {"op": "animation", "state": "Skill03_01", "end": 0.0, "track": {"logic": 3}, "as": "skill.3.clock.1"},
+        {"op": "wait", "for": "skill.3.clock.1", "progress": 0.0},
+        {
+          "op": "start",
+          "id": "Avatar_Acheron_00_Skill31_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Acheron_00_Skill31_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.3.clock.1", "progress": 0.07},
+            {"op": "wait", "for": "skill.3.clock.1", "progress": 0.0839999997},
+            {
+              "op": "if",
+              "condition": {"op": "value", "name": "skill.3.condition.BySkillPointActivated.14", "is": true},
+              "then": [
+                {
+                  "op": "hit",
+                  "target": "PreviewTarget",
+                  "animation": "Hit",
+                  "direction": {"horizontal": -70.0, "vertical": 30.0},
+                  "effect": {
+                    "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Acheron_00/Eff_Avatar_Acheron_00_Skill03_Hit_01.prefab",
+                    "height": 0.6499999761581421,
+                    "minimum_interval": 0.0500000007,
+                    "maximum_count": 1
+                  },
+                  "allow_position": true,
+                  "as": "skill.3.hit.16"
+                },
+                {"op": "wait", "for": "skill.3.hit.16", "until": "accepted"}
+              ],
+              "else": [
+                {
+                  "op": "hit",
+                  "target": "PreviewTarget",
+                  "animation": "Hit",
+                  "direction": {"horizontal": -70.0, "vertical": 30.0},
+                  "effect": {
+                    "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Acheron_00/Eff_Avatar_Acheron_00_Skill03_Hit_01.prefab",
+                    "height": 0.6499999761581421,
+                    "minimum_interval": 0.0500000007,
+                    "maximum_count": 1
+                  },
+                  "allow_position": true,
+                  "as": "skill.3.hit.18"
+                },
+                {"op": "wait", "for": "skill.3.hit.18", "until": "accepted"}
+              ]
+            },
+            {"op": "wait", "for": "skill.3.clock.1", "progress": 0.5600000005},
+            {
+              "op": "if",
+              "condition": {"op": "value", "name": "skill.3.condition.BySkillPointActivated.20", "is": true},
+              "then": [
+                {
+                  "op": "hit",
+                  "target": "PreviewTarget",
+                  "animation": "Hit",
+                  "direction": {"horizontal": -70.0, "vertical": 30.0},
+                  "effect": {
+                    "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Acheron_00/Eff_Avatar_Acheron_00_Skill03_Hit_02.prefab",
+                    "height": 0.75,
+                    "minimum_interval": 0.0500000007,
+                    "maximum_count": 1
+                  },
+                  "allow_position": true,
+                  "as": "skill.3.hit.22"
+                },
+                {"op": "wait", "for": "skill.3.hit.22", "until": "accepted"}
+              ],
+              "else": [
+                {
+                  "op": "hit",
+                  "target": "PreviewTarget",
+                  "animation": "Hit",
+                  "direction": {"horizontal": -70.0, "vertical": 30.0},
+                  "effect": {
+                    "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Acheron_00/Eff_Avatar_Acheron_00_Skill03_Hit_02.prefab",
+                    "height": 0.75,
+                    "minimum_interval": 0.0500000007,
+                    "maximum_count": 1
+                  },
+                  "allow_position": true,
+                  "as": "skill.3.hit.24"
+                },
+                {"op": "wait", "for": "skill.3.hit.24", "until": "accepted"}
+              ]
+            },
+            {
+              "op": "if",
+              "condition": {"op": "value", "name": "skill.3.condition.ByIsContainModifier.25", "is": true},
+              "then": [
+                {
+                  "op": "if",
+                  "condition": {"op": "value", "name": "skill.3.condition.BySkillPointActivated.44", "is": true},
+                  "then": [
+                    {
+                      "op": "hit",
+                      "target": "PreviewTarget",
+                      "animation": "Hit_H",
+                      "direction": {},
+                      "effect": {
+                        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Acheron_00/Eff_Avatar_Acheron_00_Skill03_AOEHit_02.prefab",
+                        "minimum_interval": 0.0500000007,
+                        "maximum_count": 1
+                      },
+                      "allow_position": true,
+                      "as": "skill.3.hit.46"
+                    },
+                    {"op": "wait", "for": "skill.3.hit.46", "until": "accepted"}
+                  ],
+                  "else": [
+                    {
+                      "op": "hit",
+                      "target": "PreviewTarget",
+                      "animation": "Hit_H",
+                      "direction": {},
+                      "effect": {
+                        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Acheron_00/Eff_Avatar_Acheron_00_Skill03_AOEHit_02.prefab",
+                        "minimum_interval": 0.0500000007,
+                        "maximum_count": 1
+                      },
+                      "allow_position": true,
+                      "as": "skill.3.hit.48"
+                    },
+                    {"op": "wait", "for": "skill.3.hit.48", "until": "accepted"}
+                  ]
+                },
+                {
+                  "op": "for_each",
+                  "bind": "skill.3.member.51",
+                  "targets": ["PreviewTarget"],
+                  "collection": "skill.3.targets.52",
+                  "run": [],
+                  "empty": []
+                },
+                {
+                  "op": "for_each",
+                  "bind": "skill.3.member.59",
+                  "targets": ["PreviewTarget"],
+                  "collection": "skill.3.targets.60",
+                  "run": [
+                    {
+                      "op": "for_each",
+                      "bind": "skill.3.member.61",
+                      "targets": ["PreviewTarget"],
+                      "collection": "skill.3.targets.62",
+                      "run": [],
+                      "empty": []
+                    }
+                  ],
+                  "empty": [
+                    {
+                      "op": "for_each",
+                      "bind": "skill.3.member.71",
+                      "targets": ["PreviewTarget"],
+                      "collection": "skill.3.targets.72",
+                      "run": [],
+                      "empty": []
+                    }
+                  ]
+                }
+              ],
+              "else": []
+            }
+          ],
+          "join": true
+        },
+        {"op": "wait", "for": "skill.3.clock.1", "progress": 0.2889999996},
+        {"op": "render.visibility", "key": "SetEntityVisible.reason.0", "visible": false, "as": "skill.3.entity_visible.92"},
+        {"op": "wait", "for": "skill.3.entity_visible.92", "until": "accepted"},
+        {"op": "wait", "for": "skill.3.clock.1", "progress": 0.5175438616},
+        {"op": "render.visibility", "key": "SetEntityVisible.reason.0", "visible": true, "as": "skill.3.entity_visible.95"},
+        {"op": "wait", "for": "skill.3.entity_visible.95", "until": "accepted"},
+        {"op": "wait", "for": "skill.3.clock.1", "progress": 0.5700000005},
+        {"op": "wait", "for": "skill.3.clock.1", "progress": 0.8139000011},
+        {"op": "wait", "for": "skill.3.clock.1", "progress": 1.0},
+        {"op": "animation", "state": "Skill03_01_Slow", "end": -1.0, "track": {"logic": 3}, "as": "skill.3.clock.2"},
+        {"op": "wait", "for": "skill.3.clock.2", "until": "animation_end"},
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill31",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "LookAt: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "ClearTargetTimeSlow: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "TriggerEffect: effect needs a non-owned target, dynamic path, or Timeline attachment",
+          "TriggerEffect: serial step depends on an unavailable source clock; no timing is inferred",
+          "RadialBlurEffect: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "Retarget: recipient collection is explicitly selected; native filtering, random selection and count limits are not simulated",
+          "TriggerUINotify: serial step depends on an unavailable source clock; no timing is inferred",
+          "PredicateTaskList: serial step depends on an unavailable source clock; no timing is inferred",
+          "UseSkillOneMore: serial step depends on an unavailable source clock; no timing is inferred",
+          "SkillPerformFinish: serial step depends on an unavailable source clock; no timing is inferred",
+          "SetUltraSkillAssetPreload: serial step depends on an unavailable source clock; no timing is inferred",
+          "SetEntityVisible: Non-render visibility side effects intentionally excluded: MuteColliderWhenInvisible"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.3.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Acheron_00_Config.json", "skill": 3, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "base.skill.4.perform": {
+      "inputs": {
+        "skill.4.condition.BySkillPointActivated.22": {"type": "bool", "default": false, "label": "BySkillPointActivated", "description": "Manual source condition: $.AbilityList[10].OnStart[7].Predicate"},
+        "skill.4.condition.BySkillPointActivated.28": {"type": "bool", "default": false, "label": "BySkillPointActivated", "description": "Manual source condition: $.AbilityList[10].OnStart[10].Predicate"},
+        "skill.4.condition.BySkillPointActivated.33": {"type": "bool", "default": false, "label": "BySkillPointActivated", "description": "Manual source condition: $.AbilityList[10].OnStart[12].Predicate"},
+        "skill.4.condition.ByIsContainModifier.38": {"type": "bool", "default": true, "label": "ByIsContainModifier", "description": "Manual source condition: $.AbilityList[10].OnStart[13].Predicate"},
+        "skill.4.condition.BySkillPointActivated.57": {
+          "type": "bool",
+          "default": false,
+          "label": "BySkillPointActivated",
+          "description": "Manual source condition: $.GlobalTemplates[5].TaskList[3].Predicate"
+        }
+      },
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "run": [
+        {"op": "animation", "state": "Skill03_02", "end": 0.0, "track": {"logic": 3}, "as": "skill.4.clock.1"},
+        {"op": "wait", "for": "skill.4.clock.1", "progress": 0.0},
+        {
+          "op": "start",
+          "id": "Avatar_Acheron_00_Skill32_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Acheron_00_Skill32_Phase02",
+          "run": [
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Acheron_00/Eff_Avatar_Acheron_00_Skill03_Strart02_Camera.prefab",
+              "as": "skill.4.remove.17.0"
+            },
+            {"op": "wait", "for": "skill.4.remove.17.0", "until": "accepted"},
+            {"op": "wait", "for": "skill.4.clock.1", "progress": 0.1800000001},
+            {"op": "wait", "for": "skill.4.clock.1", "progress": 0.1900000001},
+            {
+              "op": "if",
+              "condition": {"op": "value", "name": "skill.4.condition.BySkillPointActivated.22", "is": true},
+              "then": [
+                {
+                  "op": "hit",
+                  "target": "PreviewTarget",
+                  "animation": "Hit_H",
+                  "direction": {},
+                  "effect": {
+                    "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Acheron_00/Eff_Avatar_Acheron_00_Skill03_Hit_A01.prefab",
+                    "height": 1.0,
+                    "minimum_interval": 0.0500000007,
+                    "maximum_count": 1
+                  },
+                  "allow_position": true,
+                  "as": "skill.4.hit.24"
+                },
+                {"op": "wait", "for": "skill.4.hit.24", "until": "accepted"}
+              ],
+              "else": [
+                {
+                  "op": "hit",
+                  "target": "PreviewTarget",
+                  "animation": "Hit_H",
+                  "direction": {},
+                  "effect": {
+                    "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Acheron_00/Eff_Avatar_Acheron_00_Skill03_Hit_A01.prefab",
+                    "height": 1.0,
+                    "minimum_interval": 0.0500000007,
+                    "maximum_count": 1
+                  },
+                  "allow_position": true,
+                  "as": "skill.4.hit.26"
+                },
+                {"op": "wait", "for": "skill.4.hit.26", "until": "accepted"}
+              ]
+            },
+            {"op": "wait", "for": "skill.4.clock.1", "progress": 0.3959999999},
+            {
+              "op": "if",
+              "condition": {"op": "value", "name": "skill.4.condition.BySkillPointActivated.28", "is": true},
+              "then": [
+                {
+                  "op": "hit",
+                  "target": "PreviewTarget",
+                  "animation": "Hit_H",
+                  "direction": {},
+                  "effect": {
+                    "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Acheron_00/Eff_Avatar_Acheron_00_Skill03_Hit_03.prefab",
+                    "height": 1.0,
+                    "minimum_interval": 0.0500000007,
+                    "maximum_count": 1
+                  },
+                  "allow_position": true,
+                  "as": "skill.4.hit.30"
+                },
+                {"op": "wait", "for": "skill.4.hit.30", "until": "accepted"}
+              ],
+              "else": [
+                {
+                  "op": "hit",
+                  "target": "PreviewTarget",
+                  "animation": "Hit_H",
+                  "direction": {},
+                  "effect": {
+                    "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Acheron_00/Eff_Avatar_Acheron_00_Skill03_Hit_03.prefab",
+                    "height": 1.0,
+                    "minimum_interval": 0.0500000007,
+                    "maximum_count": 1
+                  },
+                  "allow_position": true,
+                  "as": "skill.4.hit.32"
+                },
+                {"op": "wait", "for": "skill.4.hit.32", "until": "accepted"}
+              ]
+            },
+            {"op": "wait", "for": "skill.4.clock.1", "progress": 0.6500000006},
+            {
+              "op": "if",
+              "condition": {"op": "value", "name": "skill.4.condition.BySkillPointActivated.33", "is": true},
+              "then": [
+                {
+                  "op": "hit",
+                  "target": "PreviewTarget",
+                  "animation": "Hit_H",
+                  "direction": {},
+                  "effect": {
+                    "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Acheron_00/Eff_Avatar_Acheron_00_Skill03_Hit_A02.prefab",
+                    "height": 1.0,
+                    "minimum_interval": 0.0500000007,
+                    "maximum_count": 1
+                  },
+                  "allow_position": true,
+                  "as": "skill.4.hit.35"
+                },
+                {"op": "wait", "for": "skill.4.hit.35", "until": "accepted"}
+              ],
+              "else": [
+                {
+                  "op": "hit",
+                  "target": "PreviewTarget",
+                  "animation": "Hit_H",
+                  "direction": {},
+                  "effect": {
+                    "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Acheron_00/Eff_Avatar_Acheron_00_Skill03_Hit_A02.prefab",
+                    "height": 1.0,
+                    "minimum_interval": 0.0500000007,
+                    "maximum_count": 1
+                  },
+                  "allow_position": true,
+                  "as": "skill.4.hit.37"
+                },
+                {"op": "wait", "for": "skill.4.hit.37", "until": "accepted"}
+              ]
+            },
+            {
+              "op": "if",
+              "condition": {"op": "value", "name": "skill.4.condition.ByIsContainModifier.38", "is": true},
+              "then": [
+                {
+                  "op": "if",
+                  "condition": {"op": "value", "name": "skill.4.condition.BySkillPointActivated.57", "is": true},
+                  "then": [
+                    {
+                      "op": "hit",
+                      "target": "PreviewTarget",
+                      "animation": "Hit_H",
+                      "direction": {},
+                      "effect": {
+                        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Acheron_00/Eff_Avatar_Acheron_00_Skill03_AOEHit_02.prefab",
+                        "minimum_interval": 0.0500000007,
+                        "maximum_count": 1
+                      },
+                      "allow_position": true,
+                      "as": "skill.4.hit.59"
+                    },
+                    {"op": "wait", "for": "skill.4.hit.59", "until": "accepted"}
+                  ],
+                  "else": [
+                    {
+                      "op": "hit",
+                      "target": "PreviewTarget",
+                      "animation": "Hit_H",
+                      "direction": {},
+                      "effect": {
+                        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Acheron_00/Eff_Avatar_Acheron_00_Skill03_AOEHit_02.prefab",
+                        "minimum_interval": 0.0500000007,
+                        "maximum_count": 1
+                      },
+                      "allow_position": true,
+                      "as": "skill.4.hit.61"
+                    },
+                    {"op": "wait", "for": "skill.4.hit.61", "until": "accepted"}
+                  ]
+                },
+                {
+                  "op": "for_each",
+                  "bind": "skill.4.member.64",
+                  "targets": ["PreviewTarget"],
+                  "collection": "skill.4.targets.65",
+                  "run": [],
+                  "empty": []
+                },
+                {
+                  "op": "for_each",
+                  "bind": "skill.4.member.72",
+                  "targets": ["PreviewTarget"],
+                  "collection": "skill.4.targets.73",
+                  "run": [
+                    {
+                      "op": "for_each",
+                      "bind": "skill.4.member.74",
+                      "targets": ["PreviewTarget"],
+                      "collection": "skill.4.targets.75",
+                      "run": [],
+                      "empty": []
+                    }
+                  ],
+                  "empty": [
+                    {
+                      "op": "for_each",
+                      "bind": "skill.4.member.84",
+                      "targets": ["PreviewTarget"],
+                      "collection": "skill.4.targets.85",
+                      "run": [],
+                      "empty": []
+                    }
+                  ]
+                }
+              ],
+              "else": []
+            }
+          ],
+          "join": true
+        },
+        {"op": "wait", "for": "skill.4.clock.1", "progress": 0.1900000001},
+        {"op": "wait", "for": "skill.4.clock.1", "progress": 0.2379999996},
+        {"op": "wait", "for": "skill.4.clock.1", "progress": 0.3300000003},
+        {"op": "render.visibility", "key": "SetEntityVisible.reason.0", "visible": false, "as": "skill.4.entity_visible.107"},
+        {"op": "wait", "for": "skill.4.entity_visible.107", "until": "accepted"},
+        {"op": "wait", "for": "skill.4.clock.1", "progress": 0.4189999997},
+        {"op": "render.visibility", "key": "SetEntityVisible.reason.0", "visible": true, "as": "skill.4.entity_visible.111"},
+        {"op": "wait", "for": "skill.4.entity_visible.111", "until": "accepted"},
+        {"op": "wait", "for": "skill.4.clock.1", "progress": 0.6370000001},
+        {"op": "render.visibility", "key": "SetEntityVisible.reason.0", "visible": false, "as": "skill.4.entity_visible.114"},
+        {"op": "wait", "for": "skill.4.entity_visible.114", "until": "accepted"},
+        {"op": "wait", "for": "skill.4.clock.1", "progress": 0.6640000003},
+        {"op": "render.visibility", "key": "SetEntityVisible.reason.0", "visible": true, "as": "skill.4.entity_visible.116"},
+        {"op": "wait", "for": "skill.4.entity_visible.116", "until": "accepted"},
+        {"op": "wait", "for": "skill.4.clock.1", "progress": 0.7600000007},
+        {"op": "wait", "for": "skill.4.clock.1", "progress": 0.9550000005},
+        {"op": "wait", "for": "skill.4.clock.1", "progress": 1.0},
+        {"op": "animation", "state": "Skill03_02_Slow", "transition": 0.0349999996, "end": -1.0, "track": {"logic": 3}, "as": "skill.4.clock.2"},
+        {"op": "wait", "for": "skill.4.clock.2", "until": "animation_end"},
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill32",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "LookAt: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "VCameraNoiseChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "ClearTargetTimeSlow: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "TriggerEffect: effect needs a non-owned target, dynamic path, or Timeline attachment",
+          "TriggerEffect: serial step depends on an unavailable source clock; no timing is inferred",
+          "RadialBlurEffect: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "Retarget: recipient collection is explicitly selected; native filtering, random selection and count limits are not simulated",
+          "TriggerUINotify: serial step depends on an unavailable source clock; no timing is inferred",
+          "PredicateTaskList: serial step depends on an unavailable source clock; no timing is inferred",
+          "UseSkillOneMore: serial step depends on an unavailable source clock; no timing is inferred",
+          "SkillPerformFinish: serial step depends on an unavailable source clock; no timing is inferred",
+          "SetUltraSkillAssetPreload: serial step depends on an unavailable source clock; no timing is inferred",
+          "SetEntityVisible: Non-render visibility side effects intentionally excluded: MuteColliderWhenInvisible"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.4.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Acheron_00_Config.json", "skill": 4, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "base.skill.5.perform": {
+      "inputs": {
+        "skill.5.condition.BySkillPointActivated.14": {"type": "bool", "default": false, "label": "BySkillPointActivated", "description": "Manual source condition: $.AbilityList[12].OnStart[8].Predicate"},
+        "skill.5.condition.ByIsContainModifier.19": {"type": "bool", "default": true, "label": "ByIsContainModifier", "description": "Manual source condition: $.AbilityList[12].OnStart[9].Predicate"},
+        "skill.5.condition.ByCurrentSkillName.34": {"type": "bool", "default": true, "label": "ByCurrentSkillName", "description": "Manual source condition: $.GlobalTemplates[5].TaskList[2].Predicate"},
+        "skill.5.condition.BySkillPointActivated.37": {
+          "type": "bool",
+          "default": false,
+          "label": "BySkillPointActivated",
+          "description": "Manual source condition: $.GlobalTemplates[5].TaskList[3].Predicate"
+        }
+      },
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "run": [
+        {"op": "animation", "state": "Skill03_03", "end": 0.0, "track": {"logic": 3}, "as": "skill.5.clock.1"},
+        {"op": "wait", "for": "skill.5.clock.1", "progress": 0.0},
+        {
+          "op": "start",
+          "id": "Avatar_Acheron_00_Skill33_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Acheron_00_Skill33_Phase02",
+          "run": [
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Acheron_00/Eff_Avatar_Acheron_00_Skill03_Strart02_Camera.prefab",
+              "as": "skill.5.remove.8.0"
+            },
+            {"op": "wait", "for": "skill.5.remove.8.0", "until": "accepted"},
+            {"op": "wait", "for": "skill.5.clock.1", "progress": 0.9700000009},
+            {"op": "wait", "for": "skill.5.clock.1", "progress": 0.9800000009},
+            {
+              "op": "if",
+              "condition": {"op": "value", "name": "skill.5.condition.BySkillPointActivated.14", "is": true},
+              "then": [
+                {
+                  "op": "hit",
+                  "target": "PreviewTarget",
+                  "animation": "Hit_H",
+                  "direction": {"horizontal": 45.0, "vertical": -90.0},
+                  "effect": {
+                    "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Acheron_00/Eff_Avatar_Acheron_00_Skill03_Hit_06.prefab",
+                    "minimum_interval": 0.0500000007,
+                    "maximum_count": 1
+                  },
+                  "allow_position": true,
+                  "as": "skill.5.hit.16"
+                },
+                {"op": "wait", "for": "skill.5.hit.16", "until": "accepted"}
+              ],
+              "else": [
+                {
+                  "op": "hit",
+                  "target": "PreviewTarget",
+                  "animation": "Hit_H",
+                  "direction": {"horizontal": 45.0, "vertical": -90.0},
+                  "effect": {
+                    "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Acheron_00/Eff_Avatar_Acheron_00_Skill03_Hit_06.prefab",
+                    "minimum_interval": 0.0500000007,
+                    "maximum_count": 1
+                  },
+                  "allow_position": true,
+                  "as": "skill.5.hit.18"
+                },
+                {"op": "wait", "for": "skill.5.hit.18", "until": "accepted"}
+              ]
+            },
+            {
+              "op": "if",
+              "condition": {"op": "value", "name": "skill.5.condition.ByIsContainModifier.19", "is": true},
+              "then": [
+                {
+                  "op": "if",
+                  "condition": {"op": "value", "name": "skill.5.condition.ByCurrentSkillName.34", "is": true},
+                  "then": [
+                    {"op": "wait", "for": "skill.5.clock.2", "progress": 0.0479999994},
+                    {"op": "effect.create", "effects": ["base.skill.5.effect.35"], "as": "skill.5.effect.35"},
+                    {"op": "wait", "for": "skill.5.effect.35", "until": "accepted"}
+                  ],
+                  "else": []
+                },
+                {
+                  "op": "if",
+                  "condition": {"op": "value", "name": "skill.5.condition.BySkillPointActivated.37", "is": true},
+                  "then": [
+                    {
+                      "op": "hit",
+                      "target": "PreviewTarget",
+                      "animation": "Hit_H",
+                      "direction": {},
+                      "effect": {
+                        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Acheron_00/Eff_Avatar_Acheron_00_Skill03_AOEHit_02.prefab",
+                        "minimum_interval": 0.0500000007,
+                        "maximum_count": 1
+                      },
+                      "allow_position": true,
+                      "as": "skill.5.hit.39"
+                    },
+                    {"op": "wait", "for": "skill.5.hit.39", "until": "accepted"}
+                  ],
+                  "else": [
+                    {
+                      "op": "hit",
+                      "target": "PreviewTarget",
+                      "animation": "Hit_H",
+                      "direction": {},
+                      "effect": {
+                        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Acheron_00/Eff_Avatar_Acheron_00_Skill03_AOEHit_02.prefab",
+                        "minimum_interval": 0.0500000007,
+                        "maximum_count": 1
+                      },
+                      "allow_position": true,
+                      "as": "skill.5.hit.41"
+                    },
+                    {"op": "wait", "for": "skill.5.hit.41", "until": "accepted"}
+                  ]
+                },
+                {
+                  "op": "for_each",
+                  "bind": "skill.5.member.44",
+                  "targets": ["PreviewTarget"],
+                  "collection": "skill.5.targets.45",
+                  "run": [],
+                  "empty": []
+                },
+                {
+                  "op": "for_each",
+                  "bind": "skill.5.member.52",
+                  "targets": ["PreviewTarget"],
+                  "collection": "skill.5.targets.53",
+                  "run": [
+                    {
+                      "op": "for_each",
+                      "bind": "skill.5.member.54",
+                      "targets": ["PreviewTarget"],
+                      "collection": "skill.5.targets.55",
+                      "run": [],
+                      "empty": []
+                    }
+                  ],
+                  "empty": [
+                    {
+                      "op": "for_each",
+                      "bind": "skill.5.member.64",
+                      "targets": ["PreviewTarget"],
+                      "collection": "skill.5.targets.65",
+                      "run": [],
+                      "empty": []
+                    }
+                  ]
+                }
+              ],
+              "else": []
+            }
+          ],
+          "join": true
+        },
+        {"op": "wait", "for": "skill.5.clock.1", "progress": 0.2900000002},
+        {"op": "wait", "for": "skill.5.clock.1", "progress": 1.0},
+        {
+          "op": "start",
+          "id": "Avatar_Acheron_00_Skill34_Camera",
+          "run": [],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill03_End", "end": -1.0, "track": {"logic": 3}, "as": "skill.5.clock.2"},
+        {"op": "wait", "for": "skill.5.clock.2", "until": "animation_end"},
+        {"op": "wait", "for": "skill.5.clock.2", "progress": 0.0069999995},
+        {"op": "join"},
+        {"op": "effect.remove", "effects": ["base.skill.5.effect.35"], "optional": ["base.skill.5.effect.35"], "as": "skill.5.remove-effects"},
+        {"op": "wait", "for": "skill.5.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "effect.remove", "effects": ["base.skill.5.effect.35"], "optional": ["base.skill.5.effect.35"], "as": "skill.5.remove-effects"},
+        {"op": "wait", "for": "skill.5.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill33",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "MoveToTargetList: movement not projected: Config/ConfigAbility/Avatar/Avatar_Acheron_00_Ability.json:$.AbilityList[11].OnStart[0]: movement destination not bound: AllDarkTeam",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "ClearTargetTimeSlow: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "TriggerEffect: effect needs a non-owned target, dynamic path, or Timeline attachment",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "RadialBlurEffect: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "Retarget: recipient collection is explicitly selected; native filtering, random selection and count limits are not simulated",
+          "TriggerUINotify: not included in the visual sequence projection",
+          "TargetTimeSlow: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "AutoUseUltraSkill: not included in the visual sequence projection",
+          "UseSkillOneMore: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "SetUltraSkillAssetPreload: not included in the visual sequence projection",
+          "SetTeamFormation: not included in the visual sequence projection",
+          "SetSkillTargetFormationByPos: not included in the visual sequence projection",
+          "HideLevelStage: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.5.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Acheron_00_Config.json", "skill": 5, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "base.skill.6.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Acheron_00_Config.json", "skill": 6, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "base.callback.323": {
+      "inputs": {
+        "enabled": {"type": "bool", "default": true, "label": "Enabled"}
+      },
+      "mode": "input",
+      "trigger": "internal",
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "enabled", "is": true},
+          "then": [
+            {"op": "state.exit", "name": "base.callback.323.phase.4", "as": "setting.1.phase-replace.0"},
+            {"op": "wait", "for": "setting.1.phase-replace.0"},
+            {"op": "state.exit", "name": "base.callback.324.phase.3", "as": "setting.1.phase-replace.1"},
+            {"op": "wait", "for": "setting.1.phase-replace.1"},
+            {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[5].value._CallbackList[0].CallbackConfig[2]", "as": "setting.1.phase-replace.2"},
+            {"op": "wait", "for": "setting.1.phase-replace.2", "until": "accepted"},
+            {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[5].value._CallbackList[1].CallbackConfig[3]", "as": "setting.1.phase-replace.3"},
+            {"op": "wait", "for": "setting.1.phase-replace.3", "until": "accepted"},
+            {"op": "state.enter", "name": "base.callback.323.phase.4", "as": "setting.1"},
+            {"op": "wait", "for": "setting.1"}
+          ],
+          "else": [
+            {"op": "state.exit", "name": "base.callback.323.phase.4", "as": "setting.1"},
+            {"op": "wait", "for": "setting.1"}
+          ]
+        }
+      ],
+      "presentation": {
+        "label": "MAvatar_Acheron_00_Skill03_Special: OnStack",
+        "kind": "setting",
+        "contexts": ["base.callback.323.phase.4"],
+        "listed": false,
+        "omissions": ["EnableSpecificModifierSpecialMark: not included in the visual sequence projection"]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "base.callback.324": {
+      "inputs": {
+        "enabled": {"type": "bool", "default": true, "label": "Enabled"}
+      },
+      "mode": "input",
+      "trigger": "internal",
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "enabled", "is": true},
+          "then": [
+            {"op": "state.exit", "name": "base.callback.323.phase.4", "as": "setting.1.phase-replace.0"},
+            {"op": "wait", "for": "setting.1.phase-replace.0"},
+            {"op": "state.exit", "name": "base.callback.324.phase.3", "as": "setting.1.phase-replace.1"},
+            {"op": "wait", "for": "setting.1.phase-replace.1"},
+            {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[5].value._CallbackList[0].CallbackConfig[2]", "as": "setting.1.phase-replace.2"},
+            {"op": "wait", "for": "setting.1.phase-replace.2", "until": "accepted"},
+            {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[5].value._CallbackList[1].CallbackConfig[3]", "as": "setting.1.phase-replace.3"},
+            {"op": "wait", "for": "setting.1.phase-replace.3", "until": "accepted"},
+            {"op": "state.enter", "name": "base.callback.324.phase.3", "as": "setting.1"},
+            {"op": "wait", "for": "setting.1"}
+          ],
+          "else": [
+            {"op": "state.exit", "name": "base.callback.324.phase.3", "as": "setting.1"},
+            {"op": "wait", "for": "setting.1"}
+          ]
+        }
+      ],
+      "presentation": {
+        "label": "MAvatar_Acheron_00_Skill03_Special: OnDestroy",
+        "kind": "setting",
+        "contexts": ["base.callback.324.phase.3"],
+        "listed": false,
+        "omissions": ["EnableSpecificModifierSpecialMark: not included in the visual sequence projection", "LevelAudioState: not included in the visual sequence projection"]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "base.callback.325": {
+      "run": [
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "MAvatar_Acheron_00_SkillChange01: OnStack",
+        "listed": false,
+        "omissions": [
+          "Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects.",
+          "SetControlSkillMapping: Skill mapping is configuration, not a request to play its destination ready pose; native mapping is not executed"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation", "diagnostic-omission-only"]
+    },
+    "base.callback.326": {
+      "run": [
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "MAvatar_Acheron_00_SkillChange02: OnStack",
+        "listed": false,
+        "omissions": [
+          "Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects.",
+          "SetControlSkillMapping: Skill mapping is configuration, not a request to play its destination ready pose; native mapping is not executed"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation", "diagnostic-omission-only"]
+    },
+    "base.callback.327": {
+      "run": [
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "MAvatar_Acheron_00_SkillChange03: OnStack",
+        "listed": false,
+        "omissions": [
+          "Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects.",
+          "SetControlSkillMapping: Skill mapping is configuration, not a request to play its destination ready pose; native mapping is not executed"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation", "diagnostic-omission-only"]
+    },
+    "base.callback.328": {
+      "run": [
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "MAvatar_Acheron_00_SkillChange04: OnStack",
+        "listed": false,
+        "omissions": [
+          "Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects.",
+          "SetControlSkillMapping: Skill mapping is configuration, not a request to play its destination ready pose; native mapping is not executed"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation", "diagnostic-omission-only"]
+    },
+    "base.callback.329": {
+      "run": [
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "MAvatar_Acheron_00_SkillChange04: OnDestroy",
+        "listed": false,
+        "omissions": [
+          "Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects.",
+          "SetControlSkillMapping: Skill mapping is configuration, not a request to play its destination ready pose; native mapping is not executed"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation", "diagnostic-omission-only"]
+    },
+    "base.cue.293.3289": {
+      "requires": [
+        {"op": "target", "name": "ImpactTarget", "allow_position": false}
+      ],
+      "run": [
+        {
+          "op": "hit",
+          "target": "ImpactTarget",
+          "animation": "Hit_H",
+          "direction": {"horizontal": 45.0, "vertical": -90.0},
+          "effect": {"path": "", "height": 1.2999999523162842, "minimum_interval": 0.0500000007, "maximum_count": 1},
+          "as": "cue.293.3289.hit"
+        },
+        {"op": "wait", "for": "cue.293.3289.hit", "until": "accepted"},
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Receiver: Hit_H",
+        "omissions": [
+          "Selected visual fragment only; source timing, conditions and other participants are not replayed. Requires an owned ImpactTarget; source delay, attacker overrides, callbacks and combat events are not replayed.",
+          "Source: Selected visual fragment only; source timing, conditions and other participants are not replayed. Requires an owned ImpactTarget; source delay, attacker overrides, callbacks and combat events are not replayed."
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "base.skill.6.perform": {
+      "inputs": {
+        "event": {
+          "type": "integer",
+          "default": 0,
+          "label": "Callback",
+          "choices": [
+            {"value": 0, "label": "Eff_Avatar_Acheron_00_Skill03_Hit_07.prefab"},
+            {"value": 1, "label": "Eff_Avatar_Acheron_00_Skill03_Hit_07.prefab"}
+          ]
+        }
+      },
+      "requires": [
+        {"op": "number", "name": "event", "compare": "ge", "value": 0},
+        {"op": "number", "name": "event", "compare": "lt", "value": 2}
+      ],
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "event", "is": 1},
+          "then": [
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit_H",
+              "direction": {"horizontal": 45.0, "vertical": -90.0},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Acheron_00/Eff_Avatar_Acheron_00_Skill03_Hit_07.prefab",
+                "height": 1.0,
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "cue.293.3220.hit.2"
+            },
+            {"op": "wait", "for": "cue.293.3220.hit.2", "until": "accepted"},
+            {"op": "join"},
+            {"op": "call", "function": "@return.return.pose"},
+            {"op": "wait", "for": "return.pose", "until": "submitted"},
+            {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+            {"op": "wait", "for": "return.position"}
+          ],
+          "else": [
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit_H",
+              "direction": {"horizontal": 45.0, "vertical": -90.0},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Acheron_00/Eff_Avatar_Acheron_00_Skill03_Hit_07.prefab",
+                "height": 1.0,
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "cue.293.3170.hit.2"
+            },
+            {"op": "wait", "for": "cue.293.3170.hit.2", "until": "accepted"},
+            {"op": "join"},
+            {"op": "call", "function": "@return.return.pose"},
+            {"op": "wait", "for": "return.pose", "until": "submitted"},
+            {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+            {"op": "wait", "for": "return.position"}
+          ]
+        }
+      ],
+      "on_interrupt": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "event", "is": 1},
+          "then": [
+            {"op": "call", "function": "@return.return.pose"},
+            {"op": "wait", "for": "return.pose", "until": "submitted"},
+            {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+            {"op": "wait", "for": "return.position"}
+          ],
+          "else": [
+            {"op": "call", "function": "@return.return.pose"},
+            {"op": "wait", "for": "return.pose", "until": "submitted"},
+            {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+            {"op": "wait", "for": "return.position"}
+          ]
+        }
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill34",
+        "omissions": [
+          "Manual visual callback selection; no native combat modifier or automatic event simulation.",
+          "event: 0=Eff_Avatar_Acheron_00_Skill03_Hit_07.prefab, 1=Eff_Avatar_Acheron_00_Skill03_Hit_07.prefab",
+          "ClearTargetTimeSlow: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "PredicateTaskList: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "TargetTimeSlow: serial step depends on an unavailable source clock; no timing is inferred",
+          "ClearTargetTimeSlow: serial step depends on an unavailable source clock; no timing is inferred",
+          "DamagePerformFinish: serial step depends on an unavailable source clock; no timing is inferred",
+          "TriggerSkipDeadHandler: serial step depends on an unavailable source clock; no timing is inferred",
+          "SkillPerformFinish: serial step depends on an unavailable source clock; no timing is inferred",
+          "ShowBattleAvatarPanel: serial step depends on an unavailable source clock; no timing is inferred",
+          "SetCharacterVisibleInViewMode: serial step depends on an unavailable source clock; no timing is inferred",
+          "SetSkillTargetFormationByPos: serial step depends on an unavailable source clock; no timing is inferred",
+          "LevelAudioState: serial step depends on an unavailable source clock; no timing is inferred",
+          "MakeCharacterHUDVisible: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitTimelineFinish: serial step depends on an unavailable source clock; no timing is inferred",
+          "TriggerUINotify: serial step depends on an unavailable source clock; no timing is inferred",
+          "ScaleCharacterModel: serial step depends on an unavailable source clock; no timing is inferred",
+          "RPGColorGradingCurveEffect: serial step depends on an unavailable source clock; no timing is inferred",
+          "HideLevelStage: serial step depends on an unavailable source clock; no timing is inferred",
+          "SetTeamFormation: serial step depends on an unavailable source clock; no timing is inferred",
+          "AddGlobalDynamicOffsetIgnoreEntity: serial step depends on an unavailable source clock; no timing is inferred",
+          "SetUltraSkillAssetPreload: serial step depends on an unavailable source clock; no timing is inferred",
+          "SetTargetAssetPreloadState: serial step depends on an unavailable source clock; no timing is inferred",
+          "HideFieldEffect: serial step depends on an unavailable source clock; no timing is inferred",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "Source: Selected visual fragment only; source timing, conditions and other participants are not replayed."
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "base.skill.7.perform": {
+      "inputs": {
+        "event": {
+          "type": "integer",
+          "default": 0,
+          "label": "Setting",
+          "choices": [
+            {"value": 0, "label": "MAvatar_Acheron_00_Skill03_Special: OnStack"},
+            {"value": 1, "label": "MAvatar_Acheron_00_Skill03_Special: OnDestroy"}
+          ]
+        },
+        "enabled": {"type": "bool", "default": true, "label": "Enabled"}
+      },
+      "requires": [
+        {"op": "number", "name": "event", "compare": "ge", "value": 0},
+        {"op": "number", "name": "event", "compare": "lt", "value": 2}
+      ],
+      "mode": "input",
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "event", "is": 0},
+          "then": [
+            {
+              "op": "if",
+              "condition": {"op": "value", "name": "enabled", "is": true},
+              "then": [
+                {"op": "state.exit", "name": "base.callback.323.phase.4", "as": "setting.1.phase-replace.0"},
+                {"op": "wait", "for": "setting.1.phase-replace.0"},
+                {"op": "state.exit", "name": "base.callback.324.phase.3", "as": "setting.1.phase-replace.1"},
+                {"op": "wait", "for": "setting.1.phase-replace.1"},
+                {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[5].value._CallbackList[0].CallbackConfig[2]", "as": "setting.1.phase-replace.2"},
+                {"op": "wait", "for": "setting.1.phase-replace.2", "until": "accepted"},
+                {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[5].value._CallbackList[1].CallbackConfig[3]", "as": "setting.1.phase-replace.3"},
+                {"op": "wait", "for": "setting.1.phase-replace.3", "until": "accepted"},
+                {"op": "state.enter", "name": "base.callback.323.phase.4", "as": "setting.1"},
+                {"op": "wait", "for": "setting.1"}
+              ],
+              "else": [
+                {"op": "state.exit", "name": "base.callback.323.phase.4", "as": "setting.1"},
+                {"op": "wait", "for": "setting.1"}
+              ]
+            }
+          ],
+          "elif": [
+            {
+              "condition": {"op": "value", "name": "enabled", "is": true},
+              "then": [
+                {"op": "state.exit", "name": "base.callback.323.phase.4", "as": "setting.1.phase-replace.0"},
+                {"op": "wait", "for": "setting.1.phase-replace.0"},
+                {"op": "state.exit", "name": "base.callback.324.phase.3", "as": "setting.1.phase-replace.1"},
+                {"op": "wait", "for": "setting.1.phase-replace.1"},
+                {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[5].value._CallbackList[0].CallbackConfig[2]", "as": "setting.1.phase-replace.2"},
+                {"op": "wait", "for": "setting.1.phase-replace.2", "until": "accepted"},
+                {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[5].value._CallbackList[1].CallbackConfig[3]", "as": "setting.1.phase-replace.3"},
+                {"op": "wait", "for": "setting.1.phase-replace.3", "until": "accepted"},
+                {"op": "state.enter", "name": "base.callback.324.phase.3", "as": "setting.1"},
+                {"op": "wait", "for": "setting.1"}
+              ]
+            }
+          ],
+          "else": [
+            {"op": "state.exit", "name": "base.callback.324.phase.3", "as": "setting.1"},
+            {"op": "wait", "for": "setting.1"}
+          ]
+        }
+      ],
+      "presentation": {
+        "label": "SkillP01",
+        "omissions": ["AutoUseUltraSkill: not included in the visual sequence projection"]
+      },
+      "tags": ["manual-visual-callback", "visual-settings"]
+    },
+    "base.skill.8.perform": {
+      "inputs": {
+        "event": {
+          "type": "integer",
+          "default": 0,
+          "label": "Callback",
+          "choices": [
+            {"value": 0, "label": "SkillMaze_Acheron_Modifier: OnEnterBattle"}
+          ]
+        },
+        "callback.313.condition.ByCompareWaveCount.13": {
+          "type": "bool",
+          "default": false,
+          "label": "ByCompareWaveCount",
+          "description": "Manual source condition: $.AbilityList[16].Modifiers[0].value._CallbackList[1].CallbackConfig[6].Predicate"
+        }
+      },
+      "requires": [
+        {"op": "number", "name": "event", "compare": "ge", "value": 0},
+        {"op": "number", "name": "event", "compare": "lt", "value": 1}
+      ],
+      "bindings": {
+        "targets": ["PreviewTarget", "callback.313.target.DarkTeamEntity"]
+      },
+      "run": [
+        {"op": "effect.create", "effects": ["base.callback.313.effect.10"], "as": "callback.313.effect.10"},
+        {"op": "wait", "for": "callback.313.effect.10", "until": "accepted"},
+        {"op": "wait", "seconds": 0.1},
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "callback.313.condition.ByCompareWaveCount.13", "is": true},
+          "then": [
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "",
+              "direction": {},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Acheron_00/Eff_Avatar_Acheron_00_Skill03_AOEHit_02.prefab",
+                "height": 1.0,
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "callback.313.hit.15"
+            },
+            {"op": "wait", "for": "callback.313.hit.15", "until": "accepted"}
+          ],
+          "else": [
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "",
+              "direction": {},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Acheron_00/Eff_Avatar_Acheron_00_Skill03_AOEHit_02.prefab",
+                "height": 1.0,
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "callback.313.hit.17"
+            },
+            {"op": "wait", "for": "callback.313.hit.17", "until": "accepted"}
+          ]
+        },
+        {"op": "wait", "seconds": 0.8000000007},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "effect.remove", "effects": ["base.callback.313.effect.10"], "optional": ["base.callback.313.effect.10"], "as": "callback.313.remove-effects"},
+        {"op": "wait", "for": "callback.313.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "effect.remove", "effects": ["base.callback.313.effect.10"], "optional": ["base.callback.313.effect.10"], "as": "callback.313.remove-effects"},
+        {"op": "wait", "for": "callback.313.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "SkillMaze",
+        "omissions": [
+          "Manual visual callback selection; no native combat modifier or automatic event simulation.",
+          "event: 0=SkillMaze_Acheron_Modifier: OnEnterBattle",
+          "GlobalMainIntensityEffect: not included in the visual sequence projection",
+          "RPGColorGradingCurveEffect: not included in the visual sequence projection",
+          "VCameraNoiseChange: not included in the visual sequence projection",
+          "TriggerEffect: callback target DarkTeamEntity is a selected owned actor input, defaulting to this actor; native event payload is not assumed",
+          "TriggerAnimState: animation has no literal owned-body binding",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "DamagePerformFinish: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "base.skill.9.perform": {"use": "common.elemental.responses", "next": "base.rest"},
+    "base.preview.hit": {
+      "inputs": {
+        "kind": {
+          "type": "text",
+          "default": "Hit",
+          "label": "Hit type",
+          "choices": [
+            {"value": "Hit", "label": "Hit"},
+            {"value": "Hit_H", "label": "Hit_H"}
+          ]
+        }
+      },
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "kind", "is": "Hit_H"},
+          "then": [
+            {"op": "hit", "target": "Caster", "animation": "Hit_H", "as": "hit-heavy"},
+            {"op": "wait", "for": "hit-heavy"}
+          ],
+          "else": [
+            {"op": "hit", "target": "Caster", "animation": "Hit", "as": "hit"},
+            {"op": "wait", "for": "hit"}
+          ]
+        }
+      ],
+      "next": "base.rest",
+      "presentation": {"label": "Hit"},
+      "tags": ["manual-visual-callback"]
+    },
+    "compiled.0.reset_phase": {
+      "mode": "input",
+      "run": [
+        {"op": "state.exit", "name": "base.callback.323.phase.4", "as": "phase.reset.0"},
+        {"op": "wait", "for": "phase.reset.0"},
+        {"op": "state.exit", "name": "base.callback.324.phase.3", "as": "phase.reset.1"},
+        {"op": "wait", "for": "phase.reset.1"},
+        {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[5].value._CallbackList[0].CallbackConfig[2]", "as": "phase.reset.2"},
+        {"op": "wait", "for": "phase.reset.2", "until": "accepted"},
+        {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[5].value._CallbackList[1].CallbackConfig[3]", "as": "phase.reset.3"},
+        {"op": "wait", "for": "phase.reset.3", "until": "accepted"}
+      ],
+      "presentation": {
+        "kind": "setting",
+        "contexts": [
+          "base.callback.323.phase.4",
+          "base.callback.324.phase.3",
+          "compiled.0.phase/GlobalModifiers[5].value._CallbackList[0].CallbackConfig[2]",
+          "compiled.0.phase/GlobalModifiers[5].value._CallbackList[1].CallbackConfig[3]"
+        ]
+      },
+      "tags": ["visual-phase-reset"]
+    },
+    "compiled.0.select/GlobalModifiers[5].value._CallbackList[0].CallbackConfig[2]": {
+      "run": [
+        {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[5].value._CallbackList[0].CallbackConfig[2]", "as": "phase.select.0"},
+        {"op": "wait", "for": "phase.select.0", "until": "accepted"},
+        {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[5].value._CallbackList[1].CallbackConfig[3]", "as": "phase.select.1"},
+        {"op": "wait", "for": "phase.select.1", "until": "accepted"},
+        {"op": "state.exit", "name": "base.callback.323.phase.4", "as": "phase.select.2.phase-replace.0"},
+        {"op": "wait", "for": "phase.select.2.phase-replace.0"},
+        {"op": "state.exit", "name": "base.callback.324.phase.3", "as": "phase.select.2.phase-replace.1"},
+        {"op": "wait", "for": "phase.select.2.phase-replace.1"},
+        {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[5].value._CallbackList[0].CallbackConfig[2]", "as": "phase.select.2.phase-replace.2"},
+        {"op": "wait", "for": "phase.select.2.phase-replace.2", "until": "accepted"},
+        {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[5].value._CallbackList[1].CallbackConfig[3]", "as": "phase.select.2.phase-replace.3"},
+        {"op": "wait", "for": "phase.select.2.phase-replace.3", "until": "accepted"},
+        {"op": "scope.enter", "name": "compiled.0.phase/GlobalModifiers[5].value._CallbackList[0].CallbackConfig[2]", "as": "phase.select.2"},
+        {"op": "wait", "for": "phase.select.2", "until": "accepted"}
+      ],
+      "presentation": {}
+    },
+    "compiled.0.standby/GlobalModifiers[5].value._CallbackList[0].CallbackConfig[2]": {
+      "requires": [
+        {"op": "value", "name": "phase_binding", "is": "GlobalModifiers[5].value._CallbackList[0].CallbackConfig[2]"}
+      ],
+      "run": [
+        {"op": "animation", "state": "StandBy", "as": "body"},
+        {"op": "wait", "for": "body", "until": "accepted"}
+      ],
+      "presentation": {}
+    },
+    "compiled.0.select/GlobalModifiers[5].value._CallbackList[1].CallbackConfig[3]": {
+      "run": [
+        {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[5].value._CallbackList[0].CallbackConfig[2]", "as": "phase.select.0"},
+        {"op": "wait", "for": "phase.select.0", "until": "accepted"},
+        {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[5].value._CallbackList[1].CallbackConfig[3]", "as": "phase.select.1"},
+        {"op": "wait", "for": "phase.select.1", "until": "accepted"},
+        {"op": "state.exit", "name": "base.callback.323.phase.4", "as": "phase.select.2.phase-replace.0"},
+        {"op": "wait", "for": "phase.select.2.phase-replace.0"},
+        {"op": "state.exit", "name": "base.callback.324.phase.3", "as": "phase.select.2.phase-replace.1"},
+        {"op": "wait", "for": "phase.select.2.phase-replace.1"},
+        {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[5].value._CallbackList[0].CallbackConfig[2]", "as": "phase.select.2.phase-replace.2"},
+        {"op": "wait", "for": "phase.select.2.phase-replace.2", "until": "accepted"},
+        {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[5].value._CallbackList[1].CallbackConfig[3]", "as": "phase.select.2.phase-replace.3"},
+        {"op": "wait", "for": "phase.select.2.phase-replace.3", "until": "accepted"},
+        {"op": "scope.enter", "name": "compiled.0.phase/GlobalModifiers[5].value._CallbackList[1].CallbackConfig[3]", "as": "phase.select.2"},
+        {"op": "wait", "for": "phase.select.2", "until": "accepted"}
+      ],
+      "presentation": {}
+    },
+    "compiled.0.standby/GlobalModifiers[5].value._CallbackList[1].CallbackConfig[3]": {
+      "requires": [
+        {"op": "value", "name": "phase_binding", "is": "GlobalModifiers[5].value._CallbackList[1].CallbackConfig[3]"}
+      ],
+      "run": [
+        {"op": "animation", "state": "StandBy_Transfer", "as": "body"},
+        {"op": "wait", "for": "body", "until": "accepted"}
+      ],
+      "presentation": {}
+    },
+    "@receiver-clear/base.callback.5359.receiver-property.3": {
+      "requires": [
+        {"op": "state", "name": "common.elemental.frozen-hit"}
+      ],
+      "mode": "input",
+      "run": [
+        {"op": "state.exit", "name": "common.elemental.frozen-hit", "only_caster": true, "as": "clear"},
+        {"op": "wait", "for": "clear"}
+      ],
+      "presentation": {
+        "label": "Clear hit effect override",
+        "kind": "setting",
+        "contexts": ["common.elemental.frozen-hit"]
+      },
+      "tags": ["visual-receiver-clear"]
+    }
+  },
+  "functions": {
+    "@return.rest.pose": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "rest.pose.expression"},
+      {
+        "op": "if",
+        "condition": {"op": "phase", "is": "@return/base.callback.323.phase.4"},
+        "then": [
+          {
+            "op": "animation",
+            "state": "StandBy_Transfer",
+            "current_idle": true,
+            "end": 0,
+            "restart": false,
+            "track": {"logic": 1, "extra": 6, "previous_end": 1},
+            "as": "rest.pose"
+          }
+        ],
+        "elif": [
+          {
+            "condition": {"op": "phase", "is": "@return/base.callback.324.phase.3"},
+            "then": [
+              {
+                "op": "animation",
+                "state": "StandBy",
+                "current_idle": true,
+                "end": 0,
+                "restart": false,
+                "track": {"logic": 1, "extra": 6, "previous_end": 1},
+                "as": "rest.pose"
+              }
+            ]
+          },
+          {
+            "condition": {"op": "phase", "is": "@return/compiled.0.phase/GlobalModifiers[5].value._CallbackList[0].CallbackConfig[2]"},
+            "then": [
+              {
+                "op": "animation",
+                "state": "StandBy",
+                "current_idle": true,
+                "end": 0,
+                "restart": false,
+                "track": {"logic": 1, "extra": 6, "previous_end": 1},
+                "as": "rest.pose"
+              }
+            ]
+          },
+          {
+            "condition": {"op": "phase", "is": "@return/compiled.0.phase/GlobalModifiers[5].value._CallbackList[1].CallbackConfig[3]"},
+            "then": [
+              {
+                "op": "animation",
+                "state": "StandBy_Transfer",
+                "current_idle": true,
+                "end": 0,
+                "restart": false,
+                "track": {"logic": 1, "extra": 6, "previous_end": 1},
+                "as": "rest.pose"
+              }
+            ]
+          }
+        ],
+        "else": [
+          {
+            "op": "animation",
+            "state": "StandBy",
+            "current_idle": true,
+            "end": 0,
+            "restart": false,
+            "track": {"logic": 1, "extra": 6, "previous_end": 1},
+            "as": "rest.pose"
+          }
+        ]
+      }
+    ],
+    "@return.return.pose": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "return.pose.expression"},
+      {
+        "op": "if",
+        "condition": {"op": "phase", "is": "@return/base.callback.323.phase.4"},
+        "then": [
+          {
+            "op": "animation",
+            "state": "StandBy_Transfer",
+            "current_idle": true,
+            "end": 0,
+            "restart": false,
+            "track": {"logic": 1, "extra": 6, "previous_end": 1},
+            "as": "return.pose"
+          }
+        ],
+        "elif": [
+          {
+            "condition": {"op": "phase", "is": "@return/base.callback.324.phase.3"},
+            "then": [
+              {
+                "op": "animation",
+                "state": "StandBy",
+                "current_idle": true,
+                "end": 0,
+                "restart": false,
+                "track": {"logic": 1, "extra": 6, "previous_end": 1},
+                "as": "return.pose"
+              }
+            ]
+          },
+          {
+            "condition": {"op": "phase", "is": "@return/compiled.0.phase/GlobalModifiers[5].value._CallbackList[0].CallbackConfig[2]"},
+            "then": [
+              {
+                "op": "animation",
+                "state": "StandBy",
+                "current_idle": true,
+                "end": 0,
+                "restart": false,
+                "track": {"logic": 1, "extra": 6, "previous_end": 1},
+                "as": "return.pose"
+              }
+            ]
+          },
+          {
+            "condition": {"op": "phase", "is": "@return/compiled.0.phase/GlobalModifiers[5].value._CallbackList[1].CallbackConfig[3]"},
+            "then": [
+              {
+                "op": "animation",
+                "state": "StandBy_Transfer",
+                "current_idle": true,
+                "end": 0,
+                "restart": false,
+                "track": {"logic": 1, "extra": 6, "previous_end": 1},
+                "as": "return.pose"
+              }
+            ]
+          }
+        ],
+        "else": [
+          {
+            "op": "animation",
+            "state": "StandBy",
+            "current_idle": true,
+            "end": 0,
+            "restart": false,
+            "track": {"logic": 1, "extra": 6, "previous_end": 1},
+            "as": "return.pose"
+          }
+        ]
+      }
+    ]
+  },
+  "states": {
+    "base.callback.323.phase.4": {
+      "callbacks": {},
+      "values": {"phase_source": "Config/ConfigAbility/Avatar/Avatar_Acheron_00_Ability.json:$.GlobalModifiers[5].value._CallbackList[1].CallbackConfig[3]"},
+      "phase": "@return/base.callback.323.phase.4",
+      "configuration": "base.callback.323.phase.4",
+      "restore": []
+    },
+    "base.callback.324.phase.3": {
+      "callbacks": {},
+      "values": {"phase_source": "Config/ConfigAbility/Avatar/Avatar_Acheron_00_Ability.json:$.GlobalModifiers[5].value._CallbackList[0].CallbackConfig[2]"},
+      "phase": "@return/base.callback.324.phase.3",
+      "configuration": "base.callback.324.phase.3",
+      "restore": []
+    },
+    "compiled.0.phase/GlobalModifiers[5].value._CallbackList[0].CallbackConfig[2]": {
+      "phase": "@return/compiled.0.phase/GlobalModifiers[5].value._CallbackList[0].CallbackConfig[2]",
+      "values": {"phase_binding": "GlobalModifiers[5].value._CallbackList[0].CallbackConfig[2]"},
+      "configuration": "compiled.0.phase/GlobalModifiers[5].value._CallbackList[0].CallbackConfig[2]",
+      "restore": []
+    },
+    "compiled.0.phase/GlobalModifiers[5].value._CallbackList[1].CallbackConfig[3]": {
+      "phase": "@return/compiled.0.phase/GlobalModifiers[5].value._CallbackList[1].CallbackConfig[3]",
+      "values": {"phase_binding": "GlobalModifiers[5].value._CallbackList[1].CallbackConfig[3]"},
+      "configuration": "compiled.0.phase/GlobalModifiers[5].value._CallbackList[1].CallbackConfig[3]",
+      "restore": []
+    }
+  },
+  "resources": {
+    "effects": {
+      "base.skill.1.effect.66": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Acheron_00/Eff_Avatar_Acheron_00_Skill02_Shadow00.prefab", "target": "Caster"},
+      "base.skill.5.effect.35": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Acheron_00/Eff_Avatar_Acheron_00_Skill03_AOEHit_03.prefab", "target": "Caster"},
+      "base.callback.313.effect.10": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Acheron_00/Eff_Avatar_Acheron_00_Common_Enter_Hit04_01.prefab",
+        "target": "callback.313.target.DarkTeamEntity"
+      }
+    },
+    "phases": {
+      "base.callback.323.phase.4": {
+        "root": {"kind": "global_modifier", "name": "MAvatar_Acheron_00_Skill03_Special"},
+        "path": [
+          {"owner": "RPG.GameCore.TurnBasedModifierConfig", "field": "_CallbackList", "index": 1},
+          {"owner": "RPG.GameCore.TurnBasedModifierCallbackConfig", "field": "CallbackConfig", "index": 3},
+          {"owner": "RPG.GameCore.CharacterChangePhase", "field": "PhaseAnimConfig"}
+        ]
+      },
+      "base.callback.324.phase.3": {
+        "root": {"kind": "global_modifier", "name": "MAvatar_Acheron_00_Skill03_Special"},
+        "path": [
+          {"owner": "RPG.GameCore.TurnBasedModifierConfig", "field": "_CallbackList", "index": 0},
+          {"owner": "RPG.GameCore.TurnBasedModifierCallbackConfig", "field": "CallbackConfig", "index": 2},
+          {"owner": "RPG.GameCore.CharacterChangePhase", "field": "PhaseAnimConfig"}
+        ]
+      },
+      "compiled.0.phase/GlobalModifiers[5].value._CallbackList[0].CallbackConfig[2]": {
+        "root": {"kind": "global_modifier", "name": "MAvatar_Acheron_00_Skill03_Special"},
+        "path": [
+          {"owner": "RPG.GameCore.TurnBasedModifierConfig", "field": "_CallbackList", "index": 0},
+          {"owner": "RPG.GameCore.TurnBasedModifierCallbackConfig", "field": "CallbackConfig", "index": 2},
+          {"owner": "RPG.GameCore.CharacterChangePhase", "field": "PhaseAnimConfig"}
+        ]
+      },
+      "compiled.0.phase/GlobalModifiers[5].value._CallbackList[1].CallbackConfig[3]": {
+        "root": {"kind": "global_modifier", "name": "MAvatar_Acheron_00_Skill03_Special"},
+        "path": [
+          {"owner": "RPG.GameCore.TurnBasedModifierConfig", "field": "_CallbackList", "index": 1},
+          {"owner": "RPG.GameCore.TurnBasedModifierCallbackConfig", "field": "CallbackConfig", "index": 3},
+          {"owner": "RPG.GameCore.CharacterChangePhase", "field": "PhaseAnimConfig"}
+        ]
+      }
+    }
+  }
+}

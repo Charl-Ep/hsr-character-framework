@@ -1,0 +1,497 @@
+{
+  "format": "hksr.script",
+  "id": "official-scripts:Config/ConfigCharacter/Avatar/Avatar_Sunday_10_Config.json",
+  "applies_to": "Config/ConfigCharacter/Avatar/Avatar_Sunday_10_Config.json",
+  "default": true,
+  "imports": ["Common/Elemental.json"],
+  "defaults": {
+    "targets": {
+      "PreviewTarget": {
+        "local_position": [0, 0, 6]
+      }
+    }
+  },
+  "actions": {
+    "rest": {
+      "trigger": "internal",
+      "run": [
+        {"op": "call", "function": "@return.rest.pose"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["stable-return", "idle-provider"]
+    },
+    "skill.0.perform": {
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Sunday_10_Skill01_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Sunday_10_Skill01_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.0.clock.1", "progress": 0.3069999997},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit",
+              "direction": {},
+              "effect": {"path": "", "minimum_interval": 0.0500000007, "maximum_count": 1},
+              "allow_position": true,
+              "as": "skill.0.hit.10"
+            },
+            {"op": "wait", "for": "skill.0.hit.10", "until": "accepted"},
+            {"op": "wait", "for": "skill.0.clock.1", "progress": 0.6282051003}
+          ],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill01", "end": 0.6282051003, "track": {"logic": 3}, "as": "skill.0.clock.1"},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.6282051003},
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "Skill01",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "FireProjectile: not included in the visual sequence projection",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "LookAt: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "skill.0.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Sunday_10_Config.json", "skill": 0, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "skill.1.perform": {
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "run": [
+        {"op": "animation", "state": "Skill02", "end": -1.0, "track": {"logic": 3}, "as": "skill.1.clock.1"},
+        {"op": "wait", "for": "skill.1.clock.1", "until": "animation_end"},
+        {
+          "op": "start",
+          "id": "Avatar_Sunday_10_Skill02_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Sunday_10_Skill02_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.6500000006},
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.673913001},
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.7000000006},
+            {
+              "op": "for_each",
+              "bind": "skill.1.member.41",
+              "targets": ["PreviewTarget"],
+              "collection": "skill.1.targets.42",
+              "run": [],
+              "empty": []
+            },
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 1.0}
+          ],
+          "join": true
+        },
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "Skill02",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "SetTeamFormation: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "GlobalMainIntensityEffect: not included in the visual sequence projection",
+          "TriggerEffect: effect needs a non-owned target, dynamic path, or Timeline attachment",
+          "SetActionDelayNearTarget: not included in the visual sequence projection",
+          "Retarget: recipient collection is explicitly selected; native filtering, random selection and count limits are not simulated",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "SetEntityVisible: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "WaitAnimState: wait uses an unprojected clock policy",
+          "PredicateTaskList: serial step depends on an unavailable source clock; no timing is inferred",
+          "GlobalMainIntensityEffect: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitTimelineFinish: serial step depends on an unavailable source clock; no timing is inferred",
+          "RemoveEffect: serial step depends on an unavailable source clock; no timing is inferred",
+          "MoveToTargetPosition: serial step depends on an unavailable source clock; no timing is inferred",
+          "SyncCharLightAndCameraDir: serial step depends on an unavailable source clock; no timing is inferred"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "skill.1.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Sunday_10_Config.json", "skill": 1, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "skill.2.perform": {
+      "inputs": {
+        "skill.2.condition.ByCompareTarget.6": {"type": "bool", "default": false, "label": "ByCompareTarget", "description": "Manual source condition: $.AbilityList[6].OnStart[1].Predicate"}
+      },
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Sunday_10_Skill03_Phase02",
+          "run": [
+            {
+              "op": "if",
+              "condition": {"op": "value", "name": "skill.2.condition.ByCompareTarget.6", "is": true},
+              "then": [
+                {"op": "render.visibility", "key": "SetEntityVisible.reason.0", "visible": false, "as": "skill.2.entity_visible.14"},
+                {"op": "wait", "for": "skill.2.entity_visible.14", "until": "accepted"},
+                {"op": "wait", "for": "skill.2.clock.1", "progress": 0.7499999024},
+                {"op": "wait", "for": "skill.2.clock.1", "progress": 0.7700000007}
+              ],
+              "else": [
+                {"op": "render.visibility", "key": "SetEntityVisible.reason.0", "visible": false, "as": "skill.2.entity_visible.19"},
+                {"op": "wait", "for": "skill.2.entity_visible.19", "until": "accepted"},
+                {"op": "wait", "for": "skill.2.clock.1", "progress": 0.7499999024},
+                {"op": "wait", "for": "skill.2.clock.1", "progress": 0.7700000007},
+                {"op": "render.visibility", "key": "SetEntityVisible.reason.0", "visible": true, "as": "skill.2.entity_visible.23"},
+                {"op": "wait", "for": "skill.2.entity_visible.23", "until": "accepted"}
+              ]
+            }
+          ],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Sunday_10_Skill03_Camera",
+          "run": []
+        },
+        {"op": "animation", "state": "Skill03", "end": -1.0, "track": {"logic": 3}, "as": "skill.2.clock.1"},
+        {"op": "wait", "for": "skill.2.clock.1", "until": "animation_end"},
+        {"op": "wait", "for": "skill.2.clock.1", "progress": 0.6000000005},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "Skill03",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "SyncCharLightAndCameraDir: not included in the visual sequence projection",
+          "HideLevelStage: not included in the visual sequence projection",
+          "RemoveEffect: effect removal has no owned target binding",
+          "SetCharacterCustomTeamFormation: not included in the visual sequence projection",
+          "SetTeamFormation: not included in the visual sequence projection",
+          "SetEntityVisible: Non-render visibility side effects intentionally excluded: MuteColliderWhenInvisible",
+          "SetEntityVisible: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "TriggerEffect: effect needs a non-owned target, dynamic path, or Timeline attachment",
+          "WaitTimelineFinish: not included in the visual sequence projection",
+          "ResetCharacterCustomTeamFormation: serial step depends on an unavailable source clock; no timing is inferred",
+          "PredicateTaskList: serial step depends on an unavailable source clock; no timing is inferred",
+          "TryStartConnectUltraSkillFrameCapture: serial step depends on an unavailable source clock; no timing is inferred",
+          "SkillPerformFinish: serial step depends on an unavailable source clock; no timing is inferred",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "TriggerUINotify: not included in the visual sequence projection",
+          "GlobalMainIntensityEffect: serial step depends on an unavailable source clock; no timing is inferred",
+          "HideLevelStage: serial step depends on an unavailable source clock; no timing is inferred",
+          "TriggerEffect: serial step depends on an unavailable source clock; no timing is inferred"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "skill.2.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Sunday_10_Config.json", "skill": 2, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "skill.3.perform": {
+      "inputs": {
+        "cue": {
+          "type": "integer",
+          "default": 0,
+          "label": "Effect",
+          "choices": [
+            {"value": 0, "label": "OnEnterBattle"}
+          ]
+        }
+      },
+      "requires": [
+        {"op": "number", "name": "cue", "compare": "ge", "value": 0},
+        {"op": "number", "name": "cue", "compare": "lt", "value": 1}
+      ],
+      "run": [
+        {"op": "effect.create", "effects": ["skill.3.effect.0"], "as": "effect"},
+        {"op": "wait", "for": "effect", "until": "accepted"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "effect.remove", "effects": ["skill.3.effect.0"], "optional": ["skill.3.effect.0"], "as": "remove"},
+        {"op": "wait", "for": "remove", "until": "accepted"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "SkillP01",
+        "omissions": ["Actor-owned effect cue only. Original callback conditions and timing are manual inputs; use Finish to end.", "cue: 0=OnEnterBattle"]
+      },
+      "tags": ["manual-effect-cue", "partial-presentation"]
+    },
+    "callback.4111": {
+      "inputs": {
+        "callback.4111.condition.ByCompareWaveCount.1": {
+          "type": "bool",
+          "default": true,
+          "label": "ByCompareWaveCount",
+          "description": "Manual source condition: $.AbilityList[7].Modifiers[2].value._CallbackList[0].CallbackConfig[0].Predicate"
+        }
+      },
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "callback.4111.condition.ByCompareWaveCount.1", "is": true},
+          "then": [
+            {"op": "effect.create", "effects": ["callback.4111.effect.3"], "as": "callback.4111.effect.3"},
+            {"op": "wait", "for": "callback.4111.effect.3", "until": "accepted"}
+          ],
+          "else": []
+        },
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "effect.remove", "effects": ["callback.4111.effect.3"], "optional": ["callback.4111.effect.3"], "as": "callback.4111.remove-effects"},
+        {"op": "wait", "for": "callback.4111.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "effect.remove", "effects": ["callback.4111.effect.3"], "optional": ["callback.4111.effect.3"], "as": "callback.4111.remove-effects"},
+        {"op": "wait", "for": "callback.4111.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "MAvatar_Sunday_00_PointB2Modifier: OnEnterBattle",
+        "omissions": ["Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects."]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "callback.4116": {
+      "bindings": {
+        "targets": ["Recipient"]
+      },
+      "run": [
+        {"op": "effect.create", "effects": ["callback.4116.effect.8"], "as": "callback.4116.effect.8"},
+        {"op": "wait", "for": "callback.4116.effect.8", "until": "accepted"},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "effect.remove", "effects": ["callback.4116.effect.8"], "optional": ["callback.4116.effect.8"], "as": "callback.4116.remove-effects"},
+        {"op": "wait", "for": "callback.4116.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "effect.remove", "effects": ["callback.4116.effect.8"], "optional": ["callback.4116.effect.8"], "as": "callback.4116.remove-effects"},
+        {"op": "wait", "for": "callback.4116.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "MAvatar_Sunday_10_Skill03_Link: OnStack",
+        "omissions": [
+          "Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects.",
+          "ModifierAttachEffect: manual bound-effect preview; modifier flags, collider-height offset, native mutex and automatic visibility/lifetime are not applied"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "skill.4.perform": {"use": "common.elemental.responses", "next": "rest"},
+    "preview.hit": {
+      "inputs": {
+        "kind": {
+          "type": "text",
+          "default": "Hit",
+          "label": "Hit type",
+          "choices": [
+            {"value": "Hit", "label": "Hit"},
+            {"value": "Hit_H", "label": "Hit_H"}
+          ]
+        }
+      },
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "kind", "is": "Hit_H"},
+          "then": [
+            {"op": "hit", "target": "Caster", "animation": "Hit_H", "as": "hit-heavy"},
+            {"op": "wait", "for": "hit-heavy"}
+          ],
+          "else": [
+            {"op": "hit", "target": "Caster", "animation": "Hit", "as": "hit"},
+            {"op": "wait", "for": "hit"}
+          ]
+        }
+      ],
+      "next": "rest",
+      "presentation": {"label": "Hit"},
+      "tags": ["manual-visual-callback"]
+    },
+    "source.5": {
+      "requires": [
+        {
+          "op": "unresolved",
+          "source": "Config/ConfigCharacter/Avatar/Avatar_Sunday_10_Config.json:$.SkillList[5]",
+          "detail": "Retained source has no independently bound presentation unit"
+        }
+      ],
+      "trigger": "internal",
+      "run": [],
+      "presentation": {
+        "label": "SkillMaze",
+        "listed": false,
+        "omissions": ["Retained source has no independently bound presentation unit"]
+      },
+      "tags": ["retained-source"]
+    },
+    "@receiver-clear/callback.5359.receiver-property.3": {
+      "requires": [
+        {"op": "state", "name": "common.elemental.frozen-hit"}
+      ],
+      "mode": "input",
+      "run": [
+        {"op": "state.exit", "name": "common.elemental.frozen-hit", "only_caster": true, "as": "clear"},
+        {"op": "wait", "for": "clear"}
+      ],
+      "presentation": {
+        "label": "Clear hit effect override",
+        "kind": "setting",
+        "contexts": ["common.elemental.frozen-hit"]
+      },
+      "tags": ["visual-receiver-clear"]
+    }
+  },
+  "functions": {
+    "@return.rest.pose": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "rest.pose.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "rest.pose"
+      }
+    ],
+    "@return.return.pose": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "return.pose.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "return.pose"
+      }
+    ]
+  },
+  "states": {},
+  "resources": {
+    "effects": {
+      "skill.3.effect.0": {"path": "Effects/Eff_Prefab/Eff_Common/Eff_Common_MAZ_RecoverSP.prefab", "target": "Caster"},
+      "callback.4111.effect.3": {"path": "Effects/Eff_Prefab/Eff_Common/Eff_Common_MAZ_RecoverSP.prefab", "target": "Caster"},
+      "callback.4116.effect.8": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sunday_10/Eff_Avatar_Sunday_10_Buff_Loop.prefab",
+        "target": "Recipient",
+        "attach_to_target": true,
+        "attach_point": "Head"
+      }
+    }
+  }
+}

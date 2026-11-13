@@ -1,0 +1,1172 @@
+{
+  "format": "hksr.script",
+  "id": "official-scripts:Config/ConfigCharacter/Avatar/Avatar_RobinS_00_Config.json",
+  "applies_to": "Config/ConfigCharacter/Avatar/Avatar_RobinS_00_Config.json",
+  "default": true,
+  "imports": ["Common/Elemental.json"],
+  "defaults": {
+    "targets": {
+      "PreviewTarget": {
+        "local_position": [0, 0, 6]
+      },
+      "callback.3591.target.AllTeamCenter": {"alias": "Caster"}
+    }
+  },
+  "actions": {
+    "base.rest": {
+      "trigger": "internal",
+      "run": [
+        {"op": "call", "function": "@return.rest.pose"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["stable-return", "idle-provider"]
+    },
+    "base.skill.0.perform": {
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_RobinS_00_Skill01_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_RobinS_00_Skill01_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.0.clock.1", "progress": 0.151}
+          ],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill01", "end": 1.0, "track": {"logic": 3}, "as": "skill.0.clock.1"},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.6600000006},
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill01",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "NewFireProjectile: not included in the visual sequence projection",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "LookAt: not included in the visual sequence projection",
+          "StopTimeline: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.0.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_RobinS_00_Config.json", "skill": 0, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "base.skill.1.perform": {
+      "inputs": {
+        "skill.1.condition.ByCompareTargetCount.8": {"type": "bool", "default": true, "label": "ByCompareTargetCount", "description": "Manual source condition: $.AbilityList[4].OnStart[2].Predicate"}
+      },
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_RobinS_00_Skill02_Camera",
+          "run": [
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.5379999999}
+          ],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_RobinS_00_Skill02_Phase02",
+          "run": [
+            {
+              "op": "if",
+              "condition": {"op": "value", "name": "skill.1.condition.ByCompareTargetCount.8", "is": true},
+              "then": [
+                {"op": "sound", "event": "Ev_sfx_avatar_RobinS_Skill02_Bass", "as": "skill.1.sound.9"},
+                {"op": "effect.create", "effects": ["base.skill.1.effect.15"], "as": "skill.1.effect.15"},
+                {"op": "wait", "for": "skill.1.effect.15", "until": "accepted"}
+              ],
+              "else": []
+            }
+          ],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill02", "end": -1.0, "track": {"logic": 3}, "as": "skill.1.clock.1"},
+        {"op": "wait", "for": "skill.1.clock.1", "until": "animation_end"},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "effect.remove", "effects": ["base.skill.1.effect.15"], "optional": ["base.skill.1.effect.15"], "as": "skill.1.remove-effects"},
+        {"op": "wait", "for": "skill.1.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "effect.remove", "effects": ["base.skill.1.effect.15"], "optional": ["base.skill.1.effect.15"], "as": "skill.1.remove-effects"},
+        {"op": "wait", "for": "skill.1.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill02",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "SyncCharLightAndCameraDir: not included in the visual sequence projection",
+          "SetDynamicValueByRandom: not included in the visual sequence projection",
+          "SwitchCaseByDynamicValue: not included in the visual sequence projection",
+          "CreateServant: not included in the visual sequence projection",
+          "SetTargetUniqueName: not included in the visual sequence projection",
+          "SetEntityPosition: not included in the visual sequence projection",
+          "TriggerAnimState: animation has no literal owned-body binding",
+          "HealHP: not included in the visual sequence projection",
+          "SetEntityPosition: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "HideLevelStage: serial step depends on an unavailable source clock; no timing is inferred",
+          "PredicateTaskList: serial step depends on an unavailable source clock; no timing is inferred",
+          "SkillPerformFinish: serial step depends on an unavailable source clock; no timing is inferred"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.1.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_RobinS_00_Config.json", "skill": 1, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "base.skill.2.perform": {
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "run": [
+        {"op": "animation", "state": "Skill03", "end": -1.0, "track": {"logic": 3}, "as": "skill.2.clock.1"},
+        {"op": "wait", "for": "skill.2.clock.1", "until": "animation_end"},
+        {
+          "op": "start",
+          "id": "Avatar_RobinS_00_Skill03_Camera",
+          "run": [
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.4700000004}
+          ],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_RobinS_00_Skill03_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.6930000004},
+            {
+              "op": "for_each",
+              "bind": "skill.2.member.9",
+              "targets": ["PreviewTarget"],
+              "collection": "skill.2.targets.10",
+              "run": [],
+              "empty": []
+            },
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.729},
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.9000000008},
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.962500001}
+          ],
+          "join": true
+        },
+        {"op": "wait", "for": "skill.2.clock.1", "progress": 1.0},
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill03",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "AlignTargetToTeamCenter: not included in the visual sequence projection",
+          "HideLevelStage: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "SetEntityPosition: not included in the visual sequence projection",
+          "TriggerUINotify: not included in the visual sequence projection",
+          "Retarget: recipient collection is explicitly selected; native filtering, random selection and count limits are not simulated",
+          "TriggerEffect: effect needs a non-owned target, dynamic path, or Timeline attachment",
+          "TryStartConnectUltraSkillFrameCapture: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "RemoveEffect: effect removal has no owned target binding"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.2.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_RobinS_00_Config.json", "skill": 2, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "base.callback.3592": {
+      "inputs": {
+        "enabled": {"type": "bool", "default": true, "label": "Enabled"}
+      },
+      "mode": "input",
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "enabled", "is": true},
+          "then": [
+            {"op": "state.exit", "name": "base.callback.3591.phase.5", "as": "setting.1.phase-replace.0"},
+            {"op": "wait", "for": "setting.1.phase-replace.0"},
+            {"op": "state.exit", "name": "base.callback.3592.phase.2", "as": "setting.1.phase-replace.1"},
+            {"op": "wait", "for": "setting.1.phase-replace.1"},
+            {"op": "state.exit", "name": "base.callback.5329.phase.1", "as": "setting.1.phase-replace.2"},
+            {"op": "wait", "for": "setting.1.phase-replace.2"},
+            {"op": "state.exit", "name": "base.callback.5330.phase.1", "as": "setting.1.phase-replace.3"},
+            {"op": "wait", "for": "setting.1.phase-replace.3"},
+            {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[9].value._CallbackList[0].CallbackConfig[1]", "as": "setting.1.phase-replace.4"},
+            {"op": "wait", "for": "setting.1.phase-replace.4", "until": "accepted"},
+            {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[9].value._CallbackList[1].CallbackConfig[2]", "as": "setting.1.phase-replace.5"},
+            {"op": "wait", "for": "setting.1.phase-replace.5", "until": "accepted"},
+            {"op": "state.enter", "name": "base.callback.3592.phase.2", "as": "setting.1"},
+            {"op": "wait", "for": "setting.1"}
+          ],
+          "else": [
+            {"op": "state.exit", "name": "base.callback.3592.phase.2", "as": "setting.1"},
+            {"op": "wait", "for": "setting.1"}
+          ]
+        }
+      ],
+      "presentation": {
+        "label": "MAvatar_RobinS_00_Passive_FieldSelfLock: OnDestroy",
+        "kind": "setting",
+        "contexts": ["base.callback.3592.phase.2"],
+        "omissions": [
+          "SetResilience: resilience reset uses the prior owner; Finish withdraws this preview instead",
+          "SetEntityActionState: not included in the visual sequence projection",
+          "RemoveEffect: effect removal has no owned target binding"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "base.callback.5329": {
+      "inputs": {
+        "enabled": {"type": "bool", "default": true, "label": "Enabled"}
+      },
+      "mode": "input",
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "enabled", "is": true},
+          "then": [
+            {"op": "state.exit", "name": "base.callback.3591.phase.5", "as": "setting.1.phase-replace.0"},
+            {"op": "wait", "for": "setting.1.phase-replace.0"},
+            {"op": "state.exit", "name": "base.callback.3592.phase.2", "as": "setting.1.phase-replace.1"},
+            {"op": "wait", "for": "setting.1.phase-replace.1"},
+            {"op": "state.exit", "name": "base.callback.5329.phase.1", "as": "setting.1.phase-replace.2"},
+            {"op": "wait", "for": "setting.1.phase-replace.2"},
+            {"op": "state.exit", "name": "base.callback.5330.phase.1", "as": "setting.1.phase-replace.3"},
+            {"op": "wait", "for": "setting.1.phase-replace.3"},
+            {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[9].value._CallbackList[0].CallbackConfig[1]", "as": "setting.1.phase-replace.4"},
+            {"op": "wait", "for": "setting.1.phase-replace.4", "until": "accepted"},
+            {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[9].value._CallbackList[1].CallbackConfig[2]", "as": "setting.1.phase-replace.5"},
+            {"op": "wait", "for": "setting.1.phase-replace.5", "until": "accepted"},
+            {"op": "state.enter", "name": "base.callback.5329.phase.1", "as": "setting.1"},
+            {"op": "wait", "for": "setting.1"}
+          ],
+          "else": [
+            {"op": "state.exit", "name": "base.callback.5329.phase.1", "as": "setting.1"},
+            {"op": "wait", "for": "setting.1"}
+          ]
+        }
+      ],
+      "presentation": {
+        "label": "MServant_RobinSServant_00_FeverState: OnStack",
+        "kind": "setting",
+        "contexts": ["base.callback.5329.phase.1"]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "base.callback.5330": {
+      "inputs": {
+        "enabled": {"type": "bool", "default": true, "label": "Enabled"}
+      },
+      "mode": "input",
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "enabled", "is": true},
+          "then": [
+            {"op": "state.exit", "name": "base.callback.3591.phase.5", "as": "setting.1.phase-replace.0"},
+            {"op": "wait", "for": "setting.1.phase-replace.0"},
+            {"op": "state.exit", "name": "base.callback.3592.phase.2", "as": "setting.1.phase-replace.1"},
+            {"op": "wait", "for": "setting.1.phase-replace.1"},
+            {"op": "state.exit", "name": "base.callback.5329.phase.1", "as": "setting.1.phase-replace.2"},
+            {"op": "wait", "for": "setting.1.phase-replace.2"},
+            {"op": "state.exit", "name": "base.callback.5330.phase.1", "as": "setting.1.phase-replace.3"},
+            {"op": "wait", "for": "setting.1.phase-replace.3"},
+            {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[9].value._CallbackList[0].CallbackConfig[1]", "as": "setting.1.phase-replace.4"},
+            {"op": "wait", "for": "setting.1.phase-replace.4", "until": "accepted"},
+            {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[9].value._CallbackList[1].CallbackConfig[2]", "as": "setting.1.phase-replace.5"},
+            {"op": "wait", "for": "setting.1.phase-replace.5", "until": "accepted"},
+            {"op": "state.enter", "name": "base.callback.5330.phase.1", "as": "setting.1"},
+            {"op": "wait", "for": "setting.1"}
+          ],
+          "else": [
+            {"op": "state.exit", "name": "base.callback.5330.phase.1", "as": "setting.1"},
+            {"op": "wait", "for": "setting.1"}
+          ]
+        }
+      ],
+      "presentation": {
+        "label": "MServant_RobinSServant_00_FeverState: OnDestroy",
+        "kind": "setting",
+        "contexts": ["base.callback.5330.phase.1"]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "base.skill.3.perform": {
+      "inputs": {
+        "event": {
+          "type": "integer",
+          "default": 0,
+          "label": "Callback",
+          "choices": [
+            {"value": 0, "label": "MAvatar_RobinS_00_Passive_FieldSelfLock: OnStack"},
+            {"value": 1, "label": "Avatar_RobinS_00_Fever_Phase01"},
+            {"value": 2, "label": "Servant_RobinSServant_00_Skill02_2_InsertAbility_Phase01"},
+            {"value": 3, "label": "Servant_RobinSServant_00_Skill02_InsertAbility_Phase01"}
+          ]
+        },
+        "followup.1.condition.ByCompareDynamicValue.8": {
+          "type": "bool",
+          "default": false,
+          "label": "ByCompareDynamicValue",
+          "description": "Manual source condition: $.AbilityList[4].OnStart[1].SuccessTaskList[2].Predicate"
+        },
+        "followup.1.condition.ByContainBehaviorFlag.37": {
+          "type": "bool",
+          "default": true,
+          "label": "ByContainBehaviorFlag",
+          "description": "Manual source condition: $.AbilityList[4].OnStart[1].Predicate.PredicateList[0]"
+        },
+        "followup.1.condition.ByContainBehaviorFlag.38": {
+          "type": "bool",
+          "default": true,
+          "label": "ByContainBehaviorFlag",
+          "description": "Manual source condition: $.AbilityList[4].OnStart[1].Predicate.PredicateList[1]"
+        },
+        "followup.2.condition.ByCompareDynamicValue.8": {
+          "type": "bool",
+          "default": false,
+          "label": "ByCompareDynamicValue",
+          "description": "Manual source condition: $.AbilityList[3].OnStart[1].SuccessTaskList[2].Predicate"
+        },
+        "followup.2.condition.ByContainBehaviorFlag.24": {
+          "type": "bool",
+          "default": true,
+          "label": "ByContainBehaviorFlag",
+          "description": "Manual source condition: $.AbilityList[3].OnStart[1].Predicate.PredicateList[0]"
+        },
+        "followup.2.condition.ByContainBehaviorFlag.25": {
+          "type": "bool",
+          "default": true,
+          "label": "ByContainBehaviorFlag",
+          "description": "Manual source condition: $.AbilityList[3].OnStart[1].Predicate.PredicateList[1]"
+        }
+      },
+      "requires": [
+        {"op": "number", "name": "event", "compare": "ge", "value": 0},
+        {"op": "number", "name": "event", "compare": "lt", "value": 4}
+      ],
+      "bindings": {
+        "targets": ["Recipient", "callback.3591.target.AllTeamCenter"]
+      },
+      "run": [
+        {
+          "op": "switch",
+          "name": "event",
+          "cases": [
+            {
+              "is": 1,
+              "run": [
+                {"op": "animation", "state": "Passive", "end": -1.0, "track": {"logic": 3}, "as": "followup.0.clock.1"},
+                {"op": "wait", "for": "followup.0.clock.1", "until": "animation_end"},
+                {
+                  "op": "start",
+                  "id": "Avatar_RobinS_00_Fever_Camera",
+                  "run": [],
+                  "join": true
+                },
+                {"op": "wait", "for": "followup.0.clock.1", "progress": 0.8150000004},
+                {"op": "join"},
+                {
+                  "op": "repeat",
+                  "until_finish": true,
+                  "run": [
+                    {"op": "wait", "frame": true}
+                  ]
+                },
+                {"op": "call", "function": "@return.return.pose"},
+                {"op": "wait", "for": "return.pose", "until": "submitted"},
+                {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+                {"op": "wait", "for": "return.position"}
+              ],
+              "label": "Avatar_RobinS_00_Fever_Phase01"
+            },
+            {
+              "is": 2,
+              "run": [
+                {
+                  "op": "if",
+                  "condition": {"op": "value", "name": "followup.1.condition.ByContainBehaviorFlag.37", "is": true},
+                  "then": [
+                    {
+                      "op": "if",
+                      "condition": {"op": "value", "name": "followup.1.condition.ByContainBehaviorFlag.38", "is": true},
+                      "then": [
+                        {
+                          "op": "start",
+                          "id": "Servant_RobinSServant_00_Skill02_InsertAbility_Camera",
+                          "run": [],
+                          "join": true
+                        },
+                        {"op": "sound", "event": "Ev_sfx_avatar_RobinS_Skill02_02_Short", "as": "followup.1.sound.7"},
+                        {
+                          "op": "if",
+                          "condition": {"op": "value", "name": "followup.1.condition.ByCompareDynamicValue.8", "is": true},
+                          "then": [
+                            {"op": "sound", "event": "Ev_vo_avatar_skill_cast_robinsummeretto_double_03", "as": "followup.1.sound.9"}
+                          ],
+                          "else": [
+                            {"op": "sound", "event": "Ev_vo_avatar_skill_cast_robinsummeretto_double_06", "as": "followup.1.sound.10"}
+                          ]
+                        },
+                        {"op": "animation", "state": "Skill02_3", "start": 0.5130000002, "end": -1.0, "track": {"logic": 3}, "as": "followup.1.clock.1"},
+                        {"op": "wait", "for": "followup.1.clock.1", "until": "animation_end"}
+                      ],
+                      "else": []
+                    }
+                  ],
+                  "else": []
+                },
+                {"op": "join"},
+                {
+                  "op": "repeat",
+                  "until_finish": true,
+                  "run": [
+                    {"op": "wait", "frame": true}
+                  ]
+                },
+                {"op": "call", "function": "@return.return.pose"},
+                {"op": "wait", "for": "return.pose", "until": "submitted"},
+                {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+                {"op": "wait", "for": "return.position"}
+              ],
+              "label": "Servant_RobinSServant_00_Skill02_2_InsertAbility_Phase01"
+            },
+            {
+              "is": 3,
+              "run": [
+                {
+                  "op": "if",
+                  "condition": {"op": "value", "name": "followup.2.condition.ByContainBehaviorFlag.24", "is": true},
+                  "then": [
+                    {
+                      "op": "if",
+                      "condition": {"op": "value", "name": "followup.2.condition.ByContainBehaviorFlag.25", "is": true},
+                      "then": [
+                        {
+                          "op": "start",
+                          "id": "Servant_RobinSServant_00_Skill02_InsertAbility_Camera",
+                          "run": [],
+                          "join": true
+                        },
+                        {"op": "sound", "event": "Ev_sfx_avatar_RobinS_Skill02_Drum_Short", "as": "followup.2.sound.7"},
+                        {
+                          "op": "if",
+                          "condition": {"op": "value", "name": "followup.2.condition.ByCompareDynamicValue.8", "is": true},
+                          "then": [
+                            {"op": "sound", "event": "Ev_vo_avatar_skill_cast_robinsummeretto_double_02", "as": "followup.2.sound.9"}
+                          ],
+                          "else": [
+                            {"op": "sound", "event": "Ev_vo_avatar_skill_cast_robinsummeretto_double_05", "as": "followup.2.sound.10"}
+                          ]
+                        },
+                        {"op": "animation", "state": "Skill02_2", "start": 0.5130000002, "end": -1.0, "track": {"logic": 3}, "as": "followup.2.clock.1"},
+                        {"op": "wait", "for": "followup.2.clock.1", "until": "animation_end"}
+                      ],
+                      "else": []
+                    }
+                  ],
+                  "else": []
+                },
+                {"op": "join"},
+                {
+                  "op": "repeat",
+                  "until_finish": true,
+                  "run": [
+                    {"op": "wait", "frame": true}
+                  ]
+                },
+                {"op": "call", "function": "@return.return.pose"},
+                {"op": "wait", "for": "return.pose", "until": "submitted"},
+                {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+                {"op": "wait", "for": "return.position"}
+              ],
+              "label": "Servant_RobinSServant_00_Skill02_InsertAbility_Phase01"
+            }
+          ],
+          "default": [
+            {"op": "state.enter", "name": "base.callback.3591.receiver-property.1", "as": "callback.3591.receiver-property.1"},
+            {"op": "wait", "for": "callback.3591.receiver-property.1"},
+            {"op": "effect.create", "effects": ["base.callback.3591.effect.4"], "as": "callback.3591.effect.4"},
+            {"op": "wait", "for": "callback.3591.effect.4", "until": "accepted"},
+            {"op": "state.exit", "name": "base.callback.3591.phase.5", "as": "callback.3591.phase.5.phase-replace.0"},
+            {"op": "wait", "for": "callback.3591.phase.5.phase-replace.0"},
+            {"op": "state.exit", "name": "base.callback.3592.phase.2", "as": "callback.3591.phase.5.phase-replace.1"},
+            {"op": "wait", "for": "callback.3591.phase.5.phase-replace.1"},
+            {"op": "state.exit", "name": "base.callback.5329.phase.1", "as": "callback.3591.phase.5.phase-replace.2"},
+            {"op": "wait", "for": "callback.3591.phase.5.phase-replace.2"},
+            {"op": "state.exit", "name": "base.callback.5330.phase.1", "as": "callback.3591.phase.5.phase-replace.3"},
+            {"op": "wait", "for": "callback.3591.phase.5.phase-replace.3"},
+            {
+              "op": "scope.exit",
+              "name": "compiled.0.phase/GlobalModifiers[9].value._CallbackList[0].CallbackConfig[1]",
+              "as": "callback.3591.phase.5.phase-replace.4"
+            },
+            {"op": "wait", "for": "callback.3591.phase.5.phase-replace.4", "until": "accepted"},
+            {
+              "op": "scope.exit",
+              "name": "compiled.0.phase/GlobalModifiers[9].value._CallbackList[1].CallbackConfig[2]",
+              "as": "callback.3591.phase.5.phase-replace.5"
+            },
+            {"op": "wait", "for": "callback.3591.phase.5.phase-replace.5", "until": "accepted"},
+            {"op": "state.enter", "name": "base.callback.3591.phase.5", "as": "callback.3591.phase.5"},
+            {"op": "wait", "for": "callback.3591.phase.5"},
+            {"op": "join"},
+            {
+              "op": "repeat",
+              "until_finish": true,
+              "run": [
+                {"op": "wait", "frame": true}
+              ]
+            },
+            {
+              "op": "effect.remove",
+              "effects": ["base.callback.3591.effect.4"],
+              "optional": ["base.callback.3591.effect.4"],
+              "as": "callback.3591.remove-effects"
+            },
+            {"op": "wait", "for": "callback.3591.remove-effects", "until": "accepted"},
+            {"op": "call", "function": "@return.return.pose"},
+            {"op": "wait", "for": "return.pose", "until": "submitted"},
+            {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+            {"op": "wait", "for": "return.position"}
+          ]
+        }
+      ],
+      "on_interrupt": [
+        {
+          "op": "switch",
+          "name": "event",
+          "cases": [
+            {
+              "is": 1,
+              "run": [
+                {"op": "call", "function": "@return.return.pose"},
+                {"op": "wait", "for": "return.pose", "until": "submitted"},
+                {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+                {"op": "wait", "for": "return.position"}
+              ],
+              "label": "Avatar_RobinS_00_Fever_Phase01"
+            },
+            {
+              "is": 2,
+              "run": [
+                {"op": "call", "function": "@return.return.pose"},
+                {"op": "wait", "for": "return.pose", "until": "submitted"},
+                {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+                {"op": "wait", "for": "return.position"}
+              ],
+              "label": "Servant_RobinSServant_00_Skill02_2_InsertAbility_Phase01"
+            },
+            {
+              "is": 3,
+              "run": [
+                {"op": "call", "function": "@return.return.pose"},
+                {"op": "wait", "for": "return.pose", "until": "submitted"},
+                {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+                {"op": "wait", "for": "return.position"}
+              ],
+              "label": "Servant_RobinSServant_00_Skill02_InsertAbility_Phase01"
+            }
+          ],
+          "default": [
+            {
+              "op": "effect.remove",
+              "effects": ["base.callback.3591.effect.4"],
+              "optional": ["base.callback.3591.effect.4"],
+              "as": "callback.3591.remove-effects"
+            },
+            {"op": "wait", "for": "callback.3591.remove-effects", "until": "accepted"},
+            {"op": "call", "function": "@return.return.pose"},
+            {"op": "wait", "for": "return.pose", "until": "submitted"},
+            {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+            {"op": "wait", "for": "return.position"}
+          ]
+        }
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "SkillP01",
+        "omissions": [
+          "Manual visual callback selection; no native combat modifier or automatic event simulation.",
+          "event: 0=MAvatar_RobinS_00_Passive_FieldSelfLock: OnStack, 1=Avatar_RobinS_00_Fever_Phase01, 2=Servant_RobinSServant_00_Skill02_2_InsertAbility_Phase01, 3=Servant_RobinSServant_00_Skill02_InsertAbility_Phase01",
+          "SetResilience: owned visual receiver override only; no shield value, expiry, native modifier or automatic death/break transition",
+          "TriggerEffect: callback target AllTeamCenter is a selected owned actor input, defaulting to this actor; native event payload is not assumed",
+          "SetEntityActionState: not included in the visual sequence projection",
+          "ResetActionDelay: not included in the visual sequence projection",
+          "HideLevelStage: not included in the visual sequence projection",
+          "AlignTargetToTeamCenter: not included in the visual sequence projection",
+          "SetEntityForbidCameraDither: not included in the visual sequence projection",
+          "SetEntityPosition: not included in the visual sequence projection",
+          "SetBattleBGMState: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "TriggerAnimState: animation has no literal owned-body binding",
+          "WaitTimelineFinish: not included in the visual sequence projection",
+          "HideLevelStage: serial step depends on an unavailable source clock; no timing is inferred",
+          "TriggerAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "SetEntityForbidCameraDither: serial step depends on an unavailable source clock; no timing is inferred",
+          "RemoveEffect: serial step depends on an unavailable source clock; no timing is inferred",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "SummonPartner: not included in the visual sequence projection",
+          "SetTargetUniqueName: not included in the visual sequence projection",
+          "SetCharacterVisibilityFollow: not included in the visual sequence projection",
+          "SetCharacterScaleFollow: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "KADCLBEPFPL: not included in the visual sequence projection",
+          "SetCharacterAnimFollow: not included in the visual sequence projection",
+          "TurnInsertAbility: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "SetCharacterAnimFollow: serial step depends on an unavailable source clock; no timing is inferred"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "base.skill.5.perform": {"use": "common.elemental.responses", "next": "base.rest"},
+    "base.preview.hit": {
+      "inputs": {
+        "kind": {
+          "type": "text",
+          "default": "Hit",
+          "label": "Hit type",
+          "choices": [
+            {"value": "Hit", "label": "Hit"},
+            {"value": "Hit_H", "label": "Hit_H"}
+          ]
+        }
+      },
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "kind", "is": "Hit_H"},
+          "then": [
+            {"op": "hit", "target": "Caster", "animation": "Hit_H", "as": "hit-heavy"},
+            {"op": "wait", "for": "hit-heavy"}
+          ],
+          "else": [
+            {"op": "hit", "target": "Caster", "animation": "Hit", "as": "hit"},
+            {"op": "wait", "for": "hit"}
+          ]
+        }
+      ],
+      "next": "base.rest",
+      "presentation": {"label": "Hit"},
+      "tags": ["manual-visual-callback"]
+    },
+    "base.source.4": {
+      "requires": [
+        {
+          "op": "unresolved",
+          "source": "Config/ConfigCharacter/Avatar/Avatar_RobinS_00_Config.json:$.SkillList[4]",
+          "detail": "Retained source has no independently bound presentation unit"
+        }
+      ],
+      "trigger": "internal",
+      "run": [],
+      "presentation": {
+        "label": "SkillMaze",
+        "listed": false,
+        "omissions": ["Retained source has no independently bound presentation unit"]
+      },
+      "tags": ["retained-source"]
+    },
+    "compiled.0.reset_phase": {
+      "mode": "input",
+      "run": [
+        {"op": "state.exit", "name": "base.callback.3591.phase.5", "as": "phase.reset.0"},
+        {"op": "wait", "for": "phase.reset.0"},
+        {"op": "state.exit", "name": "base.callback.3592.phase.2", "as": "phase.reset.1"},
+        {"op": "wait", "for": "phase.reset.1"},
+        {"op": "state.exit", "name": "base.callback.5329.phase.1", "as": "phase.reset.2"},
+        {"op": "wait", "for": "phase.reset.2"},
+        {"op": "state.exit", "name": "base.callback.5330.phase.1", "as": "phase.reset.3"},
+        {"op": "wait", "for": "phase.reset.3"},
+        {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[9].value._CallbackList[0].CallbackConfig[1]", "as": "phase.reset.4"},
+        {"op": "wait", "for": "phase.reset.4", "until": "accepted"},
+        {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[9].value._CallbackList[1].CallbackConfig[2]", "as": "phase.reset.5"},
+        {"op": "wait", "for": "phase.reset.5", "until": "accepted"}
+      ],
+      "presentation": {
+        "kind": "setting",
+        "contexts": [
+          "base.callback.3591.phase.5",
+          "base.callback.3592.phase.2",
+          "base.callback.5329.phase.1",
+          "base.callback.5330.phase.1",
+          "compiled.0.phase/GlobalModifiers[9].value._CallbackList[0].CallbackConfig[1]",
+          "compiled.0.phase/GlobalModifiers[9].value._CallbackList[1].CallbackConfig[2]"
+        ]
+      },
+      "tags": ["visual-phase-reset"]
+    },
+    "compiled.0.select/GlobalModifiers[9].value._CallbackList[0].CallbackConfig[1]": {
+      "run": [
+        {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[9].value._CallbackList[0].CallbackConfig[1]", "as": "phase.select.0"},
+        {"op": "wait", "for": "phase.select.0", "until": "accepted"},
+        {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[9].value._CallbackList[1].CallbackConfig[2]", "as": "phase.select.1"},
+        {"op": "wait", "for": "phase.select.1", "until": "accepted"},
+        {"op": "state.exit", "name": "base.callback.3591.phase.5", "as": "phase.select.2.phase-replace.0"},
+        {"op": "wait", "for": "phase.select.2.phase-replace.0"},
+        {"op": "state.exit", "name": "base.callback.3592.phase.2", "as": "phase.select.2.phase-replace.1"},
+        {"op": "wait", "for": "phase.select.2.phase-replace.1"},
+        {"op": "state.exit", "name": "base.callback.5329.phase.1", "as": "phase.select.2.phase-replace.2"},
+        {"op": "wait", "for": "phase.select.2.phase-replace.2"},
+        {"op": "state.exit", "name": "base.callback.5330.phase.1", "as": "phase.select.2.phase-replace.3"},
+        {"op": "wait", "for": "phase.select.2.phase-replace.3"},
+        {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[9].value._CallbackList[0].CallbackConfig[1]", "as": "phase.select.2.phase-replace.4"},
+        {"op": "wait", "for": "phase.select.2.phase-replace.4", "until": "accepted"},
+        {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[9].value._CallbackList[1].CallbackConfig[2]", "as": "phase.select.2.phase-replace.5"},
+        {"op": "wait", "for": "phase.select.2.phase-replace.5", "until": "accepted"},
+        {"op": "scope.enter", "name": "compiled.0.phase/GlobalModifiers[9].value._CallbackList[0].CallbackConfig[1]", "as": "phase.select.2"},
+        {"op": "wait", "for": "phase.select.2", "until": "accepted"}
+      ],
+      "presentation": {}
+    },
+    "compiled.0.standby/GlobalModifiers[9].value._CallbackList[0].CallbackConfig[1]": {
+      "requires": [
+        {"op": "value", "name": "phase_binding", "is": "GlobalModifiers[9].value._CallbackList[0].CallbackConfig[1]"}
+      ],
+      "run": [
+        {"op": "animation", "state": "StandBy", "as": "body"},
+        {"op": "wait", "for": "body", "until": "accepted"}
+      ],
+      "presentation": {}
+    },
+    "compiled.0.select/GlobalModifiers[9].value._CallbackList[1].CallbackConfig[2]": {
+      "run": [
+        {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[9].value._CallbackList[0].CallbackConfig[1]", "as": "phase.select.0"},
+        {"op": "wait", "for": "phase.select.0", "until": "accepted"},
+        {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[9].value._CallbackList[1].CallbackConfig[2]", "as": "phase.select.1"},
+        {"op": "wait", "for": "phase.select.1", "until": "accepted"},
+        {"op": "state.exit", "name": "base.callback.3591.phase.5", "as": "phase.select.2.phase-replace.0"},
+        {"op": "wait", "for": "phase.select.2.phase-replace.0"},
+        {"op": "state.exit", "name": "base.callback.3592.phase.2", "as": "phase.select.2.phase-replace.1"},
+        {"op": "wait", "for": "phase.select.2.phase-replace.1"},
+        {"op": "state.exit", "name": "base.callback.5329.phase.1", "as": "phase.select.2.phase-replace.2"},
+        {"op": "wait", "for": "phase.select.2.phase-replace.2"},
+        {"op": "state.exit", "name": "base.callback.5330.phase.1", "as": "phase.select.2.phase-replace.3"},
+        {"op": "wait", "for": "phase.select.2.phase-replace.3"},
+        {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[9].value._CallbackList[0].CallbackConfig[1]", "as": "phase.select.2.phase-replace.4"},
+        {"op": "wait", "for": "phase.select.2.phase-replace.4", "until": "accepted"},
+        {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[9].value._CallbackList[1].CallbackConfig[2]", "as": "phase.select.2.phase-replace.5"},
+        {"op": "wait", "for": "phase.select.2.phase-replace.5", "until": "accepted"},
+        {"op": "scope.enter", "name": "compiled.0.phase/GlobalModifiers[9].value._CallbackList[1].CallbackConfig[2]", "as": "phase.select.2"},
+        {"op": "wait", "for": "phase.select.2", "until": "accepted"}
+      ],
+      "presentation": {}
+    },
+    "compiled.0.standby/GlobalModifiers[9].value._CallbackList[1].CallbackConfig[2]": {
+      "requires": [
+        {"op": "value", "name": "phase_binding", "is": "GlobalModifiers[9].value._CallbackList[1].CallbackConfig[2]"}
+      ],
+      "run": [
+        {"op": "animation", "state": "StandBy2", "as": "body"},
+        {"op": "wait", "for": "body", "until": "accepted"}
+      ],
+      "presentation": {}
+    },
+    "@receiver-clear/base.callback.3591.receiver-property.1": {
+      "requires": [
+        {"op": "state", "name": "base.callback.3591.receiver-property.1"}
+      ],
+      "mode": "input",
+      "run": [
+        {"op": "state.exit", "name": "base.callback.3591.receiver-property.1", "only_caster": true, "as": "clear"},
+        {"op": "wait", "for": "clear"}
+      ],
+      "presentation": {
+        "label": "Clear resilience override",
+        "kind": "setting",
+        "contexts": ["base.callback.3591.receiver-property.1"]
+      },
+      "tags": ["visual-receiver-clear"]
+    },
+    "@receiver-clear/base.callback.5359.receiver-property.3": {
+      "requires": [
+        {"op": "state", "name": "common.elemental.frozen-hit"}
+      ],
+      "mode": "input",
+      "run": [
+        {"op": "state.exit", "name": "common.elemental.frozen-hit", "only_caster": true, "as": "clear"},
+        {"op": "wait", "for": "clear"}
+      ],
+      "presentation": {
+        "label": "Clear hit effect override",
+        "kind": "setting",
+        "contexts": ["common.elemental.frozen-hit"]
+      },
+      "tags": ["visual-receiver-clear"]
+    }
+  },
+  "functions": {
+    "@return.rest.pose": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "rest.pose.expression"},
+      {
+        "op": "if",
+        "condition": {"op": "phase", "is": "@return/base.callback.3591.phase.5"},
+        "then": [
+          {
+            "op": "animation",
+            "state": "StandBy2",
+            "current_idle": true,
+            "end": 0,
+            "restart": false,
+            "track": {"logic": 1, "extra": 6, "previous_end": 1},
+            "as": "rest.pose"
+          }
+        ],
+        "elif": [
+          {
+            "condition": {"op": "phase", "is": "@return/base.callback.3592.phase.2"},
+            "then": [
+              {
+                "op": "animation",
+                "state": "StandBy",
+                "current_idle": true,
+                "end": 0,
+                "restart": false,
+                "track": {"logic": 1, "extra": 6, "previous_end": 1},
+                "as": "rest.pose"
+              }
+            ]
+          },
+          {
+            "condition": {"op": "phase", "is": "@return/base.callback.5329.phase.1"},
+            "then": [
+              {
+                "op": "animation",
+                "state": "StandBy2",
+                "current_idle": true,
+                "end": 0,
+                "restart": false,
+                "track": {"logic": 1, "extra": 6, "previous_end": 1},
+                "as": "rest.pose"
+              }
+            ]
+          },
+          {
+            "condition": {"op": "phase", "is": "@return/base.callback.5330.phase.1"},
+            "then": [
+              {
+                "op": "animation",
+                "state": "StandBy",
+                "current_idle": true,
+                "end": 0,
+                "restart": false,
+                "track": {"logic": 1, "extra": 6, "previous_end": 1},
+                "as": "rest.pose"
+              }
+            ]
+          },
+          {
+            "condition": {"op": "phase", "is": "@return/compiled.0.phase/GlobalModifiers[9].value._CallbackList[0].CallbackConfig[1]"},
+            "then": [
+              {
+                "op": "animation",
+                "state": "StandBy",
+                "current_idle": true,
+                "end": 0,
+                "restart": false,
+                "track": {"logic": 1, "extra": 6, "previous_end": 1},
+                "as": "rest.pose"
+              }
+            ]
+          },
+          {
+            "condition": {"op": "phase", "is": "@return/compiled.0.phase/GlobalModifiers[9].value._CallbackList[1].CallbackConfig[2]"},
+            "then": [
+              {
+                "op": "animation",
+                "state": "StandBy2",
+                "current_idle": true,
+                "end": 0,
+                "restart": false,
+                "track": {"logic": 1, "extra": 6, "previous_end": 1},
+                "as": "rest.pose"
+              }
+            ]
+          }
+        ],
+        "else": [
+          {
+            "op": "animation",
+            "state": "StandBy",
+            "current_idle": true,
+            "end": 0,
+            "restart": false,
+            "track": {"logic": 1, "extra": 6, "previous_end": 1},
+            "as": "rest.pose"
+          }
+        ]
+      }
+    ],
+    "@return.return.pose": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "return.pose.expression"},
+      {
+        "op": "if",
+        "condition": {"op": "phase", "is": "@return/base.callback.3591.phase.5"},
+        "then": [
+          {
+            "op": "animation",
+            "state": "StandBy2",
+            "current_idle": true,
+            "end": 0,
+            "restart": false,
+            "track": {"logic": 1, "extra": 6, "previous_end": 1},
+            "as": "return.pose"
+          }
+        ],
+        "elif": [
+          {
+            "condition": {"op": "phase", "is": "@return/base.callback.3592.phase.2"},
+            "then": [
+              {
+                "op": "animation",
+                "state": "StandBy",
+                "current_idle": true,
+                "end": 0,
+                "restart": false,
+                "track": {"logic": 1, "extra": 6, "previous_end": 1},
+                "as": "return.pose"
+              }
+            ]
+          },
+          {
+            "condition": {"op": "phase", "is": "@return/base.callback.5329.phase.1"},
+            "then": [
+              {
+                "op": "animation",
+                "state": "StandBy2",
+                "current_idle": true,
+                "end": 0,
+                "restart": false,
+                "track": {"logic": 1, "extra": 6, "previous_end": 1},
+                "as": "return.pose"
+              }
+            ]
+          },
+          {
+            "condition": {"op": "phase", "is": "@return/base.callback.5330.phase.1"},
+            "then": [
+              {
+                "op": "animation",
+                "state": "StandBy",
+                "current_idle": true,
+                "end": 0,
+                "restart": false,
+                "track": {"logic": 1, "extra": 6, "previous_end": 1},
+                "as": "return.pose"
+              }
+            ]
+          },
+          {
+            "condition": {"op": "phase", "is": "@return/compiled.0.phase/GlobalModifiers[9].value._CallbackList[0].CallbackConfig[1]"},
+            "then": [
+              {
+                "op": "animation",
+                "state": "StandBy",
+                "current_idle": true,
+                "end": 0,
+                "restart": false,
+                "track": {"logic": 1, "extra": 6, "previous_end": 1},
+                "as": "return.pose"
+              }
+            ]
+          },
+          {
+            "condition": {"op": "phase", "is": "@return/compiled.0.phase/GlobalModifiers[9].value._CallbackList[1].CallbackConfig[2]"},
+            "then": [
+              {
+                "op": "animation",
+                "state": "StandBy2",
+                "current_idle": true,
+                "end": 0,
+                "restart": false,
+                "track": {"logic": 1, "extra": 6, "previous_end": 1},
+                "as": "return.pose"
+              }
+            ]
+          }
+        ],
+        "else": [
+          {
+            "op": "animation",
+            "state": "StandBy",
+            "current_idle": true,
+            "end": 0,
+            "restart": false,
+            "track": {"logic": 1, "extra": 6, "previous_end": 1},
+            "as": "return.pose"
+          }
+        ]
+      }
+    ]
+  },
+  "states": {
+    "base.callback.3591.phase.5": {
+      "callbacks": {},
+      "values": {"phase_source": "Config/ConfigAbility/Avatar/Avatar_RobinS_00_Ability.json:$.GlobalModifiers[9].value._CallbackList[1].CallbackConfig[2]"},
+      "phase": "@return/base.callback.3591.phase.5",
+      "configuration": "base.callback.3591.phase.5",
+      "restore": []
+    },
+    "base.callback.3591.receiver-property.1": {
+      "callbacks": {},
+      "resilience": 0,
+      "instances": {"name": "callback.3591.receiver-property.1", "receiver": "Recipient", "match": "receiver_caster"},
+      "restore": []
+    },
+    "base.callback.3592.phase.2": {
+      "callbacks": {},
+      "values": {"phase_source": "Config/ConfigAbility/Avatar/Avatar_RobinS_00_Ability.json:$.GlobalModifiers[9].value._CallbackList[0].CallbackConfig[1]"},
+      "phase": "@return/base.callback.3592.phase.2",
+      "configuration": "base.callback.3592.phase.2",
+      "restore": []
+    },
+    "base.callback.5329.phase.1": {
+      "callbacks": {},
+      "values": {"phase_source": "Config/ConfigAbility/Servant/Servant_RobinSServant_00_Ability.json:$.GlobalModifiers[5].value._CallbackList[1].CallbackConfig[0]"},
+      "phase": "@return/base.callback.5329.phase.1",
+      "configuration": "base.callback.5329.phase.1",
+      "restore": []
+    },
+    "base.callback.5330.phase.1": {
+      "callbacks": {},
+      "values": {"phase_source": "Config/ConfigAbility/Servant/Servant_RobinSServant_00_Ability.json:$.GlobalModifiers[5].value._CallbackList[0].CallbackConfig[0]"},
+      "phase": "@return/base.callback.5330.phase.1",
+      "configuration": "base.callback.5330.phase.1",
+      "restore": []
+    },
+    "compiled.0.phase/GlobalModifiers[9].value._CallbackList[0].CallbackConfig[1]": {
+      "phase": "@return/compiled.0.phase/GlobalModifiers[9].value._CallbackList[0].CallbackConfig[1]",
+      "values": {"phase_binding": "GlobalModifiers[9].value._CallbackList[0].CallbackConfig[1]"},
+      "configuration": "compiled.0.phase/GlobalModifiers[9].value._CallbackList[0].CallbackConfig[1]",
+      "restore": []
+    },
+    "compiled.0.phase/GlobalModifiers[9].value._CallbackList[1].CallbackConfig[2]": {
+      "phase": "@return/compiled.0.phase/GlobalModifiers[9].value._CallbackList[1].CallbackConfig[2]",
+      "values": {"phase_binding": "GlobalModifiers[9].value._CallbackList[1].CallbackConfig[2]"},
+      "configuration": "compiled.0.phase/GlobalModifiers[9].value._CallbackList[1].CallbackConfig[2]",
+      "restore": []
+    }
+  },
+  "resources": {
+    "effects": {
+      "base.skill.1.effect.15": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_RobinS_00/Eff_Avatar_RobinS_00_Skill02_Trail_Hand_A.prefab", "target": "Caster", "simulate_immediately": true},
+      "base.callback.3591.effect.4": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_RobinS_00/Eff_Avatar_RobinS_00_BattleArea_Ground.prefab",
+        "target": "callback.3591.target.AllTeamCenter",
+        "unique_name": "RobinS_Aura"
+      }
+    },
+    "phases": {
+      "base.callback.3591.phase.5": {
+        "root": {"kind": "global_modifier", "name": "MAvatar_RobinS_00_Passive_FieldSelfLock"},
+        "path": [
+          {"owner": "RPG.GameCore.TurnBasedModifierConfig", "field": "_CallbackList", "index": 1},
+          {"owner": "RPG.GameCore.TurnBasedModifierCallbackConfig", "field": "CallbackConfig", "index": 2},
+          {"owner": "RPG.GameCore.CharacterChangePhase", "field": "PhaseAnimConfig"}
+        ]
+      },
+      "base.callback.3592.phase.2": {
+        "root": {"kind": "global_modifier", "name": "MAvatar_RobinS_00_Passive_FieldSelfLock"},
+        "path": [
+          {"owner": "RPG.GameCore.TurnBasedModifierConfig", "field": "_CallbackList", "index": 0},
+          {"owner": "RPG.GameCore.TurnBasedModifierCallbackConfig", "field": "CallbackConfig", "index": 1},
+          {"owner": "RPG.GameCore.CharacterChangePhase", "field": "PhaseAnimConfig"}
+        ]
+      },
+      "base.callback.5329.phase.1": {
+        "root": {"kind": "global_modifier", "name": "MServant_RobinSServant_00_FeverState"},
+        "path": [
+          {"owner": "RPG.GameCore.TurnBasedModifierConfig", "field": "_CallbackList", "index": 1},
+          {"owner": "RPG.GameCore.TurnBasedModifierCallbackConfig", "field": "CallbackConfig", "index": 0},
+          {"owner": "RPG.GameCore.CharacterChangePhase", "field": "PhaseAnimConfig"}
+        ]
+      },
+      "base.callback.5330.phase.1": {
+        "root": {"kind": "global_modifier", "name": "MServant_RobinSServant_00_FeverState"},
+        "path": [
+          {"owner": "RPG.GameCore.TurnBasedModifierConfig", "field": "_CallbackList", "index": 0},
+          {"owner": "RPG.GameCore.TurnBasedModifierCallbackConfig", "field": "CallbackConfig", "index": 0},
+          {"owner": "RPG.GameCore.CharacterChangePhase", "field": "PhaseAnimConfig"}
+        ]
+      },
+      "compiled.0.phase/GlobalModifiers[9].value._CallbackList[0].CallbackConfig[1]": {
+        "root": {"kind": "global_modifier", "name": "MAvatar_RobinS_00_Passive_FieldSelfLock"},
+        "path": [
+          {"owner": "RPG.GameCore.TurnBasedModifierConfig", "field": "_CallbackList", "index": 0},
+          {"owner": "RPG.GameCore.TurnBasedModifierCallbackConfig", "field": "CallbackConfig", "index": 1},
+          {"owner": "RPG.GameCore.CharacterChangePhase", "field": "PhaseAnimConfig"}
+        ]
+      },
+      "compiled.0.phase/GlobalModifiers[9].value._CallbackList[1].CallbackConfig[2]": {
+        "root": {"kind": "global_modifier", "name": "MAvatar_RobinS_00_Passive_FieldSelfLock"},
+        "path": [
+          {"owner": "RPG.GameCore.TurnBasedModifierConfig", "field": "_CallbackList", "index": 1},
+          {"owner": "RPG.GameCore.TurnBasedModifierCallbackConfig", "field": "CallbackConfig", "index": 2},
+          {"owner": "RPG.GameCore.CharacterChangePhase", "field": "PhaseAnimConfig"}
+        ]
+      }
+    }
+  }
+}

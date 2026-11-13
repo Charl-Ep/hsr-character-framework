@@ -1,0 +1,1244 @@
+{
+  "format": "hksr.script",
+  "id": "official-scripts:Config/ConfigCharacter/Avatar/Avatar_Sam_00_Config.json",
+  "applies_to": "Config/ConfigCharacter/Avatar/Avatar_Sam_00_Config.json",
+  "default": true,
+  "imports": ["Common/Elemental.json"],
+  "defaults": {
+    "targets": {
+      "PreviewTarget": {
+        "local_position": [0, 0, 6]
+      },
+      "callback.3789.target.DarkTeamEntity": {"alias": "Caster"}
+    }
+  },
+  "actions": {
+    "base.rest": {
+      "trigger": "internal",
+      "run": [
+        {"op": "call", "function": "@return.rest.pose"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["stable-return", "idle-provider"]
+    },
+    "base.skill.0.perform": {
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Sam_00_Skill01_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Sam_00_Skill01_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.0.clock.1", "progress": 0.3059999998}
+          ],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill01", "end": 0.0, "track": {"logic": 3}, "as": "skill.0.clock.1"},
+        {
+          "op": "movement",
+          "animation": "skill.0.clock.1",
+          "segments": [
+            {
+              "destination": "target",
+              "name": "PreviewTarget",
+              "target_geometry": true,
+              "start": 0.2200000002,
+              "end": 0.2869999997,
+              "sample": {"distance": 0.8000000007, "percentage": 1.0, "include_radii": true}
+            },
+            {
+              "destination": "origin",
+              "start": 0.6600000006,
+              "end": 0.7500000006,
+              "sample": {"distance": 0.0, "percentage": 1.0, "include_radii": true}
+            }
+          ],
+          "as": "skill.0.clock.1.movement"
+        },
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.0},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.2049999998},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.8000000007},
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill01",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "DamageByAttackProperty: hit presentation not projected: hit requires an explicit motion/source binding: HitSource",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "LookAt: not included in the visual sequence projection",
+          "RadialBlurEffect: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.0.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Sam_00_Config.json", "skill": 0, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "base.skill.1.perform": {
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Sam_00_Skill02_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.3500000003},
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.3959999999},
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.5000000004}
+          ],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Sam_00_Skill02_Camera",
+          "run": [],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill02", "end": 0.0, "track": {"logic": 3}, "as": "skill.1.clock.1"},
+        {
+          "op": "movement",
+          "animation": "skill.1.clock.1",
+          "segments": [
+            {
+              "destination": "target",
+              "name": "PreviewTarget",
+              "target_geometry": true,
+              "start": 0.1,
+              "end": 0.1500000001,
+              "sample": {"distance": 3.5000000004, "percentage": 1.0, "include_radii": true}
+            },
+            {
+              "destination": "origin",
+              "start": 0.6900000006,
+              "end": 0.7700000007,
+              "sample": {"distance": 0.0, "percentage": 1.0, "include_radii": true}
+            }
+          ],
+          "as": "skill.1.clock.1.movement"
+        },
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.0},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.1},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.1379999995},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.3869999998},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.3959999999},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.4869999999},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.4900000004},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.6700000006},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.7500000006},
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill02",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "LoseHPByRatio: not included in the visual sequence projection",
+          "DamageByAttackProperty: hit presentation not projected: hit requires an inherited/disabled/facing policy",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "LookAt: not included in the visual sequence projection",
+          "RadialBlurEffect: not included in the visual sequence projection",
+          "GlobalMainIntensityEffect: not included in the visual sequence projection",
+          "TriggerEffect: effect needs a non-owned target, dynamic path, or Timeline attachment",
+          "TargetTimeSlow: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.1.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Sam_00_Config.json", "skill": 1, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "base.skill.2.perform": {
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Sam_00_Skill03_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.8730000006}
+          ],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Sam_00_Skill03_Camera",
+          "run": [],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill03", "end": -1.0, "track": {"logic": 3}, "as": "skill.2.clock.1"},
+        {"op": "wait", "for": "skill.2.clock.1", "until": "animation_end"},
+        {"op": "effect.create", "effects": ["base.skill.2.effect.14"], "as": "skill.2.effect.14"},
+        {"op": "wait", "for": "skill.2.effect.14", "until": "accepted"},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "effect.remove", "effects": ["base.skill.2.effect.14"], "optional": ["base.skill.2.effect.14"], "as": "skill.2.remove-effects"},
+        {"op": "wait", "for": "skill.2.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "effect.remove", "effects": ["base.skill.2.effect.14"], "optional": ["base.skill.2.effect.14"], "as": "skill.2.remove-effects"},
+        {"op": "wait", "for": "skill.2.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill03",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "GlobalMainIntensityEffect: not included in the visual sequence projection",
+          "LookAt: not included in the visual sequence projection",
+          "CreateBattleEvent: not included in the visual sequence projection",
+          "TriggerSkipDeadHandler: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "HideLevelStage: not included in the visual sequence projection",
+          "WaitTimelineFinish: not included in the visual sequence projection",
+          "HideLevelStage: serial step depends on an unavailable source clock; no timing is inferred"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.2.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Sam_00_Config.json", "skill": 2, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "base.skill.3.perform": {
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Sam_00_Skill11_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Sam_00_Skill11_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.3.clock.1", "progress": 0.0009999999},
+            {"op": "wait", "for": "skill.3.clock.1", "progress": 0.1429999999},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit",
+              "direction": {"horizontal": 90.0},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sam_00/Eff_Avatar_Sam_00_Skill01_01_Hit_01.prefab",
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.3.hit.24"
+            },
+            {"op": "wait", "for": "skill.3.hit.24", "until": "accepted"},
+            {"op": "wait", "for": "skill.3.clock.1", "progress": 0.1789999995},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit",
+              "direction": {"horizontal": 90.0},
+              "effect": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sam_00/Eff_Avatar_Sam_00_Skill01_01_Hit.prefab", "minimum_interval": 0.0500000007, "maximum_count": 1},
+              "allow_position": true,
+              "as": "skill.3.hit.29"
+            },
+            {"op": "wait", "for": "skill.3.hit.29", "until": "accepted"},
+            {"op": "wait", "for": "skill.3.clock.1", "progress": 0.2500000002},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit",
+              "direction": {"horizontal": -90.0},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sam_00/Eff_Avatar_Sam_00_Skill01_01_Hit_02.prefab",
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.3.hit.34"
+            },
+            {"op": "wait", "for": "skill.3.hit.34", "until": "accepted"},
+            {"op": "wait", "for": "skill.3.clock.1", "progress": 0.3000000002},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit",
+              "direction": {"horizontal": -90.0, "vertical": 60.0},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sam_00/Eff_Avatar_Sam_00_Skill01_01_Hit_03.prefab",
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.3.hit.39"
+            },
+            {"op": "wait", "for": "skill.3.hit.39", "until": "accepted"},
+            {"op": "wait", "for": "skill.3.clock.1", "progress": 0.5000000004},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit_H",
+              "direction": {"vertical": 60.0},
+              "effect": {"path": "", "minimum_interval": 0.0500000007, "maximum_count": 1},
+              "allow_position": true,
+              "as": "skill.3.hit.44"
+            },
+            {"op": "wait", "for": "skill.3.hit.44", "until": "accepted"}
+          ],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill01_01", "end": 0.0, "track": {"logic": 3}, "as": "skill.3.clock.1"},
+        {
+          "op": "movement",
+          "animation": "skill.3.clock.1",
+          "segments": [
+            {
+              "destination": "target",
+              "name": "PreviewTarget",
+              "target_geometry": true,
+              "start": 0.0659999996,
+              "end": 0.1600000001,
+              "sample": {"distance": 2.0, "percentage": 1.0, "include_radii": true}
+            },
+            {
+              "destination": "origin",
+              "start": 0.7370000001,
+              "end": 0.8180000002,
+              "sample": {"distance": 0.0, "percentage": 1.0, "include_radii": true}
+            }
+          ],
+          "as": "skill.3.clock.1.movement"
+        },
+        {"op": "wait", "for": "skill.3.clock.1", "progress": 0.0},
+        {"op": "wait", "for": "skill.3.clock.1", "progress": 0.0659999996},
+        {"op": "wait", "for": "skill.3.clock.1", "progress": 0.3000000002},
+        {"op": "wait", "for": "skill.3.clock.1", "progress": 0.4900000004},
+        {"op": "wait", "for": "skill.3.clock.1", "progress": 0.5500000005},
+        {"op": "wait", "for": "skill.3.clock.1", "progress": 0.6600000006},
+        {"op": "wait", "for": "skill.3.clock.1", "progress": 0.8000000007},
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill11",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "HealHP: not included in the visual sequence projection",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "LookAt: not included in the visual sequence projection",
+          "RadialBlurEffect: not included in the visual sequence projection",
+          "GlobalMainIntensityEffect: not included in the visual sequence projection",
+          "TriggerEffect: effect needs a non-owned target, dynamic path, or Timeline attachment",
+          "TargetTimeSlow: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.3.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Sam_00_Config.json", "skill": 3, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "base.skill.4.perform": {
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Sam_00_Skill21_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.4.clock.1", "progress": 0.2637000004},
+            {"op": "wait", "for": "skill.4.clock.1", "progress": 0.5013000005},
+            {"op": "wait", "for": "skill.4.clock.1", "progress": 0.7572000003},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit_H",
+              "direction": {},
+              "effect": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sam_00/Eff_Avatar_Sam_00_Skill02_01_Hit.prefab", "minimum_interval": 0.0500000007, "maximum_count": 1},
+              "allow_position": true,
+              "as": "skill.4.hit.16"
+            },
+            {"op": "wait", "for": "skill.4.hit.16", "until": "accepted"},
+            {
+              "op": "for_each",
+              "bind": "skill.4.member.18",
+              "targets": ["PreviewTarget"],
+              "collection": "skill.4.targets.19",
+              "run": [
+                {
+                  "op": "hit",
+                  "target": "skill.4.member.18",
+                  "animation": "Hit_H",
+                  "direction": {},
+                  "effect": {"path": "", "minimum_interval": 0.0500000007, "maximum_count": 1},
+                  "allow_position": true,
+                  "as": "skill.4.hit.22"
+                },
+                {"op": "wait", "for": "skill.4.hit.22", "until": "accepted"}
+              ],
+              "empty": []
+            },
+            {"op": "wait", "for": "skill.4.clock.1", "progress": 0.8352500009}
+          ],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Sam_00_Skill21_Camera",
+          "run": [
+            {"op": "wait", "for": "skill.4.clock.1", "progress": 0.4869999999},
+            {"op": "wait", "for": "skill.4.clock.1", "progress": 0.6571000001}
+          ],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill02_01", "end": -1.0, "track": {"logic": 3}, "as": "skill.4.clock.1"},
+        {"op": "wait", "for": "skill.4.clock.1", "until": "animation_end"},
+        {"op": "wait", "for": "skill.4.clock.1", "progress": 0.7572000003},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill21",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "RemoveEffect: event removal path is not literal",
+          "AlignTargetToTeamCenter: not included in the visual sequence projection",
+          "LookAt: not included in the visual sequence projection",
+          "SetSkillTargetFormationByPos: not included in the visual sequence projection",
+          "HideLevelStage: not included in the visual sequence projection",
+          "HideFieldEffect: not included in the visual sequence projection",
+          "HealHP: not included in the visual sequence projection",
+          "LoopExecuteTaskListWithInterval: not included in the visual sequence projection",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "Retarget: recipient collection is explicitly selected; native filtering, random selection and count limits are not simulated",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "TargetTimeSlow: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "WaitTimelineFinish: not included in the visual sequence projection",
+          "SetTeamFormation: serial step depends on an unavailable source clock; no timing is inferred",
+          "HideLevelStage: serial step depends on an unavailable source clock; no timing is inferred",
+          "HideFieldEffect: serial step depends on an unavailable source clock; no timing is inferred",
+          "MoveToTargetPosition: serial step depends on an unavailable source clock; no timing is inferred",
+          "TriggerAnimState: serial step depends on an unavailable source clock; no timing is inferred"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.4.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Sam_00_Config.json", "skill": 4, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "base.callback.3794": {
+      "inputs": {
+        "callback.3794.condition.ByCompareParamString.1": {
+          "type": "bool",
+          "default": false,
+          "label": "ByCompareParamString",
+          "description": "Manual source condition: $.GlobalModifiers[0].value._CallbackList[8].CallbackConfig[0].Predicate"
+        },
+        "callback.3794.condition.ByCompareParamString.3": {
+          "type": "bool",
+          "default": false,
+          "label": "ByCompareParamString",
+          "description": "Manual source condition: $.GlobalModifiers[0].value._CallbackList[8].CallbackConfig[0].FailedTaskList[0].Predicate"
+        },
+        "callback.3794.condition.ByCompareParamString.5": {
+          "type": "bool",
+          "default": false,
+          "label": "ByCompareParamString",
+          "description": "Manual source condition: $.GlobalModifiers[0].value._CallbackList[8].CallbackConfig[0].FailedTaskList[0].FailedTaskList[0].Predicate"
+        },
+        "callback.3794.condition.ByCompareParamString.7": {
+          "type": "bool",
+          "default": true,
+          "label": "ByCompareParamString",
+          "description": "Manual source condition: $.GlobalModifiers[0].value._CallbackList[8].CallbackConfig[0].FailedTaskList[0].FailedTaskList[0].FailedTaskList[0].Predicate"
+        }
+      },
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "callback.3794.condition.ByCompareParamString.1", "is": true},
+          "then": [
+            {"op": "effect.create", "effects": ["base.callback.3794.effect.2"], "as": "callback.3794.effect.2"},
+            {"op": "wait", "for": "callback.3794.effect.2", "until": "accepted"}
+          ],
+          "elif": [
+            {
+              "condition": {"op": "value", "name": "callback.3794.condition.ByCompareParamString.3", "is": true},
+              "then": [
+                {"op": "effect.create", "effects": ["base.callback.3794.effect.4"], "as": "callback.3794.effect.4"},
+                {"op": "wait", "for": "callback.3794.effect.4", "until": "accepted"}
+              ]
+            },
+            {
+              "condition": {"op": "value", "name": "callback.3794.condition.ByCompareParamString.5", "is": true},
+              "then": [
+                {"op": "effect.create", "effects": ["base.callback.3794.effect.6"], "as": "callback.3794.effect.6"},
+                {"op": "wait", "for": "callback.3794.effect.6", "until": "accepted"}
+              ]
+            },
+            {
+              "condition": {"op": "value", "name": "callback.3794.condition.ByCompareParamString.7", "is": true},
+              "then": [
+                {"op": "effect.create", "effects": ["base.callback.3794.effect.8"], "as": "callback.3794.effect.8"},
+                {"op": "wait", "for": "callback.3794.effect.8", "until": "accepted"}
+              ]
+            }
+          ],
+          "else": []
+        },
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {
+          "op": "effect.remove",
+          "effects": ["base.callback.3794.effect.2", "base.callback.3794.effect.4", "base.callback.3794.effect.6", "base.callback.3794.effect.8"],
+          "optional": ["base.callback.3794.effect.2", "base.callback.3794.effect.4", "base.callback.3794.effect.6", "base.callback.3794.effect.8"],
+          "as": "callback.3794.remove-effects"
+        },
+        {"op": "wait", "for": "callback.3794.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {
+          "op": "effect.remove",
+          "effects": ["base.callback.3794.effect.2", "base.callback.3794.effect.4", "base.callback.3794.effect.6", "base.callback.3794.effect.8"],
+          "optional": ["base.callback.3794.effect.2", "base.callback.3794.effect.4", "base.callback.3794.effect.6", "base.callback.3794.effect.8"],
+          "as": "callback.3794.remove-effects"
+        },
+        {"op": "wait", "for": "callback.3794.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "MAvatar_Sam_00_PassiveSkill_RedMode: OnTriggerSoundEvent_CL",
+        "omissions": ["Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects."]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "base.callback.3799": {
+      "run": [
+        {"op": "state.exit", "name": "base.callback.3799.phase.9", "as": "callback.3799.phase.9.phase-replace.0"},
+        {"op": "wait", "for": "callback.3799.phase.9.phase-replace.0"},
+        {"op": "state.exit", "name": "base.callback.3802.phase.4", "as": "callback.3799.phase.9.phase-replace.1"},
+        {"op": "wait", "for": "callback.3799.phase.9.phase-replace.1"},
+        {
+          "op": "scope.exit",
+          "name": "compiled.0.phase/GlobalModifiers[0].value._CallbackList[0].CallbackConfig[3]",
+          "as": "callback.3799.phase.9.phase-replace.2"
+        },
+        {"op": "wait", "for": "callback.3799.phase.9.phase-replace.2", "until": "accepted"},
+        {
+          "op": "scope.exit",
+          "name": "compiled.0.phase/GlobalModifiers[0].value._CallbackList[3].CallbackConfig[7]",
+          "as": "callback.3799.phase.9.phase-replace.3"
+        },
+        {"op": "wait", "for": "callback.3799.phase.9.phase-replace.3", "until": "accepted"},
+        {"op": "state.enter", "name": "base.callback.3799.phase.9", "as": "callback.3799.phase.9"},
+        {"op": "wait", "for": "callback.3799.phase.9"},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "MAvatar_Sam_00_PassiveSkill_RedMode: OnStack",
+        "omissions": [
+          "Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects.",
+          "SetControlSkillMapping: Skill mapping is configuration, not a request to play its destination ready pose; native mapping is not executed",
+          "BattleAudioSwitch: not included in the visual sequence projection",
+          "AnimSetParameter: Value: timing is not a retained constant",
+          "SetDynamicValueByHPRatio: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "base.callback.3802": {
+      "run": [
+        {
+          "op": "animation_parameter",
+          "participant": "body",
+          "parameter": {"name": "Sam_Transfer", "type": "int", "value": 0},
+          "as": "callback.3802.animation-parameter.3"
+        },
+        {"op": "wait", "for": "callback.3802.animation-parameter.3"},
+        {"op": "state.exit", "name": "base.callback.3799.phase.9", "as": "callback.3802.phase.4.phase-replace.0"},
+        {"op": "wait", "for": "callback.3802.phase.4.phase-replace.0"},
+        {"op": "state.exit", "name": "base.callback.3802.phase.4", "as": "callback.3802.phase.4.phase-replace.1"},
+        {"op": "wait", "for": "callback.3802.phase.4.phase-replace.1"},
+        {
+          "op": "scope.exit",
+          "name": "compiled.0.phase/GlobalModifiers[0].value._CallbackList[0].CallbackConfig[3]",
+          "as": "callback.3802.phase.4.phase-replace.2"
+        },
+        {"op": "wait", "for": "callback.3802.phase.4.phase-replace.2", "until": "accepted"},
+        {
+          "op": "scope.exit",
+          "name": "compiled.0.phase/GlobalModifiers[0].value._CallbackList[3].CallbackConfig[7]",
+          "as": "callback.3802.phase.4.phase-replace.3"
+        },
+        {"op": "wait", "for": "callback.3802.phase.4.phase-replace.3", "until": "accepted"},
+        {"op": "state.enter", "name": "base.callback.3802.phase.4", "as": "callback.3802.phase.4"},
+        {"op": "wait", "for": "callback.3802.phase.4"},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "MAvatar_Sam_00_PassiveSkill_RedMode: OnDestroy",
+        "omissions": [
+          "Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects.",
+          "RemoveEffect: event removal path is not literal",
+          "BattleAudioSwitch: not included in the visual sequence projection",
+          "SetControlSkillMapping: Skill mapping is configuration, not a request to play its destination ready pose; native mapping is not executed",
+          "SetDynamicValueByHPRatio: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "base.skill.6.perform": {"use": "common.elemental.responses", "next": "base.rest"},
+    "base.skill.7.perform": {
+      "inputs": {
+        "event": {
+          "type": "integer",
+          "default": 0,
+          "label": "Callback",
+          "choices": [
+            {"value": 0, "label": "MAvatar_Sam_00_Maze: OnEnterBattle"}
+          ]
+        },
+        "callback.3789.condition.ByCompareWaveCount.20": {
+          "type": "bool",
+          "default": false,
+          "label": "ByCompareWaveCount",
+          "description": "Manual source condition: $.AbilityList[14].Modifiers[1].value._CallbackList[0].CallbackConfig[0].Predicate.PredicateList[0]"
+        }
+      },
+      "requires": [
+        {"op": "number", "name": "event", "compare": "ge", "value": 0},
+        {"op": "number", "name": "event", "compare": "lt", "value": 1}
+      ],
+      "bindings": {
+        "targets": ["PreviewTarget", "callback.3789.target.DarkTeamEntity"]
+      },
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "callback.3789.condition.ByCompareWaveCount.20", "is": true},
+          "then": [
+            {"op": "effect.create", "effects": ["base.callback.3789.effect.5"], "as": "callback.3789.effect.5"},
+            {"op": "wait", "for": "callback.3789.effect.5", "until": "accepted"},
+            {"op": "wait", "seconds": 0.05},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit",
+              "direction": {},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Firefly_00/Eff_Avatar_Firefly_00_Common_Hit01.prefab",
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "callback.3789.hit.7"
+            },
+            {"op": "wait", "for": "callback.3789.hit.7", "until": "accepted"},
+            {"op": "wait", "seconds": 0.8500000007}
+          ],
+          "else": [
+            {"op": "effect.create", "effects": ["base.callback.3789.effect.14"], "as": "callback.3789.effect.14"},
+            {"op": "wait", "for": "callback.3789.effect.14", "until": "accepted"},
+            {"op": "wait", "seconds": 0.05},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit",
+              "direction": {},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Firefly_00/Eff_Avatar_Firefly_00_Common_Hit01.prefab",
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "callback.3789.hit.16"
+            },
+            {"op": "wait", "for": "callback.3789.hit.16", "until": "accepted"},
+            {"op": "wait", "seconds": 0.8500000007}
+          ]
+        },
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {
+          "op": "effect.remove",
+          "effects": ["base.callback.3789.effect.5", "base.callback.3789.effect.14"],
+          "optional": ["base.callback.3789.effect.5", "base.callback.3789.effect.14"],
+          "as": "callback.3789.remove-effects"
+        },
+        {"op": "wait", "for": "callback.3789.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {
+          "op": "effect.remove",
+          "effects": ["base.callback.3789.effect.5", "base.callback.3789.effect.14"],
+          "optional": ["base.callback.3789.effect.5", "base.callback.3789.effect.14"],
+          "as": "callback.3789.remove-effects"
+        },
+        {"op": "wait", "for": "callback.3789.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "SkillMaze",
+        "omissions": [
+          "Manual visual callback selection; no native combat modifier or automatic event simulation.",
+          "event: 0=MAvatar_Sam_00_Maze: OnEnterBattle",
+          "VCameraNoiseChange: not included in the visual sequence projection",
+          "GlobalMainIntensityEffect: not included in the visual sequence projection",
+          "TriggerEffect: callback target DarkTeamEntity is a selected owned actor input, defaulting to this actor; native event payload is not assumed",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "DamagePerformFinish: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "base.preview.hit": {
+      "inputs": {
+        "kind": {
+          "type": "text",
+          "default": "Hit",
+          "label": "Hit type",
+          "choices": [
+            {"value": "Hit", "label": "Hit"},
+            {"value": "Hit_H", "label": "Hit_H"}
+          ]
+        }
+      },
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "kind", "is": "Hit_H"},
+          "then": [
+            {"op": "hit", "target": "Caster", "animation": "Hit_H", "as": "hit-heavy"},
+            {"op": "wait", "for": "hit-heavy"}
+          ],
+          "else": [
+            {"op": "hit", "target": "Caster", "animation": "Hit", "as": "hit"},
+            {"op": "wait", "for": "hit"}
+          ]
+        }
+      ],
+      "next": "base.rest",
+      "presentation": {"label": "Hit"},
+      "tags": ["manual-visual-callback"]
+    },
+    "base.source.5": {
+      "requires": [
+        {
+          "op": "unresolved",
+          "source": "Config/ConfigCharacter/Avatar/Avatar_Sam_00_Config.json:$.SkillList[5]",
+          "detail": "Retained source has no independently bound presentation unit"
+        }
+      ],
+      "trigger": "internal",
+      "run": [],
+      "presentation": {
+        "label": "SkillP01",
+        "listed": false,
+        "omissions": ["Retained source has no independently bound presentation unit"]
+      },
+      "tags": ["retained-source"]
+    },
+    "compiled.0.reset_phase": {
+      "mode": "input",
+      "run": [
+        {"op": "state.exit", "name": "base.callback.3799.phase.9", "as": "phase.reset.0"},
+        {"op": "wait", "for": "phase.reset.0"},
+        {"op": "state.exit", "name": "base.callback.3802.phase.4", "as": "phase.reset.1"},
+        {"op": "wait", "for": "phase.reset.1"},
+        {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[0].value._CallbackList[0].CallbackConfig[3]", "as": "phase.reset.2"},
+        {"op": "wait", "for": "phase.reset.2", "until": "accepted"},
+        {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[0].value._CallbackList[3].CallbackConfig[7]", "as": "phase.reset.3"},
+        {"op": "wait", "for": "phase.reset.3", "until": "accepted"}
+      ],
+      "presentation": {
+        "kind": "setting",
+        "contexts": [
+          "base.callback.3799.phase.9",
+          "base.callback.3802.phase.4",
+          "compiled.0.phase/GlobalModifiers[0].value._CallbackList[0].CallbackConfig[3]",
+          "compiled.0.phase/GlobalModifiers[0].value._CallbackList[3].CallbackConfig[7]"
+        ]
+      },
+      "tags": ["visual-phase-reset"]
+    },
+    "compiled.0.select/GlobalModifiers[0].value._CallbackList[0].CallbackConfig[3]": {
+      "run": [
+        {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[0].value._CallbackList[0].CallbackConfig[3]", "as": "phase.select.0"},
+        {"op": "wait", "for": "phase.select.0", "until": "accepted"},
+        {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[0].value._CallbackList[3].CallbackConfig[7]", "as": "phase.select.1"},
+        {"op": "wait", "for": "phase.select.1", "until": "accepted"},
+        {"op": "state.exit", "name": "base.callback.3799.phase.9", "as": "phase.select.2.phase-replace.0"},
+        {"op": "wait", "for": "phase.select.2.phase-replace.0"},
+        {"op": "state.exit", "name": "base.callback.3802.phase.4", "as": "phase.select.2.phase-replace.1"},
+        {"op": "wait", "for": "phase.select.2.phase-replace.1"},
+        {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[0].value._CallbackList[0].CallbackConfig[3]", "as": "phase.select.2.phase-replace.2"},
+        {"op": "wait", "for": "phase.select.2.phase-replace.2", "until": "accepted"},
+        {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[0].value._CallbackList[3].CallbackConfig[7]", "as": "phase.select.2.phase-replace.3"},
+        {"op": "wait", "for": "phase.select.2.phase-replace.3", "until": "accepted"},
+        {"op": "scope.enter", "name": "compiled.0.phase/GlobalModifiers[0].value._CallbackList[0].CallbackConfig[3]", "as": "phase.select.2"},
+        {"op": "wait", "for": "phase.select.2", "until": "accepted"}
+      ],
+      "presentation": {}
+    },
+    "compiled.0.standby/GlobalModifiers[0].value._CallbackList[0].CallbackConfig[3]": {
+      "requires": [
+        {"op": "value", "name": "phase_binding", "is": "GlobalModifiers[0].value._CallbackList[0].CallbackConfig[3]"}
+      ],
+      "run": [
+        {"op": "animation", "state": "StandBy", "as": "body"},
+        {"op": "wait", "for": "body", "until": "accepted"}
+      ],
+      "presentation": {}
+    },
+    "compiled.0.select/GlobalModifiers[0].value._CallbackList[3].CallbackConfig[7]": {
+      "run": [
+        {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[0].value._CallbackList[0].CallbackConfig[3]", "as": "phase.select.0"},
+        {"op": "wait", "for": "phase.select.0", "until": "accepted"},
+        {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[0].value._CallbackList[3].CallbackConfig[7]", "as": "phase.select.1"},
+        {"op": "wait", "for": "phase.select.1", "until": "accepted"},
+        {"op": "state.exit", "name": "base.callback.3799.phase.9", "as": "phase.select.2.phase-replace.0"},
+        {"op": "wait", "for": "phase.select.2.phase-replace.0"},
+        {"op": "state.exit", "name": "base.callback.3802.phase.4", "as": "phase.select.2.phase-replace.1"},
+        {"op": "wait", "for": "phase.select.2.phase-replace.1"},
+        {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[0].value._CallbackList[0].CallbackConfig[3]", "as": "phase.select.2.phase-replace.2"},
+        {"op": "wait", "for": "phase.select.2.phase-replace.2", "until": "accepted"},
+        {"op": "scope.exit", "name": "compiled.0.phase/GlobalModifiers[0].value._CallbackList[3].CallbackConfig[7]", "as": "phase.select.2.phase-replace.3"},
+        {"op": "wait", "for": "phase.select.2.phase-replace.3", "until": "accepted"},
+        {"op": "scope.enter", "name": "compiled.0.phase/GlobalModifiers[0].value._CallbackList[3].CallbackConfig[7]", "as": "phase.select.2"},
+        {"op": "wait", "for": "phase.select.2", "until": "accepted"}
+      ],
+      "presentation": {}
+    },
+    "compiled.0.standby/GlobalModifiers[0].value._CallbackList[3].CallbackConfig[7]": {
+      "requires": [
+        {"op": "value", "name": "phase_binding", "is": "GlobalModifiers[0].value._CallbackList[3].CallbackConfig[7]"}
+      ],
+      "run": [
+        {"op": "animation", "state": "StandBy_Transfer", "as": "body"},
+        {"op": "wait", "for": "body", "until": "accepted"}
+      ],
+      "presentation": {}
+    },
+    "@receiver-clear/base.callback.5359.receiver-property.3": {
+      "requires": [
+        {"op": "state", "name": "common.elemental.frozen-hit"}
+      ],
+      "mode": "input",
+      "run": [
+        {"op": "state.exit", "name": "common.elemental.frozen-hit", "only_caster": true, "as": "clear"},
+        {"op": "wait", "for": "clear"}
+      ],
+      "presentation": {
+        "label": "Clear hit effect override",
+        "kind": "setting",
+        "contexts": ["common.elemental.frozen-hit"]
+      },
+      "tags": ["visual-receiver-clear"]
+    }
+  },
+  "functions": {
+    "base.callback.3799.phase.9.exit": [
+      {
+        "op": "animation_parameter",
+        "participant": "body",
+        "parameter": {"name": "Sam_Transfer", "type": "int", "value": 0},
+        "as": "callback.3799.phase.9.lifetime.animation-parameter.11"
+      },
+      {"op": "wait", "for": "callback.3799.phase.9.lifetime.animation-parameter.11"}
+    ],
+    "@return.rest.pose": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "rest.pose.expression"},
+      {
+        "op": "if",
+        "condition": {"op": "phase", "is": "@return/base.callback.3799.phase.9"},
+        "then": [
+          {
+            "op": "animation",
+            "state": "StandBy_Transfer",
+            "current_idle": true,
+            "end": 0,
+            "restart": false,
+            "track": {"logic": 1, "extra": 6, "previous_end": 1},
+            "as": "rest.pose"
+          }
+        ],
+        "elif": [
+          {
+            "condition": {"op": "phase", "is": "@return/base.callback.3802.phase.4"},
+            "then": [
+              {
+                "op": "animation",
+                "state": "StandBy",
+                "current_idle": true,
+                "end": 0,
+                "restart": false,
+                "track": {"logic": 1, "extra": 6, "previous_end": 1},
+                "as": "rest.pose"
+              }
+            ]
+          },
+          {
+            "condition": {"op": "phase", "is": "@return/compiled.0.phase/GlobalModifiers[0].value._CallbackList[0].CallbackConfig[3]"},
+            "then": [
+              {
+                "op": "animation",
+                "state": "StandBy",
+                "current_idle": true,
+                "end": 0,
+                "restart": false,
+                "track": {"logic": 1, "extra": 6, "previous_end": 1},
+                "as": "rest.pose"
+              }
+            ]
+          },
+          {
+            "condition": {"op": "phase", "is": "@return/compiled.0.phase/GlobalModifiers[0].value._CallbackList[3].CallbackConfig[7]"},
+            "then": [
+              {
+                "op": "animation",
+                "state": "StandBy_Transfer",
+                "current_idle": true,
+                "end": 0,
+                "restart": false,
+                "track": {"logic": 1, "extra": 6, "previous_end": 1},
+                "as": "rest.pose"
+              }
+            ]
+          }
+        ],
+        "else": [
+          {
+            "op": "animation",
+            "state": "StandBy",
+            "current_idle": true,
+            "end": 0,
+            "restart": false,
+            "track": {"logic": 1, "extra": 6, "previous_end": 1},
+            "as": "rest.pose"
+          }
+        ]
+      }
+    ],
+    "@return.return.pose": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "return.pose.expression"},
+      {
+        "op": "if",
+        "condition": {"op": "phase", "is": "@return/base.callback.3799.phase.9"},
+        "then": [
+          {
+            "op": "animation",
+            "state": "StandBy_Transfer",
+            "current_idle": true,
+            "end": 0,
+            "restart": false,
+            "track": {"logic": 1, "extra": 6, "previous_end": 1},
+            "as": "return.pose"
+          }
+        ],
+        "elif": [
+          {
+            "condition": {"op": "phase", "is": "@return/base.callback.3802.phase.4"},
+            "then": [
+              {
+                "op": "animation",
+                "state": "StandBy",
+                "current_idle": true,
+                "end": 0,
+                "restart": false,
+                "track": {"logic": 1, "extra": 6, "previous_end": 1},
+                "as": "return.pose"
+              }
+            ]
+          },
+          {
+            "condition": {"op": "phase", "is": "@return/compiled.0.phase/GlobalModifiers[0].value._CallbackList[0].CallbackConfig[3]"},
+            "then": [
+              {
+                "op": "animation",
+                "state": "StandBy",
+                "current_idle": true,
+                "end": 0,
+                "restart": false,
+                "track": {"logic": 1, "extra": 6, "previous_end": 1},
+                "as": "return.pose"
+              }
+            ]
+          },
+          {
+            "condition": {"op": "phase", "is": "@return/compiled.0.phase/GlobalModifiers[0].value._CallbackList[3].CallbackConfig[7]"},
+            "then": [
+              {
+                "op": "animation",
+                "state": "StandBy_Transfer",
+                "current_idle": true,
+                "end": 0,
+                "restart": false,
+                "track": {"logic": 1, "extra": 6, "previous_end": 1},
+                "as": "return.pose"
+              }
+            ]
+          }
+        ],
+        "else": [
+          {
+            "op": "animation",
+            "state": "StandBy",
+            "current_idle": true,
+            "end": 0,
+            "restart": false,
+            "track": {"logic": 1, "extra": 6, "previous_end": 1},
+            "as": "return.pose"
+          }
+        ]
+      }
+    ]
+  },
+  "states": {
+    "base.callback.3799.phase.9": {
+      "callbacks": {"exit": "base.callback.3799.phase.9.exit"},
+      "values": {"phase_source": "Config/ConfigAbility/Avatar/Avatar_Sam_00_Ability.json:$.GlobalModifiers[0].value._CallbackList[3].CallbackConfig[7]"},
+      "phase": "@return/base.callback.3799.phase.9",
+      "configuration": "base.callback.3799.phase.9",
+      "restore": []
+    },
+    "base.callback.3802.phase.4": {
+      "callbacks": {},
+      "values": {"phase_source": "Config/ConfigAbility/Avatar/Avatar_Sam_00_Ability.json:$.GlobalModifiers[0].value._CallbackList[0].CallbackConfig[3]"},
+      "phase": "@return/base.callback.3802.phase.4",
+      "configuration": "base.callback.3802.phase.4",
+      "restore": []
+    },
+    "compiled.0.phase/GlobalModifiers[0].value._CallbackList[0].CallbackConfig[3]": {
+      "phase": "@return/compiled.0.phase/GlobalModifiers[0].value._CallbackList[0].CallbackConfig[3]",
+      "values": {"phase_binding": "GlobalModifiers[0].value._CallbackList[0].CallbackConfig[3]"},
+      "configuration": "compiled.0.phase/GlobalModifiers[0].value._CallbackList[0].CallbackConfig[3]",
+      "restore": []
+    },
+    "compiled.0.phase/GlobalModifiers[0].value._CallbackList[3].CallbackConfig[7]": {
+      "phase": "@return/compiled.0.phase/GlobalModifiers[0].value._CallbackList[3].CallbackConfig[7]",
+      "values": {"phase_binding": "GlobalModifiers[0].value._CallbackList[3].CallbackConfig[7]"},
+      "configuration": "compiled.0.phase/GlobalModifiers[0].value._CallbackList[3].CallbackConfig[7]",
+      "restore": []
+    }
+  },
+  "resources": {
+    "effects": {
+      "base.skill.2.effect.14": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sam_00/Eff_Avatar_Firefly_00_Skill03.prefab", "target": "Caster"},
+      "base.callback.3789.effect.5": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Firefly_00/Eff_Avatar_Firefly_00_Common_EnterHit.prefab", "target": "callback.3789.target.DarkTeamEntity"},
+      "base.callback.3789.effect.14": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Firefly_00/Eff_Avatar_Firefly_00_Common_EnterHit.prefab", "target": "callback.3789.target.DarkTeamEntity"},
+      "base.callback.3794.effect.2": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Firefly_00/Eff_Avatar_Firefly_00_Dialog_Common.prefab", "target": "Caster", "unique_name": "DialogEffect"},
+      "base.callback.3794.effect.4": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Firefly_00/Eff_Avatar_Firefly_00_Dialog_Common.prefab", "target": "Caster", "unique_name": "DialogEffect"},
+      "base.callback.3794.effect.6": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Firefly_00/Eff_Avatar_Firefly_00_Dialog_Common.prefab", "target": "Caster", "unique_name": "DialogEffect"},
+      "base.callback.3794.effect.8": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Firefly_00/Eff_Avatar_Firefly_00_Dialog_Common.prefab", "target": "Caster", "unique_name": "DialogEffect"}
+    },
+    "phases": {
+      "base.callback.3799.phase.9": {
+        "root": {"kind": "global_modifier", "name": "MAvatar_Sam_00_PassiveSkill_RedMode"},
+        "path": [
+          {"owner": "RPG.GameCore.TurnBasedModifierConfig", "field": "_CallbackList", "index": 3},
+          {"owner": "RPG.GameCore.TurnBasedModifierCallbackConfig", "field": "CallbackConfig", "index": 7},
+          {"owner": "RPG.GameCore.CharacterChangePhase", "field": "PhaseAnimConfig"}
+        ]
+      },
+      "base.callback.3802.phase.4": {
+        "root": {"kind": "global_modifier", "name": "MAvatar_Sam_00_PassiveSkill_RedMode"},
+        "path": [
+          {"owner": "RPG.GameCore.TurnBasedModifierConfig", "field": "_CallbackList", "index": 0},
+          {"owner": "RPG.GameCore.TurnBasedModifierCallbackConfig", "field": "CallbackConfig", "index": 3},
+          {"owner": "RPG.GameCore.CharacterChangePhase", "field": "PhaseAnimConfig"}
+        ]
+      },
+      "compiled.0.phase/GlobalModifiers[0].value._CallbackList[0].CallbackConfig[3]": {
+        "root": {"kind": "global_modifier", "name": "MAvatar_Sam_00_PassiveSkill_RedMode"},
+        "path": [
+          {"owner": "RPG.GameCore.TurnBasedModifierConfig", "field": "_CallbackList", "index": 0},
+          {"owner": "RPG.GameCore.TurnBasedModifierCallbackConfig", "field": "CallbackConfig", "index": 3},
+          {"owner": "RPG.GameCore.CharacterChangePhase", "field": "PhaseAnimConfig"}
+        ]
+      },
+      "compiled.0.phase/GlobalModifiers[0].value._CallbackList[3].CallbackConfig[7]": {
+        "root": {"kind": "global_modifier", "name": "MAvatar_Sam_00_PassiveSkill_RedMode"},
+        "path": [
+          {"owner": "RPG.GameCore.TurnBasedModifierConfig", "field": "_CallbackList", "index": 3},
+          {"owner": "RPG.GameCore.TurnBasedModifierCallbackConfig", "field": "CallbackConfig", "index": 7},
+          {"owner": "RPG.GameCore.CharacterChangePhase", "field": "PhaseAnimConfig"}
+        ]
+      }
+    }
+  }
+}

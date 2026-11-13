@@ -1,0 +1,893 @@
+{
+  "format": "hksr.script",
+  "id": "official-scripts:Config/ConfigCharacter/Avatar/Avatar_Saber_00_Config.json",
+  "applies_to": "Config/ConfigCharacter/Avatar/Avatar_Saber_00_Config.json",
+  "default": true,
+  "imports": ["Common/Elemental.json"],
+  "defaults": {
+    "targets": {
+      "PreviewTarget": {
+        "local_position": [0, 0, 6]
+      },
+      "AbilityTargetEntity": {
+        "local_position": [0, 0, 6]
+      },
+      "SkillPointEntity": {"alias": "AbilityTargetEntity"}
+    }
+  },
+  "actions": {
+    "base.rest": {
+      "trigger": "internal",
+      "runtime": {"policy": "ready", "selected": ""},
+      "run": [
+        {"op": "call", "function": "@return.rest.pose"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["stable-return", "idle-provider"]
+    },
+    "base.skill.0.perform": {
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "runtime": {"policy": "performance", "selected": "Skill01"},
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Saber_00_Skill01_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.0.clock.1", "progress": 0.2230300002},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit_H",
+              "direction": {},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Saber_00/Eff_Avatar_Saber_00_Skill01_Hit.prefab",
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.0.hit.4"
+            },
+            {"op": "wait", "for": "skill.0.hit.4", "until": "accepted"}
+          ],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Saber_Skill01_Camera",
+          "run": [],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill01", "end": 0.0, "track": {"logic": 3}, "as": "skill.0.clock.1"},
+        {
+          "op": "movement",
+          "animation": "skill.0.clock.1",
+          "segments": [
+            {
+              "destination": "target",
+              "name": "PreviewTarget",
+              "target_geometry": true,
+              "start": 0.0679999995,
+              "end": 0.1539999998,
+              "sample": {"distance": 1.7000000006, "percentage": 1.0, "include_radii": true}
+            },
+            {
+              "destination": "origin",
+              "start": 0.6930000004,
+              "end": 0.8960000004,
+              "sample": {"distance": 0.0, "percentage": 1.0, "include_radii": true}
+            }
+          ],
+          "as": "skill.0.clock.1.movement"
+        },
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.0},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.08},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.1200000001},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.9100000008},
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill01",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "LookAt: not included in the visual sequence projection",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "RadialBlurEffect: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.0.ready.-1": {
+      "runtime": {"policy": "ready", "selected": "Skill01"},
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Saber_00_Config.json", "skill": 0, "as": "ready"}
+      ],
+      "presentation": {
+        "label": "Skill01 · Ready",
+        "ready": {"config": "Config/ConfigCharacter/Avatar/Avatar_Saber_00_Config.json", "skill": 0}
+      },
+      "tags": ["ready-pose"]
+    },
+    "base.skill.1.perform": {
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "runtime": {"policy": "performance", "selected": "Skill02"},
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Saber_00_Skill02_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.3689999997},
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.3889999997},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit",
+              "direction": {"vertical": -30.0},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Saber_00/Eff_Avatar_Saber_00_Skill02_Hit.prefab",
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.1.hit.26"
+            },
+            {"op": "wait", "for": "skill.1.hit.26", "until": "accepted"},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit",
+              "direction": {"vertical": -30.0},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Saber_00/Eff_Avatar_Saber_00_Skill02_Hit.prefab",
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.1.hit.28"
+            },
+            {"op": "wait", "for": "skill.1.hit.28", "until": "accepted"},
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.4530000002},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit",
+              "direction": {"vertical": -30.0},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Saber_00/Eff_Avatar_Saber_00_Skill02_Hit.prefab",
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.1.hit.30"
+            },
+            {"op": "wait", "for": "skill.1.hit.30", "until": "accepted"},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit",
+              "direction": {"vertical": -30.0},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Saber_00/Eff_Avatar_Saber_00_Skill02_Hit.prefab",
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.1.hit.32"
+            },
+            {"op": "wait", "for": "skill.1.hit.32", "until": "accepted"},
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.4840000001},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit",
+              "direction": {"vertical": -30.0},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Saber_00/Eff_Avatar_Saber_00_Skill02_Hit.prefab",
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.1.hit.34"
+            },
+            {"op": "wait", "for": "skill.1.hit.34", "until": "accepted"},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit",
+              "direction": {"vertical": -30.0},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Saber_00/Eff_Avatar_Saber_00_Skill02_Hit.prefab",
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.1.hit.36"
+            },
+            {"op": "wait", "for": "skill.1.hit.36", "until": "accepted"},
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.5333000004},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit_H",
+              "direction": {"vertical": -30.0},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Saber_00/Eff_Avatar_Saber_00_Skill02_Hit02.prefab",
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.1.hit.38"
+            },
+            {"op": "wait", "for": "skill.1.hit.38", "until": "accepted"},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit_H",
+              "direction": {"vertical": -30.0},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Saber_00/Eff_Avatar_Saber_00_Skill02_Hit02.prefab",
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.1.hit.40"
+            },
+            {"op": "wait", "for": "skill.1.hit.40", "until": "accepted"},
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.5500000005}
+          ],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Saber_Skill02_Camera",
+          "run": [],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill02", "end": 0.0, "track": {"logic": 3}, "as": "skill.1.clock.1"},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.0},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.3911000003},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.9110000007},
+        {"op": "animation", "state": "Skill02_End", "transition": 0.03, "end": -1.0, "track": {"logic": 3}, "as": "skill.1.clock.2"},
+        {"op": "wait", "for": "skill.1.clock.2", "until": "animation_end"},
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill02",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "LookAt: not included in the visual sequence projection",
+          "LAJIKDENEOO: not included in the visual sequence projection",
+          "RadialBlurEffect: not included in the visual sequence projection",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "PlayTimeline: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "GlobalMainIntensityEffect: not included in the visual sequence projection",
+          "HideLevelStage: not included in the visual sequence projection",
+          "StopTimeline: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.1.ready.-1": {
+      "runtime": {"policy": "ready", "selected": "Skill02"},
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Saber_00_Config.json", "skill": 1, "as": "ready"}
+      ],
+      "presentation": {
+        "label": "Skill02 · Ready",
+        "ready": {"config": "Config/ConfigCharacter/Avatar/Avatar_Saber_00_Config.json", "skill": 1}
+      },
+      "tags": ["ready-pose"]
+    },
+    "base.skill.2.perform": {
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "runtime": {"policy": "performance", "selected": "Skill03"},
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Saber_00_Skill03_Camera",
+          "run": [
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.3500000003}
+          ],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Saber_00_Skill03_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.6810000005},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit_H",
+              "direction": {"horizontal": 70.0, "vertical": 30.0},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Saber_00/Eff_Avatar_Saber_00_Skill03_Hit.prefab",
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.2.hit.10"
+            },
+            {"op": "wait", "for": "skill.2.hit.10", "until": "accepted"},
+            {"op": "wait", "seconds": 0.01},
+            {
+              "op": "for_each",
+              "bind": "skill.2.member.12",
+              "targets": ["PreviewTarget"],
+              "collection": "skill.2.targets.13",
+              "run": [
+                {
+                  "op": "hit",
+                  "target": "skill.2.member.12",
+                  "animation": "Hit",
+                  "direction": {"horizontal": 70.0, "vertical": 30.0},
+                  "effect": {
+                    "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Saber_00/Eff_Avatar_Saber_00_Skill03_Hit.prefab",
+                    "minimum_interval": 0.0500000007,
+                    "maximum_count": 1
+                  },
+                  "allow_position": true,
+                  "as": "skill.2.hit.14"
+                },
+                {"op": "wait", "for": "skill.2.hit.14", "until": "accepted"}
+              ],
+              "empty": [
+                {
+                  "op": "for_each",
+                  "bind": "skill.2.member.15",
+                  "targets": ["PreviewTarget"],
+                  "collection": "skill.2.targets.16",
+                  "run": [
+                    {
+                      "op": "hit",
+                      "target": "skill.2.member.15",
+                      "animation": "Hit",
+                      "direction": {"horizontal": 70.0, "vertical": 30.0},
+                      "effect": {
+                        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Saber_00/Eff_Avatar_Saber_00_Skill03_Hit.prefab",
+                        "minimum_interval": 0.0500000007,
+                        "maximum_count": 1
+                      },
+                      "allow_position": true,
+                      "as": "skill.2.hit.17"
+                    },
+                    {"op": "wait", "for": "skill.2.hit.17", "until": "accepted"}
+                  ],
+                  "empty": []
+                }
+              ]
+            },
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 1.0},
+            {"op": "animation", "state": "StandBy", "end": -1.0, "track": {"logic": 1}, "as": "skill.2.clock.7"},
+            {"op": "wait", "for": "skill.2.clock.7", "until": "animation_end"}
+          ],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill03", "end": -1.0, "track": {"logic": 3}, "as": "skill.2.clock.1"},
+        {"op": "wait", "for": "skill.2.clock.1", "until": "animation_end"},
+        {"op": "wait", "for": "skill.2.clock.1", "progress": 1.0},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill03",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "TransitEnvProfile: not included in the visual sequence projection",
+          "GlobalMainIntensityEffect: not included in the visual sequence projection",
+          "ReleaseEnvProfile: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "LoopExecuteTaskListWithInterval: not included in the visual sequence projection",
+          "Retarget: recipient collection is explicitly selected; native filtering, random selection and count limits are not simulated",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "LookAt: not included in the visual sequence projection",
+          "TriggerSkipDeadHandler: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "SetSkillTargetFormationByPos: not included in the visual sequence projection",
+          "HideLevelStage: not included in the visual sequence projection",
+          "SetTeamFormation: not included in the visual sequence projection",
+          "TriggerEffect: effect needs a non-owned target, dynamic path, or Timeline attachment"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.2.ready.-1": {
+      "runtime": {"policy": "ready", "selected": "Skill03"},
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Saber_00_Config.json", "skill": 2, "as": "ready"}
+      ],
+      "presentation": {
+        "label": "Skill03 · Ready",
+        "ready": {"config": "Config/ConfigCharacter/Avatar/Avatar_Saber_00_Config.json", "skill": 2}
+      },
+      "tags": ["ready-pose"]
+    },
+    "base.skill.3.perform": {
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "runtime": {"policy": "performance", "selected": "Skill11"},
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Saber_00_Skill11_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.3.clock.1", "progress": 0.1400000001},
+            {"op": "wait", "for": "skill.3.clock.1", "progress": 0.4955340006},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit_H",
+              "direction": {"horizontal": 70.0, "vertical": 30.0},
+              "effect": {"path": "", "minimum_interval": 0.0500000007, "maximum_count": 1},
+              "allow_position": true,
+              "as": "skill.3.hit.15"
+            },
+            {"op": "wait", "for": "skill.3.hit.15", "until": "accepted"},
+            {"op": "wait", "for": "skill.3.clock.1", "progress": 0.5810000004},
+            {"op": "wait", "for": "skill.3.clock.1", "progress": 0.9800000009}
+          ],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Saber_00_Skill11_Camera",
+          "run": [
+            {"op": "wait", "for": "skill.3.clock.1", "progress": 0.2990299998}
+          ],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill11", "end": 0.9810000008, "track": {"logic": 3}, "as": "skill.3.clock.1"},
+        {"op": "wait", "for": "skill.3.clock.1", "progress": 0.0230680003},
+        {"op": "wait", "for": "skill.3.clock.1", "progress": 0.0691999995},
+        {"op": "wait", "for": "skill.3.clock.1", "progress": 0.9810000008},
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill11",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "LookAt: not included in the visual sequence projection",
+          "LAJIKDENEOO: not included in the visual sequence projection",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "DamageByAttackProperty: no literal hit animation/effect; receiver defaults are not assumed",
+          "DamageByAttackProperty: hit presentation not projected: hit requires an explicit motion/source binding: HitMotion",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "HideLevelStage: not included in the visual sequence projection",
+          "SetSkillTargetFormationByPos: not included in the visual sequence projection",
+          "SetTeamFormation: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.3.ready.-1": {
+      "runtime": {"policy": "ready", "selected": "Skill11"},
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Saber_00_Config.json", "skill": 3, "as": "ready"}
+      ],
+      "presentation": {
+        "label": "Skill11 · Ready",
+        "ready": {"config": "Config/ConfigCharacter/Avatar/Avatar_Saber_00_Config.json", "skill": 3}
+      },
+      "tags": ["ready-pose"]
+    },
+    "base.callback.3760": {
+      "runtime": {"policy": "performance", "selected": ""},
+      "run": [
+        {"op": "render.outline", "add": ["Weapon"], "as": "callback.3760.outline_targets.1"},
+        {"op": "wait", "for": "callback.3760.outline_targets.1", "until": "accepted"},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "MAvatar_Saber_00_Wind_Skill03_buff: OnStack",
+        "omissions": [
+          "Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects.",
+          "SetControlSkillMapping: Skill mapping is configuration, not a request to play its destination ready pose; native mapping is not executed"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "base.callback.3761": {
+      "runtime": {"policy": "performance", "selected": ""},
+      "run": [
+        {
+          "op": "effect.remove_event",
+          "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Saber_00/Eff_Avatar_Saber_00_Passive_Weapon.prefab",
+          "as": "callback.3761.remove.1.0"
+        },
+        {"op": "wait", "for": "callback.3761.remove.1.0", "until": "accepted"},
+        {"op": "render.outline", "remove": ["Weapon"], "as": "callback.3761.outline_targets.2"},
+        {"op": "wait", "for": "callback.3761.outline_targets.2", "until": "accepted"},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "MAvatar_Saber_00_Wind_Skill03_buff: OnDestroy",
+        "omissions": [
+          "Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects.",
+          "SetControlSkillMapping: Skill mapping is configuration, not a request to play its destination ready pose; native mapping is not executed"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "base.skill.5.perform": {
+      "use": "common.elemental.responses",
+      "runtime": {"policy": "performance", "selected": "PassiveSkill02"},
+      "next": "base.rest"
+    },
+    "base.preview.hit": {
+      "inputs": {
+        "kind": {
+          "type": "text",
+          "default": "Hit",
+          "label": "Hit type",
+          "choices": [
+            {"value": "Hit", "label": "Hit"},
+            {"value": "Hit_H", "label": "Hit_H"}
+          ]
+        }
+      },
+      "runtime": {"policy": "performance", "selected": ""},
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "kind", "is": "Hit_H"},
+          "then": [
+            {"op": "hit", "target": "Caster", "animation": "Hit_H", "as": "hit-heavy"},
+            {"op": "wait", "for": "hit-heavy"}
+          ],
+          "else": [
+            {"op": "hit", "target": "Caster", "animation": "Hit", "as": "hit"},
+            {"op": "wait", "for": "hit"}
+          ]
+        }
+      ],
+      "next": "base.rest",
+      "presentation": {"label": "Hit"},
+      "tags": ["manual-visual-callback"]
+    },
+    "base.source.4": {
+      "requires": [
+        {
+          "op": "unresolved",
+          "source": "Config/ConfigCharacter/Avatar/Avatar_Saber_00_Config.json:$.SkillList[4]",
+          "detail": "Retained source has no independently bound presentation unit"
+        }
+      ],
+      "trigger": "internal",
+      "run": [],
+      "presentation": {
+        "label": "SkillP01",
+        "listed": false,
+        "omissions": ["Retained source has no independently bound presentation unit"]
+      },
+      "tags": ["retained-source"]
+    },
+    "base.source.6": {
+      "requires": [
+        {
+          "op": "unresolved",
+          "source": "Config/ConfigCharacter/Avatar/Avatar_Saber_00_Config.json:$.SkillList[6]",
+          "detail": "Retained source has no independently bound presentation unit"
+        }
+      ],
+      "trigger": "internal",
+      "run": [],
+      "presentation": {
+        "label": "SkillMaze",
+        "listed": false,
+        "omissions": ["Retained source has no independently bound presentation unit"]
+      },
+      "tags": ["retained-source"]
+    },
+    "compiled.0.Avatar_Saber_00_Config.skill-0.entry": {
+      "requires": [
+        {"op": "target", "name": "AbilityTargetEntity", "allow_position": true},
+        {"op": "playback", "name": "performance", "values": ["ready"]},
+        {"op": "playback", "name": "selected", "is": "Skill01"}
+      ],
+      "runtime": {"policy": "continuous"},
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Saber_00_Skill01_Phase01",
+          "run": [
+            {"op": "facing.target", "target": "AbilityTargetEntity", "as": "$.AbilityList[0].OnStart[0]"},
+            {"op": "wait", "for": "$.AbilityList[0].OnStart[0]", "until": "accepted"},
+            {
+              "op": "start",
+              "id": "Avatar_Saber_00_Skill01_Phase02",
+              "run": [
+                {"op": "wait", "for": "body.0", "progress": 0.2230300002},
+                {"op": "attack.record", "target": "AbilityTargetEntity", "allow_position": true, "as": "$.AbilityList[1].OnStart[1].record"},
+                {"op": "wait", "for": "$.AbilityList[1].OnStart[1].record", "until": "accepted"},
+                {
+                  "op": "hit",
+                  "target": "AbilityTargetEntity",
+                  "animation": "Hit_H",
+                  "events": ["after_hit", "after_hit_all"],
+                  "direction": {},
+                  "effect": {
+                    "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Saber_00/Eff_Avatar_Saber_00_Skill01_Hit.prefab",
+                    "minimum_interval": 0.0500000007,
+                    "maximum_count": 1
+                  },
+                  "allow_position": true,
+                  "as": "$.AbilityList[1].OnStart[1]"
+                },
+                {"op": "wait", "for": "$.AbilityList[1].OnStart[1]", "until": "accepted"},
+                {"op": "attack.finish", "as": "$.AbilityList[1].OnStart[2]"},
+                {"op": "wait", "for": "$.AbilityList[1].OnStart[2]", "until": "accepted"},
+                {"op": "playback.value", "variable": "performance", "operation": "set", "value": "finished", "as": "$.AbilityList[1].OnStart[3]"}
+              ],
+              "join": true
+            },
+            {"op": "animation", "state": "Skill01", "end": 0.0, "track": {"logic": 3}, "as": "body.0"},
+            {
+              "op": "movement",
+              "animation": "body.0",
+              "segments": [
+                {
+                  "destination": "target",
+                  "name": "AbilityTargetEntity",
+                  "target_geometry": true,
+                  "start": 0.0679999995,
+                  "end": 0.1539999998,
+                  "sample": {"distance": 1.7000000006, "percentage": 1.0, "include_radii": true}
+                },
+                {
+                  "destination": "origin",
+                  "start": 0.6930000004,
+                  "end": 0.8960000004,
+                  "sample": {"distance": 0.0, "percentage": 1.0, "include_radii": true}
+                }
+              ],
+              "as": "body.0.movement"
+            },
+            {"op": "wait", "for": "body.0", "progress": 0.0},
+            {"op": "wait", "for": "body.0", "progress": 0.08},
+            {"op": "wait", "for": "body.0", "progress": 0.1200000001},
+            {"op": "wait", "for": "body.0", "progress": 0.9100000008}
+          ],
+          "join": true
+        },
+        {"op": "join"},
+        {"op": "playback.value", "variable": "performance", "operation": "set", "value": "resetting", "as": "after"},
+        {"op": "call", "function": "@return.return"},
+        {"op": "wait", "for": "return", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return-position"},
+        {"op": "wait", "for": "return-position"},
+        {"op": "playback.value", "variable": "performance", "operation": "set", "value": "ready", "as": "reset"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.abort-return"},
+        {"op": "wait", "for": "abort-return", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "abort-position"},
+        {"op": "wait", "for": "abort-position"}
+      ],
+      "next": "compiled.0.Avatar_Saber_00_Config.skill-0.rest",
+      "presentation": {"label": "Avatar_Saber_00_Skill01_Phase01"},
+      "tags": ["entry-development"]
+    },
+    "compiled.0.Avatar_Saber_00_Config.skill-0.select": {
+      "requires": [
+        {"op": "playback", "name": "performance", "values": ["ready", "failed"]}
+      ],
+      "runtime": {"policy": "setting", "selected": "Skill01"},
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Saber_00_Config.json", "skill": 0, "as": "ready"},
+        {"op": "wait", "for": "ready"}
+      ],
+      "presentation": {
+        "label": "Skill01_Ready",
+        "ready": {"config": "Config/ConfigCharacter/Avatar/Avatar_Saber_00_Config.json", "skill": 0}
+      },
+      "tags": ["selection-development"]
+    },
+    "compiled.0.Avatar_Saber_00_Config.skill-0.rest": {
+      "trigger": "internal",
+      "runtime": {"policy": "ready", "selected": ""},
+      "run": [
+        {"op": "call", "function": "@return.idle"},
+        {"op": "wait", "for": "idle", "until": "submitted"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["stable-return"]
+    },
+    "@receiver-clear/base.callback.5359.receiver-property.3": {
+      "requires": [
+        {"op": "state", "name": "common.elemental.frozen-hit"}
+      ],
+      "mode": "input",
+      "run": [
+        {"op": "state.exit", "name": "common.elemental.frozen-hit", "only_caster": true, "as": "clear"},
+        {"op": "wait", "for": "clear"}
+      ],
+      "presentation": {
+        "label": "Clear hit effect override",
+        "kind": "setting",
+        "contexts": ["common.elemental.frozen-hit"]
+      },
+      "tags": ["visual-receiver-clear"]
+    },
+    "@idle": {
+      "runtime": {"policy": "ready", "selected": ""},
+      "run": [
+        {"op": "call", "function": "@return.rest.pose"}
+      ],
+      "presentation": {"label": "Idle"},
+      "tags": ["script-idle"]
+    }
+  },
+  "functions": {
+    "@return.rest.pose": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "rest.pose.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "rest.pose"
+      }
+    ],
+    "@return.return.pose": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "return.pose.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "return.pose"
+      }
+    ],
+    "@return.return": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "return.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "return"
+      }
+    ],
+    "@return.abort-return": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "abort-return.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "abort-return"
+      }
+    ],
+    "@return.idle": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "idle.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "idle"
+      }
+    ]
+  },
+  "states": {},
+  "resources": {
+    "effects": {}
+  }
+}

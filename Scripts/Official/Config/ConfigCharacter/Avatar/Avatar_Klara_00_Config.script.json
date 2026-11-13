@@ -1,0 +1,555 @@
+{
+  "format": "hksr.script",
+  "id": "official-scripts:Config/ConfigCharacter/Avatar/Avatar_Klara_00_Config.json",
+  "applies_to": "Config/ConfigCharacter/Avatar/Avatar_Klara_00_Config.json",
+  "default": true,
+  "imports": ["Common/Elemental.json"],
+  "defaults": {
+    "targets": {
+      "PreviewTarget": {
+        "local_position": [0, 0, 6]
+      }
+    }
+  },
+  "actions": {
+    "rest": {
+      "trigger": "internal",
+      "run": [
+        {"op": "call", "function": "@return.rest.pose"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["stable-return", "idle-provider"]
+    },
+    "skill.0.perform": {
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Klara_00_Skill01_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Klara_00_Skill01_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.0.clock.1", "progress": 0.283},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit_H",
+              "direction": {"horizontal": 45.0, "vertical": 60.0},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Klara_00/Eff_Avatar_Klara_00_Skill01_Hit.prefab",
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.0.hit.11"
+            },
+            {"op": "wait", "for": "skill.0.hit.11", "until": "accepted"}
+          ],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill01", "end": -1.0, "track": {"logic": 3}, "as": "skill.0.clock.1"},
+        {"op": "wait", "for": "skill.0.clock.1", "until": "animation_end"},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.151},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.1900000001},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.7000000006},
+        {"op": "animation", "state": "StandBy", "end": -1.0, "track": {"logic": 1}, "as": "skill.0.clock.2"},
+        {"op": "wait", "for": "skill.0.clock.2", "until": "animation_end"},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "Skill01",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "LookAt: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "TriggerAnimStateWithMove: animation has no literal owned-body binding",
+          "RadialBlurEffect: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "skill.0.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Klara_00_Config.json", "skill": 0, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "skill.1.perform": {
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Klara_00_Skill02_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.2010000001},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit_H",
+              "direction": {},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Klara_00/Eff_Avatar_Klara_00_Skill02_Hit02.prefab",
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.1.hit.6"
+            },
+            {"op": "wait", "for": "skill.1.hit.6", "until": "accepted"},
+            {"op": "wait", "seconds": 0.2000000001}
+          ],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Klara_00_Skill02_Camera",
+          "run": [],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill02", "end": 1.0, "track": {"logic": 3}, "as": "skill.1.clock.1"},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.8000000007},
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "Skill02",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "FireWaveProjectile: not included in the visual sequence projection",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "LookAt: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "skill.1.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Klara_00_Config.json", "skill": 1, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "skill.2.perform": {
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Klara_00_Skill03_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.4500000004},
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.7040000003}
+          ],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Klara_00_Skill03_Camera",
+          "run": [],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill03", "end": -1.0, "track": {"logic": 3}, "as": "skill.2.clock.1"},
+        {"op": "wait", "for": "skill.2.clock.1", "until": "animation_end"},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "Skill03",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "SyncCharLightAndCameraDir: not included in the visual sequence projection",
+          "VCameraNoiseChange: not included in the visual sequence projection",
+          "MoveToTargetPosition: not included in the visual sequence projection",
+          "LookAt: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "WaitTimelineFinish: not included in the visual sequence projection",
+          "RemoveEffect: serial step depends on an unavailable source clock; no timing is inferred",
+          "TriggerAnimState: serial step depends on an unavailable source clock; no timing is inferred"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "skill.2.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Klara_00_Config.json", "skill": 2, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "skill.3.perform": {
+      "inputs": {
+        "cue": {
+          "type": "integer",
+          "default": 0,
+          "label": "Effect",
+          "choices": [
+            {"value": 0, "label": "Avatar_Klara_00_PassiveSkill01_InsertAbility"},
+            {"value": 1, "label": "Avatar_Klara_00_PassiveSkill01_InsertAbility"}
+          ]
+        }
+      },
+      "requires": [
+        {"op": "number", "name": "cue", "compare": "ge", "value": 0},
+        {"op": "number", "name": "cue", "compare": "lt", "value": 2}
+      ],
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "cue", "is": 1},
+          "then": [
+            {"op": "effect.create", "effects": ["skill.3.effect.1"], "as": "effect"},
+            {"op": "wait", "for": "effect", "until": "accepted"},
+            {
+              "op": "repeat",
+              "until_finish": true,
+              "run": [
+                {"op": "wait", "frame": true}
+              ]
+            },
+            {"op": "effect.remove", "effects": ["skill.3.effect.1"], "optional": ["skill.3.effect.1"], "as": "remove"},
+            {"op": "wait", "for": "remove", "until": "accepted"}
+          ],
+          "else": [
+            {"op": "effect.create", "effects": ["skill.3.effect.0"], "as": "effect"},
+            {"op": "wait", "for": "effect", "until": "accepted"},
+            {
+              "op": "repeat",
+              "until_finish": true,
+              "run": [
+                {"op": "wait", "frame": true}
+              ]
+            },
+            {"op": "effect.remove", "effects": ["skill.3.effect.0"], "optional": ["skill.3.effect.0"], "as": "remove"},
+            {"op": "wait", "for": "remove", "until": "accepted"}
+          ]
+        }
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "SkillP01",
+        "omissions": [
+          "Actor-owned effect cue only. Original callback conditions and timing are manual inputs; use Finish to end.",
+          "cue: 0=Avatar_Klara_00_PassiveSkill01_InsertAbility, 1=Avatar_Klara_00_PassiveSkill01_InsertAbility",
+          "SummonPartner: not included in the visual sequence projection",
+          "SetCharacterVisibilityFollow: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["manual-effect-cue", "partial-presentation"]
+    },
+    "callback.2441": {
+      "bindings": {
+        "targets": ["Recipient"]
+      },
+      "run": [
+        {"op": "effect.create", "effects": ["callback.2441.effect.1"], "as": "callback.2441.effect.1"},
+        {"op": "wait", "for": "callback.2441.effect.1", "until": "accepted"},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "effect.remove", "effects": ["callback.2441.effect.1"], "optional": ["callback.2441.effect.1"], "as": "callback.2441.remove-effects"},
+        {"op": "wait", "for": "callback.2441.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "effect.remove", "effects": ["callback.2441.effect.1"], "optional": ["callback.2441.effect.1"], "as": "callback.2441.remove-effects"},
+        {"op": "wait", "for": "callback.2441.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "MAvatar_Klara_00_Ultra_WarriorMode: OnStack",
+        "omissions": ["Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects."]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "followup.0": {
+      "inputs": {
+        "followup.0.condition.ByIsContainModifier.17": {"type": "bool", "default": false, "label": "ByIsContainModifier", "description": "Manual source condition: $.AbilityList[8].OnStart[12].Predicate"}
+      },
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Klara_00_PassiveSkill_Camera",
+          "run": [],
+          "join": true
+        },
+        {"op": "animation", "state": "PassiveSkill", "end": -1.0, "track": {"logic": 3}, "as": "followup.0.clock.1"},
+        {"op": "wait", "for": "followup.0.clock.1", "until": "animation_end"},
+        {
+          "op": "effect.remove_event",
+          "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Klara_00/Eff_Avatar_Klara_00_Common_SvarogHit.prefab",
+          "as": "followup.0.remove.14.0"
+        },
+        {"op": "wait", "for": "followup.0.remove.14.0", "until": "accepted"},
+        {
+          "op": "effect.remove_event",
+          "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Klara_00/Eff_Avatar_Klara_00_Common_SvarogHit_H.prefab",
+          "as": "followup.0.remove.15.0"
+        },
+        {"op": "wait", "for": "followup.0.remove.15.0", "until": "accepted"},
+        {
+          "op": "effect.remove_event",
+          "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Klara_00/Eff_Avatar_Klara_00_Common_SvarogHit_H_Stun.prefab",
+          "as": "followup.0.remove.16.0"
+        },
+        {"op": "wait", "for": "followup.0.remove.16.0", "until": "accepted"},
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "followup.0.condition.ByIsContainModifier.17", "is": true},
+          "then": [
+            {"op": "sound", "event": "Ev_vo_avatar_passive02_skill_svarog", "as": "followup.0.sound.18"}
+          ],
+          "else": [
+            {"op": "sound", "event": "Ev_vo_avatar_passive_skill_svarog", "as": "followup.0.sound.19"}
+          ]
+        },
+        {"op": "wait", "for": "followup.0.clock.1", "progress": 0.2129999999},
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "followup.0.condition.ByIsContainModifier.17", "is": true},
+          "then": [
+            {"op": "effect.create", "effects": ["followup.0.effect.20"], "as": "followup.0.effect.20"},
+            {"op": "wait", "for": "followup.0.effect.20", "until": "accepted"}
+          ],
+          "else": [
+            {"op": "effect.create", "effects": ["followup.0.effect.21"], "as": "followup.0.effect.21"},
+            {"op": "wait", "for": "followup.0.effect.21", "until": "accepted"}
+          ]
+        },
+        {"op": "wait", "for": "followup.0.clock.1", "progress": 0.8800000008},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {
+          "op": "effect.remove",
+          "effects": ["followup.0.effect.20", "followup.0.effect.21"],
+          "optional": ["followup.0.effect.20", "followup.0.effect.21"],
+          "as": "followup.0.remove-effects"
+        },
+        {"op": "wait", "for": "followup.0.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {
+          "op": "effect.remove",
+          "effects": ["followup.0.effect.20", "followup.0.effect.21"],
+          "optional": ["followup.0.effect.20", "followup.0.effect.21"],
+          "as": "followup.0.remove-effects"
+        },
+        {"op": "wait", "for": "followup.0.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "Avatar_Klara_00_PassiveSkill01_InsertAbility",
+        "omissions": [
+          "Manual follow-up presentation; no native action queue or combat condition evaluation.",
+          "retained visual sequence",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "SetTeamFormation: not included in the visual sequence projection",
+          "MoveToTargetPosition: not included in the visual sequence projection",
+          "LookAt: not included in the visual sequence projection",
+          "AnimSetParameter: animation parameter requires the owned caster model",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "SetSkillTargetFormationByPos: not included in the visual sequence projection",
+          "WaitTimelineFinish: not included in the visual sequence projection",
+          "PredicateTaskList: serial step depends on an unavailable source clock; no timing is inferred",
+          "AnimSetParameter: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitSecond: serial step depends on an unavailable source clock; no timing is inferred"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "skill.5.perform": {"use": "common.elemental.responses", "next": "rest"},
+    "preview.hit": {
+      "inputs": {
+        "kind": {
+          "type": "text",
+          "default": "Hit",
+          "label": "Hit type",
+          "choices": [
+            {"value": "Hit", "label": "Hit"},
+            {"value": "Hit_H", "label": "Hit_H"}
+          ]
+        }
+      },
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "kind", "is": "Hit_H"},
+          "then": [
+            {"op": "hit", "target": "Caster", "animation": "Hit_H", "as": "hit-heavy"},
+            {"op": "wait", "for": "hit-heavy"}
+          ],
+          "else": [
+            {"op": "hit", "target": "Caster", "animation": "Hit", "as": "hit"},
+            {"op": "wait", "for": "hit"}
+          ]
+        }
+      ],
+      "next": "rest",
+      "presentation": {"label": "Hit"},
+      "tags": ["manual-visual-callback"]
+    },
+    "source.4": {
+      "requires": [
+        {
+          "op": "unresolved",
+          "source": "Config/ConfigCharacter/Avatar/Avatar_Klara_00_Config.json:$.SkillList[4]",
+          "detail": "Retained source has no independently bound presentation unit"
+        }
+      ],
+      "trigger": "internal",
+      "run": [],
+      "presentation": {
+        "label": "SkillMaze",
+        "listed": false,
+        "omissions": ["Retained source has no independently bound presentation unit"]
+      },
+      "tags": ["retained-source"]
+    },
+    "@receiver-clear/callback.5359.receiver-property.3": {
+      "requires": [
+        {"op": "state", "name": "common.elemental.frozen-hit"}
+      ],
+      "mode": "input",
+      "run": [
+        {"op": "state.exit", "name": "common.elemental.frozen-hit", "only_caster": true, "as": "clear"},
+        {"op": "wait", "for": "clear"}
+      ],
+      "presentation": {
+        "label": "Clear hit effect override",
+        "kind": "setting",
+        "contexts": ["common.elemental.frozen-hit"]
+      },
+      "tags": ["visual-receiver-clear"]
+    }
+  },
+  "functions": {
+    "@return.rest.pose": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "rest.pose.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "rest.pose"
+      }
+    ],
+    "@return.return.pose": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "return.pose.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "return.pose"
+      }
+    ]
+  },
+  "states": {},
+  "resources": {
+    "effects": {
+      "skill.3.effect.0": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Klara_00/Eff_Avatar_Klara_00_Passive01_V2.prefab", "target": "Caster"},
+      "skill.3.effect.1": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Klara_00/Eff_Avatar_Klara_00_Passive01.prefab", "target": "Caster"},
+      "callback.2441.effect.1": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Klara_00/Eff_Avatar_Klara_00_Skill03_Buff01.prefab", "target": "Recipient"},
+      "followup.0.effect.20": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Klara_00/Eff_Avatar_Klara_00_Passive01_V2.prefab", "target": "Caster"},
+      "followup.0.effect.21": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Klara_00/Eff_Avatar_Klara_00_Passive01.prefab", "target": "Caster"}
+    }
+  }
+}

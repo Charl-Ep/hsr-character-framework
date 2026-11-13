@@ -1,0 +1,557 @@
+{
+  "format": "hksr.script",
+  "id": "official-scripts:Config/ConfigCharacter/Avatar/Avatar_Tribbie_00_Config.json",
+  "applies_to": "Config/ConfigCharacter/Avatar/Avatar_Tribbie_00_Config.json",
+  "default": true,
+  "imports": ["Common/Elemental.json"],
+  "defaults": {
+    "targets": {
+      "PreviewTarget": {
+        "local_position": [0, 0, 6]
+      }
+    }
+  },
+  "actions": {
+    "rest": {
+      "trigger": "internal",
+      "run": [
+        {"op": "call", "function": "@return.rest.pose"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["stable-return", "idle-provider"]
+    },
+    "skill.0.perform": {
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Tribbie_00_Skill01_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.0.clock.1", "progress": 0.1200000001},
+            {"op": "wait", "for": "skill.0.clock.1", "progress": 0.1379300004},
+            {"op": "wait", "seconds": 0.0334},
+            {"op": "wait", "for": "skill.0.clock.1", "progress": 0.6000000005},
+            {"op": "wait", "for": "skill.0.clock.1", "progress": 0.6500000006}
+          ],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Tribbie_00_Skill01_Camera",
+          "run": [],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill01", "end": 1.0, "track": {"logic": 3}, "as": "skill.0.clock.1"},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.6500000006},
+        {"op": "attachment.scale", "points": ["Weapon"], "scale": [0.0, 0.0, 0.0], "as": "skill.0.attachment-scale.13"},
+        {"op": "wait", "for": "skill.0.attachment-scale.13", "until": "accepted"},
+        {"op": "attachment.scale", "points": ["WeaponBase"], "scale": [0.0, 0.0, 0.0], "as": "skill.0.attachment-scale.14"},
+        {"op": "wait", "for": "skill.0.attachment-scale.14", "until": "accepted"},
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "Skill01",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "RadialBlurEffect: not included in the visual sequence projection",
+          "StopAim: not included in the visual sequence projection",
+          "FireProjectile: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "LookAt: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "skill.0.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Tribbie_00_Config.json", "skill": 0, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "skill.1.perform": {
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Tribbie_00_Skill02_Camera",
+          "run": [],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill02", "end": -1.0, "track": {"logic": 3}, "as": "skill.1.clock.1"},
+        {"op": "wait", "for": "skill.1.clock.1", "until": "animation_end"},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "Skill02",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "SyncCharLightAndCameraDir: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "WaitTimelineFinish: not included in the visual sequence projection",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "TriggerEffect: serial step depends on an unavailable source clock; no timing is inferred",
+          "RemoveEffect: serial step depends on an unavailable source clock; no timing is inferred",
+          "TriggerAbility: serial step depends on an unavailable source clock; no timing is inferred",
+          "SyncCharLightAndCameraDir: serial step depends on an unavailable source clock; no timing is inferred"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "skill.1.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Tribbie_00_Config.json", "skill": 1, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "skill.2.perform": {
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Tribbie_00_Skill03_Phase02",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Tribbie_00_Skill03_Camera",
+          "run": [],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill03", "end": -1.0, "track": {"logic": 3}, "as": "skill.2.clock.1"},
+        {"op": "wait", "for": "skill.2.clock.1", "until": "animation_end"},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "Skill03",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "SetAttachmentScale: one-shot or global attachment reset is not a scoped scale contribution",
+          "ScaleCharacterModel: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "SyncCharLightAndCameraDir: not included in the visual sequence projection",
+          "SetTeamFormation: not included in the visual sequence projection",
+          "MoveTeam: not included in the visual sequence projection",
+          "WaitAnimState: wait uses an unprojected clock policy",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "MoveTeam: serial step depends on an unavailable source clock; no timing is inferred",
+          "DamageByAttackProperty: serial step depends on an unavailable source clock; no timing is inferred",
+          "DamagePerformFinish: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "SkillPerformFinish: serial step depends on an unavailable source clock; no timing is inferred",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "HideLevelStage: not included in the visual sequence projection",
+          "ScaleCharacterModel: serial step depends on an unavailable source clock; no timing is inferred",
+          "SetAttachmentScale: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitTimelineFinish: serial step depends on an unavailable source clock; no timing is inferred",
+          "HideLevelStage: serial step depends on an unavailable source clock; no timing is inferred",
+          "TriggerAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "SetTeamFormation: serial step depends on an unavailable source clock; no timing is inferred",
+          "TriggerEffect: serial step depends on an unavailable source clock; no timing is inferred"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "skill.2.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Tribbie_00_Config.json", "skill": 2, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "skill.3.perform": {
+      "inputs": {
+        "cue": {
+          "type": "integer",
+          "default": 0,
+          "label": "Effect",
+          "choices": [
+            {"value": 0, "label": "OnEnterBattle"}
+          ]
+        }
+      },
+      "requires": [
+        {"op": "number", "name": "cue", "compare": "ge", "value": 0},
+        {"op": "number", "name": "cue", "compare": "lt", "value": 1}
+      ],
+      "run": [
+        {"op": "effect.create", "effects": ["skill.3.effect.0"], "as": "effect"},
+        {"op": "wait", "for": "effect", "until": "accepted"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "effect.remove", "effects": ["skill.3.effect.0"], "optional": ["skill.3.effect.0"], "as": "remove"},
+        {"op": "wait", "for": "remove", "until": "accepted"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "SkillP01",
+        "omissions": ["Actor-owned effect cue only. Original callback conditions and timing are manual inputs; use Finish to end.", "cue: 0=OnEnterBattle"]
+      },
+      "tags": ["manual-effect-cue", "partial-presentation"]
+    },
+    "callback.4418": {
+      "inputs": {
+        "callback.4418.condition.ByCompareDynamicValue.1": {
+          "type": "bool",
+          "default": true,
+          "label": "ByCompareDynamicValue",
+          "description": "Manual source condition: $.GlobalModifiers[13].value._CallbackList[2].CallbackConfig[0].Predicate"
+        }
+      },
+      "bindings": {
+        "targets": ["Recipient"]
+      },
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "callback.4418.condition.ByCompareDynamicValue.1", "is": true},
+          "then": [
+            {
+              "op": "for_each",
+              "bind": "callback.4418.member.6",
+              "targets": ["Recipient"],
+              "collection": "callback.4418.targets.7",
+              "run": [
+                {
+                  "op": "for_each",
+                  "bind": "callback.4418.member.10",
+                  "targets": ["Recipient"],
+                  "collection": "callback.4418.targets.11",
+                  "run": [],
+                  "empty": []
+                },
+                {
+                  "op": "for_each",
+                  "bind": "callback.4418.member.23",
+                  "targets": ["Recipient"],
+                  "collection": "callback.4418.targets.24",
+                  "run": [],
+                  "empty": []
+                },
+                {
+                  "op": "start",
+                  "id": "callback.4418.effect.33.delay",
+                  "run": [
+                    {"op": "wait", "seconds": 0.47999998927116394},
+                    {"op": "effect.create", "effects": ["callback.4418.effect.33"], "as": "callback.4418.effect.33"},
+                    {"op": "wait", "for": "callback.4418.effect.33", "until": "accepted"}
+                  ],
+                  "join": true
+                }
+              ],
+              "empty": []
+            }
+          ],
+          "else": []
+        },
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "effect.remove", "effects": ["callback.4418.effect.33"], "optional": ["callback.4418.effect.33"], "as": "callback.4418.remove-effects"},
+        {"op": "wait", "for": "callback.4418.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "effect.remove", "effects": ["callback.4418.effect.33"], "optional": ["callback.4418.effect.33"], "as": "callback.4418.remove-effects"},
+        {"op": "wait", "for": "callback.4418.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "MAvatar_Tribbie_00_SKL03_Buff_Buff: OnAfterAttack",
+        "omissions": [
+          "Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects.",
+          "SetDynamicValueByAttackTargetCount: not included in the visual sequence projection",
+          "PerformDelayExecute: not included in the visual sequence projection",
+          "Retarget: recipient collection is explicitly selected; native filtering, random selection and count limits are not simulated",
+          "FireProjectile: not included in the visual sequence projection",
+          "LoopExecuteTaskList: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "callback.4429": {
+      "inputs": {
+        "callback.4429.condition.ByCompareWaveCount.1": {
+          "type": "bool",
+          "default": true,
+          "label": "ByCompareWaveCount",
+          "description": "Manual source condition: $.AbilityList[7].Modifiers[0].value._CallbackList[0].CallbackConfig[0].Predicate"
+        }
+      },
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "callback.4429.condition.ByCompareWaveCount.1", "is": true},
+          "then": [
+            {"op": "effect.create", "effects": ["callback.4429.effect.3"], "as": "callback.4429.effect.3"},
+            {"op": "wait", "for": "callback.4429.effect.3", "until": "accepted"}
+          ],
+          "else": []
+        },
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "effect.remove", "effects": ["callback.4429.effect.3"], "optional": ["callback.4429.effect.3"], "as": "callback.4429.remove-effects"},
+        {"op": "wait", "for": "callback.4429.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "effect.remove", "effects": ["callback.4429.effect.3"], "optional": ["callback.4429.effect.3"], "as": "callback.4429.remove-effects"},
+        {"op": "wait", "for": "callback.4429.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "MAvatar_Tribbie_00_PointB3_AddSpModifier: OnEnterBattle",
+        "omissions": ["Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects."]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "followup.0": {
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "run": [
+        {"op": "animation", "state": "Skill_Passive01", "end": -1.0, "track": {"logic": 3}, "as": "followup.0.clock.1"},
+        {"op": "wait", "for": "followup.0.clock.1", "until": "animation_end"},
+        {"op": "wait", "for": "followup.0.clock.1", "progress": 0.6291670005},
+        {
+          "op": "hit",
+          "target": "PreviewTarget",
+          "animation": "Hit",
+          "direction": {},
+          "effect": {"path": "", "minimum_interval": 0.0500000007, "maximum_count": 1},
+          "allow_position": true,
+          "as": "followup.0.hit.10"
+        },
+        {"op": "wait", "for": "followup.0.hit.10", "until": "accepted"},
+        {"op": "attachment.scale", "points": ["Shell"], "scale": [0.0, 0.0, 0.0], "as": "followup.0.attachment-scale.11"},
+        {"op": "wait", "for": "followup.0.attachment-scale.11", "until": "accepted"},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "Avatar_Tribbie_00_Insert",
+        "omissions": [
+          "Manual follow-up presentation; no native action queue or combat condition evaluation.",
+          "retained visual sequence",
+          "HideLevelStage: not included in the visual sequence projection",
+          "SetTeamFormation: not included in the visual sequence projection",
+          "MoveTeam: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "WaitTimelineFinish: not included in the visual sequence projection",
+          "RemoveEffect: serial step depends on an unavailable source clock; no timing is inferred",
+          "HideLevelStage: serial step depends on an unavailable source clock; no timing is inferred",
+          "MoveTeam: serial step depends on an unavailable source clock; no timing is inferred",
+          "SetTeamFormation: serial step depends on an unavailable source clock; no timing is inferred"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "skill.5.perform": {"use": "common.elemental.responses", "next": "rest"},
+    "preview.hit": {
+      "inputs": {
+        "kind": {
+          "type": "text",
+          "default": "Hit",
+          "label": "Hit type",
+          "choices": [
+            {"value": "Hit", "label": "Hit"},
+            {"value": "Hit_H", "label": "Hit_H"}
+          ]
+        }
+      },
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "kind", "is": "Hit_H"},
+          "then": [
+            {"op": "hit", "target": "Caster", "animation": "Hit_H", "as": "hit-heavy"},
+            {"op": "wait", "for": "hit-heavy"}
+          ],
+          "else": [
+            {"op": "hit", "target": "Caster", "animation": "Hit", "as": "hit"},
+            {"op": "wait", "for": "hit"}
+          ]
+        }
+      ],
+      "next": "rest",
+      "presentation": {"label": "Hit"},
+      "tags": ["manual-visual-callback"]
+    },
+    "source.4": {
+      "requires": [
+        {
+          "op": "unresolved",
+          "source": "Config/ConfigCharacter/Avatar/Avatar_Tribbie_00_Config.json:$.SkillList[4]",
+          "detail": "Retained source has no independently bound presentation unit"
+        }
+      ],
+      "trigger": "internal",
+      "run": [],
+      "presentation": {
+        "label": "SkillMaze",
+        "listed": false,
+        "omissions": ["Retained source has no independently bound presentation unit"]
+      },
+      "tags": ["retained-source"]
+    },
+    "@receiver-clear/callback.5359.receiver-property.3": {
+      "requires": [
+        {"op": "state", "name": "common.elemental.frozen-hit"}
+      ],
+      "mode": "input",
+      "run": [
+        {"op": "state.exit", "name": "common.elemental.frozen-hit", "only_caster": true, "as": "clear"},
+        {"op": "wait", "for": "clear"}
+      ],
+      "presentation": {
+        "label": "Clear hit effect override",
+        "kind": "setting",
+        "contexts": ["common.elemental.frozen-hit"]
+      },
+      "tags": ["visual-receiver-clear"]
+    }
+  },
+  "functions": {
+    "@return.rest.pose": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "rest.pose.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "rest.pose"
+      }
+    ],
+    "@return.return.pose": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "return.pose.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "return.pose"
+      }
+    ]
+  },
+  "states": {},
+  "resources": {
+    "effects": {
+      "skill.3.effect.0": {"path": "Effects/Eff_Prefab/Eff_Common/Eff_Common_MAZ_RecoverSP.prefab", "target": "Caster"},
+      "callback.4418.effect.33": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Tribbie_00/Eff_Avatar_Tribbie_00_Passive_Buff01_Hit.prefab", "target": "callback.4418.member.6"},
+      "callback.4429.effect.3": {"path": "Effects/Eff_Prefab/Eff_Common/Eff_Common_MAZ_RecoverSP.prefab", "target": "Caster"}
+    }
+  }
+}

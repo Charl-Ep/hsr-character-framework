@@ -1,0 +1,986 @@
+{
+  "format": "hksr.script",
+  "id": "official-scripts:Config/ConfigCharacter/Avatar/Avatar_Misha_00_Config.json",
+  "applies_to": "Config/ConfigCharacter/Avatar/Avatar_Misha_00_Config.json",
+  "default": true,
+  "imports": ["Common/Elemental.json"],
+  "defaults": {
+    "targets": {
+      "PreviewTarget": {
+        "local_position": [0, 0, 6]
+      },
+      "AbilityTargetEntity": {
+        "local_position": [0, 0, 6]
+      },
+      "SkillPointEntity": {"alias": "AbilityTargetEntity"}
+    }
+  },
+  "actions": {
+    "base.rest": {
+      "trigger": "internal",
+      "runtime": {"policy": "ready", "selected": ""},
+      "run": [
+        {"op": "call", "function": "@return.rest.pose"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["stable-return", "idle-provider"]
+    },
+    "base.skill.0.perform": {
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "runtime": {"policy": "performance", "selected": "Skill01"},
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Misha_00_Skill01_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Misha_00_Skill01_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.0.clock.1", "progress": 0.3300000003},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit",
+              "direction": {"vertical": 30.0},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Misha_00/Eff_Avatar_Misha_00_Skill01_Hit01.prefab",
+                "height": 0.0,
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.0.hit.12"
+            },
+            {"op": "wait", "for": "skill.0.hit.12", "until": "accepted"}
+          ],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill01", "end": 0.0, "track": {"logic": 3}, "as": "skill.0.clock.1"},
+        {
+          "op": "movement",
+          "animation": "skill.0.clock.1",
+          "segments": [
+            {
+              "destination": "target",
+              "name": "PreviewTarget",
+              "target_geometry": true,
+              "start": 0.1869999996,
+              "end": 0.3500000003,
+              "sample": {"distance": -0.5, "percentage": 1.0, "include_radii": true}
+            },
+            {
+              "destination": "origin",
+              "start": 0.7400000006,
+              "end": 0.9200000008,
+              "sample": {"distance": 0.0, "percentage": 1.0, "include_radii": true}
+            }
+          ],
+          "as": "skill.0.clock.1.movement"
+        },
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.0},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.1200000001},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.2759999998},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.7500000006},
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill01",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "LookAt: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "TriggerEffect: effect needs a non-owned target, dynamic path, or Timeline attachment",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "RadialBlurEffect: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.0.ready.-1": {
+      "runtime": {"policy": "ready", "selected": "Skill01"},
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Misha_00_Config.json", "skill": 0, "as": "ready"}
+      ],
+      "presentation": {
+        "label": "Skill01 · Ready",
+        "ready": {"config": "Config/ConfigCharacter/Avatar/Avatar_Misha_00_Config.json", "skill": 0}
+      },
+      "tags": ["ready-pose"]
+    },
+    "base.skill.1.perform": {
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "runtime": {"policy": "performance", "selected": "Skill02"},
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Misha_00_Skill02_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Misha_00_Skill02_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.3049999999},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit_H",
+              "direction": {"horizontal": 60.0, "vertical": -20.0},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Misha_00/Eff_Avatar_Misha_00_Skill02_Hit01.prefab",
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.1.hit.13"
+            },
+            {"op": "wait", "for": "skill.1.hit.13", "until": "accepted"},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit_H",
+              "direction": {"horizontal": 60.0, "vertical": -20.0},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Misha_00/Eff_Avatar_Misha_00_Skill02_Hit01.prefab",
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.1.hit.15"
+            },
+            {"op": "wait", "for": "skill.1.hit.15", "until": "accepted"}
+          ],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill02", "end": 0.0, "track": {"logic": 3}, "as": "skill.1.clock.1"},
+        {
+          "op": "movement",
+          "animation": "skill.1.clock.1",
+          "segments": [
+            {
+              "destination": "target",
+              "name": "PreviewTarget",
+              "target_geometry": true,
+              "start": 0.1400000001,
+              "end": 0.233,
+              "sample": {"distance": 2.5000000004, "percentage": 1.0, "include_radii": true}
+            },
+            {
+              "destination": "origin",
+              "start": 0.7500000006,
+              "end": 0.9000000008,
+              "sample": {"distance": 0.0, "percentage": 1.0, "include_radii": true}
+            }
+          ],
+          "as": "skill.1.clock.1.movement"
+        },
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.0},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.1579999995},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.2649999998},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.8200000007},
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill02",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "LookAt: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "RadialBlurEffect: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.1.ready.-1": {
+      "runtime": {"policy": "ready", "selected": "Skill02"},
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Misha_00_Config.json", "skill": 1, "as": "ready"}
+      ],
+      "presentation": {
+        "label": "Skill02 · Ready",
+        "ready": {"config": "Config/ConfigCharacter/Avatar/Avatar_Misha_00_Config.json", "skill": 1}
+      },
+      "tags": ["ready-pose"]
+    },
+    "base.skill.2.perform": {
+      "inputs": {
+        "skill.2.condition.BySkillPointActivated.14": {"type": "bool", "default": false, "label": "BySkillPointActivated", "description": "Manual source condition: $.AbilityList[6].OnStart[6].Predicate"}
+      },
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "runtime": {"policy": "performance", "selected": "Skill03"},
+      "run": [
+        {"op": "effect.create", "effects": ["base.skill.2.effect.2"], "as": "skill.2.effect.2"},
+        {"op": "wait", "for": "skill.2.effect.2", "until": "accepted"},
+        {
+          "op": "start",
+          "id": "Avatar_Misha_00_Skill03_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.7400000006},
+            {
+              "op": "if",
+              "condition": {"op": "value", "name": "skill.2.condition.BySkillPointActivated.14", "is": true},
+              "then": [
+                {
+                  "op": "for_each",
+                  "bind": "skill.2.member.15",
+                  "targets": ["PreviewTarget"],
+                  "collection": "skill.2.targets.16",
+                  "run": [
+                    {"op": "effect.create", "effects": ["base.skill.2.effect.20"], "as": "skill.2.effect.20"},
+                    {"op": "wait", "for": "skill.2.effect.20", "until": "accepted"},
+                    {
+                      "op": "hit",
+                      "target": "skill.2.member.15",
+                      "animation": "Hit",
+                      "direction": {},
+                      "effect": {"path": "", "minimum_interval": 0.0500000007, "maximum_count": 1},
+                      "allow_position": true,
+                      "as": "skill.2.hit.21"
+                    },
+                    {"op": "wait", "for": "skill.2.hit.21", "until": "accepted"}
+                  ],
+                  "empty": []
+                }
+              ],
+              "else": [
+                {
+                  "op": "for_each",
+                  "bind": "skill.2.member.23",
+                  "targets": ["PreviewTarget"],
+                  "collection": "skill.2.targets.24",
+                  "run": [
+                    {"op": "effect.create", "effects": ["base.skill.2.effect.27"], "as": "skill.2.effect.27"},
+                    {"op": "wait", "for": "skill.2.effect.27", "until": "accepted"},
+                    {
+                      "op": "hit",
+                      "target": "skill.2.member.23",
+                      "animation": "Hit",
+                      "direction": {},
+                      "effect": {"path": "", "minimum_interval": 0.0500000007, "maximum_count": 1},
+                      "allow_position": true,
+                      "as": "skill.2.hit.28"
+                    },
+                    {"op": "wait", "for": "skill.2.hit.28", "until": "accepted"}
+                  ],
+                  "empty": []
+                }
+              ]
+            }
+          ],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Misha_00_Skill03_Camera",
+          "run": [],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill03", "end": -1.0, "track": {"logic": 3, "force": true}, "as": "skill.2.clock.1"},
+        {"op": "wait", "for": "skill.2.clock.1", "until": "animation_end"},
+        {"op": "wait", "for": "skill.2.clock.1", "progress": 0.01},
+        {"op": "wait", "for": "skill.2.clock.1", "progress": 0.5800000005},
+        {"op": "wait", "for": "skill.2.clock.1", "progress": 0.7335000007},
+        {"op": "wait", "for": "skill.2.clock.1", "progress": 0.823800001},
+        {"op": "wait", "for": "skill.2.clock.1", "progress": 0.8790000001},
+        {"op": "wait", "for": "skill.2.clock.1", "progress": 0.9230000006},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {
+          "op": "effect.remove",
+          "effects": ["base.skill.2.effect.2", "base.skill.2.effect.20", "base.skill.2.effect.27"],
+          "optional": ["base.skill.2.effect.2", "base.skill.2.effect.20", "base.skill.2.effect.27"],
+          "as": "skill.2.remove-effects"
+        },
+        {"op": "wait", "for": "skill.2.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {
+          "op": "effect.remove",
+          "effects": ["base.skill.2.effect.2", "base.skill.2.effect.20", "base.skill.2.effect.27"],
+          "optional": ["base.skill.2.effect.2", "base.skill.2.effect.20", "base.skill.2.effect.27"],
+          "as": "skill.2.remove-effects"
+        },
+        {"op": "wait", "for": "skill.2.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill03",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "GlobalMainIntensityEffect: not included in the visual sequence projection",
+          "LookAt: not included in the visual sequence projection",
+          "Retarget: recipient collection is explicitly selected; native filtering, random selection and count limits are not simulated",
+          "LoopExecuteTaskListWithInterval: not included in the visual sequence projection",
+          "WaitAnimState: NormalizedTimeEnd: timing is not a retained constant",
+          "IncludeTaskListTemplate: serial step depends on an unavailable source clock; no timing is inferred",
+          "DamagePerformFinish: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitTimelineFinish: serial step depends on an unavailable source clock; no timing is inferred",
+          "SkillPerformFinish: serial step depends on an unavailable source clock; no timing is inferred",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "HideLevelStage: not included in the visual sequence projection",
+          "MoveStageOnTargetForward: not included in the visual sequence projection",
+          "WaitTimelineFinish: not included in the visual sequence projection",
+          "MoveStageOnTargetForward: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "GlobalMainIntensityEffect: serial step depends on an unavailable source clock; no timing is inferred",
+          "SetTeamFormation: serial step depends on an unavailable source clock; no timing is inferred",
+          "MoveToTargetPosition: serial step depends on an unavailable source clock; no timing is inferred",
+          "RemoveEffect: serial step depends on an unavailable source clock; no timing is inferred",
+          "TriggerEffect: serial step depends on an unavailable source clock; no timing is inferred"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.2.ready.-1": {
+      "runtime": {"policy": "ready", "selected": "Skill03"},
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Misha_00_Config.json", "skill": 2, "as": "ready"}
+      ],
+      "presentation": {
+        "label": "Skill03 · Ready",
+        "ready": {"config": "Config/ConfigCharacter/Avatar/Avatar_Misha_00_Config.json", "skill": 2}
+      },
+      "tags": ["ready-pose"]
+    },
+    "base.callback.5346": {
+      "bindings": {
+        "targets": ["Recipient"]
+      },
+      "runtime": {"policy": "performance", "selected": ""},
+      "run": [
+        {"op": "effect.create", "effects": ["base.callback.5346.effect.3"], "as": "callback.5346.effect.3"},
+        {"op": "wait", "for": "callback.5346.effect.3", "until": "accepted"},
+        {"op": "effect.create", "effects": ["base.callback.5346.effect.5"], "as": "callback.5346.effect.5"},
+        {"op": "wait", "for": "callback.5346.effect.5", "until": "accepted"},
+        {"op": "effect.create", "effects": ["base.callback.5346.effect.7"], "as": "callback.5346.effect.7"},
+        {"op": "wait", "for": "callback.5346.effect.7", "until": "accepted"},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {
+          "op": "effect.remove",
+          "effects": ["base.callback.5346.effect.3", "base.callback.5346.effect.5", "base.callback.5346.effect.7"],
+          "optional": ["base.callback.5346.effect.3", "base.callback.5346.effect.5", "base.callback.5346.effect.7"],
+          "as": "callback.5346.remove-effects"
+        },
+        {"op": "wait", "for": "callback.5346.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {
+          "op": "effect.remove",
+          "effects": ["base.callback.5346.effect.3", "base.callback.5346.effect.5", "base.callback.5346.effect.7"],
+          "optional": ["base.callback.5346.effect.3", "base.callback.5346.effect.5", "base.callback.5346.effect.7"],
+          "as": "callback.5346.remove-effects"
+        },
+        {"op": "wait", "for": "callback.5346.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "MCommon_CTRL_Frozen: OnStack",
+        "omissions": [
+          "Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects.",
+          "ModifierAttachEffect: manual bound-effect preview; modifier flags, collider-height offset, native mutex and automatic visibility/lifetime are not applied",
+          "HideCharacterFilteredEffect: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "base.callback.5347": {
+      "bindings": {
+        "targets": ["Recipient"]
+      },
+      "runtime": {"policy": "performance", "selected": ""},
+      "run": [
+        {"op": "effect.create", "effects": ["base.callback.5347.effect.1"], "as": "callback.5347.effect.1"},
+        {"op": "wait", "for": "callback.5347.effect.1", "until": "accepted"},
+        {"op": "wait", "seconds": 0.1},
+        {"op": "wait", "seconds": 0.1},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "effect.remove", "effects": ["base.callback.5347.effect.1"], "optional": ["base.callback.5347.effect.1"], "as": "callback.5347.remove-effects"},
+        {"op": "wait", "for": "callback.5347.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "effect.remove", "effects": ["base.callback.5347.effect.1"], "optional": ["base.callback.5347.effect.1"], "as": "callback.5347.remove-effects"},
+        {"op": "wait", "for": "callback.5347.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "MCommon_CTRL_Frozen: OnPhase1",
+        "omissions": [
+          "Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects.",
+          "DamageByAttackProperty: no literal hit animation/effect; receiver defaults are not assumed",
+          "ShowEntityFloatMessage: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "base.callback.5348": {
+      "inputs": {
+        "callback.5348.condition.ByIsTargetValid.1": {
+          "type": "bool",
+          "default": true,
+          "label": "ByIsTargetValid",
+          "description": "Manual source condition: $.ModifierMap[24].value._CallbackList[1].CallbackConfig[0].Predicate"
+        },
+        "callback.5348.condition.ByContainBehaviorFlag.3": {
+          "type": "bool",
+          "default": true,
+          "label": "ByContainBehaviorFlag",
+          "description": "Manual source condition: $.ModifierMap[24].value._CallbackList[1].CallbackConfig[0].SuccessTaskList[2].Predicate"
+        }
+      },
+      "runtime": {"policy": "performance", "selected": ""},
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "callback.5348.condition.ByIsTargetValid.1", "is": true},
+          "then": [
+            {"op": "wait", "seconds": 0.1500000001},
+            {
+              "op": "if",
+              "condition": {"op": "value", "name": "callback.5348.condition.ByContainBehaviorFlag.3", "is": true},
+              "then": [
+                {"op": "sound", "event": "Ev_monster_combat_resume", "as": "callback.5348.sound.4"},
+                {"op": "wait", "seconds": 0.7500000006}
+              ],
+              "else": []
+            }
+          ],
+          "else": []
+        },
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "MCommon_CTRL_Frozen: OnDestroy",
+        "omissions": [
+          "Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects.",
+          "TriggerSound: sound emitter DefaultEmitter is not the owned actor; no body or real-player substitution",
+          "HideCharacterFilteredEffect: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "base.callback.5349": {
+      "inputs": {
+        "callback.5349.condition.ByInTurnBasedGameModeState.1": {
+          "type": "bool",
+          "default": false,
+          "label": "ByInTurnBasedGameModeState",
+          "description": "Manual source condition: $.ModifierMap[24].value._CallbackList[0].CallbackConfig[0].Predicate"
+        }
+      },
+      "bindings": {
+        "targets": ["Recipient"]
+      },
+      "runtime": {"policy": "performance", "selected": ""},
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "callback.5349.condition.ByInTurnBasedGameModeState.1", "is": true},
+          "then": [],
+          "else": [
+            {"op": "effect.create", "effects": ["base.callback.5349.effect.2"], "as": "callback.5349.effect.2"},
+            {"op": "wait", "for": "callback.5349.effect.2", "until": "accepted"}
+          ]
+        },
+        {"op": "state.enter", "name": "base.callback.5349.receiver-property.3", "as": "callback.5349.receiver-property.3"},
+        {"op": "wait", "for": "callback.5349.receiver-property.3"},
+        {"op": "sound", "event": "Ev_monster_combat_pause", "as": "callback.5349.sound.5"},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "effect.remove", "effects": ["base.callback.5349.effect.2"], "optional": ["base.callback.5349.effect.2"], "as": "callback.5349.remove-effects"},
+        {"op": "wait", "for": "callback.5349.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "effect.remove", "effects": ["base.callback.5349.effect.2"], "optional": ["base.callback.5349.effect.2"], "as": "callback.5349.remove-effects"},
+        {"op": "wait", "for": "callback.5349.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "MCommon_CTRL_Frozen: OnCreate",
+        "omissions": [
+          "Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects.",
+          "ModifierOverrideOnHitEffect: owned visual receiver override only; no shield value, expiry, native modifier or automatic death/break transition"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "base.flag-effect.0": {
+      "bindings": {
+        "targets": ["Recipient"]
+      },
+      "runtime": {"policy": "performance", "selected": ""},
+      "run": [
+        {"op": "effect.create", "effects": ["base.flag-effect.0.0"], "as": "flag-effect.0"},
+        {"op": "wait", "for": "flag-effect.0", "until": "accepted"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "effect.remove", "effects": ["base.flag-effect.0.0"], "optional": ["base.flag-effect.0.0"], "as": "flag-effect.0.remove"},
+        {"op": "wait", "for": "flag-effect.0.remove", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "effect.remove", "effects": ["base.flag-effect.0.0"], "optional": ["base.flag-effect.0.0"], "as": "flag-effect.0.remove"},
+        {"op": "wait", "for": "flag-effect.0.remove", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "STAT_DefenceDown",
+        "omissions": ["Manual bound-effect cue; no native modifier or behavior flag is applied. Use Finish to release."]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "base.skill.5.perform": {
+      "use": "common.elemental.responses",
+      "runtime": {"policy": "performance", "selected": "PassiveSkill02"},
+      "next": "base.rest"
+    },
+    "base.preview.hit": {
+      "inputs": {
+        "kind": {
+          "type": "text",
+          "default": "Hit",
+          "label": "Hit type",
+          "choices": [
+            {"value": "Hit", "label": "Hit"},
+            {"value": "Hit_H", "label": "Hit_H"}
+          ]
+        }
+      },
+      "runtime": {"policy": "performance", "selected": ""},
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "kind", "is": "Hit_H"},
+          "then": [
+            {"op": "hit", "target": "Caster", "animation": "Hit_H", "as": "hit-heavy"},
+            {"op": "wait", "for": "hit-heavy"}
+          ],
+          "else": [
+            {"op": "hit", "target": "Caster", "animation": "Hit", "as": "hit"},
+            {"op": "wait", "for": "hit"}
+          ]
+        }
+      ],
+      "next": "base.rest",
+      "presentation": {"label": "Hit"},
+      "tags": ["manual-visual-callback"]
+    },
+    "base.source.3": {
+      "requires": [
+        {
+          "op": "unresolved",
+          "source": "Config/ConfigCharacter/Avatar/Avatar_Misha_00_Config.json:$.SkillList[3]",
+          "detail": "Retained source has no independently bound presentation unit"
+        }
+      ],
+      "trigger": "internal",
+      "run": [],
+      "presentation": {
+        "label": "SkillP01",
+        "listed": false,
+        "omissions": ["Retained source has no independently bound presentation unit"]
+      },
+      "tags": ["retained-source"]
+    },
+    "base.source.4": {
+      "requires": [
+        {
+          "op": "unresolved",
+          "source": "Config/ConfigCharacter/Avatar/Avatar_Misha_00_Config.json:$.SkillList[4]",
+          "detail": "Retained source has no independently bound presentation unit"
+        }
+      ],
+      "trigger": "internal",
+      "run": [],
+      "presentation": {
+        "label": "SkillMaze",
+        "listed": false,
+        "omissions": ["Retained source has no independently bound presentation unit"]
+      },
+      "tags": ["retained-source"]
+    },
+    "compiled.0.Avatar_Misha_00_Config.skill-0.entry": {
+      "requires": [
+        {"op": "target", "name": "AbilityTargetEntity", "allow_position": true},
+        {"op": "playback", "name": "performance", "values": ["ready"]},
+        {"op": "playback", "name": "selected", "is": "Skill01"}
+      ],
+      "runtime": {"policy": "continuous"},
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Misha_00_Skill01_Phase01",
+          "run": [
+            {"op": "facing.target", "target": "AbilityTargetEntity", "as": "$.AbilityList[0].OnStart[0]"},
+            {"op": "wait", "for": "$.AbilityList[0].OnStart[0]", "until": "accepted"},
+            {
+              "op": "start",
+              "id": "Avatar_Misha_00_Skill01_Phase02",
+              "run": [
+                {"op": "wait", "for": "body.0", "progress": 0.3300000003},
+                {"op": "attack.record", "target": "AbilityTargetEntity", "allow_position": true, "as": "$.AbilityList[1].OnStart[1].record"},
+                {"op": "wait", "for": "$.AbilityList[1].OnStart[1].record", "until": "accepted"},
+                {
+                  "op": "hit",
+                  "target": "AbilityTargetEntity",
+                  "animation": "Hit",
+                  "events": ["after_hit", "after_hit_all"],
+                  "direction": {"vertical": 30.0},
+                  "effect": {
+                    "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Misha_00/Eff_Avatar_Misha_00_Skill01_Hit01.prefab",
+                    "height": 0.0,
+                    "minimum_interval": 0.0500000007,
+                    "maximum_count": 1
+                  },
+                  "allow_position": true,
+                  "as": "$.AbilityList[1].OnStart[1]"
+                },
+                {"op": "wait", "for": "$.AbilityList[1].OnStart[1]", "until": "accepted"},
+                {"op": "attack.finish", "as": "$.AbilityList[1].OnStart[2]"},
+                {"op": "wait", "for": "$.AbilityList[1].OnStart[2]", "until": "accepted"},
+                {
+                  "op": "effect.create",
+                  "effects": ["compiled.0.Avatar_Misha_00_Config.skill-0.$.AbilityList[1].OnStart[3]"],
+                  "as": "$.AbilityList[1].OnStart[3]"
+                },
+                {"op": "wait", "for": "$.AbilityList[1].OnStart[3]", "until": "accepted"},
+                {"op": "playback.value", "variable": "performance", "operation": "set", "value": "finished", "as": "$.AbilityList[1].OnStart[4]"}
+              ],
+              "join": true
+            },
+            {"op": "animation", "state": "Skill01", "end": 0.0, "track": {"logic": 3}, "as": "body.0"},
+            {
+              "op": "movement",
+              "animation": "body.0",
+              "segments": [
+                {
+                  "destination": "target",
+                  "name": "AbilityTargetEntity",
+                  "target_geometry": true,
+                  "start": 0.1869999996,
+                  "end": 0.3500000003,
+                  "sample": {"distance": -0.5, "percentage": 1.0, "include_radii": true}
+                },
+                {
+                  "destination": "origin",
+                  "start": 0.7400000006,
+                  "end": 0.9200000008,
+                  "sample": {"distance": 0.0, "percentage": 1.0, "include_radii": true}
+                }
+              ],
+              "as": "body.0.movement"
+            },
+            {"op": "wait", "for": "body.0", "progress": 0.0},
+            {"op": "wait", "for": "body.0", "progress": 0.1200000001},
+            {"op": "wait", "for": "body.0", "progress": 0.2759999998},
+            {"op": "wait", "for": "body.0", "progress": 0.7500000006}
+          ],
+          "join": true
+        },
+        {"op": "join"},
+        {"op": "playback.value", "variable": "performance", "operation": "set", "value": "resetting", "as": "after"},
+        {"op": "call", "function": "@return.return"},
+        {"op": "wait", "for": "return", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return-position"},
+        {"op": "wait", "for": "return-position"},
+        {"op": "playback.value", "variable": "performance", "operation": "set", "value": "ready", "as": "reset"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.abort-return"},
+        {"op": "wait", "for": "abort-return", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "abort-position"},
+        {"op": "wait", "for": "abort-position"}
+      ],
+      "next": "compiled.0.Avatar_Misha_00_Config.skill-0.rest",
+      "presentation": {"label": "Avatar_Misha_00_Skill01_Phase01"},
+      "tags": ["entry-development"]
+    },
+    "compiled.0.Avatar_Misha_00_Config.skill-0.select": {
+      "requires": [
+        {"op": "playback", "name": "performance", "values": ["ready", "failed"]}
+      ],
+      "runtime": {"policy": "setting", "selected": "Skill01"},
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Misha_00_Config.json", "skill": 0, "as": "ready"},
+        {"op": "wait", "for": "ready"}
+      ],
+      "presentation": {
+        "label": "Skill01_Ready",
+        "ready": {"config": "Config/ConfigCharacter/Avatar/Avatar_Misha_00_Config.json", "skill": 0}
+      },
+      "tags": ["selection-development"]
+    },
+    "compiled.0.Avatar_Misha_00_Config.skill-0.rest": {
+      "trigger": "internal",
+      "runtime": {"policy": "ready", "selected": ""},
+      "run": [
+        {"op": "call", "function": "@return.idle"},
+        {"op": "wait", "for": "idle", "until": "submitted"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["stable-return"]
+    },
+    "@receiver-clear/base.callback.5349.receiver-property.3": {
+      "requires": [
+        {"op": "state", "name": "base.callback.5349.receiver-property.3"}
+      ],
+      "mode": "input",
+      "run": [
+        {"op": "state.exit", "name": "base.callback.5349.receiver-property.3", "only_caster": true, "as": "clear"},
+        {"op": "wait", "for": "clear"}
+      ],
+      "presentation": {
+        "label": "Clear hit effect override",
+        "kind": "setting",
+        "contexts": ["base.callback.5349.receiver-property.3"]
+      },
+      "tags": ["visual-receiver-clear"]
+    },
+    "@receiver-clear/base.callback.5359.receiver-property.3": {
+      "requires": [
+        {"op": "state", "name": "common.elemental.frozen-hit"}
+      ],
+      "mode": "input",
+      "run": [
+        {"op": "state.exit", "name": "common.elemental.frozen-hit", "only_caster": true, "as": "clear"},
+        {"op": "wait", "for": "clear"}
+      ],
+      "presentation": {
+        "label": "Clear hit effect override",
+        "kind": "setting",
+        "contexts": ["common.elemental.frozen-hit"]
+      },
+      "tags": ["visual-receiver-clear"]
+    },
+    "@idle": {
+      "runtime": {"policy": "ready", "selected": ""},
+      "run": [
+        {"op": "call", "function": "@return.rest.pose"}
+      ],
+      "presentation": {"label": "Idle"},
+      "tags": ["script-idle"]
+    }
+  },
+  "functions": {
+    "@return.rest.pose": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "rest.pose.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "rest.pose"
+      }
+    ],
+    "@return.return.pose": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "return.pose.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "return.pose"
+      }
+    ],
+    "@return.return": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "return.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "return"
+      }
+    ],
+    "@return.abort-return": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "abort-return.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "abort-return"
+      }
+    ],
+    "@return.idle": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "idle.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "idle"
+      }
+    ]
+  },
+  "states": {
+    "base.callback.5349.receiver-property.3": {
+      "callbacks": {},
+      "hit_effects": [
+        {
+          "stacking": "multiple",
+          "path": "Effects/Eff_Prefab/Eff_Common/Eff_Buff_Common_Freeze_Hit.prefab",
+          "priority": 0,
+          "count": 1,
+          "death_count": 0,
+          "death_path": "",
+          "keep_original": true,
+          "replay_on_mutex": false
+        }
+      ],
+      "instances": {"name": "callback.5349.receiver-property.3", "receiver": "Recipient", "match": "receiver_caster"},
+      "restore": []
+    }
+  },
+  "resources": {
+    "effects": {
+      "base.skill.2.effect.2": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Misha_00/Eff_Avatar_Misha_00_Skill03.prefab", "target": "Caster", "attach_point": "EffectScale"},
+      "base.skill.2.effect.20": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Misha_00/Eff_Avatar_Misha_00_Skill03_Hit.prefab", "target": "skill.2.member.15"},
+      "base.skill.2.effect.27": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Misha_00/Eff_Avatar_Misha_00_Skill03_Hit.prefab", "target": "skill.2.member.23"},
+      "base.callback.5346.effect.3": {"path": "Effects/Eff_Prefab/Eff_Common/Eff_Buff_Common_Freeze.prefab", "target": "Recipient", "attach_to_target": true},
+      "base.callback.5346.effect.5": {"path": "Effects/Eff_Prefab/Eff_Common/Eff_Buff_Common_Freeze_Loop.prefab", "target": "Recipient", "attach_to_target": true},
+      "base.callback.5346.effect.7": {"path": "Effects/Eff_Prefab/Eff_Common/Eff_Buff_Common_Freeze_OutlineColor_02.prefab", "target": "Recipient", "attach_to_target": true},
+      "base.callback.5347.effect.1": {"path": "Effects/Eff_Prefab/Eff_Common/Eff_Buff_Common_Ice_Trigger.prefab", "target": "Recipient"},
+      "base.callback.5349.effect.2": {"path": "Effects/Eff_Prefab/Eff_Common/Eff_Buff_Common_Ice_Add.prefab", "target": "Recipient", "attach_point": "SelectRoot"},
+      "base.flag-effect.0.0": {"path": "Effects/Eff_Prefab/Eff_Common/Eff_Debuff_Common_DefenceDown.prefab", "target": "Recipient"},
+      "compiled.0.Avatar_Misha_00_Config.skill-0.$.AbilityList[1].OnStart[3]": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Misha_00/Eff_Avatar_Misha_00_Skill01_Hit02.prefab",
+        "target": "AbilityTargetEntity",
+        "mutex": {"interval": 0.0, "maximum": 1, "scope": "global"},
+        "allow_position": true
+      }
+    }
+  }
+}

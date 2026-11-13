@@ -1,0 +1,2699 @@
+{
+  "format": "hksr.script",
+  "id": "official-scripts:Config/ConfigCharacter/Avatar/Avatar_Jingliu_00_Config.json",
+  "applies_to": "Config/ConfigCharacter/Avatar/Avatar_Jingliu_00_Config.json",
+  "default": true,
+  "imports": ["Common/Elemental.json"],
+  "defaults": {
+    "targets": {
+      "PreviewTarget": {
+        "local_position": [0, 0, 6]
+      },
+      "callback.2360.target.AllEnemy": {"alias": "Caster"},
+      "AbilityTargetEntity": {
+        "local_position": [0, 0, 6]
+      },
+      "SkillPointEntity": {"alias": "AbilityTargetEntity"}
+    }
+  },
+  "actions": {
+    "base.rest": {
+      "trigger": "internal",
+      "runtime": {"policy": "ready", "selected": ""},
+      "run": [
+        {"op": "call", "function": "@return.rest.pose"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["stable-return", "idle-provider"]
+    },
+    "base.skill.0.perform": {
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "runtime": {"policy": "performance", "selected": "Skill01"},
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Jingliu_Skill01_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.0.clock.1", "progress": 0.1400000001},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit",
+              "direction": {"horizontal": 70.0, "vertical": 30.0},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Jingliu_00/Eff_Avatar_Jingliu_00_Skill01_Hit_01.prefab",
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.0.hit.4"
+            },
+            {"op": "wait", "for": "skill.0.hit.4", "until": "accepted"},
+            {"op": "wait", "for": "skill.0.clock.1", "progress": 0.2889999996},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit",
+              "direction": {"horizontal": -70.0, "vertical": 30.0},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Jingliu_00/Eff_Avatar_Jingliu_00_Skill01_Hit_02.prefab",
+                "height": 0.30000001192092896,
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.0.hit.6"
+            },
+            {"op": "wait", "for": "skill.0.hit.6", "until": "accepted"}
+          ],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Jingliu_Skill01_Camera",
+          "run": [],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill01", "end": 0.0, "track": {"logic": 3}, "as": "skill.0.clock.1"},
+        {
+          "op": "movement",
+          "animation": "skill.0.clock.1",
+          "segments": [
+            {
+              "destination": "target",
+              "name": "PreviewTarget",
+              "target_geometry": true,
+              "start": 0.0479999994,
+              "end": 0.081,
+              "sample": {"distance": 2.0, "percentage": 1.0, "include_radii": true}
+            },
+            {
+              "destination": "origin",
+              "start": 0.7500000006,
+              "end": 0.7700000007,
+              "sample": {"distance": 0.0, "percentage": 1.0, "include_radii": true}
+            }
+          ],
+          "as": "skill.0.clock.1.movement"
+        },
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.0},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.0269999995},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.081},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.7800000007},
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill01",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "LookAt: not included in the visual sequence projection",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "RadialBlurEffect: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.0.ready.-1": {
+      "runtime": {"policy": "ready", "selected": "Skill01"},
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Jingliu_00_Config.json", "skill": 0, "as": "ready"}
+      ],
+      "presentation": {
+        "label": "Skill01 · Ready",
+        "ready": {"config": "Config/ConfigCharacter/Avatar/Avatar_Jingliu_00_Config.json", "skill": 0}
+      },
+      "tags": ["ready-pose"]
+    },
+    "base.skill.1.perform": {
+      "runtime": {"policy": "performance", "selected": "Skill02"},
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Jingliu_Skill02_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.4100000003},
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.405}
+          ],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Jingliu_Skill02_Camera",
+          "run": [],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill02", "end": 0.0, "track": {"logic": 3}, "as": "skill.1.clock.1"},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.0},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.4100000003},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 1.0},
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill02",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "LookAt: not included in the visual sequence projection",
+          "RadialBlurEffect: not included in the visual sequence projection",
+          "LAJIKDENEOO: not included in the visual sequence projection",
+          "FireProjectile: not included in the visual sequence projection",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "GlobalMainIntensityEffect: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.1.ready.-1": {
+      "runtime": {"policy": "ready", "selected": "Skill02"},
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Jingliu_00_Config.json", "skill": 1, "as": "ready"}
+      ],
+      "presentation": {
+        "label": "Skill02 · Ready",
+        "ready": {"config": "Config/ConfigCharacter/Avatar/Avatar_Jingliu_00_Config.json", "skill": 1}
+      },
+      "tags": ["ready-pose"]
+    },
+    "base.skill.2.perform": {
+      "inputs": {
+        "skill.2.condition.ByRankActivated.15": {"type": "bool", "default": false, "label": "ByRankActivated", "description": "Manual source condition: $.AbilityList[6].OnStart[13].Predicate"},
+        "skill.2.condition.ByCompareCharacterNumber.16": {
+          "type": "bool",
+          "default": false,
+          "label": "ByCompareCharacterNumber",
+          "description": "Manual source condition: $.AbilityList[6].OnStart[13].SuccessTaskList[0].Predicate"
+        }
+      },
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "runtime": {"policy": "performance", "selected": "Skill03"},
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Jingliu_00_Skill03_Camera",
+          "run": [
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.3500000003}
+          ],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Jingliu_Skill03_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.6950000002},
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.7100000006},
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.7200000006},
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.7400000006},
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.7500000006},
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.8820000006},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit",
+              "direction": {"horizontal": 70.0, "vertical": 30.0},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Jingliu_00/Eff_Avatar_Jingliu_00_Skill12_Hit_01.prefab",
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.2.hit.14"
+            },
+            {"op": "wait", "for": "skill.2.hit.14", "until": "accepted"},
+            {
+              "op": "if",
+              "condition": {"op": "value", "name": "skill.2.condition.ByRankActivated.15", "is": true},
+              "then": [
+                {
+                  "op": "if",
+                  "condition": {"op": "value", "name": "skill.2.condition.ByCompareCharacterNumber.16", "is": true},
+                  "then": [
+                    {
+                      "op": "hit",
+                      "target": "PreviewTarget",
+                      "animation": "Hit",
+                      "direction": {"horizontal": 70.0, "vertical": 30.0},
+                      "effect": {
+                        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Jingliu_00/Eff_Avatar_Jingliu_00_Skill12_Hit_01.prefab",
+                        "minimum_interval": 0.0500000007,
+                        "maximum_count": 1
+                      },
+                      "allow_position": true,
+                      "as": "skill.2.hit.18"
+                    },
+                    {"op": "wait", "for": "skill.2.hit.18", "until": "accepted"}
+                  ],
+                  "else": [
+                    {
+                      "op": "hit",
+                      "target": "PreviewTarget",
+                      "animation": "Hit",
+                      "direction": {"horizontal": 70.0, "vertical": 30.0},
+                      "effect": {
+                        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Jingliu_00/Eff_Avatar_Jingliu_00_Skill12_Hit_01.prefab",
+                        "minimum_interval": 0.0500000007,
+                        "maximum_count": 1
+                      },
+                      "allow_position": true,
+                      "as": "skill.2.hit.20"
+                    },
+                    {"op": "wait", "for": "skill.2.hit.20", "until": "accepted"}
+                  ]
+                }
+              ],
+              "else": [
+                {
+                  "op": "hit",
+                  "target": "PreviewTarget",
+                  "animation": "Hit",
+                  "direction": {"horizontal": 70.0, "vertical": 30.0},
+                  "effect": {
+                    "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Jingliu_00/Eff_Avatar_Jingliu_00_Skill12_Hit_01.prefab",
+                    "minimum_interval": 0.0500000007,
+                    "maximum_count": 1
+                  },
+                  "allow_position": true,
+                  "as": "skill.2.hit.22"
+                },
+                {"op": "wait", "for": "skill.2.hit.22", "until": "accepted"}
+              ]
+            },
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 1.0},
+            {"op": "animation", "state": "StandBy", "end": -1.0, "track": {"logic": 1}, "as": "skill.2.clock.5"},
+            {"op": "wait", "for": "skill.2.clock.5", "until": "animation_end"}
+          ],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill03", "end": -1.0, "track": {"logic": 3}, "as": "skill.2.clock.1"},
+        {"op": "wait", "for": "skill.2.clock.1", "until": "animation_end"},
+        {"op": "wait", "for": "skill.2.clock.1", "progress": 0.6400000005},
+        {"op": "wait", "for": "skill.2.clock.1", "progress": 0.8580000002},
+        {"op": "wait", "for": "skill.2.clock.1", "progress": 1.0},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill03",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "SetTeamFormation: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "TriggerAnimState: animation has no literal owned-body binding",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "LAJIKDENEOO: not included in the visual sequence projection",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "TriggerSkipDeadHandler: not included in the visual sequence projection",
+          "LookAt: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "GlobalMainIntensityEffect: not included in the visual sequence projection",
+          "HideLevelStage: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.2.ready.-1": {
+      "runtime": {"policy": "ready", "selected": "Skill03"},
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Jingliu_00_Config.json", "skill": 2, "as": "ready"}
+      ],
+      "presentation": {
+        "label": "Skill03 · Ready",
+        "ready": {"config": "Config/ConfigCharacter/Avatar/Avatar_Jingliu_00_Config.json", "skill": 2}
+      },
+      "tags": ["ready-pose"]
+    },
+    "base.skill.3.perform": {
+      "inputs": {
+        "skill.3.condition.ByRankActivated.56": {"type": "bool", "default": false, "label": "ByRankActivated", "description": "Manual source condition: $.AbilityList[9].OnStart[44].Predicate"},
+        "skill.3.condition.ByCompareCharacterNumber.57": {
+          "type": "bool",
+          "default": false,
+          "label": "ByCompareCharacterNumber",
+          "description": "Manual source condition: $.AbilityList[9].OnStart[44].SuccessTaskList[0].Predicate"
+        },
+        "skill.3.condition.ByCompareDynamicValue.68": {"type": "bool", "default": false, "label": "ByCompareDynamicValue", "description": "Manual source condition: $.AbilityList[9].OnStart[50].Predicate"}
+      },
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "runtime": {"policy": "performance", "selected": "Skill21"},
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Jingliu_PassiveAtk_Camera",
+          "run": [],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill02_01", "end": 0.0, "track": {"logic": 3}, "as": "skill.3.clock.1"},
+        {"op": "wait", "for": "skill.3.clock.1", "progress": 0.0},
+        {"op": "wait", "for": "skill.3.clock.1", "progress": 0.0849999997},
+        {"op": "wait", "for": "skill.3.clock.1", "progress": 0.1159999996},
+        {
+          "op": "effect.remove_event",
+          "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Jingliu_00/Eff_Avatar_Jingliu_00_StandBy_Transfer_01.prefab",
+          "fade": false,
+          "as": "skill.3.remove.30.0"
+        },
+        {"op": "wait", "for": "skill.3.remove.30.0", "until": "accepted"},
+        {"op": "wait", "for": "skill.3.clock.1", "progress": 0.3000000002},
+        {"op": "wait", "for": "skill.3.clock.1", "progress": 0.3500000003},
+        {"op": "wait", "for": "skill.3.clock.1", "progress": 0.3700000003},
+        {"op": "wait", "for": "skill.3.clock.1", "progress": 0.4079999998},
+        {"op": "wait", "for": "skill.3.clock.1", "progress": 0.4200000003},
+        {"op": "wait", "for": "skill.3.clock.1", "progress": 0.5000000004},
+        {"op": "wait", "for": "skill.3.clock.1", "progress": 0.5340000002},
+        {"op": "wait", "for": "skill.3.clock.1", "progress": 0.5750000001},
+        {"op": "wait", "for": "skill.3.clock.1", "progress": 0.6140000002},
+        {"op": "wait", "for": "skill.3.clock.1", "progress": 0.7400000006},
+        {"op": "wait", "for": "skill.3.clock.1", "progress": 0.7800000007},
+        {"op": "wait", "for": "skill.3.clock.1", "progress": 0.9600000008},
+        {"op": "wait", "for": "skill.3.clock.1", "progress": 0.9800000009},
+        {"op": "wait", "for": "skill.3.clock.1", "progress": 0.9900000009},
+        {
+          "op": "hit",
+          "target": "PreviewTarget",
+          "animation": "Hit_H",
+          "direction": {"horizontal": -80.0},
+          "effect": {
+            "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Jingliu_00/Eff_Avatar_Jingliu_00_Skill12_Hit_01.prefab",
+            "minimum_interval": 0.0500000007,
+            "maximum_count": 1
+          },
+          "allow_position": true,
+          "as": "skill.3.hit.55"
+        },
+        {"op": "wait", "for": "skill.3.hit.55", "until": "accepted"},
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "skill.3.condition.ByRankActivated.56", "is": true},
+          "then": [
+            {
+              "op": "if",
+              "condition": {"op": "value", "name": "skill.3.condition.ByCompareCharacterNumber.57", "is": true},
+              "then": [
+                {
+                  "op": "hit",
+                  "target": "PreviewTarget",
+                  "animation": "Hit_H",
+                  "direction": {"horizontal": -80.0},
+                  "effect": {
+                    "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Jingliu_00/Eff_Avatar_Jingliu_00_Skill12_Hit_01.prefab",
+                    "minimum_interval": 0.0500000007,
+                    "maximum_count": 1
+                  },
+                  "allow_position": true,
+                  "as": "skill.3.hit.59"
+                },
+                {"op": "wait", "for": "skill.3.hit.59", "until": "accepted"}
+              ],
+              "else": [
+                {
+                  "op": "hit",
+                  "target": "PreviewTarget",
+                  "animation": "Hit_H",
+                  "direction": {"horizontal": -80.0},
+                  "effect": {
+                    "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Jingliu_00/Eff_Avatar_Jingliu_00_Skill12_Hit_01.prefab",
+                    "minimum_interval": 0.0500000007,
+                    "maximum_count": 1
+                  },
+                  "allow_position": true,
+                  "as": "skill.3.hit.61"
+                },
+                {"op": "wait", "for": "skill.3.hit.61", "until": "accepted"}
+              ]
+            }
+          ],
+          "else": [
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit_H",
+              "direction": {"horizontal": -80.0},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Jingliu_00/Eff_Avatar_Jingliu_00_Skill12_Hit_01.prefab",
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.3.hit.63"
+            },
+            {"op": "wait", "for": "skill.3.hit.63", "until": "accepted"}
+          ]
+        },
+        {"op": "wait", "for": "skill.3.clock.1", "progress": 1.0},
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "skill.3.condition.ByCompareDynamicValue.68", "is": true},
+          "then": [
+            {"op": "animation", "state": "Return", "end": 1.0, "track": {"logic": 3}, "as": "skill.3.clock.2"},
+            {
+              "op": "movement",
+              "animation": "skill.3.clock.2",
+              "segments": [
+                {
+                  "destination": "origin",
+                  "start": 0.3900000003,
+                  "end": 0.4100000003,
+                  "sample": {"distance": 0.0, "percentage": 1.0, "include_radii": true}
+                }
+              ],
+              "as": "skill.3.clock.2.movement"
+            },
+            {"op": "wait", "for": "skill.3.clock.2", "progress": 1.0}
+          ],
+          "else": [
+            {"op": "animation", "state": "Return_01", "end": 1.0, "track": {"logic": 3}, "as": "skill.3.clock.3"},
+            {
+              "op": "movement",
+              "animation": "skill.3.clock.3",
+              "segments": [
+                {
+                  "destination": "origin",
+                  "start": 0.3900000003,
+                  "end": 0.4100000003,
+                  "sample": {"distance": 0.0, "percentage": 1.0, "include_radii": true}
+                }
+              ],
+              "as": "skill.3.clock.3.movement"
+            },
+            {"op": "wait", "for": "skill.3.clock.3", "progress": 1.0}
+          ]
+        },
+        {"op": "animation", "state": "StandBy", "end": -1.0, "track": {"logic": 1}, "as": "skill.3.clock.4"},
+        {"op": "wait", "for": "skill.3.clock.4", "until": "animation_end"},
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill21",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "LookAt: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "TriggerAnimStateWithMove: movement not projected: source range needs instant/sentinel-time handling, not a positive animation interval",
+          "GlobalMainIntensityEffect: not included in the visual sequence projection",
+          "LAJIKDENEOO: not included in the visual sequence projection",
+          "RadialBlurEffect: not included in the visual sequence projection",
+          "TriggerEffect: effect needs a non-owned target, dynamic path, or Timeline attachment",
+          "FireProjectile: not included in the visual sequence projection",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.3.ready.-1": {
+      "runtime": {"policy": "ready", "selected": "Skill21"},
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Jingliu_00_Config.json", "skill": 3, "as": "ready"}
+      ],
+      "presentation": {
+        "label": "Skill21 · Ready",
+        "ready": {"config": "Config/ConfigCharacter/Avatar/Avatar_Jingliu_00_Config.json", "skill": 3}
+      },
+      "tags": ["ready-pose"]
+    },
+    "base.callback.2354": {
+      "inputs": {
+        "callback.2354.condition.ByContainBehaviorFlag.1": {
+          "type": "bool",
+          "default": true,
+          "label": "ByContainBehaviorFlag",
+          "description": "Manual source condition: $.AbilityList[9].Modifiers[0].value._CallbackList[1].CallbackConfig[0].Predicate"
+        }
+      },
+      "bindings": {
+        "targets": ["Recipient"]
+      },
+      "runtime": {"policy": "performance", "selected": ""},
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "callback.2354.condition.ByContainBehaviorFlag.1", "is": true},
+          "then": [
+            {"op": "effect.create", "effects": ["base.callback.2354.effect.3"], "as": "callback.2354.effect.3"},
+            {"op": "wait", "for": "callback.2354.effect.3", "until": "accepted"},
+            {"op": "effect.create", "effects": ["base.callback.2354.effect.5"], "as": "callback.2354.effect.5"},
+            {"op": "wait", "for": "callback.2354.effect.5", "until": "accepted"}
+          ],
+          "else": []
+        },
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {
+          "op": "effect.remove",
+          "effects": ["base.callback.2354.effect.3", "base.callback.2354.effect.5"],
+          "optional": ["base.callback.2354.effect.3", "base.callback.2354.effect.5"],
+          "as": "callback.2354.remove-effects"
+        },
+        {"op": "wait", "for": "callback.2354.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {
+          "op": "effect.remove",
+          "effects": ["base.callback.2354.effect.3", "base.callback.2354.effect.5"],
+          "optional": ["base.callback.2354.effect.3", "base.callback.2354.effect.5"],
+          "as": "callback.2354.remove-effects"
+        },
+        {"op": "wait", "for": "callback.2354.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Jingliu_Frozen_Perform: OnStack",
+        "omissions": [
+          "Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects.",
+          "ModifierAttachEffect: manual bound-effect preview; modifier flags, collider-height offset, native mutex and automatic visibility/lifetime are not applied",
+          "HideCharacterFilteredEffect: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "base.skill.4.perform": {
+      "inputs": {
+        "event": {
+          "type": "integer",
+          "default": 0,
+          "label": "Callback",
+          "choices": [
+            {"value": 0, "label": "MAvatar_Jingliu_Passive: OnUltraSkillPrepare"},
+            {"value": 1, "label": "MWAvatar_Jingliu_Attack_Transfer: OnModifierRemove", "diagnostic": true},
+            {"value": 2, "label": "MWAvatar_Jingliu_Attack_Transfer: OnModifierAdd", "diagnostic": true},
+            {"value": 3, "label": "MWAvatar_Jingliu_Attack_Transfer: OnStack"},
+            {"value": 4, "label": "MWAvatar_Jingliu_Attack_Transfer: OnDestroy"},
+            {"value": 5, "label": "Avatar_Jingliu_00_PassiveAtkReady_Phase01"}
+          ]
+        },
+        "callback.2366.condition.ByIsContainModifier.1": {
+          "type": "bool",
+          "default": true,
+          "label": "ByIsContainModifier",
+          "description": "Manual source condition: $.GlobalModifiers[3].value._CallbackList[2].CallbackConfig[0].Predicate"
+        },
+        "callback.2378.condition.ByContainBehaviorFlag.1": {
+          "type": "bool",
+          "default": false,
+          "label": "ByContainBehaviorFlag",
+          "description": "Manual source condition: $.GlobalModifiers[8].value._CallbackList[5].CallbackConfig[0].Predicate",
+          "diagnostic": true
+        },
+        "callback.2379.condition.ByContainBehaviorFlag.1": {
+          "type": "bool",
+          "default": false,
+          "label": "ByContainBehaviorFlag",
+          "description": "Manual source condition: $.GlobalModifiers[8].value._CallbackList[4].CallbackConfig[0].Predicate",
+          "diagnostic": true
+        },
+        "callback.2383.condition.ByContainBehaviorFlag.10": {
+          "type": "bool",
+          "default": false,
+          "label": "ByContainBehaviorFlag",
+          "description": "Manual source condition: $.GlobalModifiers[8].value._CallbackList[0].CallbackConfig[8].Predicate"
+        }
+      },
+      "requires": [
+        {"op": "number", "name": "event", "compare": "ge", "value": 0},
+        {"op": "number", "name": "event", "compare": "lt", "value": 6}
+      ],
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "runtime": {"policy": "performance", "selected": "SkillP01"},
+      "run": [
+        {
+          "op": "switch",
+          "name": "event",
+          "cases": [
+            {
+              "is": 1,
+              "run": [
+                {
+                  "op": "if",
+                  "condition": {"op": "value", "name": "callback.2378.condition.ByContainBehaviorFlag.1", "is": true},
+                  "then": [],
+                  "else": []
+                },
+                {"op": "join"},
+                {"op": "call", "function": "@return.return.pose"},
+                {"op": "wait", "for": "return.pose", "until": "submitted"},
+                {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+                {"op": "wait", "for": "return.position"}
+              ],
+              "label": "MWAvatar_Jingliu_Attack_Transfer: OnModifierRemove"
+            },
+            {
+              "is": 2,
+              "run": [
+                {
+                  "op": "if",
+                  "condition": {"op": "value", "name": "callback.2379.condition.ByContainBehaviorFlag.1", "is": true},
+                  "then": [],
+                  "else": []
+                },
+                {"op": "join"},
+                {"op": "call", "function": "@return.return.pose"},
+                {"op": "wait", "for": "return.pose", "until": "submitted"},
+                {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+                {"op": "wait", "for": "return.position"}
+              ],
+              "label": "MWAvatar_Jingliu_Attack_Transfer: OnModifierAdd"
+            },
+            {
+              "is": 3,
+              "run": [
+                {
+                  "op": "animation_parameter",
+                  "participant": "body",
+                  "parameter": {"name": "Jingliu_Transfer", "type": "int", "value": 1},
+                  "as": "callback.2381.animation-parameter.1"
+                },
+                {"op": "wait", "for": "callback.2381.animation-parameter.1"},
+                {"op": "state.exit", "name": "base.callback.2366.phase.2", "as": "callback.2381.phase.7.phase-replace.0"},
+                {"op": "wait", "for": "callback.2381.phase.7.phase-replace.0"},
+                {"op": "state.exit", "name": "base.callback.2381.phase.7", "as": "callback.2381.phase.7.phase-replace.1"},
+                {"op": "wait", "for": "callback.2381.phase.7.phase-replace.1"},
+                {"op": "state.exit", "name": "base.callback.2383.phase.11", "as": "callback.2381.phase.7.phase-replace.2"},
+                {"op": "wait", "for": "callback.2381.phase.7.phase-replace.2"},
+                {"op": "state.exit", "name": "base.callback.2383.phase.12", "as": "callback.2381.phase.7.phase-replace.3"},
+                {"op": "wait", "for": "callback.2381.phase.7.phase-replace.3"},
+                {
+                  "op": "scope.exit",
+                  "name": "compiled.1.phase/GlobalModifiers[3].value._CallbackList[2].CallbackConfig[0].SuccessTaskList[0]",
+                  "as": "callback.2381.phase.7.phase-replace.4"
+                },
+                {"op": "wait", "for": "callback.2381.phase.7.phase-replace.4", "until": "accepted"},
+                {
+                  "op": "scope.exit",
+                  "name": "compiled.1.phase/GlobalModifiers[8].value._CallbackList[0].CallbackConfig[8].FailedTaskList[0]",
+                  "as": "callback.2381.phase.7.phase-replace.5"
+                },
+                {"op": "wait", "for": "callback.2381.phase.7.phase-replace.5", "until": "accepted"},
+                {
+                  "op": "scope.exit",
+                  "name": "compiled.1.phase/GlobalModifiers[8].value._CallbackList[0].CallbackConfig[8].SuccessTaskList[0]",
+                  "as": "callback.2381.phase.7.phase-replace.6"
+                },
+                {"op": "wait", "for": "callback.2381.phase.7.phase-replace.6", "until": "accepted"},
+                {
+                  "op": "scope.exit",
+                  "name": "compiled.1.phase/GlobalModifiers[8].value._CallbackList[2].CallbackConfig[5]",
+                  "as": "callback.2381.phase.7.phase-replace.7"
+                },
+                {"op": "wait", "for": "callback.2381.phase.7.phase-replace.7", "until": "accepted"},
+                {"op": "state.enter", "name": "base.callback.2381.phase.7", "as": "callback.2381.phase.7"},
+                {"op": "wait", "for": "callback.2381.phase.7"},
+                {"op": "join"},
+                {
+                  "op": "repeat",
+                  "until_finish": true,
+                  "run": [
+                    {"op": "wait", "frame": true}
+                  ]
+                },
+                {"op": "call", "function": "@return.return.pose"},
+                {"op": "wait", "for": "return.pose", "until": "submitted"},
+                {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+                {"op": "wait", "for": "return.position"}
+              ],
+              "label": "MWAvatar_Jingliu_Attack_Transfer: OnStack"
+            },
+            {
+              "is": 4,
+              "run": [
+                {
+                  "op": "animation_parameter",
+                  "participant": "body",
+                  "parameter": {"name": "Jingliu_Transfer", "type": "int", "value": 0},
+                  "as": "callback.2383.animation-parameter.6"
+                },
+                {"op": "wait", "for": "callback.2383.animation-parameter.6"},
+                {
+                  "op": "effect.remove_event",
+                  "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Ren_00/Eff_Avatar_Ren_00_Skill02_Weapon_JNT.prefab",
+                  "as": "callback.2383.remove.7.0"
+                },
+                {"op": "wait", "for": "callback.2383.remove.7.0", "until": "accepted"},
+                {
+                  "op": "effect.remove_event",
+                  "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Jingliu_00/Eff_Avatar_Jingliu_00_StandBy_Transfer_01.prefab",
+                  "as": "callback.2383.remove.9.0"
+                },
+                {"op": "wait", "for": "callback.2383.remove.9.0", "until": "accepted"},
+                {
+                  "op": "if",
+                  "condition": {"op": "value", "name": "callback.2383.condition.ByContainBehaviorFlag.10", "is": true},
+                  "then": [
+                    {"op": "state.exit", "name": "base.callback.2366.phase.2", "as": "callback.2383.phase.11.phase-replace.0"},
+                    {"op": "wait", "for": "callback.2383.phase.11.phase-replace.0"},
+                    {"op": "state.exit", "name": "base.callback.2381.phase.7", "as": "callback.2383.phase.11.phase-replace.1"},
+                    {"op": "wait", "for": "callback.2383.phase.11.phase-replace.1"},
+                    {"op": "state.exit", "name": "base.callback.2383.phase.11", "as": "callback.2383.phase.11.phase-replace.2"},
+                    {"op": "wait", "for": "callback.2383.phase.11.phase-replace.2"},
+                    {"op": "state.exit", "name": "base.callback.2383.phase.12", "as": "callback.2383.phase.11.phase-replace.3"},
+                    {"op": "wait", "for": "callback.2383.phase.11.phase-replace.3"},
+                    {
+                      "op": "scope.exit",
+                      "name": "compiled.1.phase/GlobalModifiers[3].value._CallbackList[2].CallbackConfig[0].SuccessTaskList[0]",
+                      "as": "callback.2383.phase.11.phase-replace.4"
+                    },
+                    {"op": "wait", "for": "callback.2383.phase.11.phase-replace.4", "until": "accepted"},
+                    {
+                      "op": "scope.exit",
+                      "name": "compiled.1.phase/GlobalModifiers[8].value._CallbackList[0].CallbackConfig[8].FailedTaskList[0]",
+                      "as": "callback.2383.phase.11.phase-replace.5"
+                    },
+                    {"op": "wait", "for": "callback.2383.phase.11.phase-replace.5", "until": "accepted"},
+                    {
+                      "op": "scope.exit",
+                      "name": "compiled.1.phase/GlobalModifiers[8].value._CallbackList[0].CallbackConfig[8].SuccessTaskList[0]",
+                      "as": "callback.2383.phase.11.phase-replace.6"
+                    },
+                    {"op": "wait", "for": "callback.2383.phase.11.phase-replace.6", "until": "accepted"},
+                    {
+                      "op": "scope.exit",
+                      "name": "compiled.1.phase/GlobalModifiers[8].value._CallbackList[2].CallbackConfig[5]",
+                      "as": "callback.2383.phase.11.phase-replace.7"
+                    },
+                    {"op": "wait", "for": "callback.2383.phase.11.phase-replace.7", "until": "accepted"},
+                    {"op": "state.enter", "name": "base.callback.2383.phase.11", "as": "callback.2383.phase.11"},
+                    {"op": "wait", "for": "callback.2383.phase.11"}
+                  ],
+                  "else": [
+                    {"op": "state.exit", "name": "base.callback.2366.phase.2", "as": "callback.2383.phase.12.phase-replace.0"},
+                    {"op": "wait", "for": "callback.2383.phase.12.phase-replace.0"},
+                    {"op": "state.exit", "name": "base.callback.2381.phase.7", "as": "callback.2383.phase.12.phase-replace.1"},
+                    {"op": "wait", "for": "callback.2383.phase.12.phase-replace.1"},
+                    {"op": "state.exit", "name": "base.callback.2383.phase.11", "as": "callback.2383.phase.12.phase-replace.2"},
+                    {"op": "wait", "for": "callback.2383.phase.12.phase-replace.2"},
+                    {"op": "state.exit", "name": "base.callback.2383.phase.12", "as": "callback.2383.phase.12.phase-replace.3"},
+                    {"op": "wait", "for": "callback.2383.phase.12.phase-replace.3"},
+                    {
+                      "op": "scope.exit",
+                      "name": "compiled.1.phase/GlobalModifiers[3].value._CallbackList[2].CallbackConfig[0].SuccessTaskList[0]",
+                      "as": "callback.2383.phase.12.phase-replace.4"
+                    },
+                    {"op": "wait", "for": "callback.2383.phase.12.phase-replace.4", "until": "accepted"},
+                    {
+                      "op": "scope.exit",
+                      "name": "compiled.1.phase/GlobalModifiers[8].value._CallbackList[0].CallbackConfig[8].FailedTaskList[0]",
+                      "as": "callback.2383.phase.12.phase-replace.5"
+                    },
+                    {"op": "wait", "for": "callback.2383.phase.12.phase-replace.5", "until": "accepted"},
+                    {
+                      "op": "scope.exit",
+                      "name": "compiled.1.phase/GlobalModifiers[8].value._CallbackList[0].CallbackConfig[8].SuccessTaskList[0]",
+                      "as": "callback.2383.phase.12.phase-replace.6"
+                    },
+                    {"op": "wait", "for": "callback.2383.phase.12.phase-replace.6", "until": "accepted"},
+                    {
+                      "op": "scope.exit",
+                      "name": "compiled.1.phase/GlobalModifiers[8].value._CallbackList[2].CallbackConfig[5]",
+                      "as": "callback.2383.phase.12.phase-replace.7"
+                    },
+                    {"op": "wait", "for": "callback.2383.phase.12.phase-replace.7", "until": "accepted"},
+                    {"op": "state.enter", "name": "base.callback.2383.phase.12", "as": "callback.2383.phase.12"},
+                    {"op": "wait", "for": "callback.2383.phase.12"}
+                  ]
+                },
+                {"op": "join"},
+                {
+                  "op": "repeat",
+                  "until_finish": true,
+                  "run": [
+                    {"op": "wait", "frame": true}
+                  ]
+                },
+                {"op": "call", "function": "@return.return.pose"},
+                {"op": "wait", "for": "return.pose", "until": "submitted"},
+                {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+                {"op": "wait", "for": "return.position"}
+              ],
+              "label": "MWAvatar_Jingliu_Attack_Transfer: OnDestroy"
+            },
+            {
+              "is": 5,
+              "run": [
+                {
+                  "op": "start",
+                  "id": "Avatar_Jingliu_Passive_Camera",
+                  "run": [],
+                  "join": true
+                },
+                {"op": "animation", "state": "Passive", "end": 1.0, "track": {"logic": 1}, "as": "followup.0.clock.1"},
+                {"op": "wait", "for": "followup.0.clock.1", "progress": 0.0},
+                {
+                  "op": "for_each",
+                  "bind": "followup.0.member.12",
+                  "targets": ["PreviewTarget"],
+                  "collection": "followup.0.targets.13",
+                  "run": [],
+                  "empty": []
+                },
+                {"op": "join"},
+                {"op": "wait", "for": "followup.0.clock.1", "until": "animation_end"},
+                {"op": "call", "function": "@return.return.pose"},
+                {"op": "wait", "for": "return.pose", "until": "submitted"},
+                {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+                {"op": "wait", "for": "return.position"}
+              ],
+              "label": "Avatar_Jingliu_00_PassiveAtkReady_Phase01"
+            }
+          ],
+          "default": [
+            {
+              "op": "if",
+              "condition": {"op": "value", "name": "callback.2366.condition.ByIsContainModifier.1", "is": true},
+              "then": [
+                {"op": "state.exit", "name": "base.callback.2366.phase.2", "as": "callback.2366.phase.2.phase-replace.0"},
+                {"op": "wait", "for": "callback.2366.phase.2.phase-replace.0"},
+                {"op": "state.exit", "name": "base.callback.2381.phase.7", "as": "callback.2366.phase.2.phase-replace.1"},
+                {"op": "wait", "for": "callback.2366.phase.2.phase-replace.1"},
+                {"op": "state.exit", "name": "base.callback.2383.phase.11", "as": "callback.2366.phase.2.phase-replace.2"},
+                {"op": "wait", "for": "callback.2366.phase.2.phase-replace.2"},
+                {"op": "state.exit", "name": "base.callback.2383.phase.12", "as": "callback.2366.phase.2.phase-replace.3"},
+                {"op": "wait", "for": "callback.2366.phase.2.phase-replace.3"},
+                {
+                  "op": "scope.exit",
+                  "name": "compiled.1.phase/GlobalModifiers[3].value._CallbackList[2].CallbackConfig[0].SuccessTaskList[0]",
+                  "as": "callback.2366.phase.2.phase-replace.4"
+                },
+                {"op": "wait", "for": "callback.2366.phase.2.phase-replace.4", "until": "accepted"},
+                {
+                  "op": "scope.exit",
+                  "name": "compiled.1.phase/GlobalModifiers[8].value._CallbackList[0].CallbackConfig[8].FailedTaskList[0]",
+                  "as": "callback.2366.phase.2.phase-replace.5"
+                },
+                {"op": "wait", "for": "callback.2366.phase.2.phase-replace.5", "until": "accepted"},
+                {
+                  "op": "scope.exit",
+                  "name": "compiled.1.phase/GlobalModifiers[8].value._CallbackList[0].CallbackConfig[8].SuccessTaskList[0]",
+                  "as": "callback.2366.phase.2.phase-replace.6"
+                },
+                {"op": "wait", "for": "callback.2366.phase.2.phase-replace.6", "until": "accepted"},
+                {
+                  "op": "scope.exit",
+                  "name": "compiled.1.phase/GlobalModifiers[8].value._CallbackList[2].CallbackConfig[5]",
+                  "as": "callback.2366.phase.2.phase-replace.7"
+                },
+                {"op": "wait", "for": "callback.2366.phase.2.phase-replace.7", "until": "accepted"},
+                {"op": "state.enter", "name": "base.callback.2366.phase.2", "as": "callback.2366.phase.2"},
+                {"op": "wait", "for": "callback.2366.phase.2"}
+              ],
+              "else": []
+            },
+            {"op": "join"},
+            {"op": "call", "function": "@return.return.pose"},
+            {"op": "wait", "for": "return.pose", "until": "submitted"},
+            {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+            {"op": "wait", "for": "return.position"}
+          ]
+        }
+      ],
+      "on_interrupt": [
+        {
+          "op": "switch",
+          "name": "event",
+          "cases": [
+            {
+              "is": 1,
+              "run": [
+                {"op": "call", "function": "@return.return.pose"},
+                {"op": "wait", "for": "return.pose", "until": "submitted"},
+                {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+                {"op": "wait", "for": "return.position"}
+              ],
+              "label": "MWAvatar_Jingliu_Attack_Transfer: OnModifierRemove"
+            },
+            {
+              "is": 2,
+              "run": [
+                {"op": "call", "function": "@return.return.pose"},
+                {"op": "wait", "for": "return.pose", "until": "submitted"},
+                {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+                {"op": "wait", "for": "return.position"}
+              ],
+              "label": "MWAvatar_Jingliu_Attack_Transfer: OnModifierAdd"
+            },
+            {
+              "is": 3,
+              "run": [
+                {"op": "call", "function": "@return.return.pose"},
+                {"op": "wait", "for": "return.pose", "until": "submitted"},
+                {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+                {"op": "wait", "for": "return.position"}
+              ],
+              "label": "MWAvatar_Jingliu_Attack_Transfer: OnStack"
+            },
+            {
+              "is": 4,
+              "run": [
+                {"op": "call", "function": "@return.return.pose"},
+                {"op": "wait", "for": "return.pose", "until": "submitted"},
+                {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+                {"op": "wait", "for": "return.position"}
+              ],
+              "label": "MWAvatar_Jingliu_Attack_Transfer: OnDestroy"
+            },
+            {
+              "is": 5,
+              "run": [
+                {"op": "call", "function": "@return.return.pose"},
+                {"op": "wait", "for": "return.pose", "until": "submitted"},
+                {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+                {"op": "wait", "for": "return.position"}
+              ],
+              "label": "Avatar_Jingliu_00_PassiveAtkReady_Phase01"
+            }
+          ],
+          "default": [
+            {"op": "call", "function": "@return.return.pose"},
+            {"op": "wait", "for": "return.pose", "until": "submitted"},
+            {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+            {"op": "wait", "for": "return.position"}
+          ]
+        }
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "SkillP01",
+        "omissions": [
+          "Manual visual callback selection; no native combat modifier or automatic event simulation.",
+          "event: 0=MAvatar_Jingliu_Passive: OnUltraSkillPrepare, 1=MWAvatar_Jingliu_Attack_Transfer: OnModifierRemove, 2=MWAvatar_Jingliu_Attack_Transfer: OnModifierAdd, 3=MWAvatar_Jingliu_Attack_Transfer: OnStack, 4=MWAvatar_Jingliu_Attack_Transfer: OnDestroy, 5=Avatar_Jingliu_00_PassiveAtkReady_Phase01",
+          "NKLOMENKLHK: not included in the visual sequence projection",
+          "LAJIKDENEOO: not included in the visual sequence projection",
+          "SetControlSkillMapping: Skill mapping is configuration, not a request to play its destination ready pose; native mapping is not executed",
+          "BattleAudioSwitch: not included in the visual sequence projection",
+          "SyncCharLightAndCameraDir: not included in the visual sequence projection",
+          "AlignTargetToTeamCenter: not included in the visual sequence projection",
+          "SetTeamFormation: not included in the visual sequence projection",
+          "HideLevelStage: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "TriggerAdditiveAnimState: not included in the visual sequence projection",
+          "Retarget: recipient collection is explicitly selected; native filtering, random selection and count limits are not simulated",
+          "WaitTimelineFinish: not included in the visual sequence projection",
+          "HideLevelStage: serial step depends on an unavailable source clock; no timing is inferred"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "base.skill.5.perform": {
+      "use": "common.elemental.responses",
+      "runtime": {"policy": "performance", "selected": "PassiveSkill02"},
+      "next": "base.rest"
+    },
+    "base.skill.6.perform": {
+      "inputs": {
+        "event": {
+          "type": "integer",
+          "default": 0,
+          "label": "Callback",
+          "choices": [
+            {"value": 0, "label": "SkillMaze_Jingliu_Modifier: OnEnterBattle"},
+            {"value": 1, "label": "MCommon_CTRL_Frozen: OnStack"},
+            {"value": 2, "label": "MCommon_CTRL_Frozen: OnPhase1"},
+            {"value": 3, "label": "MCommon_CTRL_Frozen: OnDestroy"},
+            {"value": 4, "label": "MCommon_CTRL_Frozen: OnCreate"}
+          ]
+        },
+        "callback.2360.condition.ByIsMazeSkillAffectCurrentWave.1": {
+          "type": "bool",
+          "default": true,
+          "label": "ByIsMazeSkillAffectCurrentWave",
+          "description": "Manual source condition: $.AbilityList[10].Modifiers[0].value._CallbackList[0].CallbackConfig[0].Predicate"
+        },
+        "callback.5348.condition.ByIsTargetValid.1": {
+          "type": "bool",
+          "default": true,
+          "label": "ByIsTargetValid",
+          "description": "Manual source condition: $.ModifierMap[24].value._CallbackList[1].CallbackConfig[0].Predicate"
+        },
+        "callback.5348.condition.ByContainBehaviorFlag.3": {
+          "type": "bool",
+          "default": true,
+          "label": "ByContainBehaviorFlag",
+          "description": "Manual source condition: $.ModifierMap[24].value._CallbackList[1].CallbackConfig[0].SuccessTaskList[2].Predicate"
+        },
+        "callback.5349.condition.ByInTurnBasedGameModeState.1": {
+          "type": "bool",
+          "default": false,
+          "label": "ByInTurnBasedGameModeState",
+          "description": "Manual source condition: $.ModifierMap[24].value._CallbackList[0].CallbackConfig[0].Predicate"
+        }
+      },
+      "requires": [
+        {"op": "number", "name": "event", "compare": "ge", "value": 0},
+        {"op": "number", "name": "event", "compare": "lt", "value": 5}
+      ],
+      "bindings": {
+        "targets": ["Recipient", "callback.2360.target.AllEnemy"]
+      },
+      "runtime": {"policy": "performance", "selected": "SkillMaze"},
+      "run": [
+        {
+          "op": "switch",
+          "name": "event",
+          "cases": [
+            {
+              "is": 1,
+              "run": [
+                {"op": "effect.create", "effects": ["base.callback.5346.effect.3"], "as": "callback.5346.effect.3"},
+                {"op": "wait", "for": "callback.5346.effect.3", "until": "accepted"},
+                {"op": "effect.create", "effects": ["base.callback.5346.effect.5"], "as": "callback.5346.effect.5"},
+                {"op": "wait", "for": "callback.5346.effect.5", "until": "accepted"},
+                {"op": "effect.create", "effects": ["base.callback.5346.effect.7"], "as": "callback.5346.effect.7"},
+                {"op": "wait", "for": "callback.5346.effect.7", "until": "accepted"},
+                {"op": "join"},
+                {
+                  "op": "repeat",
+                  "until_finish": true,
+                  "run": [
+                    {"op": "wait", "frame": true}
+                  ]
+                },
+                {
+                  "op": "effect.remove",
+                  "effects": ["base.callback.5346.effect.3", "base.callback.5346.effect.5", "base.callback.5346.effect.7"],
+                  "optional": ["base.callback.5346.effect.3", "base.callback.5346.effect.5", "base.callback.5346.effect.7"],
+                  "as": "callback.5346.remove-effects"
+                },
+                {"op": "wait", "for": "callback.5346.remove-effects", "until": "accepted"},
+                {"op": "call", "function": "@return.return.pose"},
+                {"op": "wait", "for": "return.pose", "until": "submitted"},
+                {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+                {"op": "wait", "for": "return.position"}
+              ],
+              "label": "MCommon_CTRL_Frozen: OnStack"
+            },
+            {
+              "is": 2,
+              "run": [
+                {"op": "effect.create", "effects": ["base.callback.5347.effect.1"], "as": "callback.5347.effect.1"},
+                {"op": "wait", "for": "callback.5347.effect.1", "until": "accepted"},
+                {"op": "wait", "seconds": 0.1},
+                {"op": "wait", "seconds": 0.1},
+                {"op": "join"},
+                {
+                  "op": "repeat",
+                  "until_finish": true,
+                  "run": [
+                    {"op": "wait", "frame": true}
+                  ]
+                },
+                {
+                  "op": "effect.remove",
+                  "effects": ["base.callback.5347.effect.1"],
+                  "optional": ["base.callback.5347.effect.1"],
+                  "as": "callback.5347.remove-effects"
+                },
+                {"op": "wait", "for": "callback.5347.remove-effects", "until": "accepted"},
+                {"op": "call", "function": "@return.return.pose"},
+                {"op": "wait", "for": "return.pose", "until": "submitted"},
+                {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+                {"op": "wait", "for": "return.position"}
+              ],
+              "label": "MCommon_CTRL_Frozen: OnPhase1"
+            },
+            {
+              "is": 3,
+              "run": [
+                {
+                  "op": "if",
+                  "condition": {"op": "value", "name": "callback.5348.condition.ByIsTargetValid.1", "is": true},
+                  "then": [
+                    {"op": "wait", "seconds": 0.1500000001},
+                    {
+                      "op": "if",
+                      "condition": {"op": "value", "name": "callback.5348.condition.ByContainBehaviorFlag.3", "is": true},
+                      "then": [
+                        {"op": "sound", "event": "Ev_monster_combat_resume", "as": "callback.5348.sound.4"},
+                        {"op": "wait", "seconds": 0.7500000006}
+                      ],
+                      "else": []
+                    }
+                  ],
+                  "else": []
+                },
+                {"op": "join"},
+                {"op": "call", "function": "@return.return.pose"},
+                {"op": "wait", "for": "return.pose", "until": "submitted"},
+                {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+                {"op": "wait", "for": "return.position"}
+              ],
+              "label": "MCommon_CTRL_Frozen: OnDestroy"
+            },
+            {
+              "is": 4,
+              "run": [
+                {
+                  "op": "if",
+                  "condition": {"op": "value", "name": "callback.5349.condition.ByInTurnBasedGameModeState.1", "is": true},
+                  "then": [],
+                  "else": [
+                    {"op": "effect.create", "effects": ["base.callback.5349.effect.2"], "as": "callback.5349.effect.2"},
+                    {"op": "wait", "for": "callback.5349.effect.2", "until": "accepted"}
+                  ]
+                },
+                {"op": "state.enter", "name": "base.callback.5349.receiver-property.3", "as": "callback.5349.receiver-property.3"},
+                {"op": "wait", "for": "callback.5349.receiver-property.3"},
+                {"op": "sound", "event": "Ev_monster_combat_pause", "as": "callback.5349.sound.5"},
+                {"op": "join"},
+                {
+                  "op": "repeat",
+                  "until_finish": true,
+                  "run": [
+                    {"op": "wait", "frame": true}
+                  ]
+                },
+                {
+                  "op": "effect.remove",
+                  "effects": ["base.callback.5349.effect.2"],
+                  "optional": ["base.callback.5349.effect.2"],
+                  "as": "callback.5349.remove-effects"
+                },
+                {"op": "wait", "for": "callback.5349.remove-effects", "until": "accepted"},
+                {"op": "call", "function": "@return.return.pose"},
+                {"op": "wait", "for": "return.pose", "until": "submitted"},
+                {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+                {"op": "wait", "for": "return.position"}
+              ],
+              "label": "MCommon_CTRL_Frozen: OnCreate"
+            }
+          ],
+          "default": [
+            {
+              "op": "if",
+              "condition": {"op": "value", "name": "callback.2360.condition.ByIsMazeSkillAffectCurrentWave.1", "is": true},
+              "then": [
+                {"op": "effect.create", "effects": ["base.callback.2360.effect.3"], "as": "callback.2360.effect.3"},
+                {"op": "wait", "for": "callback.2360.effect.3", "until": "accepted"}
+              ],
+              "else": []
+            },
+            {"op": "join"},
+            {
+              "op": "repeat",
+              "until_finish": true,
+              "run": [
+                {"op": "wait", "frame": true}
+              ]
+            },
+            {
+              "op": "effect.remove",
+              "effects": ["base.callback.2360.effect.3"],
+              "optional": ["base.callback.2360.effect.3"],
+              "as": "callback.2360.remove-effects"
+            },
+            {"op": "wait", "for": "callback.2360.remove-effects", "until": "accepted"},
+            {"op": "call", "function": "@return.return.pose"},
+            {"op": "wait", "for": "return.pose", "until": "submitted"},
+            {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+            {"op": "wait", "for": "return.position"}
+          ]
+        }
+      ],
+      "on_interrupt": [
+        {
+          "op": "switch",
+          "name": "event",
+          "cases": [
+            {
+              "is": 1,
+              "run": [
+                {
+                  "op": "effect.remove",
+                  "effects": ["base.callback.5346.effect.3", "base.callback.5346.effect.5", "base.callback.5346.effect.7"],
+                  "optional": ["base.callback.5346.effect.3", "base.callback.5346.effect.5", "base.callback.5346.effect.7"],
+                  "as": "callback.5346.remove-effects"
+                },
+                {"op": "wait", "for": "callback.5346.remove-effects", "until": "accepted"},
+                {"op": "call", "function": "@return.return.pose"},
+                {"op": "wait", "for": "return.pose", "until": "submitted"},
+                {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+                {"op": "wait", "for": "return.position"}
+              ],
+              "label": "MCommon_CTRL_Frozen: OnStack"
+            },
+            {
+              "is": 2,
+              "run": [
+                {
+                  "op": "effect.remove",
+                  "effects": ["base.callback.5347.effect.1"],
+                  "optional": ["base.callback.5347.effect.1"],
+                  "as": "callback.5347.remove-effects"
+                },
+                {"op": "wait", "for": "callback.5347.remove-effects", "until": "accepted"},
+                {"op": "call", "function": "@return.return.pose"},
+                {"op": "wait", "for": "return.pose", "until": "submitted"},
+                {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+                {"op": "wait", "for": "return.position"}
+              ],
+              "label": "MCommon_CTRL_Frozen: OnPhase1"
+            },
+            {
+              "is": 3,
+              "run": [
+                {"op": "call", "function": "@return.return.pose"},
+                {"op": "wait", "for": "return.pose", "until": "submitted"},
+                {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+                {"op": "wait", "for": "return.position"}
+              ],
+              "label": "MCommon_CTRL_Frozen: OnDestroy"
+            },
+            {
+              "is": 4,
+              "run": [
+                {
+                  "op": "effect.remove",
+                  "effects": ["base.callback.5349.effect.2"],
+                  "optional": ["base.callback.5349.effect.2"],
+                  "as": "callback.5349.remove-effects"
+                },
+                {"op": "wait", "for": "callback.5349.remove-effects", "until": "accepted"},
+                {"op": "call", "function": "@return.return.pose"},
+                {"op": "wait", "for": "return.pose", "until": "submitted"},
+                {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+                {"op": "wait", "for": "return.position"}
+              ],
+              "label": "MCommon_CTRL_Frozen: OnCreate"
+            }
+          ],
+          "default": [
+            {
+              "op": "effect.remove",
+              "effects": ["base.callback.2360.effect.3"],
+              "optional": ["base.callback.2360.effect.3"],
+              "as": "callback.2360.remove-effects"
+            },
+            {"op": "wait", "for": "callback.2360.remove-effects", "until": "accepted"},
+            {"op": "call", "function": "@return.return.pose"},
+            {"op": "wait", "for": "return.pose", "until": "submitted"},
+            {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+            {"op": "wait", "for": "return.position"}
+          ]
+        }
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "SkillMaze",
+        "omissions": [
+          "Manual visual callback selection; no native combat modifier or automatic event simulation.",
+          "event: 0=SkillMaze_Jingliu_Modifier: OnEnterBattle, 1=MCommon_CTRL_Frozen: OnStack, 2=MCommon_CTRL_Frozen: OnPhase1, 3=MCommon_CTRL_Frozen: OnDestroy, 4=MCommon_CTRL_Frozen: OnCreate",
+          "TriggerEffect: callback target AllEnemy is a selected owned actor input, defaulting to this actor; native event payload is not assumed",
+          "ModifierAttachEffect: manual bound-effect preview; modifier flags, collider-height offset, native mutex and automatic visibility/lifetime are not applied",
+          "HideCharacterFilteredEffect: not included in the visual sequence projection",
+          "DamageByAttackProperty: no literal hit animation/effect; receiver defaults are not assumed",
+          "ShowEntityFloatMessage: not included in the visual sequence projection",
+          "TriggerSound: sound emitter DefaultEmitter is not the owned actor; no body or real-player substitution",
+          "ModifierOverrideOnHitEffect: owned visual receiver override only; no shield value, expiry, native modifier or automatic death/break transition"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "base.preview.hit": {
+      "inputs": {
+        "kind": {
+          "type": "text",
+          "default": "Hit",
+          "label": "Hit type",
+          "choices": [
+            {"value": "Hit", "label": "Hit"},
+            {"value": "Hit_H", "label": "Hit_H"}
+          ]
+        }
+      },
+      "runtime": {"policy": "performance", "selected": ""},
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "kind", "is": "Hit_H"},
+          "then": [
+            {"op": "hit", "target": "Caster", "animation": "Hit_H", "as": "hit-heavy"},
+            {"op": "wait", "for": "hit-heavy"}
+          ],
+          "else": [
+            {"op": "hit", "target": "Caster", "animation": "Hit", "as": "hit"},
+            {"op": "wait", "for": "hit"}
+          ]
+        }
+      ],
+      "next": "base.rest",
+      "presentation": {"label": "Hit"},
+      "tags": ["manual-visual-callback"]
+    },
+    "compiled.0.Avatar_Jingliu_00_Config.skill-0.entry": {
+      "requires": [
+        {"op": "target", "name": "AbilityTargetEntity", "allow_position": true},
+        {"op": "playback", "name": "performance", "values": ["ready"]},
+        {"op": "playback", "name": "selected", "is": "Skill01"}
+      ],
+      "runtime": {"policy": "continuous"},
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Jingliu_Skill01_Phase01",
+          "run": [
+            {"op": "facing.target", "target": "AbilityTargetEntity", "as": "$.AbilityList[0].OnStart[0]"},
+            {"op": "wait", "for": "$.AbilityList[0].OnStart[0]", "until": "accepted"},
+            {
+              "op": "start",
+              "id": "Avatar_Jingliu_Skill01_Phase02",
+              "run": [
+                {"op": "wait", "for": "body.0", "progress": 0.1400000001},
+                {"op": "attack.record", "target": "AbilityTargetEntity", "allow_position": true, "as": "$.AbilityList[1].OnStart[1].record"},
+                {"op": "wait", "for": "$.AbilityList[1].OnStart[1].record", "until": "accepted"},
+                {
+                  "op": "hit",
+                  "target": "AbilityTargetEntity",
+                  "animation": "Hit",
+                  "events": ["after_hit", "after_hit_all"],
+                  "direction": {"horizontal": 70.0, "vertical": 30.0},
+                  "effect": {
+                    "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Jingliu_00/Eff_Avatar_Jingliu_00_Skill01_Hit_01.prefab",
+                    "minimum_interval": 0.0500000007,
+                    "maximum_count": 1
+                  },
+                  "allow_position": true,
+                  "as": "$.AbilityList[1].OnStart[1]"
+                },
+                {"op": "wait", "for": "$.AbilityList[1].OnStart[1]", "until": "accepted"},
+                {"op": "wait", "for": "body.0", "progress": 0.2889999996},
+                {"op": "attack.record", "target": "AbilityTargetEntity", "allow_position": true, "as": "$.AbilityList[1].OnStart[3].record"},
+                {"op": "wait", "for": "$.AbilityList[1].OnStart[3].record", "until": "accepted"},
+                {
+                  "op": "hit",
+                  "target": "AbilityTargetEntity",
+                  "animation": "Hit",
+                  "events": ["after_hit", "after_hit_all"],
+                  "direction": {"horizontal": -70.0, "vertical": 30.0},
+                  "effect": {
+                    "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Jingliu_00/Eff_Avatar_Jingliu_00_Skill01_Hit_02.prefab",
+                    "height": 0.30000001192092896,
+                    "minimum_interval": 0.0500000007,
+                    "maximum_count": 1
+                  },
+                  "allow_position": true,
+                  "as": "$.AbilityList[1].OnStart[3]"
+                },
+                {"op": "wait", "for": "$.AbilityList[1].OnStart[3]", "until": "accepted"},
+                {"op": "attack.finish", "as": "$.AbilityList[1].OnStart[4]"},
+                {"op": "wait", "for": "$.AbilityList[1].OnStart[4]", "until": "accepted"},
+                {"op": "playback.value", "variable": "performance", "operation": "set", "value": "finished", "as": "$.AbilityList[1].OnStart[5]"}
+              ],
+              "join": true
+            },
+            {"op": "animation", "state": "Skill01", "end": 0.0, "track": {"logic": 3}, "as": "body.0"},
+            {
+              "op": "movement",
+              "animation": "body.0",
+              "segments": [
+                {
+                  "destination": "target",
+                  "name": "AbilityTargetEntity",
+                  "target_geometry": true,
+                  "start": 0.0479999994,
+                  "end": 0.081,
+                  "sample": {"distance": 2.0, "percentage": 1.0, "include_radii": true}
+                },
+                {
+                  "destination": "origin",
+                  "start": 0.7500000006,
+                  "end": 0.7700000007,
+                  "sample": {"distance": 0.0, "percentage": 1.0, "include_radii": true}
+                }
+              ],
+              "as": "body.0.movement"
+            },
+            {"op": "wait", "for": "body.0", "progress": 0.0},
+            {"op": "wait", "for": "body.0", "progress": 0.0269999995},
+            {"op": "wait", "for": "body.0", "progress": 0.081},
+            {"op": "wait", "for": "body.0", "progress": 0.7800000007}
+          ],
+          "join": true
+        },
+        {"op": "join"},
+        {"op": "playback.value", "variable": "performance", "operation": "set", "value": "resetting", "as": "after"},
+        {"op": "call", "function": "@return.return"},
+        {"op": "wait", "for": "return", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return-position"},
+        {"op": "wait", "for": "return-position"},
+        {"op": "playback.value", "variable": "performance", "operation": "set", "value": "ready", "as": "reset"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.abort-return"},
+        {"op": "wait", "for": "abort-return", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "abort-position"},
+        {"op": "wait", "for": "abort-position"}
+      ],
+      "next": "compiled.0.Avatar_Jingliu_00_Config.skill-0.rest",
+      "presentation": {"label": "Avatar_Jingliu_Skill01_Phase01"},
+      "tags": ["entry-development"]
+    },
+    "compiled.0.Avatar_Jingliu_00_Config.skill-0.select": {
+      "requires": [
+        {"op": "playback", "name": "performance", "values": ["ready", "failed"]}
+      ],
+      "runtime": {"policy": "setting", "selected": "Skill01"},
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Jingliu_00_Config.json", "skill": 0, "as": "ready"},
+        {"op": "wait", "for": "ready"}
+      ],
+      "presentation": {
+        "label": "Skill01_Ready",
+        "ready": {"config": "Config/ConfigCharacter/Avatar/Avatar_Jingliu_00_Config.json", "skill": 0}
+      },
+      "tags": ["selection-development"]
+    },
+    "compiled.0.Avatar_Jingliu_00_Config.skill-0.rest": {
+      "trigger": "internal",
+      "runtime": {"policy": "ready", "selected": ""},
+      "run": [
+        {"op": "call", "function": "@return.idle"},
+        {"op": "wait", "for": "idle", "until": "submitted"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["stable-return"]
+    },
+    "compiled.1.reset_phase": {
+      "mode": "input",
+      "run": [
+        {"op": "state.exit", "name": "base.callback.2366.phase.2", "as": "phase.reset.0"},
+        {"op": "wait", "for": "phase.reset.0"},
+        {"op": "state.exit", "name": "base.callback.2381.phase.7", "as": "phase.reset.1"},
+        {"op": "wait", "for": "phase.reset.1"},
+        {"op": "state.exit", "name": "base.callback.2383.phase.11", "as": "phase.reset.2"},
+        {"op": "wait", "for": "phase.reset.2"},
+        {"op": "state.exit", "name": "base.callback.2383.phase.12", "as": "phase.reset.3"},
+        {"op": "wait", "for": "phase.reset.3"},
+        {"op": "scope.exit", "name": "compiled.1.phase/GlobalModifiers[3].value._CallbackList[2].CallbackConfig[0].SuccessTaskList[0]", "as": "phase.reset.4"},
+        {"op": "wait", "for": "phase.reset.4", "until": "accepted"},
+        {"op": "scope.exit", "name": "compiled.1.phase/GlobalModifiers[8].value._CallbackList[0].CallbackConfig[8].FailedTaskList[0]", "as": "phase.reset.5"},
+        {"op": "wait", "for": "phase.reset.5", "until": "accepted"},
+        {"op": "scope.exit", "name": "compiled.1.phase/GlobalModifiers[8].value._CallbackList[0].CallbackConfig[8].SuccessTaskList[0]", "as": "phase.reset.6"},
+        {"op": "wait", "for": "phase.reset.6", "until": "accepted"},
+        {"op": "scope.exit", "name": "compiled.1.phase/GlobalModifiers[8].value._CallbackList[2].CallbackConfig[5]", "as": "phase.reset.7"},
+        {"op": "wait", "for": "phase.reset.7", "until": "accepted"}
+      ],
+      "presentation": {
+        "kind": "setting",
+        "contexts": [
+          "base.callback.2366.phase.2",
+          "base.callback.2381.phase.7",
+          "base.callback.2383.phase.11",
+          "base.callback.2383.phase.12",
+          "compiled.1.phase/GlobalModifiers[3].value._CallbackList[2].CallbackConfig[0].SuccessTaskList[0]",
+          "compiled.1.phase/GlobalModifiers[8].value._CallbackList[0].CallbackConfig[8].FailedTaskList[0]",
+          "compiled.1.phase/GlobalModifiers[8].value._CallbackList[0].CallbackConfig[8].SuccessTaskList[0]",
+          "compiled.1.phase/GlobalModifiers[8].value._CallbackList[2].CallbackConfig[5]"
+        ]
+      },
+      "tags": ["visual-phase-reset"]
+    },
+    "compiled.1.select/GlobalModifiers[3].value._CallbackList[2].CallbackConfig[0].SuccessTaskList[0]": {
+      "runtime": {"policy": "performance", "selected": ""},
+      "run": [
+        {"op": "scope.exit", "name": "compiled.1.phase/GlobalModifiers[3].value._CallbackList[2].CallbackConfig[0].SuccessTaskList[0]", "as": "phase.select.0"},
+        {"op": "wait", "for": "phase.select.0", "until": "accepted"},
+        {"op": "scope.exit", "name": "compiled.1.phase/GlobalModifiers[8].value._CallbackList[0].CallbackConfig[8].FailedTaskList[0]", "as": "phase.select.1"},
+        {"op": "wait", "for": "phase.select.1", "until": "accepted"},
+        {"op": "scope.exit", "name": "compiled.1.phase/GlobalModifiers[8].value._CallbackList[0].CallbackConfig[8].SuccessTaskList[0]", "as": "phase.select.2"},
+        {"op": "wait", "for": "phase.select.2", "until": "accepted"},
+        {"op": "scope.exit", "name": "compiled.1.phase/GlobalModifiers[8].value._CallbackList[2].CallbackConfig[5]", "as": "phase.select.3"},
+        {"op": "wait", "for": "phase.select.3", "until": "accepted"},
+        {"op": "state.exit", "name": "base.callback.2366.phase.2", "as": "phase.select.4.phase-replace.0"},
+        {"op": "wait", "for": "phase.select.4.phase-replace.0"},
+        {"op": "state.exit", "name": "base.callback.2381.phase.7", "as": "phase.select.4.phase-replace.1"},
+        {"op": "wait", "for": "phase.select.4.phase-replace.1"},
+        {"op": "state.exit", "name": "base.callback.2383.phase.11", "as": "phase.select.4.phase-replace.2"},
+        {"op": "wait", "for": "phase.select.4.phase-replace.2"},
+        {"op": "state.exit", "name": "base.callback.2383.phase.12", "as": "phase.select.4.phase-replace.3"},
+        {"op": "wait", "for": "phase.select.4.phase-replace.3"},
+        {
+          "op": "scope.exit",
+          "name": "compiled.1.phase/GlobalModifiers[3].value._CallbackList[2].CallbackConfig[0].SuccessTaskList[0]",
+          "as": "phase.select.4.phase-replace.4"
+        },
+        {"op": "wait", "for": "phase.select.4.phase-replace.4", "until": "accepted"},
+        {
+          "op": "scope.exit",
+          "name": "compiled.1.phase/GlobalModifiers[8].value._CallbackList[0].CallbackConfig[8].FailedTaskList[0]",
+          "as": "phase.select.4.phase-replace.5"
+        },
+        {"op": "wait", "for": "phase.select.4.phase-replace.5", "until": "accepted"},
+        {
+          "op": "scope.exit",
+          "name": "compiled.1.phase/GlobalModifiers[8].value._CallbackList[0].CallbackConfig[8].SuccessTaskList[0]",
+          "as": "phase.select.4.phase-replace.6"
+        },
+        {"op": "wait", "for": "phase.select.4.phase-replace.6", "until": "accepted"},
+        {"op": "scope.exit", "name": "compiled.1.phase/GlobalModifiers[8].value._CallbackList[2].CallbackConfig[5]", "as": "phase.select.4.phase-replace.7"},
+        {"op": "wait", "for": "phase.select.4.phase-replace.7", "until": "accepted"},
+        {"op": "scope.enter", "name": "compiled.1.phase/GlobalModifiers[3].value._CallbackList[2].CallbackConfig[0].SuccessTaskList[0]", "as": "phase.select.4"},
+        {"op": "wait", "for": "phase.select.4", "until": "accepted"}
+      ],
+      "presentation": {}
+    },
+    "compiled.1.standby/GlobalModifiers[3].value._CallbackList[2].CallbackConfig[0].SuccessTaskList[0]": {
+      "requires": [
+        {"op": "value", "name": "phase_binding", "is": "GlobalModifiers[3].value._CallbackList[2].CallbackConfig[0].SuccessTaskList[0]"}
+      ],
+      "runtime": {"policy": "performance", "selected": ""},
+      "run": [
+        {"op": "animation", "state": "StandBy_Transfer", "as": "body"},
+        {"op": "wait", "for": "body", "until": "accepted"}
+      ],
+      "presentation": {}
+    },
+    "compiled.1.select/GlobalModifiers[8].value._CallbackList[0].CallbackConfig[8].FailedTaskList[0]": {
+      "runtime": {"policy": "performance", "selected": ""},
+      "run": [
+        {"op": "scope.exit", "name": "compiled.1.phase/GlobalModifiers[3].value._CallbackList[2].CallbackConfig[0].SuccessTaskList[0]", "as": "phase.select.0"},
+        {"op": "wait", "for": "phase.select.0", "until": "accepted"},
+        {"op": "scope.exit", "name": "compiled.1.phase/GlobalModifiers[8].value._CallbackList[0].CallbackConfig[8].FailedTaskList[0]", "as": "phase.select.1"},
+        {"op": "wait", "for": "phase.select.1", "until": "accepted"},
+        {"op": "scope.exit", "name": "compiled.1.phase/GlobalModifiers[8].value._CallbackList[0].CallbackConfig[8].SuccessTaskList[0]", "as": "phase.select.2"},
+        {"op": "wait", "for": "phase.select.2", "until": "accepted"},
+        {"op": "scope.exit", "name": "compiled.1.phase/GlobalModifiers[8].value._CallbackList[2].CallbackConfig[5]", "as": "phase.select.3"},
+        {"op": "wait", "for": "phase.select.3", "until": "accepted"},
+        {"op": "state.exit", "name": "base.callback.2366.phase.2", "as": "phase.select.4.phase-replace.0"},
+        {"op": "wait", "for": "phase.select.4.phase-replace.0"},
+        {"op": "state.exit", "name": "base.callback.2381.phase.7", "as": "phase.select.4.phase-replace.1"},
+        {"op": "wait", "for": "phase.select.4.phase-replace.1"},
+        {"op": "state.exit", "name": "base.callback.2383.phase.11", "as": "phase.select.4.phase-replace.2"},
+        {"op": "wait", "for": "phase.select.4.phase-replace.2"},
+        {"op": "state.exit", "name": "base.callback.2383.phase.12", "as": "phase.select.4.phase-replace.3"},
+        {"op": "wait", "for": "phase.select.4.phase-replace.3"},
+        {
+          "op": "scope.exit",
+          "name": "compiled.1.phase/GlobalModifiers[3].value._CallbackList[2].CallbackConfig[0].SuccessTaskList[0]",
+          "as": "phase.select.4.phase-replace.4"
+        },
+        {"op": "wait", "for": "phase.select.4.phase-replace.4", "until": "accepted"},
+        {
+          "op": "scope.exit",
+          "name": "compiled.1.phase/GlobalModifiers[8].value._CallbackList[0].CallbackConfig[8].FailedTaskList[0]",
+          "as": "phase.select.4.phase-replace.5"
+        },
+        {"op": "wait", "for": "phase.select.4.phase-replace.5", "until": "accepted"},
+        {
+          "op": "scope.exit",
+          "name": "compiled.1.phase/GlobalModifiers[8].value._CallbackList[0].CallbackConfig[8].SuccessTaskList[0]",
+          "as": "phase.select.4.phase-replace.6"
+        },
+        {"op": "wait", "for": "phase.select.4.phase-replace.6", "until": "accepted"},
+        {"op": "scope.exit", "name": "compiled.1.phase/GlobalModifiers[8].value._CallbackList[2].CallbackConfig[5]", "as": "phase.select.4.phase-replace.7"},
+        {"op": "wait", "for": "phase.select.4.phase-replace.7", "until": "accepted"},
+        {"op": "scope.enter", "name": "compiled.1.phase/GlobalModifiers[8].value._CallbackList[0].CallbackConfig[8].FailedTaskList[0]", "as": "phase.select.4"},
+        {"op": "wait", "for": "phase.select.4", "until": "accepted"}
+      ],
+      "presentation": {}
+    },
+    "compiled.1.standby/GlobalModifiers[8].value._CallbackList[0].CallbackConfig[8].FailedTaskList[0]": {
+      "requires": [
+        {"op": "value", "name": "phase_binding", "is": "GlobalModifiers[8].value._CallbackList[0].CallbackConfig[8].FailedTaskList[0]"}
+      ],
+      "runtime": {"policy": "performance", "selected": ""},
+      "run": [
+        {"op": "animation", "state": "StandBy", "as": "body"},
+        {"op": "wait", "for": "body", "until": "accepted"}
+      ],
+      "presentation": {}
+    },
+    "compiled.1.select/GlobalModifiers[8].value._CallbackList[0].CallbackConfig[8].SuccessTaskList[0]": {
+      "runtime": {"policy": "performance", "selected": ""},
+      "run": [
+        {"op": "scope.exit", "name": "compiled.1.phase/GlobalModifiers[3].value._CallbackList[2].CallbackConfig[0].SuccessTaskList[0]", "as": "phase.select.0"},
+        {"op": "wait", "for": "phase.select.0", "until": "accepted"},
+        {"op": "scope.exit", "name": "compiled.1.phase/GlobalModifiers[8].value._CallbackList[0].CallbackConfig[8].FailedTaskList[0]", "as": "phase.select.1"},
+        {"op": "wait", "for": "phase.select.1", "until": "accepted"},
+        {"op": "scope.exit", "name": "compiled.1.phase/GlobalModifiers[8].value._CallbackList[0].CallbackConfig[8].SuccessTaskList[0]", "as": "phase.select.2"},
+        {"op": "wait", "for": "phase.select.2", "until": "accepted"},
+        {"op": "scope.exit", "name": "compiled.1.phase/GlobalModifiers[8].value._CallbackList[2].CallbackConfig[5]", "as": "phase.select.3"},
+        {"op": "wait", "for": "phase.select.3", "until": "accepted"},
+        {"op": "state.exit", "name": "base.callback.2366.phase.2", "as": "phase.select.4.phase-replace.0"},
+        {"op": "wait", "for": "phase.select.4.phase-replace.0"},
+        {"op": "state.exit", "name": "base.callback.2381.phase.7", "as": "phase.select.4.phase-replace.1"},
+        {"op": "wait", "for": "phase.select.4.phase-replace.1"},
+        {"op": "state.exit", "name": "base.callback.2383.phase.11", "as": "phase.select.4.phase-replace.2"},
+        {"op": "wait", "for": "phase.select.4.phase-replace.2"},
+        {"op": "state.exit", "name": "base.callback.2383.phase.12", "as": "phase.select.4.phase-replace.3"},
+        {"op": "wait", "for": "phase.select.4.phase-replace.3"},
+        {
+          "op": "scope.exit",
+          "name": "compiled.1.phase/GlobalModifiers[3].value._CallbackList[2].CallbackConfig[0].SuccessTaskList[0]",
+          "as": "phase.select.4.phase-replace.4"
+        },
+        {"op": "wait", "for": "phase.select.4.phase-replace.4", "until": "accepted"},
+        {
+          "op": "scope.exit",
+          "name": "compiled.1.phase/GlobalModifiers[8].value._CallbackList[0].CallbackConfig[8].FailedTaskList[0]",
+          "as": "phase.select.4.phase-replace.5"
+        },
+        {"op": "wait", "for": "phase.select.4.phase-replace.5", "until": "accepted"},
+        {
+          "op": "scope.exit",
+          "name": "compiled.1.phase/GlobalModifiers[8].value._CallbackList[0].CallbackConfig[8].SuccessTaskList[0]",
+          "as": "phase.select.4.phase-replace.6"
+        },
+        {"op": "wait", "for": "phase.select.4.phase-replace.6", "until": "accepted"},
+        {"op": "scope.exit", "name": "compiled.1.phase/GlobalModifiers[8].value._CallbackList[2].CallbackConfig[5]", "as": "phase.select.4.phase-replace.7"},
+        {"op": "wait", "for": "phase.select.4.phase-replace.7", "until": "accepted"},
+        {"op": "scope.enter", "name": "compiled.1.phase/GlobalModifiers[8].value._CallbackList[0].CallbackConfig[8].SuccessTaskList[0]", "as": "phase.select.4"},
+        {"op": "wait", "for": "phase.select.4", "until": "accepted"}
+      ],
+      "presentation": {}
+    },
+    "compiled.1.standby/GlobalModifiers[8].value._CallbackList[0].CallbackConfig[8].SuccessTaskList[0]": {
+      "requires": [
+        {"op": "value", "name": "phase_binding", "is": "GlobalModifiers[8].value._CallbackList[0].CallbackConfig[8].SuccessTaskList[0]"}
+      ],
+      "runtime": {"policy": "performance", "selected": ""},
+      "run": [
+        {"op": "animation", "state": "StandBy", "as": "body"},
+        {"op": "wait", "for": "body", "until": "accepted"}
+      ],
+      "presentation": {}
+    },
+    "compiled.1.select/GlobalModifiers[8].value._CallbackList[2].CallbackConfig[5]": {
+      "runtime": {"policy": "performance", "selected": ""},
+      "run": [
+        {"op": "scope.exit", "name": "compiled.1.phase/GlobalModifiers[3].value._CallbackList[2].CallbackConfig[0].SuccessTaskList[0]", "as": "phase.select.0"},
+        {"op": "wait", "for": "phase.select.0", "until": "accepted"},
+        {"op": "scope.exit", "name": "compiled.1.phase/GlobalModifiers[8].value._CallbackList[0].CallbackConfig[8].FailedTaskList[0]", "as": "phase.select.1"},
+        {"op": "wait", "for": "phase.select.1", "until": "accepted"},
+        {"op": "scope.exit", "name": "compiled.1.phase/GlobalModifiers[8].value._CallbackList[0].CallbackConfig[8].SuccessTaskList[0]", "as": "phase.select.2"},
+        {"op": "wait", "for": "phase.select.2", "until": "accepted"},
+        {"op": "scope.exit", "name": "compiled.1.phase/GlobalModifiers[8].value._CallbackList[2].CallbackConfig[5]", "as": "phase.select.3"},
+        {"op": "wait", "for": "phase.select.3", "until": "accepted"},
+        {"op": "state.exit", "name": "base.callback.2366.phase.2", "as": "phase.select.4.phase-replace.0"},
+        {"op": "wait", "for": "phase.select.4.phase-replace.0"},
+        {"op": "state.exit", "name": "base.callback.2381.phase.7", "as": "phase.select.4.phase-replace.1"},
+        {"op": "wait", "for": "phase.select.4.phase-replace.1"},
+        {"op": "state.exit", "name": "base.callback.2383.phase.11", "as": "phase.select.4.phase-replace.2"},
+        {"op": "wait", "for": "phase.select.4.phase-replace.2"},
+        {"op": "state.exit", "name": "base.callback.2383.phase.12", "as": "phase.select.4.phase-replace.3"},
+        {"op": "wait", "for": "phase.select.4.phase-replace.3"},
+        {
+          "op": "scope.exit",
+          "name": "compiled.1.phase/GlobalModifiers[3].value._CallbackList[2].CallbackConfig[0].SuccessTaskList[0]",
+          "as": "phase.select.4.phase-replace.4"
+        },
+        {"op": "wait", "for": "phase.select.4.phase-replace.4", "until": "accepted"},
+        {
+          "op": "scope.exit",
+          "name": "compiled.1.phase/GlobalModifiers[8].value._CallbackList[0].CallbackConfig[8].FailedTaskList[0]",
+          "as": "phase.select.4.phase-replace.5"
+        },
+        {"op": "wait", "for": "phase.select.4.phase-replace.5", "until": "accepted"},
+        {
+          "op": "scope.exit",
+          "name": "compiled.1.phase/GlobalModifiers[8].value._CallbackList[0].CallbackConfig[8].SuccessTaskList[0]",
+          "as": "phase.select.4.phase-replace.6"
+        },
+        {"op": "wait", "for": "phase.select.4.phase-replace.6", "until": "accepted"},
+        {"op": "scope.exit", "name": "compiled.1.phase/GlobalModifiers[8].value._CallbackList[2].CallbackConfig[5]", "as": "phase.select.4.phase-replace.7"},
+        {"op": "wait", "for": "phase.select.4.phase-replace.7", "until": "accepted"},
+        {"op": "scope.enter", "name": "compiled.1.phase/GlobalModifiers[8].value._CallbackList[2].CallbackConfig[5]", "as": "phase.select.4"},
+        {"op": "wait", "for": "phase.select.4", "until": "accepted"}
+      ],
+      "presentation": {}
+    },
+    "compiled.1.standby/GlobalModifiers[8].value._CallbackList[2].CallbackConfig[5]": {
+      "requires": [
+        {"op": "value", "name": "phase_binding", "is": "GlobalModifiers[8].value._CallbackList[2].CallbackConfig[5]"}
+      ],
+      "runtime": {"policy": "performance", "selected": ""},
+      "run": [
+        {"op": "animation", "state": "StandBy_Transfer", "as": "body"},
+        {"op": "wait", "for": "body", "until": "accepted"}
+      ],
+      "presentation": {}
+    },
+    "@receiver-clear/base.callback.5349.receiver-property.3": {
+      "requires": [
+        {"op": "state", "name": "base.callback.5349.receiver-property.3"}
+      ],
+      "mode": "input",
+      "run": [
+        {"op": "state.exit", "name": "base.callback.5349.receiver-property.3", "only_caster": true, "as": "clear"},
+        {"op": "wait", "for": "clear"}
+      ],
+      "presentation": {
+        "label": "Clear hit effect override",
+        "kind": "setting",
+        "contexts": ["base.callback.5349.receiver-property.3"]
+      },
+      "tags": ["visual-receiver-clear"]
+    },
+    "@receiver-clear/base.callback.5359.receiver-property.3": {
+      "requires": [
+        {"op": "state", "name": "common.elemental.frozen-hit"}
+      ],
+      "mode": "input",
+      "run": [
+        {"op": "state.exit", "name": "common.elemental.frozen-hit", "only_caster": true, "as": "clear"},
+        {"op": "wait", "for": "clear"}
+      ],
+      "presentation": {
+        "label": "Clear hit effect override",
+        "kind": "setting",
+        "contexts": ["common.elemental.frozen-hit"]
+      },
+      "tags": ["visual-receiver-clear"]
+    },
+    "@idle": {
+      "runtime": {"policy": "ready", "selected": ""},
+      "run": [
+        {"op": "call", "function": "@return.rest.pose"}
+      ],
+      "presentation": {"label": "Idle"},
+      "tags": ["script-idle"]
+    }
+  },
+  "functions": {
+    "base.callback.2381.phase.7.enter": [
+      {
+        "op": "animation_parameter",
+        "participant": "body",
+        "parameter": {"name": "Jingliu_Transfer", "type": "int", "value": 1},
+        "as": "callback.2381.phase.7.lifetime.animation-parameter.8"
+      },
+      {"op": "wait", "for": "callback.2381.phase.7.lifetime.animation-parameter.8"}
+    ],
+    "base.callback.2381.phase.7.exit": [
+      {
+        "op": "animation_parameter",
+        "participant": "body",
+        "parameter": {"name": "Jingliu_Transfer", "type": "int", "value": 0},
+        "as": "callback.2381.phase.7.lifetime.animation-parameter.9"
+      },
+      {"op": "wait", "for": "callback.2381.phase.7.lifetime.animation-parameter.9"},
+      {
+        "op": "effect.remove_event",
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Ren_00/Eff_Avatar_Ren_00_Skill02_Weapon_JNT.prefab",
+        "as": "callback.2381.phase.7.lifetime.phase-event-exit.10"
+      },
+      {"op": "wait", "for": "callback.2381.phase.7.lifetime.phase-event-exit.10", "until": "accepted"},
+      {
+        "op": "effect.remove_event",
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Jingliu_00/Eff_Avatar_Jingliu_00_StandBy_Transfer_01.prefab",
+        "as": "callback.2381.phase.7.lifetime.phase-event-exit.11"
+      },
+      {"op": "wait", "for": "callback.2381.phase.7.lifetime.phase-event-exit.11", "until": "accepted"}
+    ],
+    "@return.rest.pose": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "rest.pose.expression"},
+      {
+        "op": "if",
+        "condition": {"op": "phase", "is": "@return/base.callback.2366.phase.2"},
+        "then": [
+          {
+            "op": "animation",
+            "state": "StandBy_Transfer",
+            "current_idle": true,
+            "end": 0,
+            "restart": false,
+            "track": {"logic": 1, "extra": 6, "previous_end": 1},
+            "as": "rest.pose"
+          }
+        ],
+        "elif": [
+          {
+            "condition": {"op": "phase", "is": "@return/base.callback.2381.phase.7"},
+            "then": [
+              {
+                "op": "animation",
+                "state": "StandBy_Transfer",
+                "current_idle": true,
+                "end": 0,
+                "restart": false,
+                "track": {"logic": 1, "extra": 6, "previous_end": 1},
+                "as": "rest.pose"
+              }
+            ]
+          },
+          {
+            "condition": {"op": "phase", "is": "@return/base.callback.2383.phase.11"},
+            "then": [
+              {
+                "op": "animation",
+                "state": "StandBy",
+                "current_idle": true,
+                "end": 0,
+                "restart": false,
+                "track": {"logic": 1, "extra": 6, "previous_end": 1},
+                "as": "rest.pose"
+              }
+            ]
+          },
+          {
+            "condition": {"op": "phase", "is": "@return/base.callback.2383.phase.12"},
+            "then": [
+              {
+                "op": "animation",
+                "state": "StandBy",
+                "current_idle": true,
+                "end": 0,
+                "restart": false,
+                "track": {"logic": 1, "extra": 6, "previous_end": 1},
+                "as": "rest.pose"
+              }
+            ]
+          },
+          {
+            "condition": {"op": "phase", "is": "@return/compiled.1.phase/GlobalModifiers[3].value._CallbackList[2].CallbackConfig[0].SuccessTaskList[0]"},
+            "then": [
+              {
+                "op": "animation",
+                "state": "StandBy_Transfer",
+                "current_idle": true,
+                "end": 0,
+                "restart": false,
+                "track": {"logic": 1, "extra": 6, "previous_end": 1},
+                "as": "rest.pose"
+              }
+            ]
+          },
+          {
+            "condition": {"op": "phase", "is": "@return/compiled.1.phase/GlobalModifiers[8].value._CallbackList[0].CallbackConfig[8].FailedTaskList[0]"},
+            "then": [
+              {
+                "op": "animation",
+                "state": "StandBy",
+                "current_idle": true,
+                "end": 0,
+                "restart": false,
+                "track": {"logic": 1, "extra": 6, "previous_end": 1},
+                "as": "rest.pose"
+              }
+            ]
+          },
+          {
+            "condition": {"op": "phase", "is": "@return/compiled.1.phase/GlobalModifiers[8].value._CallbackList[0].CallbackConfig[8].SuccessTaskList[0]"},
+            "then": [
+              {
+                "op": "animation",
+                "state": "StandBy",
+                "current_idle": true,
+                "end": 0,
+                "restart": false,
+                "track": {"logic": 1, "extra": 6, "previous_end": 1},
+                "as": "rest.pose"
+              }
+            ]
+          },
+          {
+            "condition": {"op": "phase", "is": "@return/compiled.1.phase/GlobalModifiers[8].value._CallbackList[2].CallbackConfig[5]"},
+            "then": [
+              {
+                "op": "animation",
+                "state": "StandBy_Transfer",
+                "current_idle": true,
+                "end": 0,
+                "restart": false,
+                "track": {"logic": 1, "extra": 6, "previous_end": 1},
+                "as": "rest.pose"
+              }
+            ]
+          }
+        ],
+        "else": [
+          {
+            "op": "animation",
+            "state": "StandBy",
+            "current_idle": true,
+            "end": 0,
+            "restart": false,
+            "track": {"logic": 1, "extra": 6, "previous_end": 1},
+            "as": "rest.pose"
+          }
+        ]
+      }
+    ],
+    "@return.return.pose": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "return.pose.expression"},
+      {
+        "op": "if",
+        "condition": {"op": "phase", "is": "@return/base.callback.2366.phase.2"},
+        "then": [
+          {
+            "op": "animation",
+            "state": "StandBy_Transfer",
+            "current_idle": true,
+            "end": 0,
+            "restart": false,
+            "track": {"logic": 1, "extra": 6, "previous_end": 1},
+            "as": "return.pose"
+          }
+        ],
+        "elif": [
+          {
+            "condition": {"op": "phase", "is": "@return/base.callback.2381.phase.7"},
+            "then": [
+              {
+                "op": "animation",
+                "state": "StandBy_Transfer",
+                "current_idle": true,
+                "end": 0,
+                "restart": false,
+                "track": {"logic": 1, "extra": 6, "previous_end": 1},
+                "as": "return.pose"
+              }
+            ]
+          },
+          {
+            "condition": {"op": "phase", "is": "@return/base.callback.2383.phase.11"},
+            "then": [
+              {
+                "op": "animation",
+                "state": "StandBy",
+                "current_idle": true,
+                "end": 0,
+                "restart": false,
+                "track": {"logic": 1, "extra": 6, "previous_end": 1},
+                "as": "return.pose"
+              }
+            ]
+          },
+          {
+            "condition": {"op": "phase", "is": "@return/base.callback.2383.phase.12"},
+            "then": [
+              {
+                "op": "animation",
+                "state": "StandBy",
+                "current_idle": true,
+                "end": 0,
+                "restart": false,
+                "track": {"logic": 1, "extra": 6, "previous_end": 1},
+                "as": "return.pose"
+              }
+            ]
+          },
+          {
+            "condition": {"op": "phase", "is": "@return/compiled.1.phase/GlobalModifiers[3].value._CallbackList[2].CallbackConfig[0].SuccessTaskList[0]"},
+            "then": [
+              {
+                "op": "animation",
+                "state": "StandBy_Transfer",
+                "current_idle": true,
+                "end": 0,
+                "restart": false,
+                "track": {"logic": 1, "extra": 6, "previous_end": 1},
+                "as": "return.pose"
+              }
+            ]
+          },
+          {
+            "condition": {"op": "phase", "is": "@return/compiled.1.phase/GlobalModifiers[8].value._CallbackList[0].CallbackConfig[8].FailedTaskList[0]"},
+            "then": [
+              {
+                "op": "animation",
+                "state": "StandBy",
+                "current_idle": true,
+                "end": 0,
+                "restart": false,
+                "track": {"logic": 1, "extra": 6, "previous_end": 1},
+                "as": "return.pose"
+              }
+            ]
+          },
+          {
+            "condition": {"op": "phase", "is": "@return/compiled.1.phase/GlobalModifiers[8].value._CallbackList[0].CallbackConfig[8].SuccessTaskList[0]"},
+            "then": [
+              {
+                "op": "animation",
+                "state": "StandBy",
+                "current_idle": true,
+                "end": 0,
+                "restart": false,
+                "track": {"logic": 1, "extra": 6, "previous_end": 1},
+                "as": "return.pose"
+              }
+            ]
+          },
+          {
+            "condition": {"op": "phase", "is": "@return/compiled.1.phase/GlobalModifiers[8].value._CallbackList[2].CallbackConfig[5]"},
+            "then": [
+              {
+                "op": "animation",
+                "state": "StandBy_Transfer",
+                "current_idle": true,
+                "end": 0,
+                "restart": false,
+                "track": {"logic": 1, "extra": 6, "previous_end": 1},
+                "as": "return.pose"
+              }
+            ]
+          }
+        ],
+        "else": [
+          {
+            "op": "animation",
+            "state": "StandBy",
+            "current_idle": true,
+            "end": 0,
+            "restart": false,
+            "track": {"logic": 1, "extra": 6, "previous_end": 1},
+            "as": "return.pose"
+          }
+        ]
+      }
+    ],
+    "@return.return": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "return.expression"},
+      {
+        "op": "if",
+        "condition": {"op": "phase", "is": "@return/base.callback.2366.phase.2"},
+        "then": [
+          {
+            "op": "animation",
+            "state": "StandBy_Transfer",
+            "current_idle": true,
+            "end": 0,
+            "restart": false,
+            "track": {"logic": 1, "extra": 6, "previous_end": 1},
+            "as": "return"
+          }
+        ],
+        "elif": [
+          {
+            "condition": {"op": "phase", "is": "@return/base.callback.2381.phase.7"},
+            "then": [
+              {
+                "op": "animation",
+                "state": "StandBy_Transfer",
+                "current_idle": true,
+                "end": 0,
+                "restart": false,
+                "track": {"logic": 1, "extra": 6, "previous_end": 1},
+                "as": "return"
+              }
+            ]
+          },
+          {
+            "condition": {"op": "phase", "is": "@return/base.callback.2383.phase.11"},
+            "then": [
+              {
+                "op": "animation",
+                "state": "StandBy",
+                "current_idle": true,
+                "end": 0,
+                "restart": false,
+                "track": {"logic": 1, "extra": 6, "previous_end": 1},
+                "as": "return"
+              }
+            ]
+          },
+          {
+            "condition": {"op": "phase", "is": "@return/base.callback.2383.phase.12"},
+            "then": [
+              {
+                "op": "animation",
+                "state": "StandBy",
+                "current_idle": true,
+                "end": 0,
+                "restart": false,
+                "track": {"logic": 1, "extra": 6, "previous_end": 1},
+                "as": "return"
+              }
+            ]
+          },
+          {
+            "condition": {"op": "phase", "is": "@return/compiled.1.phase/GlobalModifiers[3].value._CallbackList[2].CallbackConfig[0].SuccessTaskList[0]"},
+            "then": [
+              {
+                "op": "animation",
+                "state": "StandBy_Transfer",
+                "current_idle": true,
+                "end": 0,
+                "restart": false,
+                "track": {"logic": 1, "extra": 6, "previous_end": 1},
+                "as": "return"
+              }
+            ]
+          },
+          {
+            "condition": {"op": "phase", "is": "@return/compiled.1.phase/GlobalModifiers[8].value._CallbackList[0].CallbackConfig[8].FailedTaskList[0]"},
+            "then": [
+              {
+                "op": "animation",
+                "state": "StandBy",
+                "current_idle": true,
+                "end": 0,
+                "restart": false,
+                "track": {"logic": 1, "extra": 6, "previous_end": 1},
+                "as": "return"
+              }
+            ]
+          },
+          {
+            "condition": {"op": "phase", "is": "@return/compiled.1.phase/GlobalModifiers[8].value._CallbackList[0].CallbackConfig[8].SuccessTaskList[0]"},
+            "then": [
+              {
+                "op": "animation",
+                "state": "StandBy",
+                "current_idle": true,
+                "end": 0,
+                "restart": false,
+                "track": {"logic": 1, "extra": 6, "previous_end": 1},
+                "as": "return"
+              }
+            ]
+          },
+          {
+            "condition": {"op": "phase", "is": "@return/compiled.1.phase/GlobalModifiers[8].value._CallbackList[2].CallbackConfig[5]"},
+            "then": [
+              {
+                "op": "animation",
+                "state": "StandBy_Transfer",
+                "current_idle": true,
+                "end": 0,
+                "restart": false,
+                "track": {"logic": 1, "extra": 6, "previous_end": 1},
+                "as": "return"
+              }
+            ]
+          }
+        ],
+        "else": [
+          {
+            "op": "animation",
+            "state": "StandBy",
+            "current_idle": true,
+            "end": 0,
+            "restart": false,
+            "track": {"logic": 1, "extra": 6, "previous_end": 1},
+            "as": "return"
+          }
+        ]
+      }
+    ],
+    "@return.abort-return": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "abort-return.expression"},
+      {
+        "op": "if",
+        "condition": {"op": "phase", "is": "@return/base.callback.2366.phase.2"},
+        "then": [
+          {
+            "op": "animation",
+            "state": "StandBy_Transfer",
+            "current_idle": true,
+            "end": 0,
+            "restart": false,
+            "track": {"logic": 1, "extra": 6, "previous_end": 1},
+            "as": "abort-return"
+          }
+        ],
+        "elif": [
+          {
+            "condition": {"op": "phase", "is": "@return/base.callback.2381.phase.7"},
+            "then": [
+              {
+                "op": "animation",
+                "state": "StandBy_Transfer",
+                "current_idle": true,
+                "end": 0,
+                "restart": false,
+                "track": {"logic": 1, "extra": 6, "previous_end": 1},
+                "as": "abort-return"
+              }
+            ]
+          },
+          {
+            "condition": {"op": "phase", "is": "@return/base.callback.2383.phase.11"},
+            "then": [
+              {
+                "op": "animation",
+                "state": "StandBy",
+                "current_idle": true,
+                "end": 0,
+                "restart": false,
+                "track": {"logic": 1, "extra": 6, "previous_end": 1},
+                "as": "abort-return"
+              }
+            ]
+          },
+          {
+            "condition": {"op": "phase", "is": "@return/base.callback.2383.phase.12"},
+            "then": [
+              {
+                "op": "animation",
+                "state": "StandBy",
+                "current_idle": true,
+                "end": 0,
+                "restart": false,
+                "track": {"logic": 1, "extra": 6, "previous_end": 1},
+                "as": "abort-return"
+              }
+            ]
+          },
+          {
+            "condition": {"op": "phase", "is": "@return/compiled.1.phase/GlobalModifiers[3].value._CallbackList[2].CallbackConfig[0].SuccessTaskList[0]"},
+            "then": [
+              {
+                "op": "animation",
+                "state": "StandBy_Transfer",
+                "current_idle": true,
+                "end": 0,
+                "restart": false,
+                "track": {"logic": 1, "extra": 6, "previous_end": 1},
+                "as": "abort-return"
+              }
+            ]
+          },
+          {
+            "condition": {"op": "phase", "is": "@return/compiled.1.phase/GlobalModifiers[8].value._CallbackList[0].CallbackConfig[8].FailedTaskList[0]"},
+            "then": [
+              {
+                "op": "animation",
+                "state": "StandBy",
+                "current_idle": true,
+                "end": 0,
+                "restart": false,
+                "track": {"logic": 1, "extra": 6, "previous_end": 1},
+                "as": "abort-return"
+              }
+            ]
+          },
+          {
+            "condition": {"op": "phase", "is": "@return/compiled.1.phase/GlobalModifiers[8].value._CallbackList[0].CallbackConfig[8].SuccessTaskList[0]"},
+            "then": [
+              {
+                "op": "animation",
+                "state": "StandBy",
+                "current_idle": true,
+                "end": 0,
+                "restart": false,
+                "track": {"logic": 1, "extra": 6, "previous_end": 1},
+                "as": "abort-return"
+              }
+            ]
+          },
+          {
+            "condition": {"op": "phase", "is": "@return/compiled.1.phase/GlobalModifiers[8].value._CallbackList[2].CallbackConfig[5]"},
+            "then": [
+              {
+                "op": "animation",
+                "state": "StandBy_Transfer",
+                "current_idle": true,
+                "end": 0,
+                "restart": false,
+                "track": {"logic": 1, "extra": 6, "previous_end": 1},
+                "as": "abort-return"
+              }
+            ]
+          }
+        ],
+        "else": [
+          {
+            "op": "animation",
+            "state": "StandBy",
+            "current_idle": true,
+            "end": 0,
+            "restart": false,
+            "track": {"logic": 1, "extra": 6, "previous_end": 1},
+            "as": "abort-return"
+          }
+        ]
+      }
+    ],
+    "@return.idle": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "idle.expression"},
+      {
+        "op": "if",
+        "condition": {"op": "phase", "is": "@return/base.callback.2366.phase.2"},
+        "then": [
+          {
+            "op": "animation",
+            "state": "StandBy_Transfer",
+            "current_idle": true,
+            "end": 0,
+            "restart": false,
+            "track": {"logic": 1, "extra": 6, "previous_end": 1},
+            "as": "idle"
+          }
+        ],
+        "elif": [
+          {
+            "condition": {"op": "phase", "is": "@return/base.callback.2381.phase.7"},
+            "then": [
+              {
+                "op": "animation",
+                "state": "StandBy_Transfer",
+                "current_idle": true,
+                "end": 0,
+                "restart": false,
+                "track": {"logic": 1, "extra": 6, "previous_end": 1},
+                "as": "idle"
+              }
+            ]
+          },
+          {
+            "condition": {"op": "phase", "is": "@return/base.callback.2383.phase.11"},
+            "then": [
+              {
+                "op": "animation",
+                "state": "StandBy",
+                "current_idle": true,
+                "end": 0,
+                "restart": false,
+                "track": {"logic": 1, "extra": 6, "previous_end": 1},
+                "as": "idle"
+              }
+            ]
+          },
+          {
+            "condition": {"op": "phase", "is": "@return/base.callback.2383.phase.12"},
+            "then": [
+              {
+                "op": "animation",
+                "state": "StandBy",
+                "current_idle": true,
+                "end": 0,
+                "restart": false,
+                "track": {"logic": 1, "extra": 6, "previous_end": 1},
+                "as": "idle"
+              }
+            ]
+          },
+          {
+            "condition": {"op": "phase", "is": "@return/compiled.1.phase/GlobalModifiers[3].value._CallbackList[2].CallbackConfig[0].SuccessTaskList[0]"},
+            "then": [
+              {
+                "op": "animation",
+                "state": "StandBy_Transfer",
+                "current_idle": true,
+                "end": 0,
+                "restart": false,
+                "track": {"logic": 1, "extra": 6, "previous_end": 1},
+                "as": "idle"
+              }
+            ]
+          },
+          {
+            "condition": {"op": "phase", "is": "@return/compiled.1.phase/GlobalModifiers[8].value._CallbackList[0].CallbackConfig[8].FailedTaskList[0]"},
+            "then": [
+              {
+                "op": "animation",
+                "state": "StandBy",
+                "current_idle": true,
+                "end": 0,
+                "restart": false,
+                "track": {"logic": 1, "extra": 6, "previous_end": 1},
+                "as": "idle"
+              }
+            ]
+          },
+          {
+            "condition": {"op": "phase", "is": "@return/compiled.1.phase/GlobalModifiers[8].value._CallbackList[0].CallbackConfig[8].SuccessTaskList[0]"},
+            "then": [
+              {
+                "op": "animation",
+                "state": "StandBy",
+                "current_idle": true,
+                "end": 0,
+                "restart": false,
+                "track": {"logic": 1, "extra": 6, "previous_end": 1},
+                "as": "idle"
+              }
+            ]
+          },
+          {
+            "condition": {"op": "phase", "is": "@return/compiled.1.phase/GlobalModifiers[8].value._CallbackList[2].CallbackConfig[5]"},
+            "then": [
+              {
+                "op": "animation",
+                "state": "StandBy_Transfer",
+                "current_idle": true,
+                "end": 0,
+                "restart": false,
+                "track": {"logic": 1, "extra": 6, "previous_end": 1},
+                "as": "idle"
+              }
+            ]
+          }
+        ],
+        "else": [
+          {
+            "op": "animation",
+            "state": "StandBy",
+            "current_idle": true,
+            "end": 0,
+            "restart": false,
+            "track": {"logic": 1, "extra": 6, "previous_end": 1},
+            "as": "idle"
+          }
+        ]
+      }
+    ],
+    "base.callback.2381.phase.7.restore": [
+      {
+        "op": "animation_parameter",
+        "participant": "body",
+        "parameter": {"name": "Jingliu_Transfer", "type": "int", "value": 1},
+        "as": "callback.2381.phase.7.lifetime.animation-parameter.8"
+      },
+      {"op": "wait", "for": "callback.2381.phase.7.lifetime.animation-parameter.8"}
+    ]
+  },
+  "states": {
+    "base.callback.2366.phase.2": {
+      "callbacks": {},
+      "values": {
+        "phase_source": "Config/ConfigAbility/Avatar/Avatar_Jingliu_00_Ability.json:$.GlobalModifiers[3].value._CallbackList[2].CallbackConfig[0].SuccessTaskList[0]"
+      },
+      "phase": "@return/base.callback.2366.phase.2",
+      "configuration": "base.callback.2366.phase.2",
+      "restore": []
+    },
+    "base.callback.2381.phase.7": {
+      "callbacks": {"enter": "base.callback.2381.phase.7.enter", "exit": "base.callback.2381.phase.7.exit", "restore": "base.callback.2381.phase.7.restore"},
+      "values": {"phase_source": "Config/ConfigAbility/Avatar/Avatar_Jingliu_00_Ability.json:$.GlobalModifiers[8].value._CallbackList[2].CallbackConfig[5]"},
+      "phase": "@return/base.callback.2381.phase.7",
+      "configuration": "base.callback.2381.phase.7",
+      "restore": []
+    },
+    "base.callback.2383.phase.11": {
+      "callbacks": {},
+      "values": {
+        "phase_source": "Config/ConfigAbility/Avatar/Avatar_Jingliu_00_Ability.json:$.GlobalModifiers[8].value._CallbackList[0].CallbackConfig[8].SuccessTaskList[0]"
+      },
+      "phase": "@return/base.callback.2383.phase.11",
+      "configuration": "base.callback.2383.phase.11",
+      "restore": []
+    },
+    "base.callback.2383.phase.12": {
+      "callbacks": {},
+      "values": {
+        "phase_source": "Config/ConfigAbility/Avatar/Avatar_Jingliu_00_Ability.json:$.GlobalModifiers[8].value._CallbackList[0].CallbackConfig[8].FailedTaskList[0]"
+      },
+      "phase": "@return/base.callback.2383.phase.12",
+      "configuration": "base.callback.2383.phase.12",
+      "restore": []
+    },
+    "base.callback.5349.receiver-property.3": {
+      "callbacks": {},
+      "hit_effects": [
+        {
+          "stacking": "multiple",
+          "path": "Effects/Eff_Prefab/Eff_Common/Eff_Buff_Common_Freeze_Hit.prefab",
+          "priority": 0,
+          "count": 1,
+          "death_count": 0,
+          "death_path": "",
+          "keep_original": true,
+          "replay_on_mutex": false
+        }
+      ],
+      "instances": {"name": "callback.5349.receiver-property.3", "receiver": "Recipient", "match": "receiver_caster"},
+      "restore": []
+    },
+    "compiled.1.phase/GlobalModifiers[3].value._CallbackList[2].CallbackConfig[0].SuccessTaskList[0]": {
+      "phase": "@return/compiled.1.phase/GlobalModifiers[3].value._CallbackList[2].CallbackConfig[0].SuccessTaskList[0]",
+      "values": {"phase_binding": "GlobalModifiers[3].value._CallbackList[2].CallbackConfig[0].SuccessTaskList[0]"},
+      "configuration": "compiled.1.phase/GlobalModifiers[3].value._CallbackList[2].CallbackConfig[0].SuccessTaskList[0]",
+      "restore": []
+    },
+    "compiled.1.phase/GlobalModifiers[8].value._CallbackList[0].CallbackConfig[8].FailedTaskList[0]": {
+      "phase": "@return/compiled.1.phase/GlobalModifiers[8].value._CallbackList[0].CallbackConfig[8].FailedTaskList[0]",
+      "values": {"phase_binding": "GlobalModifiers[8].value._CallbackList[0].CallbackConfig[8].FailedTaskList[0]"},
+      "configuration": "compiled.1.phase/GlobalModifiers[8].value._CallbackList[0].CallbackConfig[8].FailedTaskList[0]",
+      "restore": []
+    },
+    "compiled.1.phase/GlobalModifiers[8].value._CallbackList[0].CallbackConfig[8].SuccessTaskList[0]": {
+      "phase": "@return/compiled.1.phase/GlobalModifiers[8].value._CallbackList[0].CallbackConfig[8].SuccessTaskList[0]",
+      "values": {"phase_binding": "GlobalModifiers[8].value._CallbackList[0].CallbackConfig[8].SuccessTaskList[0]"},
+      "configuration": "compiled.1.phase/GlobalModifiers[8].value._CallbackList[0].CallbackConfig[8].SuccessTaskList[0]",
+      "restore": []
+    },
+    "compiled.1.phase/GlobalModifiers[8].value._CallbackList[2].CallbackConfig[5]": {
+      "phase": "@return/compiled.1.phase/GlobalModifiers[8].value._CallbackList[2].CallbackConfig[5]",
+      "values": {"phase_binding": "GlobalModifiers[8].value._CallbackList[2].CallbackConfig[5]"},
+      "configuration": "compiled.1.phase/GlobalModifiers[8].value._CallbackList[2].CallbackConfig[5]",
+      "restore": []
+    }
+  },
+  "resources": {
+    "effects": {
+      "base.callback.2354.effect.3": {"path": "Effects/Eff_Prefab/Eff_Common/Eff_Buff_Common_Freeze.prefab", "target": "Recipient", "attach_to_target": true},
+      "base.callback.2354.effect.5": {"path": "Effects/Eff_Prefab/Eff_Common/Eff_Buff_Common_Freeze_Loop.prefab", "target": "Recipient", "attach_to_target": true},
+      "base.callback.2360.effect.3": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Mar_7th_00/Eff_Avatar_Mar_7th_00_Common_Hit02.prefab", "target": "callback.2360.target.AllEnemy"},
+      "base.callback.5346.effect.3": {"path": "Effects/Eff_Prefab/Eff_Common/Eff_Buff_Common_Freeze.prefab", "target": "Recipient", "attach_to_target": true},
+      "base.callback.5346.effect.5": {"path": "Effects/Eff_Prefab/Eff_Common/Eff_Buff_Common_Freeze_Loop.prefab", "target": "Recipient", "attach_to_target": true},
+      "base.callback.5346.effect.7": {"path": "Effects/Eff_Prefab/Eff_Common/Eff_Buff_Common_Freeze_OutlineColor_02.prefab", "target": "Recipient", "attach_to_target": true},
+      "base.callback.5347.effect.1": {"path": "Effects/Eff_Prefab/Eff_Common/Eff_Buff_Common_Ice_Trigger.prefab", "target": "Recipient"},
+      "base.callback.5349.effect.2": {"path": "Effects/Eff_Prefab/Eff_Common/Eff_Buff_Common_Ice_Add.prefab", "target": "Recipient", "attach_point": "SelectRoot"}
+    },
+    "phases": {
+      "base.callback.2366.phase.2": {
+        "root": {"kind": "global_modifier", "name": "MAvatar_Jingliu_Passive"},
+        "path": [
+          {"owner": "RPG.GameCore.TurnBasedModifierConfig", "field": "_CallbackList", "index": 2},
+          {"owner": "RPG.GameCore.TurnBasedModifierCallbackConfig", "field": "CallbackConfig", "index": 0},
+          {"owner": "RPG.GameCore.PredicateTaskList", "field": "SuccessTaskList", "index": 0},
+          {"owner": "RPG.GameCore.CharacterChangePhase", "field": "PhaseAnimConfig"}
+        ]
+      },
+      "base.callback.2381.phase.7": {
+        "root": {"kind": "global_modifier", "name": "MWAvatar_Jingliu_Attack_Transfer"},
+        "path": [
+          {"owner": "RPG.GameCore.TurnBasedModifierConfig", "field": "_CallbackList", "index": 2},
+          {"owner": "RPG.GameCore.TurnBasedModifierCallbackConfig", "field": "CallbackConfig", "index": 5},
+          {"owner": "RPG.GameCore.CharacterChangePhase", "field": "PhaseAnimConfig"}
+        ]
+      },
+      "base.callback.2383.phase.11": {
+        "root": {"kind": "global_modifier", "name": "MWAvatar_Jingliu_Attack_Transfer"},
+        "path": [
+          {"owner": "RPG.GameCore.TurnBasedModifierConfig", "field": "_CallbackList", "index": 0},
+          {"owner": "RPG.GameCore.TurnBasedModifierCallbackConfig", "field": "CallbackConfig", "index": 8},
+          {"owner": "RPG.GameCore.PredicateTaskList", "field": "SuccessTaskList", "index": 0},
+          {"owner": "RPG.GameCore.CharacterChangePhase", "field": "PhaseAnimConfig"}
+        ]
+      },
+      "base.callback.2383.phase.12": {
+        "root": {"kind": "global_modifier", "name": "MWAvatar_Jingliu_Attack_Transfer"},
+        "path": [
+          {"owner": "RPG.GameCore.TurnBasedModifierConfig", "field": "_CallbackList", "index": 0},
+          {"owner": "RPG.GameCore.TurnBasedModifierCallbackConfig", "field": "CallbackConfig", "index": 8},
+          {"owner": "RPG.GameCore.PredicateTaskList", "field": "FailedTaskList", "index": 0},
+          {"owner": "RPG.GameCore.CharacterChangePhase", "field": "PhaseAnimConfig"}
+        ]
+      },
+      "compiled.1.phase/GlobalModifiers[3].value._CallbackList[2].CallbackConfig[0].SuccessTaskList[0]": {
+        "root": {"kind": "global_modifier", "name": "MAvatar_Jingliu_Passive"},
+        "path": [
+          {"owner": "RPG.GameCore.TurnBasedModifierConfig", "field": "_CallbackList", "index": 2},
+          {"owner": "RPG.GameCore.TurnBasedModifierCallbackConfig", "field": "CallbackConfig", "index": 0},
+          {"owner": "RPG.GameCore.PredicateTaskList", "field": "SuccessTaskList", "index": 0},
+          {"owner": "RPG.GameCore.CharacterChangePhase", "field": "PhaseAnimConfig"}
+        ]
+      },
+      "compiled.1.phase/GlobalModifiers[8].value._CallbackList[0].CallbackConfig[8].FailedTaskList[0]": {
+        "root": {"kind": "global_modifier", "name": "MWAvatar_Jingliu_Attack_Transfer"},
+        "path": [
+          {"owner": "RPG.GameCore.TurnBasedModifierConfig", "field": "_CallbackList", "index": 0},
+          {"owner": "RPG.GameCore.TurnBasedModifierCallbackConfig", "field": "CallbackConfig", "index": 8},
+          {"owner": "RPG.GameCore.PredicateTaskList", "field": "FailedTaskList", "index": 0},
+          {"owner": "RPG.GameCore.CharacterChangePhase", "field": "PhaseAnimConfig"}
+        ]
+      },
+      "compiled.1.phase/GlobalModifiers[8].value._CallbackList[0].CallbackConfig[8].SuccessTaskList[0]": {
+        "root": {"kind": "global_modifier", "name": "MWAvatar_Jingliu_Attack_Transfer"},
+        "path": [
+          {"owner": "RPG.GameCore.TurnBasedModifierConfig", "field": "_CallbackList", "index": 0},
+          {"owner": "RPG.GameCore.TurnBasedModifierCallbackConfig", "field": "CallbackConfig", "index": 8},
+          {"owner": "RPG.GameCore.PredicateTaskList", "field": "SuccessTaskList", "index": 0},
+          {"owner": "RPG.GameCore.CharacterChangePhase", "field": "PhaseAnimConfig"}
+        ]
+      },
+      "compiled.1.phase/GlobalModifiers[8].value._CallbackList[2].CallbackConfig[5]": {
+        "root": {"kind": "global_modifier", "name": "MWAvatar_Jingliu_Attack_Transfer"},
+        "path": [
+          {"owner": "RPG.GameCore.TurnBasedModifierConfig", "field": "_CallbackList", "index": 2},
+          {"owner": "RPG.GameCore.TurnBasedModifierCallbackConfig", "field": "CallbackConfig", "index": 5},
+          {"owner": "RPG.GameCore.CharacterChangePhase", "field": "PhaseAnimConfig"}
+        ]
+      }
+    }
+  }
+}

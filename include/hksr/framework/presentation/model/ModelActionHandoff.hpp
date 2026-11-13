@@ -1,0 +1,133 @@
+#pragma once
+#include <hksr/framework/presentation/model/HandoffStatus.hpp>
+#include <hksr/framework/presentation/playback/ActionPlayback.hpp>
+#include <hksr/framework/character/CharacterInstance.hpp>
+#include <hksr/framework/tasks/TaskController.hpp>
+#include <hksr/model/ModelTransition.hpp>
+#include <hksr/presentation/PresentationContext.hpp>
+
+namespace hksr::framework {
+struct DomainControllers {
+    std::optional<api::ControllerSource> exploration, alternate;
+};
+struct HandoffServices {
+    api::PresentationContext::AnimationFactory animations;
+    api::PresentationContext::ModelTransitionFactory transition;
+    std::shared_ptr<const api::PresentationEffects> effects;
+    const api::ComponentConfig* text = nullptr;
+    std::function<std::unique_ptr<api::OwnedSoundRequest>(api::EntityToken, api::GameWorld*, const std::string&)> sound;
+    std::function<bool(api::EntityOrigin)> prepare_model_change;
+    ActionPlayback::VoiceFactory voice;
+    ActionPlayback::ReadyVoice ready_voice;
+};
+// Coordinates actual consumers, not a visual/gameplay state-machine emulator.
+// One retained exploration baseline + an optional alternate profile. Sources/catalog
+// build the immutable profile first; this class never invents skill states.
+// Owns action playback. All operations run on the official world thread.
+class ModelActionHandoff {
+  public:
+    ModelActionHandoff(CharacterInstance& character, api::EntityToken owner, api::GameWorld* world,
+                       std::unique_ptr<api::ModelProfileRequest> request, HandoffServices services,
+                       DomainControllers controllers = {}, std::string alternate_initial_state = {},
+                       std::uint32_t voice_avatar = 0, std::string voice_source = {});
+    std::uint64_t Queue(ActionDomain domain, ActionRequest action);
+    void Remove(); // data-only; no game call
+    void Service(const api::WorldFrame& frame, AppearanceServices appearance, api::AnimationInputTypes types);
+    void SetPlaybackRate(unsigned rate) {
+        playback_rate_ = rate;
+    }
+    const HandoffStatus& Status() const {
+        return status_;
+    }
+    const ActionPlaybackStatus& Playback() const {
+        return actions_.Status();
+    }
+    ActionExecutionStatus ActionStatus(std::uint64_t request) const;
+    api::Observed<bool> InspectState(void* animator, const std::string& name, int layer,
+                                     api::ManagedObjects& objects) const {
+        return actions_.InspectState(animator, name, layer, objects);
+    }
+    std::string CurrentIdle() const {
+        return actions_.CurrentIdle();
+    }
+    bool HasPhaseVisualOverride() const {
+        return actions_.HasPhaseVisualOverride();
+    }
+    std::shared_ptr<HitInbox> IncomingHits() const;
+    void ConfigureHitResolver(HitResolver resolve) {
+        actions_.ConfigureHitResolver(std::move(resolve));
+    }
+    void ConfigureReceiverPolicy(HitCatalogResolver resolve) {
+        actions_.ConfigureReceiverPolicy(
+            std::move(resolve), [this](bool) { return tasks_ ? tasks_->ReactionState() : HitControlInputs{}; });
+    }
+    VisualBranchState BranchState() const {
+        return actions_.BranchState();
+    }
+    std::optional<VisualProgramSnapshot> CaptureVisualProgram() const {
+        return visual_restore_ ? visual_restore_ : actions_.CaptureVisualProgram();
+    }
+    void RestoreVisualProgram(VisualProgramSnapshot value) {
+        visual_restore_ = std::move(value);
+    }
+    void ConfigurePresentation(std::shared_ptr<const PresentationProfile> profile, const std::string& phase = {}) {
+        actions_.ConfigurePresentation(std::move(profile), phase);
+    }
+    void ConfigureVisualProgram(std::shared_ptr<VisualProgramPlayer> program) {
+        actions_.ConfigureVisualProgram(std::move(program));
+    }
+    void ConfigureTasks(std::shared_ptr<const TaskCatalog>, std::shared_ptr<VisualProgramPlayer>, PoseResolver = {});
+    TaskControlResult ControlTask(TaskControlInput);
+    // Lazily materializes declared actor-local state defaults; does not submit native presentation work.
+    TaskControlResult QueryTasks(const std::optional<TaskSelection>& selection = {}) const;
+    bool HasTasks() const {
+        return bool(tasks_);
+    }
+    void RestoreTasks(std::optional<TaskSelection>);
+    std::optional<TaskSelection> CaptureTask() const;
+    std::optional<TaskVisualReaction> ManualVisualReaction() const {
+        return reaction_restore_ ? reaction_restore_ : tasks_ ? tasks_->ManualVisualReaction() : std::nullopt;
+    }
+    void RestoreManualReaction(TaskVisualReaction value) {
+        reaction_restore_ = std::move(value);
+    }
+    const api::ModelRequestStatus* ModelRequest() const {
+        return transition_->RequestStatus();
+    }
+
+  private:
+    bool Ended() const;
+    bool OwnFrame(const api::WorldFrame& frame) const;
+    void UpdateTransitionStatus();
+    void ObserveActionOutput();
+    bool VisualReady(ActionDomain domain) const;
+    void Fail(std::string message);
+    void Finish(const api::WorldFrame& frame, AppearanceServices appearance, api::AnimationInputTypes types);
+    struct Intent {
+        std::uint64_t serial;
+        ActionDomain domain;
+        std::optional<ActionRequest> action;
+    };
+    CharacterInstance& character_;
+    api::EntityToken owner_;
+    api::GameWorld* world_;
+    std::unique_ptr<api::ModelTransition> transition_;
+    DomainControllers controllers_;
+    ActionPlayback actions_;
+    decltype(HandoffServices::sound) sound_;
+    decltype(HandoffServices::prepare_model_change) prepare_model_change_;
+    std::optional<Intent> desired_, active_;
+    bool busy_ = false, removing_ = false;
+    std::string initial_state_name_;
+    bool initial_requested_ = false;
+    HandoffStatus status_;
+    std::optional<VisualProgramSnapshot> visual_restore_;
+    std::shared_ptr<const TaskCatalog> task_catalog_;
+    std::unique_ptr<TaskController> tasks_;
+    unsigned playback_rate_ = 1;
+    bool restoring_tasks_ = false;
+    bool releasing_tasks_ = false;
+    std::optional<TaskSelection> task_restore_;
+    std::optional<TaskVisualReaction> reaction_restore_;
+};
+}

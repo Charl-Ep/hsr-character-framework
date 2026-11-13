@@ -1,0 +1,862 @@
+{
+  "format": "hksr.script",
+  "id": "official-scripts:Config/ConfigCharacter/Avatar/Avatar_Evanescia_00_Config.json",
+  "applies_to": "Config/ConfigCharacter/Avatar/Avatar_Evanescia_00_Config.json",
+  "default": true,
+  "imports": ["Common/Elemental.json"],
+  "defaults": {
+    "targets": {
+      "PreviewTarget": {
+        "local_position": [0, 0, 6]
+      },
+      "callback.1408.target.DarkTeamEntity": {"alias": "Caster"}
+    }
+  },
+  "actions": {
+    "rest": {
+      "trigger": "internal",
+      "run": [
+        {"op": "call", "function": "@return.rest.pose"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["stable-return", "idle-provider"]
+    },
+    "skill.0.perform": {
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Evanescia_00_Skill01_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.0.clock.1", "progress": 0.2200000002},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit",
+              "direction": {"horizontal": -60.0, "vertical": 20.0},
+              "effect": {"path": "", "minimum_interval": 0.0500000007, "maximum_count": 1},
+              "allow_position": true,
+              "as": "skill.0.hit.4"
+            },
+            {"op": "wait", "for": "skill.0.hit.4", "until": "accepted"}
+          ],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Evanescia_00_Skill01_Camera",
+          "run": [],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill01", "end": 0.0, "track": {"logic": 3}, "as": "skill.0.clock.1"},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.0},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.111},
+        {"op": "render.visibility", "key": "SetEntityVisible.reason.0", "visible": false, "as": "skill.0.entity_visible.17"},
+        {"op": "wait", "for": "skill.0.entity_visible.17", "until": "accepted"},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.1649999998},
+        {"op": "render.visibility", "key": "SetEntityVisible.reason.0", "visible": true, "as": "skill.0.entity_visible.19"},
+        {"op": "wait", "for": "skill.0.entity_visible.19", "until": "accepted"},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.1849999998},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.2210000001},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.597},
+        {"op": "render.visibility", "key": "SetEntityVisible.reason.0", "visible": false, "as": "skill.0.entity_visible.23"},
+        {"op": "wait", "for": "skill.0.entity_visible.23", "until": "accepted"},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.7240000003},
+        {"op": "render.visibility", "key": "SetEntityVisible.reason.0", "visible": true, "as": "skill.0.entity_visible.25"},
+        {"op": "wait", "for": "skill.0.entity_visible.25", "until": "accepted"},
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "Skill01",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "LookAt: not included in the visual sequence projection",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "WaitAnimState: wait uses an unprojected clock policy",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "TriggerAnimStateWithMove: movement not projected: $.AbilityList[0].OnStart[3].MovingRangeList[0].OffsetForward: explicit projection required",
+          "SetEntityVisible: Non-render visibility side effects intentionally excluded: MuteColliderWhenInvisible",
+          "RadialBlurEffect: not included in the visual sequence projection",
+          "TriggerEffect: effect needs a non-owned target, dynamic path, or Timeline attachment",
+          "VCameraConfigChange: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "skill.0.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Evanescia_00_Config.json", "skill": 0, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "skill.1.perform": {
+      "inputs": {
+        "skill.1.condition.ByContainBehaviorFlag.14": {"type": "bool", "default": true, "label": "ByContainBehaviorFlag", "description": "Manual source condition: $.AbilityList[3].OnStart[10].Predicate"}
+      },
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Evanescia_00_Skill02_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.4089999997},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit_H",
+              "direction": {"vertical": 90.0},
+              "effect": {"path": "", "minimum_interval": 0.0500000007, "maximum_count": 1},
+              "allow_position": true,
+              "as": "skill.1.hit.5"
+            },
+            {"op": "wait", "for": "skill.1.hit.5", "until": "accepted"},
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.5120000003},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit_H",
+              "direction": {"vertical": 90.0},
+              "effect": {"path": "", "minimum_interval": 0.0500000007, "maximum_count": 1},
+              "allow_position": true,
+              "as": "skill.1.hit.7"
+            },
+            {"op": "wait", "for": "skill.1.hit.7", "until": "accepted"},
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.5120000003},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit_H",
+              "direction": {"vertical": 90.0},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Evanescia_00/Eff_Avatar_Evanescia_00_Skill02_Hit.prefab",
+                "height": 1.399999976158142,
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.1.hit.9"
+            },
+            {"op": "wait", "for": "skill.1.hit.9", "until": "accepted"},
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.5240000002},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit_H",
+              "direction": {"vertical": 90.0},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Evanescia_00/Eff_Avatar_Evanescia_00_Skill02_Hit.prefab",
+                "height": 1.399999976158142,
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.1.hit.11"
+            },
+            {"op": "wait", "for": "skill.1.hit.11", "until": "accepted"},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit_H",
+              "direction": {"vertical": 90.0},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Evanescia_00/Eff_Avatar_Evanescia_00_Skill02_Hit.prefab",
+                "height": 1.399999976158142,
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.1.hit.13"
+            },
+            {"op": "wait", "for": "skill.1.hit.13", "until": "accepted"},
+            {
+              "op": "if",
+              "condition": {"op": "value", "name": "skill.1.condition.ByContainBehaviorFlag.14", "is": true},
+              "then": [
+                {
+                  "op": "hit",
+                  "target": "PreviewTarget",
+                  "animation": "Hit",
+                  "direction": {},
+                  "effect": {"path": "", "height": 1.2000000476837158, "minimum_interval": 0.0500000007, "maximum_count": 1},
+                  "allow_position": true,
+                  "as": "skill.1.hit.16"
+                },
+                {"op": "wait", "for": "skill.1.hit.16", "until": "accepted"}
+              ],
+              "else": []
+            }
+          ],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Evanescia_00_Skill02_Camera",
+          "run": [],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill02", "end": 0.0, "track": {"logic": 3}, "as": "skill.1.clock.1"},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.0},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.1689999995},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.7570000002},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.8000000007},
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "Skill02",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "LookAt: not included in the visual sequence projection",
+          "PlayTimeline: not included in the visual sequence projection",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "JDOLDFECMPL: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "TriggerAnimStateWithMove: movement not projected: source range needs instant/sentinel-time handling, not a positive animation interval",
+          "GlobalMainIntensityEffect: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "skill.1.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Evanescia_00_Config.json", "skill": 1, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "skill.2.perform": {
+      "inputs": {
+        "skill.2.condition.ByContainBehaviorFlag.19": {"type": "bool", "default": true, "label": "ByContainBehaviorFlag", "description": "Manual source condition: $.AbilityList[5].OnStart[5].Predicate"}
+      },
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "run": [
+        {"op": "animation", "state": "Skill03", "end": -1.0, "track": {"logic": 3}, "as": "skill.2.clock.1"},
+        {"op": "wait", "for": "skill.2.clock.1", "until": "animation_end"},
+        {
+          "op": "start",
+          "id": "Avatar_Evanescia_00_Skill03_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.3559999999},
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.8000000007},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit_H",
+              "direction": {"vertical": 90.0},
+              "effect": {"path": "", "minimum_interval": 0.0500000007, "maximum_count": 1},
+              "allow_position": true,
+              "as": "skill.2.hit.18"
+            },
+            {"op": "wait", "for": "skill.2.hit.18", "until": "accepted"},
+            {
+              "op": "if",
+              "condition": {"op": "value", "name": "skill.2.condition.ByContainBehaviorFlag.19", "is": true},
+              "then": [
+                {
+                  "op": "hit",
+                  "target": "PreviewTarget",
+                  "animation": "Hit",
+                  "direction": {},
+                  "effect": {"path": "", "height": 1.2000000476837158, "minimum_interval": 0.0500000007, "maximum_count": 1},
+                  "allow_position": true,
+                  "as": "skill.2.hit.21"
+                },
+                {"op": "wait", "for": "skill.2.hit.21", "until": "accepted"}
+              ],
+              "else": []
+            },
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.6689999999}
+          ],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Evanescia_00_Skill03_Camera",
+          "run": [],
+          "join": true
+        },
+        {"op": "render.visibility", "key": "SetEntityVisible.reason.0", "visible": true, "as": "skill.2.entity_visible.27"},
+        {"op": "wait", "for": "skill.2.entity_visible.27", "until": "accepted"},
+        {"op": "wait", "for": "skill.2.clock.1", "progress": 0.6000000005},
+        {"op": "wait", "for": "skill.2.clock.1", "progress": 0.7800000007},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "Skill03",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "GlobalMainIntensityEffect: not included in the visual sequence projection",
+          "HideLevelStage: not included in the visual sequence projection",
+          "LookAt: not included in the visual sequence projection",
+          "SetEntityVisible: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "SetTeamFormation: not included in the visual sequence projection",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "LoopExecuteTaskListWithInterval: not included in the visual sequence projection",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "SetEntityVisible: Non-render visibility side effects intentionally excluded: MuteColliderWhenInvisible",
+          "WaitTimelineFinish: not included in the visual sequence projection",
+          "SetTeamFormation: serial step depends on an unavailable source clock; no timing is inferred",
+          "TriggerEffect: serial step depends on an unavailable source clock; no timing is inferred",
+          "HideLevelStage: serial step depends on an unavailable source clock; no timing is inferred"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "skill.2.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Evanescia_00_Config.json", "skill": 2, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "skill.3.perform": {
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Evanescia_00_Skill04_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Evanescia_00_Skill04_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.3.clock.1", "progress": 0.7210000006},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit_H",
+              "direction": {},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Evanescia_00/Eff_Avatar_Evanescia_00_Skill04_Hit01.prefab",
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.3.hit.10"
+            },
+            {"op": "wait", "for": "skill.3.hit.10", "until": "accepted"}
+          ],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill04", "end": -1.0, "track": {"logic": 3}, "as": "skill.3.clock.1"},
+        {"op": "wait", "for": "skill.3.clock.1", "until": "animation_end"},
+        {"op": "wait", "for": "skill.3.clock.1", "progress": 0.1669999996},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "Skill04",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "HideLevelStage: not included in the visual sequence projection",
+          "AlignTargetToTeamCenter: not included in the visual sequence projection",
+          "ResetHeadLookAt: not included in the visual sequence projection",
+          "LookAt: not included in the visual sequence projection",
+          "SetTeamFormation: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "WaitTimelineFinish: not included in the visual sequence projection",
+          "IncludeTaskListTemplate: serial step depends on an unavailable source clock; no timing is inferred",
+          "PredicateTaskList: serial step depends on an unavailable source clock; no timing is inferred",
+          "SkillPerformFinish: serial step depends on an unavailable source clock; no timing is inferred",
+          "LoopExecuteTaskListWithInterval: not included in the visual sequence projection",
+          "TriggerAnimState: animation has no literal owned-body binding",
+          "HideLevelStage: serial step depends on an unavailable source clock; no timing is inferred",
+          "SetTeamFormation: serial step depends on an unavailable source clock; no timing is inferred"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "callback.1388": {
+      "bindings": {
+        "targets": ["Recipient"]
+      },
+      "run": [
+        {
+          "op": "actor.time_scale",
+          "key": "Evanescia_Skill04",
+          "recipient": "Recipient",
+          "factor": 0.20000000298023224,
+          "fade_in": 0.5000000004,
+          "fade_out": 0.5000000004,
+          "duration": 1.5,
+          "as": "callback.1388.actor_time_scale.1"
+        },
+        {"op": "wait", "for": "callback.1388.actor_time_scale.1", "until": "accepted"},
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "_M_Evanescia_00_Skill04_TargetTimeslow: OnStack",
+        "omissions": ["Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects."]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "callback.1446": {
+      "bindings": {
+        "targets": ["Recipient"]
+      },
+      "run": [
+        {
+          "op": "actor.time_scale",
+          "key": "Evanescia_Skill21",
+          "recipient": "Recipient",
+          "factor": 0.10000000149011612,
+          "fade_in": 0.5000000004,
+          "fade_out": 0.5000000004,
+          "duration": 1.7999999523162842,
+          "as": "callback.1446.actor_time_scale.1"
+        },
+        {"op": "wait", "for": "callback.1446.actor_time_scale.1", "until": "accepted"},
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "_M_Evanescia_00_Skill21_TargetTimeslow: OnStack",
+        "omissions": ["Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects."]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "skill.4.perform": {
+      "inputs": {
+        "event": {
+          "type": "integer",
+          "default": 0,
+          "label": "Callback",
+          "choices": [
+            {"value": 0, "label": "_M_Evanescia_00_Insert_TargetTimeslow: OnStack"},
+            {"value": 1, "label": "Avatar_EvanesciaCombat_00_Insert_SelectTarget"}
+          ]
+        },
+        "followup.0.condition.ByHaveEnemyAlive.1": {"type": "bool", "default": true, "label": "ByHaveEnemyAlive", "description": "Manual source condition: $.AbilityList[6].OnStart[0].Predicate"}
+      },
+      "requires": [
+        {"op": "number", "name": "event", "compare": "ge", "value": 0},
+        {"op": "number", "name": "event", "compare": "lt", "value": 2}
+      ],
+      "bindings": {
+        "targets": ["Recipient"]
+      },
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "event", "is": 1},
+          "then": [
+            {
+              "op": "if",
+              "condition": {"op": "value", "name": "followup.0.condition.ByHaveEnemyAlive.1", "is": true},
+              "then": [
+                {
+                  "op": "start",
+                  "id": "Avatar_EvanesciaCombat_00_Insert_Phase01",
+                  "run": [
+                    {"op": "render.visibility", "key": "SetEntityVisible.reason.0", "visible": false, "as": "followup.0.entity_visible.8"},
+                    {"op": "wait", "for": "followup.0.entity_visible.8", "until": "accepted"},
+                    {"op": "animation", "state": "StandBy", "end": -1.0, "track": {"logic": 1}, "as": "followup.0.clock.2"},
+                    {"op": "wait", "for": "followup.0.clock.2", "until": "animation_end"},
+                    {
+                      "op": "start",
+                      "id": "Avatar_EvanesciaCombat_00_Insert_Phase02",
+                      "run": []
+                    },
+                    {
+                      "op": "start",
+                      "id": "Avatar_EvanesciaCombat_00_Insert_Camera",
+                      "run": []
+                    }
+                  ],
+                  "join": true
+                }
+              ],
+              "else": []
+            },
+            {"op": "join"},
+            {
+              "op": "repeat",
+              "until_finish": true,
+              "run": [
+                {"op": "wait", "frame": true}
+              ]
+            },
+            {"op": "call", "function": "@return.return.pose"},
+            {"op": "wait", "for": "return.pose", "until": "submitted"},
+            {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+            {"op": "wait", "for": "return.position"}
+          ],
+          "else": [
+            {
+              "op": "actor.time_scale",
+              "key": "Evanescia_Skill21",
+              "recipient": "Recipient",
+              "factor": 0.05000000074505806,
+              "fade_in": 0.3000000002,
+              "fade_out": 0.5000000004,
+              "duration": 0.6000000238418579,
+              "as": "callback.1382.actor_time_scale.1"
+            },
+            {"op": "wait", "for": "callback.1382.actor_time_scale.1", "until": "accepted"},
+            {"op": "join"},
+            {"op": "call", "function": "@return.return.pose"},
+            {"op": "wait", "for": "return.pose", "until": "submitted"},
+            {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+            {"op": "wait", "for": "return.position"}
+          ]
+        }
+      ],
+      "on_interrupt": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "event", "is": 1},
+          "then": [
+            {"op": "call", "function": "@return.return.pose"},
+            {"op": "wait", "for": "return.pose", "until": "submitted"},
+            {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+            {"op": "wait", "for": "return.position"}
+          ],
+          "else": [
+            {"op": "call", "function": "@return.return.pose"},
+            {"op": "wait", "for": "return.pose", "until": "submitted"},
+            {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+            {"op": "wait", "for": "return.position"}
+          ]
+        }
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "SkillP01",
+        "omissions": [
+          "Manual visual callback selection; no native combat modifier or automatic event simulation.",
+          "event: 0=_M_Evanescia_00_Insert_TargetTimeslow: OnStack, 1=Avatar_EvanesciaCombat_00_Insert_SelectTarget",
+          "NMBCOGABNMC: not included in the visual sequence projection",
+          "IDNEFFCGFFL: not included in the visual sequence projection",
+          "CANBAEOKAJD: not included in the visual sequence projection",
+          "Retarget: recipient collection is explicitly selected; native filtering, random selection and count limits are not simulated",
+          "SummonPartner: not included in the visual sequence projection",
+          "HideEntityInActionBarByDelay: not included in the visual sequence projection",
+          "SetEntityVisible: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "PreloadBattleEventByID: not included in the visual sequence projection",
+          "SetTargetCustomAssetPreloadState: not included in the visual sequence projection",
+          "TurnInsertAbility: not included in the visual sequence projection",
+          "HideLevelStage: not included in the visual sequence projection",
+          "SetTeamRootOffset: not included in the visual sequence projection",
+          "SetSkillTargetFormationByPos: not included in the visual sequence projection",
+          "SetEntityVisible: Non-render visibility side effects intentionally excluded: MuteColliderWhenInvisible",
+          "ResetHeadLookAt: not included in the visual sequence projection",
+          "LookAt: not included in the visual sequence projection",
+          "TriggerAnimState: animation has no literal owned-body binding",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "GlobalMainIntensityEffect: serial step depends on an unavailable source clock; no timing is inferred",
+          "HideLevelStage: serial step depends on an unavailable source clock; no timing is inferred",
+          "PredicateTaskList: serial step depends on an unavailable source clock; no timing is inferred",
+          "DamagePerformFinish: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "WaitTimelineFinish: not included in the visual sequence projection",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "PlayTimeline: not included in the visual sequence projection",
+          "SetCharacterAnimFollow: not included in the visual sequence projection",
+          "SetEntityVisible: serial step depends on an unavailable source clock; no timing is inferred",
+          "SetTeamRootOffset: serial step depends on an unavailable source clock; no timing is inferred",
+          "SetTeamFormation: serial step depends on an unavailable source clock; no timing is inferred",
+          "SetCharacterAnimFollow: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitFor: serial step depends on an unavailable source clock; no timing is inferred"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "skill.5.perform": {
+      "inputs": {
+        "event": {
+          "type": "integer",
+          "default": 0,
+          "label": "Callback",
+          "choices": [
+            {"value": 0, "label": "SkillMaze_Evanescia_00_Modifier: OnEnterBattle"}
+          ]
+        },
+        "callback.1408.condition.ByCompareWaveCount.1": {
+          "type": "bool",
+          "default": true,
+          "label": "ByCompareWaveCount",
+          "description": "Manual source condition: $.AbilityList[13].Modifiers[0].value._CallbackList[1].CallbackConfig[0].Predicate"
+        }
+      },
+      "requires": [
+        {"op": "number", "name": "event", "compare": "ge", "value": 0},
+        {"op": "number", "name": "event", "compare": "lt", "value": 1}
+      ],
+      "bindings": {
+        "targets": ["PreviewTarget", "Recipient", "callback.1408.target.DarkTeamEntity"]
+      },
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "callback.1408.condition.ByCompareWaveCount.1", "is": true},
+          "then": [
+            {"op": "effect.create", "effects": ["callback.1408.effect.5"], "as": "callback.1408.effect.5"},
+            {"op": "wait", "for": "callback.1408.effect.5", "until": "accepted"},
+            {"op": "wait", "seconds": 0.1},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "",
+              "direction": {},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Evanescia_00/Eff_Avatar_Evanescia_00_Common_EnterBattle_Hit_01.prefab",
+                "height": 1.0,
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "callback.1408.hit.9"
+            },
+            {"op": "wait", "for": "callback.1408.hit.9", "until": "accepted"},
+            {
+              "op": "for_each",
+              "bind": "callback.1408.member.12",
+              "targets": ["Recipient"],
+              "collection": "callback.1408.targets.13",
+              "run": [],
+              "empty": []
+            },
+            {"op": "wait", "seconds": 0.8000000007}
+          ],
+          "else": []
+        },
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "effect.remove", "effects": ["callback.1408.effect.5"], "optional": ["callback.1408.effect.5"], "as": "callback.1408.remove-effects"},
+        {"op": "wait", "for": "callback.1408.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "effect.remove", "effects": ["callback.1408.effect.5"], "optional": ["callback.1408.effect.5"], "as": "callback.1408.remove-effects"},
+        {"op": "wait", "for": "callback.1408.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "SkillMaze",
+        "omissions": [
+          "Manual visual callback selection; no native combat modifier or automatic event simulation.",
+          "event: 0=SkillMaze_Evanescia_00_Modifier: OnEnterBattle",
+          "GlobalMainIntensityEffect: not included in the visual sequence projection",
+          "VCameraNoiseChange: not included in the visual sequence projection",
+          "TriggerEffect: callback target DarkTeamEntity is a selected owned actor input, defaulting to this actor; native event payload is not assumed",
+          "TriggerAnimState: animation has no literal owned-body binding",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "NMBCOGABNMC: not included in the visual sequence projection",
+          "IDNEFFCGFFL: not included in the visual sequence projection",
+          "CANBAEOKAJD: not included in the visual sequence projection",
+          "Retarget: recipient collection is explicitly selected; native filtering, random selection and count limits are not simulated",
+          "RPGColorGradingCurveEffect: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "skill.6.perform": {"use": "common.elemental.responses", "next": "rest"},
+    "preview.hit": {
+      "inputs": {
+        "kind": {
+          "type": "text",
+          "default": "Hit",
+          "label": "Hit type",
+          "choices": [
+            {"value": "Hit", "label": "Hit"},
+            {"value": "Hit_H", "label": "Hit_H"}
+          ]
+        }
+      },
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "kind", "is": "Hit_H"},
+          "then": [
+            {"op": "hit", "target": "Caster", "animation": "Hit_H", "as": "hit-heavy"},
+            {"op": "wait", "for": "hit-heavy"}
+          ],
+          "else": [
+            {"op": "hit", "target": "Caster", "animation": "Hit", "as": "hit"},
+            {"op": "wait", "for": "hit"}
+          ]
+        }
+      ],
+      "next": "rest",
+      "presentation": {"label": "Hit"},
+      "tags": ["manual-visual-callback"]
+    },
+    "@receiver-clear/callback.5359.receiver-property.3": {
+      "requires": [
+        {"op": "state", "name": "common.elemental.frozen-hit"}
+      ],
+      "mode": "input",
+      "run": [
+        {"op": "state.exit", "name": "common.elemental.frozen-hit", "only_caster": true, "as": "clear"},
+        {"op": "wait", "for": "clear"}
+      ],
+      "presentation": {
+        "label": "Clear hit effect override",
+        "kind": "setting",
+        "contexts": ["common.elemental.frozen-hit"]
+      },
+      "tags": ["visual-receiver-clear"]
+    }
+  },
+  "functions": {
+    "@return.rest.pose": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "rest.pose.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "rest.pose"
+      }
+    ],
+    "@return.return.pose": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "return.pose.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "return.pose"
+      }
+    ]
+  },
+  "states": {},
+  "resources": {
+    "effects": {
+      "callback.1408.effect.5": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Evanescia_00/Eff_Avatar_Evanescia_00_Common_EnterBattle_Attack.prefab",
+        "target": "callback.1408.target.DarkTeamEntity"
+      }
+    }
+  }
+}

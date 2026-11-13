@@ -1,0 +1,702 @@
+{
+  "format": "hksr.script",
+  "id": "official-scripts:Config/ConfigCharacter/Avatar/Avatar_YaoGuang_00_Config.json",
+  "applies_to": "Config/ConfigCharacter/Avatar/Avatar_YaoGuang_00_Config.json",
+  "default": true,
+  "imports": ["Common/Elemental.json"],
+  "defaults": {
+    "targets": {
+      "PreviewTarget": {
+        "local_position": [0, 0, 6]
+      },
+      "callback.4528.target.AllTeamCenter": {"alias": "Caster"}
+    }
+  },
+  "actions": {
+    "rest": {
+      "trigger": "internal",
+      "run": [
+        {"op": "call", "function": "@return.rest.pose"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["stable-return", "idle-provider"]
+    },
+    "skill.0.perform": {
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_YaoGuang_00_Skill01_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_YaoGuang_00_Skill01_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.0.clock.1", "progress": 0.1879999996},
+            {"op": "wait", "for": "skill.0.clock.1", "progress": 0.1929999999},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit",
+              "direction": {},
+              "effect": {"path": "", "minimum_interval": 0.0500000007, "maximum_count": 1},
+              "allow_position": true,
+              "as": "skill.0.hit.10"
+            },
+            {"op": "wait", "for": "skill.0.hit.10", "until": "accepted"},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit",
+              "direction": {},
+              "effect": {"path": "", "minimum_interval": 0.0500000007, "maximum_count": 1},
+              "allow_position": true,
+              "as": "skill.0.hit.12"
+            },
+            {"op": "wait", "for": "skill.0.hit.12", "until": "accepted"},
+            {"op": "wait", "for": "skill.0.clock.1", "progress": 0.2579999996},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit",
+              "direction": {},
+              "effect": {"path": "", "minimum_interval": 0.0500000007, "maximum_count": 1},
+              "allow_position": true,
+              "as": "skill.0.hit.23"
+            },
+            {"op": "wait", "for": "skill.0.hit.23", "until": "accepted"},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit",
+              "direction": {},
+              "effect": {"path": "", "minimum_interval": 0.0500000007, "maximum_count": 1},
+              "allow_position": true,
+              "as": "skill.0.hit.25"
+            },
+            {"op": "wait", "for": "skill.0.hit.25", "until": "accepted"},
+            {"op": "wait", "for": "skill.0.clock.1", "progress": 0.3159999998},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit",
+              "direction": {},
+              "effect": {"path": "", "minimum_interval": 0.0500000007, "maximum_count": 1},
+              "allow_position": true,
+              "as": "skill.0.hit.36"
+            },
+            {"op": "wait", "for": "skill.0.hit.36", "until": "accepted"},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit",
+              "direction": {},
+              "effect": {"path": "", "minimum_interval": 0.0500000007, "maximum_count": 1},
+              "allow_position": true,
+              "as": "skill.0.hit.38"
+            },
+            {"op": "wait", "for": "skill.0.hit.38", "until": "accepted"},
+            {"op": "wait", "for": "skill.0.clock.1", "progress": 0.3869999998},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit",
+              "direction": {},
+              "effect": {"path": "", "minimum_interval": 0.0500000007, "maximum_count": 1},
+              "allow_position": true,
+              "as": "skill.0.hit.49"
+            },
+            {"op": "wait", "for": "skill.0.hit.49", "until": "accepted"},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit",
+              "direction": {},
+              "effect": {"path": "", "minimum_interval": 0.0500000007, "maximum_count": 1},
+              "allow_position": true,
+              "as": "skill.0.hit.51"
+            },
+            {"op": "wait", "for": "skill.0.hit.51", "until": "accepted"},
+            {"op": "wait", "for": "skill.0.clock.1", "progress": 0.7960000003}
+          ],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill01", "end": -1.0, "track": {"logic": 3}, "as": "skill.0.clock.1"},
+        {"op": "wait", "for": "skill.0.clock.1", "until": "animation_end"},
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "Skill01",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "LookAt: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "RadialBlurEffect: not included in the visual sequence projection",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "SetDynamicValueInRange: not included in the visual sequence projection",
+          "TriggerEffect: effect needs a non-owned target, dynamic path, or Timeline attachment",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "skill.0.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_YaoGuang_00_Config.json", "skill": 0, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "skill.1.perform": {
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_YaoGuang_00_Skill02_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_YaoGuang_00_Skill02_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.648},
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 1.0},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_YaoGuang_00/Eff_Avatar_YaoGuang_00_Skill02_Weapon03.prefab",
+              "immediate": true,
+              "as": "skill.1.remove.19.0"
+            },
+            {"op": "wait", "for": "skill.1.remove.19.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_YaoGuang_00/Eff_Avatar_YaoGuang_00_Skill02_03.prefab",
+              "immediate": true,
+              "as": "skill.1.remove.20.0"
+            },
+            {"op": "wait", "for": "skill.1.remove.20.0", "until": "accepted"}
+          ],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill02", "end": -1.0, "track": {"logic": 3}, "as": "skill.1.clock.1"},
+        {"op": "wait", "for": "skill.1.clock.1", "until": "animation_end"},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "Skill02",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "SyncCharLightAndCameraDir: not included in the visual sequence projection",
+          "GlobalMainIntensityEffect: not included in the visual sequence projection",
+          "SetTeamFormation: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "HideLevelStage: serial step depends on an unavailable source clock; no timing is inferred",
+          "SetTeamFormation: serial step depends on an unavailable source clock; no timing is inferred",
+          "TriggerEffect: serial step depends on an unavailable source clock; no timing is inferred",
+          "RemoveEffect: serial step depends on an unavailable source clock; no timing is inferred",
+          "GlobalMainIntensityEffect: serial step depends on an unavailable source clock; no timing is inferred",
+          "SyncCharLightAndCameraDir: serial step depends on an unavailable source clock; no timing is inferred"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "skill.1.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_YaoGuang_00_Config.json", "skill": 1, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "skill.2.perform": {
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_YaoGuang_00_Skill03_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_YaoGuang_00_Skill03_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.8000000007},
+            {
+              "op": "for_each",
+              "bind": "skill.2.member.9",
+              "targets": ["PreviewTarget"],
+              "collection": "skill.2.targets.10",
+              "run": [],
+              "empty": []
+            },
+            {
+              "op": "for_each",
+              "bind": "skill.2.member.15",
+              "targets": ["PreviewTarget"],
+              "collection": "skill.2.targets.16",
+              "run": [],
+              "empty": []
+            }
+          ],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill03", "end": -1.0, "track": {"logic": 3}, "as": "skill.2.clock.1"},
+        {"op": "wait", "for": "skill.2.clock.1", "until": "animation_end"},
+        {"op": "effect.create", "effects": ["skill.2.effect.24"], "as": "skill.2.effect.24"},
+        {"op": "wait", "for": "skill.2.effect.24", "until": "accepted"},
+        {"op": "wait", "for": "skill.2.clock.1", "progress": 0.5000000004},
+        {"op": "wait", "for": "skill.2.clock.1", "progress": 0.8100000007},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "effect.remove", "effects": ["skill.2.effect.24"], "optional": ["skill.2.effect.24"], "as": "skill.2.remove-effects"},
+        {"op": "wait", "for": "skill.2.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "effect.remove", "effects": ["skill.2.effect.24"], "optional": ["skill.2.effect.24"], "as": "skill.2.remove-effects"},
+        {"op": "wait", "for": "skill.2.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "Skill03",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "SyncCharLightAndCameraDir: not included in the visual sequence projection",
+          "HideLevelStage: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "JDOLDFECMPL: not included in the visual sequence projection",
+          "TurnInsertAction: not included in the visual sequence projection",
+          "CreateBattleEvent: not included in the visual sequence projection",
+          "Retarget: recipient collection is explicitly selected; native filtering, random selection and count limits are not simulated",
+          "TriggerSkipDeadHandler: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "ScaleCharacterModel: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "SetTeamFormation: not included in the visual sequence projection",
+          "TriggerEffect: effect needs a non-owned target, dynamic path, or Timeline attachment",
+          "WaitTimelineFinish: not included in the visual sequence projection",
+          "GlobalMainIntensityEffect: serial step depends on an unavailable source clock; no timing is inferred",
+          "HideLevelStage: serial step depends on an unavailable source clock; no timing is inferred",
+          "ScaleCharacterModel: serial step depends on an unavailable source clock; no timing is inferred",
+          "RemoveEffect: serial step depends on an unavailable source clock; no timing is inferred"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "skill.2.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_YaoGuang_00_Config.json", "skill": 2, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "skill.3.perform": {
+      "inputs": {
+        "skill.3.condition.ByRankActivated.5": {"type": "bool", "default": false, "label": "ByRankActivated", "description": "Manual source condition: $.AbilityList[8].OnStart[3].Predicate"}
+      },
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_YaoGuang_00_Skill04_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.3.clock.1", "progress": 0.7200000006},
+            {"op": "wait", "for": "skill.3.clock.1", "progress": 0.8100000007},
+            {
+              "op": "if",
+              "condition": {"op": "value", "name": "skill.3.condition.ByRankActivated.5", "is": true},
+              "then": [
+                {
+                  "op": "hit",
+                  "target": "PreviewTarget",
+                  "animation": "Hit_H",
+                  "direction": {},
+                  "effect": {"path": "", "minimum_interval": 0.0500000007, "maximum_count": 1},
+                  "allow_position": true,
+                  "as": "skill.3.hit.7"
+                },
+                {"op": "wait", "for": "skill.3.hit.7", "until": "accepted"}
+              ],
+              "else": [
+                {
+                  "op": "hit",
+                  "target": "PreviewTarget",
+                  "animation": "Hit_H",
+                  "direction": {},
+                  "effect": {"path": "", "minimum_interval": 0.0500000007, "maximum_count": 1},
+                  "allow_position": true,
+                  "as": "skill.3.hit.10"
+                },
+                {"op": "wait", "for": "skill.3.hit.10", "until": "accepted"}
+              ]
+            }
+          ],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_YaoGuang_00_Skill04_Camera",
+          "run": [],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill04", "end": -1.0, "track": {"logic": 3}, "as": "skill.3.clock.1"},
+        {"op": "wait", "for": "skill.3.clock.1", "until": "animation_end"},
+        {"op": "effect.create", "effects": ["skill.3.effect.22"], "as": "skill.3.effect.22"},
+        {"op": "wait", "for": "skill.3.effect.22", "until": "accepted"},
+        {"op": "wait", "for": "skill.3.clock.1", "progress": 0.2979999997},
+        {"op": "wait", "for": "skill.3.clock.1", "progress": 0.6878000006},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "effect.remove", "effects": ["skill.3.effect.22"], "optional": ["skill.3.effect.22"], "as": "skill.3.remove-effects"},
+        {"op": "wait", "for": "skill.3.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "effect.remove", "effects": ["skill.3.effect.22"], "optional": ["skill.3.effect.22"], "as": "skill.3.remove-effects"},
+        {"op": "wait", "for": "skill.3.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "Skill04",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "MakeCharacterHUDVisible: not included in the visual sequence projection",
+          "HideLevelStage: not included in the visual sequence projection",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "LoopExecuteTaskListWithInterval: not included in the visual sequence projection",
+          "DamagePerformFinish: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitTimelineFinish: serial step depends on an unavailable source clock; no timing is inferred",
+          "RemoveEffect: serial step depends on an unavailable source clock; no timing is inferred",
+          "TriggerSkipDeadHandler: serial step depends on an unavailable source clock; no timing is inferred",
+          "SkillPerformFinish: serial step depends on an unavailable source clock; no timing is inferred",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "SetTeamFormation: not included in the visual sequence projection",
+          "ScaleCharacterModel: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "MoveTeam: not included in the visual sequence projection",
+          "WaitTimelineFinish: not included in the visual sequence projection",
+          "ScaleCharacterModel: serial step depends on an unavailable source clock; no timing is inferred",
+          "HideLevelStage: serial step depends on an unavailable source clock; no timing is inferred",
+          "MoveTeam: serial step depends on an unavailable source clock; no timing is inferred",
+          "SetTeamFormation: serial step depends on an unavailable source clock; no timing is inferred"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "callback.4528": {
+      "bindings": {
+        "targets": ["callback.4528.target.AllTeamCenter"]
+      },
+      "run": [
+        {"op": "effect.create", "effects": ["callback.4528.effect.2"], "as": "callback.4528.effect.2"},
+        {"op": "wait", "for": "callback.4528.effect.2", "until": "accepted"},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "effect.remove", "effects": ["callback.4528.effect.2"], "optional": ["callback.4528.effect.2"], "as": "callback.4528.remove-effects"},
+        {"op": "wait", "for": "callback.4528.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "effect.remove", "effects": ["callback.4528.effect.2"], "optional": ["callback.4528.effect.2"], "as": "callback.4528.remove-effects"},
+        {"op": "wait", "for": "callback.4528.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "G_MAvatar_YaoGuang_00_Skill02_ToSelf: OnStack",
+        "omissions": [
+          "Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects.",
+          "TriggerEffect: callback target AllTeamCenter is a selected owned actor input, defaulting to this actor; native event payload is not assumed"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "skill.4.perform": {
+      "inputs": {
+        "event": {
+          "type": "integer",
+          "default": 0,
+          "label": "Callback",
+          "choices": [
+            {"value": 0, "label": "Eff_Avatar_YaoGuang_00_PassiveSkill_Hit.prefab"}
+          ]
+        }
+      },
+      "requires": [
+        {"op": "number", "name": "event", "compare": "ge", "value": 0},
+        {"op": "number", "name": "event", "compare": "lt", "value": 1},
+        {"op": "target", "name": "ImpactTarget", "allow_position": false}
+      ],
+      "run": [
+        {
+          "op": "hit",
+          "target": "ImpactTarget",
+          "animation": "",
+          "direction": {},
+          "effect": {
+            "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_YaoGuang_00/Eff_Avatar_YaoGuang_00_PassiveSkill_Hit.prefab",
+            "minimum_interval": 0.0500000007,
+            "maximum_count": 1
+          },
+          "as": "cue.4523.2036.hit"
+        },
+        {"op": "wait", "for": "cue.4523.2036.hit", "until": "accepted"},
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "SkillP01",
+        "omissions": [
+          "Manual visual callback selection; no native combat modifier or automatic event simulation.",
+          "event: 0=Eff_Avatar_YaoGuang_00_PassiveSkill_Hit.prefab",
+          "Source: Selected visual fragment only; source timing, conditions and other participants are not replayed. Requires an owned ImpactTarget; source delay, attacker overrides, callbacks and combat events are not replayed."
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "skill.6.perform": {"use": "common.elemental.responses", "next": "rest"},
+    "preview.hit": {
+      "inputs": {
+        "kind": {
+          "type": "text",
+          "default": "Hit",
+          "label": "Hit type",
+          "choices": [
+            {"value": "Hit", "label": "Hit"},
+            {"value": "Hit_H", "label": "Hit_H"}
+          ]
+        }
+      },
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "kind", "is": "Hit_H"},
+          "then": [
+            {"op": "hit", "target": "Caster", "animation": "Hit_H", "as": "hit-heavy"},
+            {"op": "wait", "for": "hit-heavy"}
+          ],
+          "else": [
+            {"op": "hit", "target": "Caster", "animation": "Hit", "as": "hit"},
+            {"op": "wait", "for": "hit"}
+          ]
+        }
+      ],
+      "next": "rest",
+      "presentation": {"label": "Hit"},
+      "tags": ["manual-visual-callback"]
+    },
+    "skill.5.perform": {
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_YaoGuang_00_Skill02_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_YaoGuang_00_Skill02_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.648},
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 1.0},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_YaoGuang_00/Eff_Avatar_YaoGuang_00_Skill02_Weapon03.prefab",
+              "immediate": true,
+              "as": "skill.1.remove.19.0"
+            },
+            {"op": "wait", "for": "skill.1.remove.19.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_YaoGuang_00/Eff_Avatar_YaoGuang_00_Skill02_03.prefab",
+              "immediate": true,
+              "as": "skill.1.remove.20.0"
+            },
+            {"op": "wait", "for": "skill.1.remove.20.0", "until": "accepted"}
+          ],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill02", "end": -1.0, "track": {"logic": 3}, "as": "skill.1.clock.1"},
+        {"op": "wait", "for": "skill.1.clock.1", "until": "animation_end"},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "SkillMaze → Skill02",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "Manual inserted presentation using the retained initial slot 1 -> Skill02; dynamic slot changes, native queue/auto-cast, caller conditions and nonvisual setup are not replayed.",
+          "Source: Manual inserted presentation using the retained initial slot 1 -> Skill02; dynamic slot changes, native queue/auto-cast, caller conditions and nonvisual setup are not replayed."
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "@receiver-clear/callback.5359.receiver-property.3": {
+      "requires": [
+        {"op": "state", "name": "common.elemental.frozen-hit"}
+      ],
+      "mode": "input",
+      "run": [
+        {"op": "state.exit", "name": "common.elemental.frozen-hit", "only_caster": true, "as": "clear"},
+        {"op": "wait", "for": "clear"}
+      ],
+      "presentation": {
+        "label": "Clear hit effect override",
+        "kind": "setting",
+        "contexts": ["common.elemental.frozen-hit"]
+      },
+      "tags": ["visual-receiver-clear"]
+    }
+  },
+  "functions": {
+    "@return.rest.pose": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "rest.pose.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "rest.pose"
+      }
+    ],
+    "@return.return.pose": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "return.pose.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "return.pose"
+      }
+    ]
+  },
+  "states": {},
+  "resources": {
+    "effects": {
+      "skill.2.effect.24": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_YaoGuang_00/Eff_Avatar_YaoGuang_00_Skill03_Kuji01.prefab", "target": "Caster", "simulate_immediately": true},
+      "skill.3.effect.22": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_YaoGuang_00/Eff_Avatar_YaoGuang_00_skill04_Kuji02.prefab", "target": "Caster"},
+      "callback.4528.effect.2": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_YaoGuang_00/Eff_Avatar_YaoGuang_00_Skill02_BattleArea_Circular.prefab",
+        "target": "callback.4528.target.AllTeamCenter",
+        "fade_in": false,
+        "simulate_immediately": true,
+        "unique_name": "Eff_Avatar_YaoGuang_00_Skill02_BattleArea_Circular"
+      }
+    }
+  }
+}

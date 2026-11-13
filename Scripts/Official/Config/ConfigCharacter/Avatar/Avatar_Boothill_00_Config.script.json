@@ -1,0 +1,1012 @@
+{
+  "format": "hksr.script",
+  "id": "official-scripts:Config/ConfigCharacter/Avatar/Avatar_Boothill_00_Config.json",
+  "applies_to": "Config/ConfigCharacter/Avatar/Avatar_Boothill_00_Config.json",
+  "default": true,
+  "imports": ["Common/Elemental.json"],
+  "defaults": {
+    "targets": {
+      "PreviewTarget": {
+        "local_position": [0, 0, 6]
+      }
+    }
+  },
+  "actions": {
+    "rest": {
+      "trigger": "internal",
+      "run": [
+        {"op": "call", "function": "@return.rest.pose"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["stable-return", "idle-provider"]
+    },
+    "skill.0.perform": {
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Boothill_00_Skill01_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.0.clock.1", "progress": 0.3589999997},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit",
+              "direction": {"horizontal": 30.0, "vertical": 80.0},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Boothill_00/Eff_Avatar_Boothill_00_Skill01_Attack_Hit.prefab",
+                "height": 1.2000000476837158,
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.0.hit.5"
+            },
+            {"op": "wait", "for": "skill.0.hit.5", "until": "accepted"},
+            {"op": "wait", "for": "skill.0.clock.1", "progress": 0.3730000001},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit_H",
+              "direction": {"horizontal": 10.0, "vertical": 80.0},
+              "effect": {"path": "", "height": 0.5, "minimum_interval": 0.0500000007, "maximum_count": 1},
+              "allow_position": true,
+              "as": "skill.0.hit.8"
+            },
+            {"op": "wait", "for": "skill.0.hit.8", "until": "accepted"}
+          ],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Boothill_00_Skill01_Camera",
+          "run": [],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill01", "end": 0.0, "track": {"logic": 3}, "as": "skill.0.clock.1"},
+        {
+          "op": "movement",
+          "animation": "skill.0.clock.1",
+          "segments": [
+            {
+              "destination": "target",
+              "name": "PreviewTarget",
+              "target_geometry": true,
+              "start": 0.0489999994,
+              "end": 0.1333333253,
+              "sample": {"distance": 0.8000000007, "percentage": 1.0, "include_radii": true}
+            },
+            {
+              "destination": "target",
+              "name": "PreviewTarget",
+              "target_geometry": true,
+              "start": 0.1333333253,
+              "end": 0.1869999996,
+              "sample": {"distance": 0.4000000003, "percentage": 1.0, "include_radii": true}
+            },
+            {
+              "destination": "origin",
+              "start": 0.8000000007,
+              "end": 0.9230000006,
+              "sample": {"distance": 0.0, "percentage": 1.0, "include_radii": true}
+            }
+          ],
+          "as": "skill.0.clock.1.movement"
+        },
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.0},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.06},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.3600000003},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.8610000007},
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "Skill01",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "LookAt: not included in the visual sequence projection",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "GlobalTimeSlow: not included in the visual sequence projection",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "RadialBlurEffect: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "skill.0.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Boothill_00_Config.json", "skill": 0, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "skill.1.perform": {
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Boothill_00_Skill02_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.7595000003}
+          ],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Boothill_00_Skill02_Camera",
+          "run": [],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill02", "end": -1.0, "track": {"logic": 3}, "as": "skill.1.clock.1"},
+        {"op": "wait", "for": "skill.1.clock.1", "until": "animation_end"},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.0959999996},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.4269999999},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.727850001},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.8620000006},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.9430000006},
+        {"op": "animation", "state": "Skill11_Ready_Loop", "transition": 0.05, "end": -1.0, "track": {"logic": 1}, "as": "skill.1.clock.2"},
+        {"op": "wait", "for": "skill.1.clock.2", "until": "animation_end"},
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "Skill02",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "LookAt: not included in the visual sequence projection",
+          "TurnInsertAction: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "PredicateTaskList: serial step depends on an unavailable source clock; no timing is inferred",
+          "MakeCharacterHUDVisible: not included in the visual sequence projection",
+          "GlobalMainIntensityEffect: not included in the visual sequence projection",
+          "TriggerEffect: effect needs a non-owned target, dynamic path, or Timeline attachment"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "skill.1.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Boothill_00_Config.json", "skill": 1, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "skill.2.perform": {
+      "inputs": {
+        "skill.2.condition.ByIsBodyPart.21": {"type": "bool", "default": false, "label": "ByIsBodyPart", "description": "Manual source condition: $.AbilityList[8].OnStart[7].Predicate"}
+      },
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Boothill_00_Skill03_Camera",
+          "run": [],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill03", "end": -1.0, "track": {"logic": 3}, "as": "skill.2.clock.1"},
+        {"op": "wait", "for": "skill.2.clock.1", "until": "animation_end"},
+        {
+          "op": "start",
+          "id": "Avatar_Boothill_00_Skill03_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.6360000001},
+            {"op": "wait", "frame": true},
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.8720000006}
+          ],
+          "join": true
+        },
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "skill.2.condition.ByIsBodyPart.21", "is": true},
+          "then": [
+            {"op": "effect.create", "effects": ["skill.2.effect.22"], "as": "skill.2.effect.22"},
+            {"op": "wait", "for": "skill.2.effect.22", "until": "accepted"}
+          ],
+          "else": [
+            {"op": "effect.create", "effects": ["skill.2.effect.23"], "as": "skill.2.effect.23"},
+            {"op": "wait", "for": "skill.2.effect.23", "until": "accepted"}
+          ]
+        },
+        {"op": "wait", "for": "skill.2.clock.1", "progress": 0.2000000001},
+        {"op": "wait", "for": "skill.2.clock.1", "progress": 0.8680000002},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {
+          "op": "effect.remove",
+          "effects": ["skill.2.effect.22", "skill.2.effect.23"],
+          "optional": ["skill.2.effect.22", "skill.2.effect.23"],
+          "as": "skill.2.remove-effects"
+        },
+        {"op": "wait", "for": "skill.2.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {
+          "op": "effect.remove",
+          "effects": ["skill.2.effect.22", "skill.2.effect.23"],
+          "optional": ["skill.2.effect.22", "skill.2.effect.23"],
+          "as": "skill.2.remove-effects"
+        },
+        {"op": "wait", "for": "skill.2.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "Skill03",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "ShowBattleScreenEffect: not included in the visual sequence projection",
+          "AlignTargetToTeamCenter: not included in the visual sequence projection",
+          "ScaleCharacterModel: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "SetSkillTargetFormationByPos: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "FireProjectile: not included in the visual sequence projection",
+          "ClearTargetTimeSlow: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "DamageByAttackProperty: hit presentation not projected: hit requires an explicit motion/source binding: HitMotion",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "TriggerSkipDeadHandler: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "HideLevelStage: not included in the visual sequence projection",
+          "TryStartConnectUltraSkillFrameCapture: not included in the visual sequence projection",
+          "WaitTimelineFinish: not included in the visual sequence projection",
+          "HideLevelStage: serial step depends on an unavailable source clock; no timing is inferred",
+          "ScaleCharacterModel: serial step depends on an unavailable source clock; no timing is inferred",
+          "SetTeamFormation: serial step depends on an unavailable source clock; no timing is inferred",
+          "MoveToTargetPosition: serial step depends on an unavailable source clock; no timing is inferred"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "skill.2.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Boothill_00_Config.json", "skill": 2, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "skill.3.perform": {
+      "inputs": {
+        "skill.3.condition.ByRankActivated.45": {
+          "type": "bool",
+          "default": true,
+          "label": "ByRankActivated",
+          "description": "Manual source condition: $.AbilityList[3].OnStart[26].SuccessTaskList[11].Predicate"
+        },
+        "skill.3.condition.ByRankActivated.55": {
+          "type": "bool",
+          "default": true,
+          "label": "ByRankActivated",
+          "description": "Manual source condition: $.AbilityList[3].OnStart[26].SuccessTaskList[18].Predicate"
+        },
+        "skill.3.condition.ByRankActivated.62": {
+          "type": "bool",
+          "default": true,
+          "label": "ByRankActivated",
+          "description": "Manual source condition: $.AbilityList[3].OnStart[26].SuccessTaskList[22].Predicate"
+        },
+        "skill.3.condition.ByContainBehaviorFlag.72": {
+          "type": "bool",
+          "default": true,
+          "label": "ByContainBehaviorFlag",
+          "description": "Manual source condition: $.AbilityList[3].OnStart[26].Predicate.PredicateList[0]"
+        },
+        "skill.3.condition.ByCompareDynamicValue.73": {
+          "type": "bool",
+          "default": true,
+          "label": "ByCompareDynamicValue",
+          "description": "Manual source condition: $.AbilityList[3].OnStart[26].Predicate.PredicateList[1]"
+        }
+      },
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Boothill_00_Skill11_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.3.clock.1", "progress": 0.1333000001},
+            {"op": "effect.create", "effects": ["skill.3.effect.8"], "as": "skill.3.effect.8"},
+            {"op": "wait", "for": "skill.3.effect.8", "until": "accepted"},
+            {"op": "wait", "for": "skill.3.clock.1", "progress": 0.1749999998},
+            {"op": "effect.create", "effects": ["skill.3.effect.12"], "as": "skill.3.effect.12"},
+            {"op": "wait", "for": "skill.3.effect.12", "until": "accepted"},
+            {"op": "wait", "for": "skill.3.clock.1", "progress": 0.2167000002},
+            {"op": "effect.create", "effects": ["skill.3.effect.16"], "as": "skill.3.effect.16"},
+            {"op": "wait", "for": "skill.3.effect.16", "until": "accepted"},
+            {"op": "wait", "for": "skill.3.clock.1", "progress": 0.2667000002},
+            {"op": "effect.create", "effects": ["skill.3.effect.20"], "as": "skill.3.effect.20"},
+            {"op": "wait", "for": "skill.3.effect.20", "until": "accepted"},
+            {"op": "wait", "for": "skill.3.clock.1", "progress": 0.3167000003},
+            {"op": "effect.create", "effects": ["skill.3.effect.24"], "as": "skill.3.effect.24"},
+            {"op": "wait", "for": "skill.3.effect.24", "until": "accepted"},
+            {"op": "wait", "for": "skill.3.clock.1", "progress": 0.3667000003},
+            {"op": "effect.create", "effects": ["skill.3.effect.28"], "as": "skill.3.effect.28"},
+            {"op": "wait", "for": "skill.3.effect.28", "until": "accepted"},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit",
+              "direction": {},
+              "effect": {"path": "", "minimum_interval": 0.0500000007, "maximum_count": 1},
+              "allow_position": true,
+              "as": "skill.3.hit.30"
+            },
+            {"op": "wait", "for": "skill.3.hit.30", "until": "accepted"},
+            {
+              "op": "if",
+              "condition": {"op": "value", "name": "skill.3.condition.ByContainBehaviorFlag.72", "is": true},
+              "then": [
+                {
+                  "op": "if",
+                  "condition": {"op": "value", "name": "skill.3.condition.ByCompareDynamicValue.73", "is": true},
+                  "then": [
+                    {
+                      "op": "if",
+                      "condition": {"op": "value", "name": "skill.3.condition.ByRankActivated.45", "is": true},
+                      "then": [],
+                      "else": []
+                    },
+                    {
+                      "op": "if",
+                      "condition": {"op": "value", "name": "skill.3.condition.ByRankActivated.55", "is": true},
+                      "then": [],
+                      "else": []
+                    },
+                    {
+                      "op": "if",
+                      "condition": {"op": "value", "name": "skill.3.condition.ByRankActivated.62", "is": true},
+                      "then": [],
+                      "else": []
+                    }
+                  ],
+                  "else": []
+                }
+              ],
+              "else": []
+            }
+          ],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Boothill_00_Skill11_Camera",
+          "run": [],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill11", "end": -1.0, "track": {"logic": 3}, "as": "skill.3.clock.1"},
+        {"op": "wait", "for": "skill.3.clock.1", "until": "animation_end"},
+        {"op": "wait", "for": "skill.3.clock.1", "progress": 0.1333000001},
+        {"op": "wait", "for": "skill.3.clock.1", "progress": 0.4600000004},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {
+          "op": "effect.remove",
+          "effects": ["skill.3.effect.8", "skill.3.effect.12", "skill.3.effect.16", "skill.3.effect.20", "skill.3.effect.24", "skill.3.effect.28"],
+          "optional": ["skill.3.effect.8", "skill.3.effect.12", "skill.3.effect.16", "skill.3.effect.20", "skill.3.effect.24", "skill.3.effect.28"],
+          "as": "skill.3.remove-effects"
+        },
+        {"op": "wait", "for": "skill.3.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {
+          "op": "effect.remove",
+          "effects": ["skill.3.effect.8", "skill.3.effect.12", "skill.3.effect.16", "skill.3.effect.20", "skill.3.effect.24", "skill.3.effect.28"],
+          "optional": ["skill.3.effect.8", "skill.3.effect.12", "skill.3.effect.16", "skill.3.effect.20", "skill.3.effect.24", "skill.3.effect.28"],
+          "as": "skill.3.remove-effects"
+        },
+        {"op": "wait", "for": "skill.3.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "Skill11",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "LookAt: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "TriggerEffect: effect needs a non-owned target, dynamic path, or Timeline attachment",
+          "DamageByAttackProperty: hit presentation not projected: hit requires an explicit random/position-override binding",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "TargetTimeSlow: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "RadialBlurEffect: not included in the visual sequence projection",
+          "ClearTargetTimeSlow: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "DamageByAttackProperty: hit presentation not projected: hit requires an explicit motion/source binding: HitMotion",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitFor: not included in the visual sequence projection",
+          "PredicateTaskList: serial step depends on an unavailable source clock; no timing is inferred",
+          "wait_request: reserved source clock has no submitted producer",
+          "hit: step depends on an omitted or unavailable source producer",
+          "wait_request: step depends on an omitted or unavailable source producer"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "skill.3.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Boothill_00_Config.json", "skill": 3, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "skill.4.perform": {
+      "inputs": {
+        "cue": {
+          "type": "integer",
+          "default": 0,
+          "label": "Effect",
+          "choices": [
+            {"value": 0, "label": "MAvatar_Boothill_00_Passive"},
+            {"value": 1, "label": "MAvatar_Boothill_00_Passive"},
+            {"value": 2, "label": "MAvatar_Boothill_00_Passive"}
+          ]
+        }
+      },
+      "requires": [
+        {"op": "number", "name": "cue", "compare": "ge", "value": 0},
+        {"op": "number", "name": "cue", "compare": "lt", "value": 3}
+      ],
+      "run": [
+        {
+          "op": "switch",
+          "name": "cue",
+          "cases": [
+            {
+              "is": 1,
+              "run": [
+                {"op": "effect.create", "effects": ["skill.4.effect.1"], "as": "effect"},
+                {"op": "wait", "for": "effect", "until": "accepted"},
+                {
+                  "op": "repeat",
+                  "until_finish": true,
+                  "run": [
+                    {"op": "wait", "frame": true}
+                  ]
+                },
+                {"op": "effect.remove", "effects": ["skill.4.effect.1"], "optional": ["skill.4.effect.1"], "as": "remove"},
+                {"op": "wait", "for": "remove", "until": "accepted"}
+              ],
+              "label": "MAvatar_Boothill_00_Passive"
+            },
+            {
+              "is": 2,
+              "run": [
+                {"op": "effect.create", "effects": ["skill.4.effect.2"], "as": "effect"},
+                {"op": "wait", "for": "effect", "until": "accepted"},
+                {
+                  "op": "repeat",
+                  "until_finish": true,
+                  "run": [
+                    {"op": "wait", "frame": true}
+                  ]
+                },
+                {"op": "effect.remove", "effects": ["skill.4.effect.2"], "optional": ["skill.4.effect.2"], "as": "remove"},
+                {"op": "wait", "for": "remove", "until": "accepted"}
+              ],
+              "label": "MAvatar_Boothill_00_Passive"
+            }
+          ],
+          "default": [
+            {"op": "effect.create", "effects": ["skill.4.effect.0"], "as": "effect"},
+            {"op": "wait", "for": "effect", "until": "accepted"},
+            {
+              "op": "repeat",
+              "until_finish": true,
+              "run": [
+                {"op": "wait", "frame": true}
+              ]
+            },
+            {"op": "effect.remove", "effects": ["skill.4.effect.0"], "optional": ["skill.4.effect.0"], "as": "remove"},
+            {"op": "wait", "for": "remove", "until": "accepted"}
+          ]
+        }
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "SkillP01",
+        "omissions": [
+          "Actor-owned effect cue only. Original callback conditions and timing are manual inputs; use Finish to end.",
+          "cue: 0=MAvatar_Boothill_00_Passive, 1=MAvatar_Boothill_00_Passive, 2=MAvatar_Boothill_00_Passive"
+        ]
+      },
+      "tags": ["manual-effect-cue", "partial-presentation"]
+    },
+    "callback.815": {
+      "inputs": {
+        "callback.815.condition.ByCompareTarget.2": {
+          "type": "bool",
+          "default": false,
+          "label": "ByCompareTarget",
+          "description": "Manual source condition: $.AbilityList[5].Modifiers[0].value.TaskListTemplate[0].TaskList[0].Predicate"
+        }
+      },
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "callback.815.condition.ByCompareTarget.2", "is": true},
+          "then": [],
+          "else": [
+            {"op": "animation", "state": "StandBy", "transition": 0.05, "end": -1.0, "track": {"logic": 1}, "as": "callback.815.clock.1"},
+            {"op": "wait", "for": "callback.815.clock.1", "until": "animation_end"}
+          ]
+        },
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "M_Boothill_00_Skill02_ContinuousCheck: OnListenInsertAbilityStart",
+        "omissions": ["Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects."]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "callback.816": {
+      "inputs": {
+        "callback.816.condition.ByCompareTarget.2": {
+          "type": "bool",
+          "default": false,
+          "label": "ByCompareTarget",
+          "description": "Manual source condition: $.AbilityList[5].Modifiers[0].value.TaskListTemplate[0].TaskList[0].Predicate"
+        }
+      },
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "callback.816.condition.ByCompareTarget.2", "is": true},
+          "then": [],
+          "else": [
+            {"op": "animation", "state": "StandBy", "transition": 0.05, "end": -1.0, "track": {"logic": 1}, "as": "callback.816.clock.1"},
+            {"op": "wait", "for": "callback.816.clock.1", "until": "animation_end"}
+          ]
+        },
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "M_Boothill_00_Skill02_ContinuousCheck: OnListenInsertActionStart",
+        "omissions": ["Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects."]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "callback.817": {
+      "inputs": {
+        "callback.817.condition.ByCompareTarget.2": {
+          "type": "bool",
+          "default": false,
+          "label": "ByCompareTarget",
+          "description": "Manual source condition: $.AbilityList[5].Modifiers[0].value.TaskListTemplate[0].TaskList[0].Predicate"
+        }
+      },
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "callback.817.condition.ByCompareTarget.2", "is": true},
+          "then": [],
+          "else": [
+            {"op": "animation", "state": "StandBy", "transition": 0.05, "end": -1.0, "track": {"logic": 1}, "as": "callback.817.clock.1"},
+            {"op": "wait", "for": "callback.817.clock.1", "until": "animation_end"}
+          ]
+        },
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "M_Boothill_00_Skill02_ContinuousCheck: OnListenUltraSkillPrepare",
+        "omissions": ["Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects."]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "callback.818": {
+      "inputs": {
+        "callback.818.condition.ByCompareTarget.2": {
+          "type": "bool",
+          "default": false,
+          "label": "ByCompareTarget",
+          "description": "Manual source condition: $.AbilityList[5].Modifiers[0].value.TaskListTemplate[0].TaskList[0].Predicate"
+        }
+      },
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "callback.818.condition.ByCompareTarget.2", "is": true},
+          "then": [],
+          "else": [
+            {"op": "animation", "state": "StandBy", "transition": 0.05, "end": -1.0, "track": {"logic": 1}, "as": "callback.818.clock.1"},
+            {"op": "wait", "for": "callback.818.clock.1", "until": "animation_end"}
+          ]
+        },
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "M_Boothill_00_Skill02_ContinuousCheck: OnListenBeforeSkillUse",
+        "omissions": ["Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects."]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "callback.829": {
+      "inputs": {
+        "callback.829.condition.ByCompareDynamicValue.6": {
+          "type": "bool",
+          "default": true,
+          "label": "ByCompareDynamicValue",
+          "description": "Manual source condition: $.AbilityList[10].Modifiers[1].value.OnDynamicValueChange[0].Ranges[0].OnChange[2].Predicate.PredicateList[0]"
+        },
+        "callback.829.condition.ByCompareDynamicValue.7": {
+          "type": "bool",
+          "default": true,
+          "label": "ByCompareDynamicValue",
+          "description": "Manual source condition: $.AbilityList[10].Modifiers[1].value.OnDynamicValueChange[0].Ranges[0].OnChange[2].Predicate.PredicateList[1]"
+        },
+        "callback.829.condition.ByCompareDynamicValue.11": {
+          "type": "bool",
+          "default": true,
+          "label": "ByCompareDynamicValue",
+          "description": "Manual source condition: $.AbilityList[10].Modifiers[1].value.OnDynamicValueChange[0].Ranges[0].OnChange[3].Predicate.PredicateList[0]"
+        },
+        "callback.829.condition.ByCompareDynamicValue.12": {
+          "type": "bool",
+          "default": true,
+          "label": "ByCompareDynamicValue",
+          "description": "Manual source condition: $.AbilityList[10].Modifiers[1].value.OnDynamicValueChange[0].Ranges[0].OnChange[3].Predicate.PredicateList[1]"
+        },
+        "callback.829.condition.ByCompareDynamicValue.16": {
+          "type": "bool",
+          "default": true,
+          "label": "ByCompareDynamicValue",
+          "description": "Manual source condition: $.AbilityList[10].Modifiers[1].value.OnDynamicValueChange[0].Ranges[0].OnChange[4].Predicate.PredicateList[0]"
+        },
+        "callback.829.condition.ByCompareDynamicValue.17": {
+          "type": "bool",
+          "default": true,
+          "label": "ByCompareDynamicValue",
+          "description": "Manual source condition: $.AbilityList[10].Modifiers[1].value.OnDynamicValueChange[0].Ranges[0].OnChange[4].Predicate.PredicateList[1]"
+        }
+      },
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "callback.829.condition.ByCompareDynamicValue.6", "is": true},
+          "then": [
+            {
+              "op": "if",
+              "condition": {"op": "value", "name": "callback.829.condition.ByCompareDynamicValue.7", "is": true},
+              "then": [
+                {"op": "effect.create", "effects": ["callback.829.effect.5"], "as": "callback.829.effect.5"},
+                {"op": "wait", "for": "callback.829.effect.5", "until": "accepted"}
+              ],
+              "else": []
+            }
+          ],
+          "else": []
+        },
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "callback.829.condition.ByCompareDynamicValue.11", "is": true},
+          "then": [
+            {
+              "op": "if",
+              "condition": {"op": "value", "name": "callback.829.condition.ByCompareDynamicValue.12", "is": true},
+              "then": [
+                {"op": "effect.create", "effects": ["callback.829.effect.10"], "as": "callback.829.effect.10"},
+                {"op": "wait", "for": "callback.829.effect.10", "until": "accepted"}
+              ],
+              "else": []
+            }
+          ],
+          "else": []
+        },
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "callback.829.condition.ByCompareDynamicValue.16", "is": true},
+          "then": [
+            {
+              "op": "if",
+              "condition": {"op": "value", "name": "callback.829.condition.ByCompareDynamicValue.17", "is": true},
+              "then": [
+                {"op": "effect.create", "effects": ["callback.829.effect.15"], "as": "callback.829.effect.15"},
+                {"op": "wait", "for": "callback.829.effect.15", "until": "accepted"}
+              ],
+              "else": []
+            }
+          ],
+          "else": []
+        },
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {
+          "op": "effect.remove",
+          "effects": ["callback.829.effect.5", "callback.829.effect.10", "callback.829.effect.15"],
+          "optional": ["callback.829.effect.5", "callback.829.effect.10", "callback.829.effect.15"],
+          "as": "callback.829.remove-effects"
+        },
+        {"op": "wait", "for": "callback.829.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {
+          "op": "effect.remove",
+          "effects": ["callback.829.effect.5", "callback.829.effect.10", "callback.829.effect.15"],
+          "optional": ["callback.829.effect.5", "callback.829.effect.10", "callback.829.effect.15"],
+          "as": "callback.829.remove-effects"
+        },
+        {"op": "wait", "for": "callback.829.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "MAvatar_Boothill_00_Passive: OnChange",
+        "omissions": [
+          "Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects.",
+          "WriteCustomValueToStatistic: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "callback.856": {
+      "bindings": {
+        "targets": ["Recipient"]
+      },
+      "run": [
+        {"op": "effect.create", "effects": ["callback.856.effect.2"], "as": "callback.856.effect.2"},
+        {"op": "wait", "for": "callback.856.effect.2", "until": "accepted"},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "effect.remove", "effects": ["callback.856.effect.2"], "optional": ["callback.856.effect.2"], "as": "callback.856.remove-effects"},
+        {"op": "wait", "for": "callback.856.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "effect.remove", "effects": ["callback.856.effect.2"], "optional": ["callback.856.effect.2"], "as": "callback.856.remove-effects"},
+        {"op": "wait", "for": "callback.856.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "MAvatar_Boothill_00_DuelTarget: OnStack",
+        "omissions": [
+          "Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects.",
+          "ModifierAttachEffect: manual bound-effect preview; modifier flags, collider-height offset, native mutex and automatic visibility/lifetime are not applied"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "skill.5.perform": {"use": "common.elemental.responses", "next": "rest"},
+    "preview.hit": {
+      "inputs": {
+        "kind": {
+          "type": "text",
+          "default": "Hit",
+          "label": "Hit type",
+          "choices": [
+            {"value": "Hit", "label": "Hit"},
+            {"value": "Hit_H", "label": "Hit_H"}
+          ]
+        }
+      },
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "kind", "is": "Hit_H"},
+          "then": [
+            {"op": "hit", "target": "Caster", "animation": "Hit_H", "as": "hit-heavy"},
+            {"op": "wait", "for": "hit-heavy"}
+          ],
+          "else": [
+            {"op": "hit", "target": "Caster", "animation": "Hit", "as": "hit"},
+            {"op": "wait", "for": "hit"}
+          ]
+        }
+      ],
+      "next": "rest",
+      "presentation": {"label": "Hit"},
+      "tags": ["manual-visual-callback"]
+    },
+    "source.6": {
+      "requires": [
+        {
+          "op": "unresolved",
+          "source": "Config/ConfigCharacter/Avatar/Avatar_Boothill_00_Config.json:$.SkillList[6]",
+          "detail": "Retained source has no independently bound presentation unit"
+        }
+      ],
+      "trigger": "internal",
+      "run": [],
+      "presentation": {
+        "label": "SkillMaze",
+        "listed": false,
+        "omissions": ["Retained source has no independently bound presentation unit"]
+      },
+      "tags": ["retained-source"]
+    },
+    "@receiver-clear/callback.5359.receiver-property.3": {
+      "requires": [
+        {"op": "state", "name": "common.elemental.frozen-hit"}
+      ],
+      "mode": "input",
+      "run": [
+        {"op": "state.exit", "name": "common.elemental.frozen-hit", "only_caster": true, "as": "clear"},
+        {"op": "wait", "for": "clear"}
+      ],
+      "presentation": {
+        "label": "Clear hit effect override",
+        "kind": "setting",
+        "contexts": ["common.elemental.frozen-hit"]
+      },
+      "tags": ["visual-receiver-clear"]
+    }
+  },
+  "functions": {
+    "@return.rest.pose": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "rest.pose.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "rest.pose"
+      }
+    ],
+    "@return.return.pose": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "return.pose.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "return.pose"
+      }
+    ]
+  },
+  "states": {},
+  "resources": {
+    "effects": {
+      "skill.4.effect.0": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Boothill_00/Eff_Avatar_Boothill_00_Passive_Badge_01.prefab", "target": "Caster", "attach_point": "ButtonR_A"},
+      "skill.4.effect.2": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Boothill_00/Eff_Avatar_Boothill_00_Passive_Badge_01.prefab", "target": "Caster", "attach_point": "ButtonR_C"},
+      "skill.4.effect.1": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Boothill_00/Eff_Avatar_Boothill_00_Passive_Badge_01.prefab", "target": "Caster", "attach_point": "ButtonR_B"},
+      "skill.2.effect.22": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Boothill_00/Eff_Avatar_Boothill_00_Skill03_Wanted.prefab", "target": "Caster", "attach_to_target": true},
+      "skill.2.effect.23": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Boothill_00/Eff_Avatar_Boothill_00_Skill03_Wanted.prefab", "target": "Caster", "attach_to_target": true},
+      "skill.3.effect.8": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Boothill_00/Eff_Avatar_Boothill_00_Skill11_AttackFire_01.prefab", "target": "Caster"},
+      "skill.3.effect.12": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Boothill_00/Eff_Avatar_Boothill_00_Skill11_AttackFire_01.prefab", "target": "Caster"},
+      "skill.3.effect.16": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Boothill_00/Eff_Avatar_Boothill_00_Skill11_AttackFire_01.prefab", "target": "Caster"},
+      "skill.3.effect.20": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Boothill_00/Eff_Avatar_Boothill_00_Skill11_AttackFire_01.prefab", "target": "Caster"},
+      "skill.3.effect.24": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Boothill_00/Eff_Avatar_Boothill_00_Skill11_AttackFire_01.prefab", "target": "Caster"},
+      "skill.3.effect.28": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Boothill_00/Eff_Avatar_Boothill_00_Skill11_AttackFire_01.prefab", "target": "Caster"},
+      "callback.829.effect.5": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Boothill_00/Eff_Avatar_Boothill_00_Passive_Badge_01.prefab", "target": "Caster", "attach_point": "ButtonR_A"},
+      "callback.829.effect.10": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Boothill_00/Eff_Avatar_Boothill_00_Passive_Badge_01.prefab", "target": "Caster", "attach_point": "ButtonR_B"},
+      "callback.829.effect.15": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Boothill_00/Eff_Avatar_Boothill_00_Passive_Badge_01.prefab", "target": "Caster", "attach_point": "ButtonR_C"},
+      "callback.856.effect.2": {"path": "Effects/Eff_Prefab/Eff_Common/Eff_Buff_Common_Taunt_Loop.prefab", "target": "Recipient", "attach_to_target": true}
+    }
+  }
+}

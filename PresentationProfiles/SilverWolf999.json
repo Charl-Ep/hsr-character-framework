@@ -1,0 +1,49 @@
+{
+  "format": "hksr.presentation-profile",
+  "id": "silver-wolf-999",
+  "source": "Config/ConfigCharacter/Avatar/Avatar_SilverWolf999_00_Config.json",
+  "initial_phase": "normal",
+  "reset_on_domain_exit": true,
+  "native_events": [
+    {
+      "file": "Config/ConfigAnimEvents/Avatar/Effect/Avatar_SilverWolf999_00_Effect_AnimEvent.json",
+      "part": "time_point", "states": ["Skill11_Start"],
+      "scope": "partner-preview", "key": "native.skill11-start"
+    },
+    {
+      "file": "Config/ConfigAnimEvents/Avatar/Effect/Avatar_SilverWolf999_00_Effect_AnimEvent.json",
+      "part": "time_point", "states": ["Skill11_Item2_Ready"],
+      "scope": "partner-preview", "key": "native.skill11-item2-ready"
+    },
+    {
+      "file": "Config/ConfigAnimEvents/Avatar/Effect/Avatar_SilverWolf999_00_Effect_AnimEvent.json",
+      "part": "time_point", "states": ["Skill11_Item3_Ready"],
+      "scope": "partner-preview", "key": "native.skill11-item3-ready"
+    }
+  ],
+  "phases": {
+    "normal": {"idle": "StandBy"},
+    "ultra": {"idle": "StandBy_Transfer"}
+  },
+  "actions": {
+    "StandBy": {"on_enter": "normal"},
+    "StandBy_Transfer": {"on_enter": "ultra"},
+    "Skill03": {
+      "cues": [{"at": 0.8060000003, "phase": "ultra"}],
+      "complete_at": 1,
+      "return": "phase_idle"
+    },
+    "Skill11_Start": {"on_enter": "ultra", "return": "hold"},
+    "Skill11_Item1_Ready": {"on_enter": "ultra", "return": "hold"},
+    "Skill11_Item2_Ready": {"on_enter": "ultra", "return": "hold"},
+    "Skill11_Item3_Ready": {"on_enter": "ultra", "return": "hold"},
+    "Skill11_Item1_Ready_Loop": {"on_enter": "ultra", "return": "hold"},
+    "Skill11_Item2_Ready_Loop": {"on_enter": "ultra", "return": "hold"},
+    "Skill11_Item3_Ready_Loop": {"on_enter": "ultra", "return": "hold"},
+    "Skill11_Item1": {"return": "hold"},
+    "Skill11_Item2": {"return": "hold"},
+    "Skill11_Item3": {"return": "hold"},
+    "Skill11_End": {"on_complete": "normal"},
+    "StandBy01toStandBy": {"on_complete": "normal"}
+  }
+}

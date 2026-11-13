@@ -1,0 +1,706 @@
+{
+  "format": "hksr.script",
+  "id": "official-scripts:Config/ConfigCharacter/Avatar/Avatar_RuanMei_00_Config.json",
+  "applies_to": "Config/ConfigCharacter/Avatar/Avatar_RuanMei_00_Config.json",
+  "default": true,
+  "imports": ["Common/Elemental.json"],
+  "defaults": {
+    "targets": {
+      "PreviewTarget": {
+        "local_position": [0, 0, 6]
+      },
+      "AbilityTargetEntity": {
+        "local_position": [0, 0, 6]
+      },
+      "SkillPointEntity": {"alias": "AbilityTargetEntity"}
+    }
+  },
+  "actions": {
+    "base.rest": {
+      "trigger": "internal",
+      "runtime": {"policy": "ready", "selected": ""},
+      "run": [
+        {"op": "call", "function": "@return.rest.pose"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["stable-return", "idle-provider"]
+    },
+    "base.skill.0.perform": {
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "runtime": {"policy": "performance", "selected": "Skill01"},
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_RuanMei_00_Skill01_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_RuanMei_Skill01_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.0.clock.1", "progress": 0.3100000002},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit",
+              "direction": {},
+              "effect": {"path": "", "minimum_interval": 0.0500000007, "maximum_count": 1},
+              "allow_position": true,
+              "as": "skill.0.hit.9"
+            },
+            {"op": "wait", "for": "skill.0.hit.9", "until": "accepted"}
+          ],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill01", "end": -1.0, "track": {"logic": 3}, "as": "skill.0.clock.1"},
+        {"op": "wait", "for": "skill.0.clock.1", "until": "animation_end"},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.8000000007},
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill01",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "TriggerEffect: effect needs a non-owned target, dynamic path, or Timeline attachment",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "LookAt: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.0.ready.-1": {
+      "runtime": {"policy": "ready", "selected": "Skill01"},
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_RuanMei_00_Config.json", "skill": 0, "as": "ready"}
+      ],
+      "presentation": {
+        "label": "Skill01 · Ready",
+        "ready": {"config": "Config/ConfigCharacter/Avatar/Avatar_RuanMei_00_Config.json", "skill": 0}
+      },
+      "tags": ["ready-pose"]
+    },
+    "base.skill.1.perform": {
+      "runtime": {"policy": "performance", "selected": "Skill02"},
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_RuanMei_00_Skill02_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_RuanMei_Skill02_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.4600000004},
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.4900000004},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_RuanMei_00/Eff_Avatar_RuanMei_00_Skill02_03.prefab",
+              "as": "skill.1.remove.8.0"
+            },
+            {"op": "wait", "for": "skill.1.remove.8.0", "until": "accepted"},
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.5000000004}
+          ],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill02", "end": 1.0, "track": {"logic": 3}, "as": "skill.1.clock.1"},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 1.0},
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill02",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "SyncCharLightAndCameraDir: not included in the visual sequence projection",
+          "TriggerEffect: effect needs a non-owned target, dynamic path, or Timeline attachment",
+          "SkillPerformFinish: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.1.ready.-1": {
+      "runtime": {"policy": "ready", "selected": "Skill02"},
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_RuanMei_00_Config.json", "skill": 1, "as": "ready"}
+      ],
+      "presentation": {
+        "label": "Skill02 · Ready",
+        "ready": {"config": "Config/ConfigCharacter/Avatar/Avatar_RuanMei_00_Config.json", "skill": 1}
+      },
+      "tags": ["ready-pose"]
+    },
+    "base.skill.2.perform": {
+      "runtime": {"policy": "performance", "selected": "Skill03"},
+      "run": [
+        {
+          "op": "effect.remove_event",
+          "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_RuanMei_00/Eff_Avatar_RuanMei_00_Skill03_Ready.prefab",
+          "as": "skill.2.remove.3.0"
+        },
+        {"op": "wait", "for": "skill.2.remove.3.0", "until": "accepted"},
+        {
+          "op": "start",
+          "id": "Avatar_RuanMei_00_Skill03_Camera",
+          "run": [],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill03", "end": -1.0, "track": {"logic": 3}, "as": "skill.2.clock.1"},
+        {"op": "wait", "for": "skill.2.clock.1", "until": "animation_end"},
+        {
+          "op": "start",
+          "id": "Avatar_RuanMei_Skill03_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.7600000007},
+            {"op": "effect.create", "effects": ["base.skill.2.effect.13"], "as": "skill.2.effect.13"},
+            {"op": "wait", "for": "skill.2.effect.13", "until": "accepted"},
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.9000000008},
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 1.0}
+          ],
+          "join": true
+        },
+        {"op": "wait", "for": "skill.2.clock.1", "progress": 0.7500000006},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "effect.remove", "effects": ["base.skill.2.effect.13"], "optional": ["base.skill.2.effect.13"], "as": "skill.2.remove-effects"},
+        {"op": "wait", "for": "skill.2.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "effect.remove", "effects": ["base.skill.2.effect.13"], "optional": ["base.skill.2.effect.13"], "as": "skill.2.remove-effects"},
+        {"op": "wait", "for": "skill.2.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill03",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "SyncCharLightAndCameraDir: not included in the visual sequence projection",
+          "HideLevelStage: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "TriggerEffect: effect needs a non-owned target, dynamic path, or Timeline attachment",
+          "TryStartConnectUltraSkillFrameCapture: not included in the visual sequence projection",
+          "RemoveEffect: effect removal has no owned target binding",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "SetTeamFormation: not included in the visual sequence projection",
+          "WaitTimelineFinish: not included in the visual sequence projection",
+          "HideLevelStage: serial step depends on an unavailable source clock; no timing is inferred",
+          "GlobalMainIntensityEffect: serial step depends on an unavailable source clock; no timing is inferred",
+          "TriggerEffect: serial step depends on an unavailable source clock; no timing is inferred"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.2.ready.-1": {
+      "runtime": {"policy": "ready", "selected": "Skill03"},
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_RuanMei_00_Config.json", "skill": 2, "as": "ready"}
+      ],
+      "presentation": {
+        "label": "Skill03 · Ready",
+        "ready": {"config": "Config/ConfigCharacter/Avatar/Avatar_RuanMei_00_Config.json", "skill": 2}
+      },
+      "tags": ["ready-pose"]
+    },
+    "base.callback.3705": {
+      "bindings": {
+        "targets": ["Recipient"]
+      },
+      "runtime": {"policy": "performance", "selected": ""},
+      "run": [
+        {
+          "op": "start",
+          "id": "callback.3705.effect.3.delay",
+          "run": [
+            {"op": "wait", "seconds": 0.05000000074505806},
+            {"op": "effect.create", "effects": ["base.callback.3705.effect.3"], "as": "callback.3705.effect.3"},
+            {"op": "wait", "for": "callback.3705.effect.3", "until": "accepted"}
+          ],
+          "join": true
+        },
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "effect.remove", "effects": ["base.callback.3705.effect.3"], "optional": ["base.callback.3705.effect.3"], "as": "callback.3705.remove-effects"},
+        {"op": "wait", "for": "callback.3705.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "effect.remove", "effects": ["base.callback.3705.effect.3"], "optional": ["base.callback.3705.effect.3"], "as": "callback.3705.remove-effects"},
+        {"op": "wait", "for": "callback.3705.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "MAvatar_RuanMei_PassiveArea_Enemy: OnStack",
+        "omissions": [
+          "Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects.",
+          "ModifierAttachEffect: manual bound-effect preview; modifier flags, collider-height offset, native mutex and automatic visibility/lifetime are not applied"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "base.followup.0": {
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "runtime": {"policy": "performance", "selected": ""},
+      "run": [
+        {"op": "wait", "seconds": 0.2700000002},
+        {
+          "op": "hit",
+          "target": "PreviewTarget",
+          "animation": "Hit",
+          "direction": {},
+          "effect": {"path": "", "minimum_interval": 0.0500000007, "maximum_count": 1},
+          "allow_position": true,
+          "as": "followup.0.hit.11"
+        },
+        {"op": "wait", "for": "followup.0.hit.11", "until": "accepted"},
+        {"op": "wait", "seconds": 0.05},
+        {"op": "wait", "seconds": 1.1},
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Avatar_RuanMei_TriggerImprintEffect",
+        "omissions": [
+          "Manual follow-up presentation; no native action queue or combat condition evaluation.",
+          "retained visual sequence",
+          "TriggerCustomString: not included in the visual sequence projection",
+          "GlobalMainIntensityEffect: not included in the visual sequence projection",
+          "RadialBlurEffect: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "TriggerEffect: effect needs a non-owned target, dynamic path, or Timeline attachment",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "base.skill.3.perform": {
+      "inputs": {
+        "event": {
+          "type": "integer",
+          "default": 0,
+          "label": "Callback",
+          "choices": [
+            {"value": 0, "label": "MAvatar_RuanMei_Passive_TriggerBreakDamage: OnStack"}
+          ]
+        }
+      },
+      "requires": [
+        {"op": "number", "name": "event", "compare": "ge", "value": 0},
+        {"op": "number", "name": "event", "compare": "lt", "value": 1}
+      ],
+      "bindings": {
+        "targets": ["Recipient"]
+      },
+      "runtime": {"policy": "performance", "selected": "SkillP01"},
+      "run": [
+        {"op": "effect.create", "effects": ["base.callback.3675.effect.1"], "as": "callback.3675.effect.1"},
+        {"op": "wait", "for": "callback.3675.effect.1", "until": "accepted"},
+        {
+          "op": "hit",
+          "target": "Recipient",
+          "animation": "Hit",
+          "direction": {},
+          "effect": {"path": "", "minimum_interval": 0.0500000007, "maximum_count": 1},
+          "allow_position": true,
+          "as": "callback.3675.hit.4"
+        },
+        {"op": "wait", "for": "callback.3675.hit.4", "until": "accepted"},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "effect.remove", "effects": ["base.callback.3675.effect.1"], "optional": ["base.callback.3675.effect.1"], "as": "callback.3675.remove-effects"},
+        {"op": "wait", "for": "callback.3675.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "effect.remove", "effects": ["base.callback.3675.effect.1"], "optional": ["base.callback.3675.effect.1"], "as": "callback.3675.remove-effects"},
+        {"op": "wait", "for": "callback.3675.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "SkillP01",
+        "omissions": [
+          "Manual visual callback selection; no native combat modifier or automatic event simulation.",
+          "event: 0=MAvatar_RuanMei_Passive_TriggerBreakDamage: OnStack"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "base.skill.5.perform": {
+      "use": "common.elemental.responses",
+      "runtime": {"policy": "performance", "selected": "PassiveSkill02"},
+      "next": "base.rest"
+    },
+    "base.preview.hit": {
+      "inputs": {
+        "kind": {
+          "type": "text",
+          "default": "Hit",
+          "label": "Hit type",
+          "choices": [
+            {"value": "Hit", "label": "Hit"},
+            {"value": "Hit_H", "label": "Hit_H"}
+          ]
+        }
+      },
+      "runtime": {"policy": "performance", "selected": ""},
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "kind", "is": "Hit_H"},
+          "then": [
+            {"op": "hit", "target": "Caster", "animation": "Hit_H", "as": "hit-heavy"},
+            {"op": "wait", "for": "hit-heavy"}
+          ],
+          "else": [
+            {"op": "hit", "target": "Caster", "animation": "Hit", "as": "hit"},
+            {"op": "wait", "for": "hit"}
+          ]
+        }
+      ],
+      "next": "base.rest",
+      "presentation": {"label": "Hit"},
+      "tags": ["manual-visual-callback"]
+    },
+    "base.skill.4.perform": {
+      "runtime": {"policy": "performance", "selected": ""},
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_RuanMei_00_Skill02_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_RuanMei_Skill02_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.4600000004},
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.4900000004},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_RuanMei_00/Eff_Avatar_RuanMei_00_Skill02_03.prefab",
+              "as": "skill.1.remove.8.0"
+            },
+            {"op": "wait", "for": "skill.1.remove.8.0", "until": "accepted"},
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.5000000004}
+          ],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill02", "end": 1.0, "track": {"logic": 3}, "as": "skill.1.clock.1"},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 1.0},
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "SkillMaze → Skill02",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "Manual inserted presentation using the retained initial slot 1 -> Skill02; dynamic slot changes, native queue/auto-cast, caller conditions and nonvisual setup are not replayed.",
+          "Source: Manual inserted presentation using the retained initial slot 1 -> Skill02; dynamic slot changes, native queue/auto-cast, caller conditions and nonvisual setup are not replayed."
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "compiled.0.Avatar_RuanMei_00_Config.skill-0.entry": {
+      "requires": [
+        {"op": "target", "name": "AbilityTargetEntity", "allow_position": true},
+        {"op": "playback", "name": "performance", "values": ["ready"]},
+        {"op": "playback", "name": "selected", "is": "Skill01"}
+      ],
+      "runtime": {"policy": "continuous"},
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_RuanMei_Skill01_Phase01",
+          "run": [
+            {
+              "op": "start",
+              "id": "Avatar_RuanMei_Skill01_Phase02",
+              "run": [
+                {"op": "wait", "for": "body.0", "progress": 0.3100000002},
+                {
+                  "op": "effect.create",
+                  "effects": ["compiled.0.Avatar_RuanMei_00_Config.skill-0.$.AbilityList[1].OnStart[1]"],
+                  "as": "$.AbilityList[1].OnStart[1]"
+                },
+                {"op": "wait", "for": "$.AbilityList[1].OnStart[1]", "until": "accepted"},
+                {"op": "attack.record", "target": "AbilityTargetEntity", "allow_position": true, "as": "$.AbilityList[1].OnStart[2].record"},
+                {"op": "wait", "for": "$.AbilityList[1].OnStart[2].record", "until": "accepted"},
+                {
+                  "op": "hit",
+                  "target": "AbilityTargetEntity",
+                  "animation": "Hit",
+                  "events": ["after_hit", "after_hit_all"],
+                  "direction": {},
+                  "effect": {"path": "", "minimum_interval": 0.0500000007, "maximum_count": 1},
+                  "allow_position": true,
+                  "as": "$.AbilityList[1].OnStart[2]"
+                },
+                {"op": "wait", "for": "$.AbilityList[1].OnStart[2]", "until": "accepted"},
+                {"op": "attack.finish", "as": "$.AbilityList[1].OnStart[3]"},
+                {"op": "wait", "for": "$.AbilityList[1].OnStart[3]", "until": "accepted"},
+                {"op": "playback.value", "variable": "performance", "operation": "set", "value": "finished", "as": "$.AbilityList[1].OnStart[4]"}
+              ],
+              "join": true
+            },
+            {"op": "facing.target", "target": "AbilityTargetEntity", "as": "$.AbilityList[0].OnStart[2]"},
+            {"op": "wait", "for": "$.AbilityList[0].OnStart[2]", "until": "accepted"},
+            {"op": "animation", "state": "Skill01", "end": -1.0, "track": {"logic": 3}, "as": "body.0"},
+            {"op": "wait", "for": "body.0", "until": "started"},
+            {"op": "wait", "for": "body.0", "progress": 0.8000000007}
+          ],
+          "join": true
+        },
+        {"op": "join"},
+        {"op": "playback.value", "variable": "performance", "operation": "set", "value": "resetting", "as": "after"},
+        {"op": "call", "function": "@return.return"},
+        {"op": "wait", "for": "return", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return-position"},
+        {"op": "wait", "for": "return-position"},
+        {"op": "playback.value", "variable": "performance", "operation": "set", "value": "ready", "as": "reset"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.abort-return"},
+        {"op": "wait", "for": "abort-return", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "abort-position"},
+        {"op": "wait", "for": "abort-position"}
+      ],
+      "next": "compiled.0.Avatar_RuanMei_00_Config.skill-0.rest",
+      "presentation": {"label": "Avatar_RuanMei_Skill01_Phase01"},
+      "tags": ["entry-development"]
+    },
+    "compiled.0.Avatar_RuanMei_00_Config.skill-0.select": {
+      "requires": [
+        {"op": "playback", "name": "performance", "values": ["ready", "failed"]}
+      ],
+      "runtime": {"policy": "setting", "selected": "Skill01"},
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_RuanMei_00_Config.json", "skill": 0, "as": "ready"},
+        {"op": "wait", "for": "ready"}
+      ],
+      "presentation": {
+        "label": "Skill01_Ready",
+        "ready": {"config": "Config/ConfigCharacter/Avatar/Avatar_RuanMei_00_Config.json", "skill": 0}
+      },
+      "tags": ["selection-development"]
+    },
+    "compiled.0.Avatar_RuanMei_00_Config.skill-0.rest": {
+      "trigger": "internal",
+      "runtime": {"policy": "ready", "selected": ""},
+      "run": [
+        {"op": "call", "function": "@return.idle"},
+        {"op": "wait", "for": "idle", "until": "submitted"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["stable-return"]
+    },
+    "@receiver-clear/base.callback.5359.receiver-property.3": {
+      "requires": [
+        {"op": "state", "name": "common.elemental.frozen-hit"}
+      ],
+      "mode": "input",
+      "run": [
+        {"op": "state.exit", "name": "common.elemental.frozen-hit", "only_caster": true, "as": "clear"},
+        {"op": "wait", "for": "clear"}
+      ],
+      "presentation": {
+        "label": "Clear hit effect override",
+        "kind": "setting",
+        "contexts": ["common.elemental.frozen-hit"]
+      },
+      "tags": ["visual-receiver-clear"]
+    },
+    "@idle": {
+      "runtime": {"policy": "ready", "selected": ""},
+      "run": [
+        {"op": "call", "function": "@return.rest.pose"}
+      ],
+      "presentation": {"label": "Idle"},
+      "tags": ["script-idle"]
+    }
+  },
+  "functions": {
+    "@return.rest.pose": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "rest.pose.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "rest.pose"
+      }
+    ],
+    "@return.return.pose": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "return.pose.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "return.pose"
+      }
+    ],
+    "@return.return": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "return.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "return"
+      }
+    ],
+    "@return.abort-return": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "abort-return.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "abort-return"
+      }
+    ],
+    "@return.idle": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "idle.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "idle"
+      }
+    ]
+  },
+  "states": {},
+  "resources": {
+    "effects": {
+      "base.skill.2.effect.13": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_RuanMei_00/Eff_Avatar_RuanMei_00_Skill03_Buff02.prefab", "target": "Caster", "attach_point": "Flower"},
+      "base.callback.3675.effect.1": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_RuanMei_00/Eff_Avatar_RuanMei_Skill03_Imprint_Hit02.prefab",
+        "target": "Recipient",
+        "attach_point": "SelectRoot"
+      },
+      "base.callback.3705.effect.3": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_RuanMei_00/Eff_Avatar_RuanMei_Imprint_Start.prefab",
+        "target": "Recipient",
+        "attach_to_target": true,
+        "attach_point": "Head"
+      },
+      "compiled.0.Avatar_RuanMei_00_Config.skill-0.$.AbilityList[1].OnStart[1]": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_RuanMei_00/Eff_Avatar_RuanMei_00_Skill01_Hit.prefab",
+        "target": "AbilityTargetEntity",
+        "mutex": {"interval": 0.0, "maximum": 1, "scope": "global"},
+        "attach_point": "SelectRoot",
+        "allow_position": true
+      }
+    }
+  }
+}

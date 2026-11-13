@@ -1,0 +1,849 @@
+{
+  "format": "hksr.script",
+  "id": "official-scripts:Config/ConfigCharacter/Avatar/Avatar_TohsakaRin_00_Config.json",
+  "applies_to": "Config/ConfigCharacter/Avatar/Avatar_TohsakaRin_00_Config.json",
+  "default": true,
+  "imports": ["Common/Elemental.json"],
+  "defaults": {
+    "targets": {
+      "PreviewTarget": {
+        "local_position": [0, 0, 6]
+      },
+      "AbilityTargetEntity": {
+        "local_position": [0, 0, 6]
+      },
+      "SkillPointEntity": {"alias": "AbilityTargetEntity"}
+    }
+  },
+  "actions": {
+    "base.rest": {
+      "trigger": "internal",
+      "runtime": {"policy": "ready", "selected": ""},
+      "run": [
+        {"op": "call", "function": "@return.rest.pose"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["stable-return", "idle-provider"]
+    },
+    "base.skill.0.perform": {
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "runtime": {"policy": "performance", "selected": "Skill01"},
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_TohsakaRin_00_Skill01_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_TohsakaRin_00_Skill01_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.0.clock.1", "progress": 0.1500000001},
+            {"op": "wait", "for": "skill.0.clock.1", "progress": 0.1525000003},
+            {"op": "wait", "for": "skill.0.clock.1", "progress": 0.2600000002},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit_H",
+              "direction": {},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_TohsakaRin_00/Eff_Avatar_TohsakaRin_00_Skill01_Hit01.prefab",
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.0.hit.18"
+            },
+            {"op": "wait", "for": "skill.0.hit.18", "until": "accepted"}
+          ],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill01", "end": 0.0, "track": {"logic": 3}, "as": "skill.0.clock.1"},
+        {
+          "op": "movement",
+          "animation": "skill.0.clock.1",
+          "segments": [
+            {
+              "destination": "target",
+              "name": "PreviewTarget",
+              "target_geometry": true,
+              "start": 0.0409999999,
+              "end": 0.1279999995,
+              "sample": {"distance": 0.6500000006, "percentage": 1.0, "include_radii": true}
+            },
+            {
+              "destination": "origin",
+              "start": 0.5900000005,
+              "end": 0.7100000006,
+              "sample": {"distance": 0.0, "percentage": 1.0, "include_radii": true}
+            }
+          ],
+          "as": "skill.0.clock.1.movement"
+        },
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.0},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.232},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.3359999998},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.4000000003},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.6050000002},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill01",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "PlayTimeline: not included in the visual sequence projection",
+          "LookAt: not included in the visual sequence projection",
+          "WaitAnimState: wait uses an unprojected clock policy",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "TriggerEffect: effect needs a non-owned target, dynamic path, or Timeline attachment",
+          "TriggerAnimState: animation has no literal owned-body binding",
+          "TargetTimeSlow: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.0.ready.-1": {
+      "runtime": {"policy": "ready", "selected": "Skill01"},
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_TohsakaRin_00_Config.json", "skill": 0, "as": "ready"}
+      ],
+      "presentation": {
+        "label": "Skill01 · Ready",
+        "ready": {"config": "Config/ConfigCharacter/Avatar/Avatar_TohsakaRin_00_Config.json", "skill": 0}
+      },
+      "tags": ["ready-pose"]
+    },
+    "base.skill.1.perform": {
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "runtime": {"policy": "performance", "selected": "Skill02"},
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_TohsakaRin_00_Skill02_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_TohsakaRin_00_Skill02_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.2000000001},
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.2722200003},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit_H",
+              "direction": {},
+              "effect": {"path": "", "minimum_interval": 0.0500000007, "maximum_count": 1},
+              "allow_position": true,
+              "as": "skill.1.hit.10"
+            },
+            {"op": "wait", "for": "skill.1.hit.10", "until": "accepted"},
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.3166600007},
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.6889000006}
+          ],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill02", "end": -1.0, "track": {"logic": 3}, "as": "skill.1.clock.1"},
+        {"op": "wait", "for": "skill.1.clock.1", "until": "animation_end"},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.06},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.6200000005},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.689},
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill02",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "LookAt: not included in the visual sequence projection",
+          "WaitAnimState: wait uses an unprojected clock policy",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "TriggerEffect: effect needs a non-owned target, dynamic path, or Timeline attachment",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "GlobalMainIntensityEffect: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.1.ready.-1": {
+      "runtime": {"policy": "ready", "selected": "Skill02"},
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_TohsakaRin_00_Config.json", "skill": 1, "as": "ready"}
+      ],
+      "presentation": {
+        "label": "Skill02 · Ready",
+        "ready": {"config": "Config/ConfigCharacter/Avatar/Avatar_TohsakaRin_00_Config.json", "skill": 1}
+      },
+      "tags": ["ready-pose"]
+    },
+    "base.skill.2.perform": {
+      "inputs": {
+        "skill.2.condition.ByCompareDynamicValue.23": {"type": "bool", "default": false, "label": "ByCompareDynamicValue", "description": "Manual source condition: $.AbilityList[5].OnStart[6].Predicate"}
+      },
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "runtime": {"policy": "performance", "selected": "Skill21"},
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_TohsakaRin_00_Skill21_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_TohsakaRin_00_Skill21_Phase02",
+          "run": [
+            {
+              "op": "if",
+              "condition": {"op": "value", "name": "skill.2.condition.ByCompareDynamicValue.23", "is": true},
+              "then": [
+                {"op": "wait", "for": "skill.2.clock.1", "progress": 0.445},
+                {"op": "wait", "for": "skill.2.clock.1", "progress": 0.556},
+                {"op": "wait", "for": "skill.2.clock.1", "progress": 0.5740000002},
+                {
+                  "op": "hit",
+                  "target": "PreviewTarget",
+                  "animation": "Hit_H",
+                  "direction": {},
+                  "effect": {"path": "", "minimum_interval": 0.0500000007, "maximum_count": 1},
+                  "allow_position": true,
+                  "as": "skill.2.hit.29"
+                },
+                {"op": "wait", "for": "skill.2.hit.29", "until": "accepted"},
+                {"op": "wait", "seconds": 0.5500000005}
+              ],
+              "else": [
+                {"op": "wait", "for": "skill.2.clock.1", "progress": 0.445},
+                {"op": "wait", "for": "skill.2.clock.1", "progress": 0.556},
+                {"op": "wait", "for": "skill.2.clock.1", "progress": 0.5740000002},
+                {
+                  "op": "hit",
+                  "target": "PreviewTarget",
+                  "animation": "Hit_H",
+                  "direction": {},
+                  "effect": {"path": "", "minimum_interval": 0.0500000007, "maximum_count": 1},
+                  "allow_position": true,
+                  "as": "skill.2.hit.43"
+                },
+                {"op": "wait", "for": "skill.2.hit.43", "until": "accepted"},
+                {"op": "wait", "seconds": 0.5500000005}
+              ]
+            }
+          ],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill21", "end": -1.0, "track": {"logic": 3}, "as": "skill.2.clock.1"},
+        {"op": "wait", "for": "skill.2.clock.1", "until": "animation_end"},
+        {"op": "wait", "for": "skill.2.clock.1", "progress": 0.06},
+        {"op": "wait", "for": "skill.2.clock.1", "progress": 0.4304000006},
+        {"op": "wait", "for": "skill.2.clock.1", "progress": 0.6200000005},
+        {"op": "wait", "for": "skill.2.clock.1", "progress": 0.9900000009},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill21",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "HideLevelStage: not included in the visual sequence projection",
+          "PlayTimeline: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "WaitAnimState: wait uses an unprojected clock policy",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "TriggerEffect: effect needs a non-owned target, dynamic path, or Timeline attachment",
+          "LoopExecuteTaskListWithInterval: not included in the visual sequence projection",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "ConditionLoopExecuteTaskListWithInterval: not included in the visual sequence projection",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "LAJIKDENEOO: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "ConditionLoopExecuteTaskList: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.2.ready.-1": {
+      "runtime": {"policy": "ready", "selected": "Skill21"},
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_TohsakaRin_00_Config.json", "skill": 2, "as": "ready"}
+      ],
+      "presentation": {
+        "label": "Skill21 · Ready",
+        "ready": {"config": "Config/ConfigCharacter/Avatar/Avatar_TohsakaRin_00_Config.json", "skill": 2}
+      },
+      "tags": ["ready-pose"]
+    },
+    "base.skill.3.perform": {
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "runtime": {"policy": "performance", "selected": "Skill03"},
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_TohsakaRin_00_Skill03_Camera",
+          "run": [
+            {"op": "wait", "for": "skill.3.clock.1", "progress": 0.6900000006}
+          ],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_TohsakaRin_00_Skill03_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.3.clock.1", "progress": 0.1019999999},
+            {"op": "wait", "for": "skill.3.clock.1", "progress": 0.8600000008},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit",
+              "direction": {},
+              "effect": {"path": "", "minimum_interval": 0.0500000007, "maximum_count": 1},
+              "allow_position": true,
+              "as": "skill.3.hit.21"
+            },
+            {"op": "wait", "for": "skill.3.hit.21", "until": "accepted"},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit",
+              "direction": {},
+              "effect": {"path": "", "minimum_interval": 0.0500000007, "maximum_count": 1},
+              "allow_position": true,
+              "as": "skill.3.hit.23"
+            },
+            {"op": "wait", "for": "skill.3.hit.23", "until": "accepted"}
+          ],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill03", "end": -1.0, "track": {"logic": 3}, "as": "skill.3.clock.1"},
+        {"op": "wait", "for": "skill.3.clock.1", "until": "animation_end"},
+        {"op": "wait", "for": "skill.3.clock.1", "progress": 0.5940000002},
+        {"op": "wait", "for": "skill.3.clock.1", "progress": 0.6040000002},
+        {"op": "wait", "for": "skill.3.clock.1", "progress": 0.9110000007},
+        {"op": "wait", "for": "skill.3.clock.1", "progress": 0.9800000009},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill03",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "SetTeamRootOffset: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "LAJIKDENEOO: not included in the visual sequence projection",
+          "TurnInsertAction: not included in the visual sequence projection",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "TriggerSkipDeadHandler: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "HideLevelStage: not included in the visual sequence projection",
+          "TryStartConnectUltraSkillFrameCapture: not included in the visual sequence projection",
+          "WaitTimelineFinish: not included in the visual sequence projection",
+          "HideLevelStage: serial step depends on an unavailable source clock; no timing is inferred",
+          "SetTeamFormation: serial step depends on an unavailable source clock; no timing is inferred"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.3.ready.-1": {
+      "runtime": {"policy": "ready", "selected": "Skill03"},
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_TohsakaRin_00_Config.json", "skill": 3, "as": "ready"}
+      ],
+      "presentation": {
+        "label": "Skill03 · Ready",
+        "ready": {"config": "Config/ConfigCharacter/Avatar/Avatar_TohsakaRin_00_Config.json", "skill": 3}
+      },
+      "tags": ["ready-pose"]
+    },
+    "base.skill.4.perform": {
+      "inputs": {
+        "event": {
+          "type": "integer",
+          "default": 0,
+          "label": "Callback",
+          "choices": [
+            {"value": 0, "label": "MAvatar_TohsakaRin_00_Passive_S02Enhance: OnStack", "diagnostic": true},
+            {"value": 1, "label": "MAvatar_TohsakaRin_00_Passive_S02Enhance: OnDestroy", "diagnostic": true}
+          ],
+          "diagnostic": true
+        }
+      },
+      "requires": [
+        {"op": "number", "name": "event", "compare": "ge", "value": 0},
+        {"op": "number", "name": "event", "compare": "lt", "value": 2}
+      ],
+      "runtime": {"policy": "performance", "selected": "SkillP01"},
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "event", "is": 1},
+          "then": [
+            {"op": "join"},
+            {"op": "call", "function": "@return.return.pose"},
+            {"op": "wait", "for": "return.pose", "until": "submitted"},
+            {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+            {"op": "wait", "for": "return.position"}
+          ],
+          "else": [
+            {"op": "join"},
+            {"op": "call", "function": "@return.return.pose"},
+            {"op": "wait", "for": "return.pose", "until": "submitted"},
+            {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+            {"op": "wait", "for": "return.position"}
+          ]
+        }
+      ],
+      "on_interrupt": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "event", "is": 1},
+          "then": [
+            {"op": "call", "function": "@return.return.pose"},
+            {"op": "wait", "for": "return.pose", "until": "submitted"},
+            {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+            {"op": "wait", "for": "return.position"}
+          ],
+          "else": [
+            {"op": "call", "function": "@return.return.pose"},
+            {"op": "wait", "for": "return.pose", "until": "submitted"},
+            {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+            {"op": "wait", "for": "return.position"}
+          ]
+        }
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "SkillP01",
+        "listed": false,
+        "omissions": [
+          "Manual visual callback selection; no native combat modifier or automatic event simulation.",
+          "event: 0=MAvatar_TohsakaRin_00_Passive_S02Enhance: OnStack, 1=MAvatar_TohsakaRin_00_Passive_S02Enhance: OnDestroy",
+          "NKLOMENKLHK: not included in the visual sequence projection",
+          "LAJIKDENEOO: not included in the visual sequence projection",
+          "SetControlSkillMapping: Skill mapping is configuration, not a request to play its destination ready pose; native mapping is not executed"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation", "diagnostic-omission-only"]
+    },
+    "base.skill.5.perform": {
+      "inputs": {
+        "event": {
+          "type": "integer",
+          "default": 0,
+          "label": "Callback",
+          "choices": [
+            {"value": 0, "label": "Avatar_TohsakaRin_00_Insert_SelectTargetSelf"}
+          ]
+        },
+        "followup.0.condition.ByHaveEnemyAlive.5": {"type": "bool", "default": true, "label": "ByHaveEnemyAlive", "description": "Manual source condition: $.AbilityList[11].OnStart[1].Predicate"}
+      },
+      "requires": [
+        {"op": "number", "name": "event", "compare": "ge", "value": 0},
+        {"op": "number", "name": "event", "compare": "lt", "value": 1}
+      ],
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "runtime": {"policy": "performance", "selected": "SkillP02"},
+      "run": [
+        {
+          "op": "for_each",
+          "bind": "followup.0.member.1",
+          "targets": ["PreviewTarget"],
+          "collection": "followup.0.targets.2",
+          "run": [],
+          "empty": []
+        },
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "followup.0.condition.ByHaveEnemyAlive.5", "is": true},
+          "then": [
+            {
+              "op": "start",
+              "id": "Avatar_TohsakaRin_00_Insert_Phase01",
+              "run": [
+                {"op": "animation", "state": "PassiveSkill_Combo", "end": -1.0, "track": {"logic": 3}, "as": "followup.0.clock.6"},
+                {"op": "wait", "for": "followup.0.clock.6", "until": "animation_end"},
+                {
+                  "op": "start",
+                  "id": "Avatar_TohsakaRin_00_Insert_Camera",
+                  "run": [],
+                  "join": true
+                }
+              ],
+              "join": true
+            }
+          ],
+          "else": []
+        },
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "SkillP02",
+        "omissions": [
+          "Manual visual callback selection; no native combat modifier or automatic event simulation.",
+          "event: 0=Avatar_TohsakaRin_00_Insert_SelectTargetSelf",
+          "Retarget: recipient collection is explicitly selected; native filtering, random selection and count limits are not simulated",
+          "HideLevelStage: not included in the visual sequence projection",
+          "SetCharacterAnimFollow: not included in the visual sequence projection",
+          "ScaleCharacterModel: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "SetSkillTargetFormationByPos: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "TriggerEffect: effect needs a non-owned target, dynamic path, or Timeline attachment",
+          "TriggerParallelAbility: not included in the visual sequence projection",
+          "WaitTimelineFinish: not included in the visual sequence projection",
+          "SetTeamFormation: serial step depends on an unavailable source clock; no timing is inferred",
+          "HideLevelStage: serial step depends on an unavailable source clock; no timing is inferred",
+          "ScaleCharacterModel: serial step depends on an unavailable source clock; no timing is inferred"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "base.skill.7.perform": {
+      "use": "common.elemental.responses",
+      "runtime": {"policy": "performance", "selected": "PassiveSkill02"},
+      "next": "base.rest"
+    },
+    "base.preview.hit": {
+      "inputs": {
+        "kind": {
+          "type": "text",
+          "default": "Hit",
+          "label": "Hit type",
+          "choices": [
+            {"value": "Hit", "label": "Hit"},
+            {"value": "Hit_H", "label": "Hit_H"}
+          ]
+        }
+      },
+      "runtime": {"policy": "performance", "selected": ""},
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "kind", "is": "Hit_H"},
+          "then": [
+            {"op": "hit", "target": "Caster", "animation": "Hit_H", "as": "hit-heavy"},
+            {"op": "wait", "for": "hit-heavy"}
+          ],
+          "else": [
+            {"op": "hit", "target": "Caster", "animation": "Hit", "as": "hit"},
+            {"op": "wait", "for": "hit"}
+          ]
+        }
+      ],
+      "next": "base.rest",
+      "presentation": {"label": "Hit"},
+      "tags": ["manual-visual-callback"]
+    },
+    "base.source.6": {
+      "requires": [
+        {
+          "op": "unresolved",
+          "source": "Config/ConfigCharacter/Avatar/Avatar_TohsakaRin_00_Config.json:$.SkillList[6]",
+          "detail": "Retained source has no independently bound presentation unit"
+        }
+      ],
+      "trigger": "internal",
+      "run": [],
+      "presentation": {
+        "label": "SkillMaze",
+        "listed": false,
+        "omissions": ["Retained source has no independently bound presentation unit"]
+      },
+      "tags": ["retained-source"]
+    },
+    "compiled.0.Avatar_TohsakaRin_00_Config.skill-1.entry": {
+      "requires": [
+        {"op": "target", "name": "AbilityTargetEntity", "allow_position": true},
+        {"op": "playback", "name": "performance", "values": ["ready"]},
+        {"op": "playback", "name": "selected", "is": "Skill02"}
+      ],
+      "runtime": {"policy": "continuous"},
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_TohsakaRin_00_Skill02_Phase01",
+          "run": [
+            {"op": "facing.target", "target": "AbilityTargetEntity", "duration": 0.07999999821186066, "as": "$.AbilityList[2].OnStart[0]"},
+            {"op": "wait", "for": "$.AbilityList[2].OnStart[0]", "until": "accepted"},
+            {
+              "op": "start",
+              "id": "Avatar_TohsakaRin_00_Skill02_Phase02",
+              "run": [
+                {"op": "wait", "for": "body.0", "progress": 0.2000000001},
+                {"op": "wait", "for": "body.0", "progress": 0.2722200003},
+                {"op": "attack.record", "target": "AbilityTargetEntity", "allow_position": true, "as": "$.AbilityList[3].OnStart[2].record"},
+                {"op": "wait", "for": "$.AbilityList[3].OnStart[2].record", "until": "accepted"},
+                {
+                  "op": "hit",
+                  "target": "AbilityTargetEntity",
+                  "animation": "Hit_H",
+                  "events": ["after_hit", "after_hit_all"],
+                  "direction": {},
+                  "effect": {"path": "", "minimum_interval": 0.0500000007, "maximum_count": 1},
+                  "allow_position": true,
+                  "as": "$.AbilityList[3].OnStart[2]"
+                },
+                {"op": "wait", "for": "$.AbilityList[3].OnStart[2]", "until": "accepted"},
+                {"op": "attack.finish", "as": "$.AbilityList[3].OnStart[3]"},
+                {"op": "wait", "for": "$.AbilityList[3].OnStart[3]", "until": "accepted"},
+                {"op": "wait", "for": "body.0", "progress": 0.3166600007},
+                {
+                  "op": "effect.create",
+                  "effects": ["compiled.0.Avatar_TohsakaRin_00_Config.skill-1.$.AbilityList[3].OnStart[5]"],
+                  "as": "$.AbilityList[3].OnStart[5]"
+                },
+                {"op": "wait", "for": "$.AbilityList[3].OnStart[5]", "until": "accepted"},
+                {"op": "wait", "for": "body.0", "progress": 0.6889000006},
+                {"op": "playback.value", "variable": "performance", "operation": "set", "value": "finished", "as": "$.AbilityList[3].OnStart[7]"}
+              ],
+              "join": true
+            },
+            {"op": "animation", "state": "Skill02", "end": -1.0, "track": {"logic": 3}, "as": "body.0"},
+            {"op": "wait", "for": "body.0", "until": "started"},
+            {"op": "wait", "for": "body.0", "progress": 0.06},
+            {"op": "wait", "for": "body.0", "progress": 0.6200000005},
+            {"op": "wait", "for": "body.0", "progress": 0.689}
+          ],
+          "join": true
+        },
+        {"op": "join"},
+        {"op": "playback.value", "variable": "performance", "operation": "set", "value": "resetting", "as": "after"},
+        {"op": "call", "function": "@return.return"},
+        {"op": "wait", "for": "return", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return-position"},
+        {"op": "wait", "for": "return-position"},
+        {"op": "playback.value", "variable": "performance", "operation": "set", "value": "ready", "as": "reset"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.abort-return"},
+        {"op": "wait", "for": "abort-return", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "abort-position"},
+        {"op": "wait", "for": "abort-position"}
+      ],
+      "next": "compiled.0.Avatar_TohsakaRin_00_Config.skill-1.rest",
+      "presentation": {"label": "Avatar_TohsakaRin_00_Skill02_Phase01"},
+      "tags": ["entry-development"]
+    },
+    "compiled.0.Avatar_TohsakaRin_00_Config.skill-1.select": {
+      "requires": [
+        {"op": "playback", "name": "performance", "values": ["ready", "failed"]}
+      ],
+      "runtime": {"policy": "setting", "selected": "Skill02"},
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_TohsakaRin_00_Config.json", "skill": 1, "as": "ready"},
+        {"op": "wait", "for": "ready"}
+      ],
+      "presentation": {
+        "label": "Skill02_Ready_Loop",
+        "ready": {"config": "Config/ConfigCharacter/Avatar/Avatar_TohsakaRin_00_Config.json", "skill": 1}
+      },
+      "tags": ["selection-development"]
+    },
+    "compiled.0.Avatar_TohsakaRin_00_Config.skill-1.rest": {
+      "trigger": "internal",
+      "runtime": {"policy": "ready", "selected": ""},
+      "run": [
+        {"op": "call", "function": "@return.idle"},
+        {"op": "wait", "for": "idle", "until": "submitted"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["stable-return"]
+    },
+    "@receiver-clear/base.callback.5359.receiver-property.3": {
+      "requires": [
+        {"op": "state", "name": "common.elemental.frozen-hit"}
+      ],
+      "mode": "input",
+      "run": [
+        {"op": "state.exit", "name": "common.elemental.frozen-hit", "only_caster": true, "as": "clear"},
+        {"op": "wait", "for": "clear"}
+      ],
+      "presentation": {
+        "label": "Clear hit effect override",
+        "kind": "setting",
+        "contexts": ["common.elemental.frozen-hit"]
+      },
+      "tags": ["visual-receiver-clear"]
+    },
+    "@idle": {
+      "runtime": {"policy": "ready", "selected": ""},
+      "run": [
+        {"op": "call", "function": "@return.rest.pose"}
+      ],
+      "presentation": {"label": "Idle"},
+      "tags": ["script-idle"]
+    }
+  },
+  "functions": {
+    "@return.rest.pose": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "rest.pose.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "rest.pose"
+      }
+    ],
+    "@return.return.pose": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "return.pose.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "return.pose"
+      }
+    ],
+    "@return.return": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "return.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "return"
+      }
+    ],
+    "@return.abort-return": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "abort-return.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "abort-return"
+      }
+    ],
+    "@return.idle": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "idle.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "idle"
+      }
+    ]
+  },
+  "states": {},
+  "resources": {
+    "effects": {
+      "compiled.0.Avatar_TohsakaRin_00_Config.skill-1.$.AbilityList[3].OnStart[5]": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_TohsakaRin_00/Eff_Avatar_TohsakaRin_00_Skill02_Hit02.prefab",
+        "target": "AbilityTargetEntity",
+        "mutex": {"interval": 0.0, "maximum": 1, "scope": "global"},
+        "allow_position": true
+      }
+    }
+  }
+}

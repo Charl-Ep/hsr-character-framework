@@ -1,0 +1,8364 @@
+{
+  "format": "hksr.actor-audio-events",
+  "events": [
+    {
+      "event": "EV_sfx_avatar_SilverWolf999_Skill11_Item_01_Common_Shot",
+      "normal": {
+        "node_id": 946002891
+      },
+      "doubled": {
+        "node_id": 670414224
+      }
+    },
+    {
+      "event": "Ev_Sfx_Avatar_Die_Lynx",
+      "normal": {
+        "node_id": 441530334
+      },
+      "doubled": {
+        "node_id": 73906191
+      }
+    },
+    {
+      "event": "Ev_Sfx_Avatar_Die_danheng_IL",
+      "normal": {
+        "node_id": 21557730
+      },
+      "doubled": {
+        "node_id": 704806052
+      }
+    },
+    {
+      "event": "Ev_Sfx_Avatar_Skill01_Danheng_IL",
+      "normal": {
+        "node_id": 226635747
+      },
+      "doubled": {
+        "node_id": 889752391
+      }
+    },
+    {
+      "event": "Ev_Sfx_Avatar_Skill01_Lynx",
+      "normal": {
+        "node_id": 997523935
+      },
+      "doubled": {
+        "node_id": 204129628
+      }
+    },
+    {
+      "event": "Ev_Sfx_Avatar_Skill01_Ready_Lynx",
+      "normal": {
+        "node_id": 29827559
+      },
+      "doubled": {
+        "node_id": 250942280
+      }
+    },
+    {
+      "event": "Ev_Sfx_Avatar_Skill02_Lynx",
+      "normal": {
+        "node_id": 915518971
+      },
+      "doubled": {
+        "node_id": 703859893
+      }
+    },
+    {
+      "event": "Ev_Sfx_Avatar_Skill03_Lynx",
+      "normal": {
+        "node_id": 413360456
+      },
+      "doubled": {
+        "node_id": 251087586
+      }
+    },
+    {
+      "event": "Ev_Sfx_Avatar_Skill11_Danheng_IL",
+      "normal": {
+        "node_id": 172260141
+      },
+      "doubled": {
+        "node_id": 304012089
+      }
+    },
+    {
+      "event": "Ev_Sfx_Avatar_Skill12_Danheng_IL",
+      "normal": {
+        "node_id": 43000955
+      },
+      "doubled": {
+        "node_id": 15660323
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Anaxa_Die",
+      "normal": {
+        "node_id": 839351165
+      },
+      "doubled": {
+        "node_id": 85682745
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Anaxa_Skill01",
+      "normal": {
+        "node_id": 677186512
+      },
+      "doubled": {
+        "node_id": 928564539
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Anaxa_Skill01_Ready",
+      "normal": {
+        "node_id": 246525336
+      },
+      "doubled": {
+        "node_id": 208774864
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Anaxa_Skill01toSkill02",
+      "normal": {
+        "node_id": 977464950
+      },
+      "doubled": {
+        "node_id": 892444166
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Anaxa_Skill02",
+      "normal": {
+        "node_id": 867620986
+      },
+      "doubled": {
+        "node_id": 312811715
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Anaxa_Skill02toSkill01",
+      "normal": {
+        "node_id": 1042306089
+      },
+      "doubled": {
+        "node_id": 1031249347
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Archer_Die",
+      "normal": {
+        "node_id": 336170837
+      },
+      "doubled": {
+        "node_id": 686819218
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Archer_Skill01",
+      "normal": {
+        "node_id": 112382532
+      },
+      "doubled": {
+        "node_id": 851938273
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Archer_Skill01_Ready",
+      "normal": {
+        "node_id": 633630203
+      },
+      "doubled": {
+        "node_id": 898325130
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Archer_Skill01toSkill02",
+      "normal": {
+        "node_id": 763391799
+      },
+      "doubled": {
+        "node_id": 279894609
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Archer_Skill02_StartReady",
+      "normal": {
+        "node_id": 1004822758
+      },
+      "doubled": {
+        "node_id": 53664521
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Archer_Skill02toSkill01",
+      "normal": {
+        "node_id": 238990409
+      },
+      "doubled": {
+        "node_id": 692983348
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Ashveil_Skill01",
+      "normal": {
+        "node_id": 270737529
+      },
+      "doubled": {
+        "node_id": 73959368
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Ashveil_Skill01_Ready",
+      "normal": {
+        "node_id": 44652422
+      },
+      "doubled": {
+        "node_id": 395556090
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Ashveil_Skill01toSkill02",
+      "normal": {
+        "node_id": 90088499
+      },
+      "doubled": {
+        "node_id": 655911660
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Ashveil_Skill02",
+      "normal": {
+        "node_id": 422012942
+      },
+      "doubled": {
+        "node_id": 500436253
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Ashveil_Skill02toSkill01",
+      "normal": {
+        "node_id": 813073368
+      },
+      "doubled": {
+        "node_id": 1061096329
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Ashveil_Skill_Passive01",
+      "normal": {
+        "node_id": 521863425
+      },
+      "doubled": {
+        "node_id": 115251569
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_AventurineW_Die",
+      "normal": {
+        "node_id": 53218182
+      },
+      "doubled": {
+        "node_id": 663573402
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_AventurineW_Skill01",
+      "normal": {
+        "node_id": 992108737
+      },
+      "doubled": {
+        "node_id": 1059203021
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_AventurineW_Skill01_Ready",
+      "normal": {
+        "node_id": 629137625
+      },
+      "doubled": {
+        "node_id": 773572174
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_AventurineW_Skill01toSkill02",
+      "normal": {
+        "node_id": 538735985
+      },
+      "doubled": {
+        "node_id": 159121153
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_AventurineW_Skill02",
+      "normal": {
+        "node_id": 554247497
+      },
+      "doubled": {
+        "node_id": 272241912
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_AventurineW_Skill02toSkill01",
+      "normal": {
+        "node_id": 839152023
+      },
+      "doubled": {
+        "node_id": 229670517
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Castorice_Die",
+      "normal": {
+        "node_id": 217769173
+      },
+      "doubled": {
+        "node_id": 965953854
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Castorice_Skill01",
+      "normal": {
+        "node_id": 756491375
+      },
+      "doubled": {
+        "node_id": 522434683
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Castorice_Skill01_Ready",
+      "normal": {
+        "node_id": 202188490
+      },
+      "doubled": {
+        "node_id": 138100303
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Castorice_Skill01toSkill02",
+      "normal": {
+        "node_id": 904955856
+      },
+      "doubled": {
+        "node_id": 208811692
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Castorice_Skill01toSkill21",
+      "normal": {
+        "node_id": 541984367
+      },
+      "doubled": {
+        "node_id": 325649151
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Castorice_Skill02toSkill01",
+      "normal": {
+        "node_id": 987459653
+      },
+      "doubled": {
+        "node_id": 969059494
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Castorice_Skill03_02",
+      "normal": {
+        "node_id": 962835688
+      },
+      "doubled": {
+        "node_id": 255795537
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Cerydra_Die",
+      "normal": {
+        "node_id": 719624718
+      },
+      "doubled": {
+        "node_id": 891198528
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Cerydra_Skill01",
+      "normal": {
+        "node_id": 707502406
+      },
+      "doubled": {
+        "node_id": 929637922
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Cerydra_Skill01_Ready",
+      "normal": {
+        "node_id": 485268458
+      },
+      "doubled": {
+        "node_id": 60657531
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Cerydra_Skill01toSkill02",
+      "normal": {
+        "node_id": 91447492
+      },
+      "doubled": {
+        "node_id": 910586346
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Cerydra_Skill02",
+      "normal": {
+        "node_id": 56579961
+      },
+      "doubled": {
+        "node_id": 590893095
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Cerydra_Skill02_Change",
+      "normal": {
+        "node_id": 900639339
+      },
+      "doubled": {
+        "node_id": 186554638
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Cerydra_Skill02toSkill01",
+      "normal": {
+        "node_id": 810337608
+      },
+      "doubled": {
+        "node_id": 925557748
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Cipher_Die",
+      "normal": {
+        "node_id": 246092506
+      },
+      "doubled": {
+        "node_id": 1029946971
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Cipher_Skill01",
+      "normal": {
+        "node_id": 161172843
+      },
+      "doubled": {
+        "node_id": 971095392
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Cipher_Skill01_Ready",
+      "normal": {
+        "node_id": 974164731
+      },
+      "doubled": {
+        "node_id": 1020704521
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Cipher_Skill01toSkill02",
+      "normal": {
+        "node_id": 198868611
+      },
+      "doubled": {
+        "node_id": 56240407
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Cipher_Skill02",
+      "normal": {
+        "node_id": 218274849
+      },
+      "doubled": {
+        "node_id": 160737710
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Cipher_Skill02toSkill01",
+      "normal": {
+        "node_id": 163577673
+      },
+      "doubled": {
+        "node_id": 957563186
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Constance_Die",
+      "normal": {
+        "node_id": 95219567
+      },
+      "doubled": {
+        "node_id": 865293765
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Constance_Skill01",
+      "normal": {
+        "node_id": 839747797
+      },
+      "doubled": {
+        "node_id": 258640469
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Constance_Skill01_Ready",
+      "normal": {
+        "node_id": 612012089
+      },
+      "doubled": {
+        "node_id": 149926693
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Constance_Skill01toSkill02",
+      "normal": {
+        "node_id": 446380274
+      },
+      "doubled": {
+        "node_id": 777635509
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Constance_Skill02",
+      "normal": {
+        "node_id": 536901807
+      },
+      "doubled": {
+        "node_id": 240295541
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Constance_Skill02toSkill01",
+      "normal": {
+        "node_id": 633076777
+      },
+      "doubled": {
+        "node_id": 665851871
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Cyrene_Die",
+      "normal": {
+        "node_id": 915573626
+      },
+      "doubled": {
+        "node_id": 43252099
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Cyrene_Skill01",
+      "normal": {
+        "node_id": 295944421
+      },
+      "doubled": {
+        "node_id": 550977241
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Cyrene_Skill01_Ready",
+      "normal": {
+        "node_id": 1039013578
+      },
+      "doubled": {
+        "node_id": 90363856
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Cyrene_Skill01toSkill02",
+      "normal": {
+        "node_id": 588499364
+      },
+      "doubled": {
+        "node_id": 188587966
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Cyrene_Skill02toSkill01",
+      "normal": {
+        "node_id": 627520286
+      },
+      "doubled": {
+        "node_id": 743579599
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Cyrene_Skill03_2",
+      "normal": {
+        "node_id": 961751217
+      },
+      "doubled": {
+        "node_id": 597199202
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Cyrene_Skill03_A",
+      "normal": {
+        "node_id": 1049668689
+      },
+      "doubled": {
+        "node_id": 602436049
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Cyrene_Skill11_Ready",
+      "normal": {
+        "node_id": 64467977
+      },
+      "doubled": {
+        "node_id": 852762054
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_DanHengPT_Die",
+      "normal": {
+        "node_id": 426693450
+      },
+      "doubled": {
+        "node_id": 646001833
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_DanHengPT_PassiveSkill01",
+      "normal": {
+        "node_id": 917992092
+      },
+      "doubled": {
+        "node_id": 126192027
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_DanHengPT_Skill01",
+      "normal": {
+        "node_id": 113214935
+      },
+      "doubled": {
+        "node_id": 304893414
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_DanHengPT_Skill01_Ready",
+      "normal": {
+        "node_id": 700780315
+      },
+      "doubled": {
+        "node_id": 664589556
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_DanHengPT_Skill01toSkill02",
+      "normal": {
+        "node_id": 733490778
+      },
+      "doubled": {
+        "node_id": 899373894
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_DanHengPT_Skill02",
+      "normal": {
+        "node_id": 799264883
+      },
+      "doubled": {
+        "node_id": 816586362
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_DanHengPT_Skill02toSkill01",
+      "normal": {
+        "node_id": 921815265
+      },
+      "doubled": {
+        "node_id": 102979311
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Die_Acheron",
+      "normal": {
+        "node_id": 770115973
+      },
+      "doubled": {
+        "node_id": 113941719
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Die_Aglaea",
+      "normal": {
+        "node_id": 243934333
+      },
+      "doubled": {
+        "node_id": 120602857
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Die_Argenti",
+      "normal": {
+        "node_id": 1060933286
+      },
+      "doubled": {
+        "node_id": 737575602
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Die_Aventurine",
+      "normal": {
+        "node_id": 206353717
+      },
+      "doubled": {
+        "node_id": 713475611
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Die_Boothill",
+      "normal": {
+        "node_id": 1024752801
+      },
+      "doubled": {
+        "node_id": 955848590
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Die_Dr_Ratio",
+      "normal": {
+        "node_id": 90479609
+      },
+      "doubled": {
+        "node_id": 879639934
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Die_Feixiao",
+      "normal": {
+        "node_id": 629184659
+      },
+      "doubled": {
+        "node_id": 630842195
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Die_Firefly",
+      "normal": {
+        "node_id": 235393436
+      },
+      "doubled": {
+        "node_id": 385571704
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Die_Fugue",
+      "normal": {
+        "node_id": 67137132
+      },
+      "doubled": {
+        "node_id": 70905519
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Die_Gallagher",
+      "normal": {
+        "node_id": 772126823
+      },
+      "doubled": {
+        "node_id": 602660190
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Die_Guinaifen",
+      "normal": {
+        "node_id": 21437304
+      },
+      "doubled": {
+        "node_id": 94084635
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Die_Hanya",
+      "normal": {
+        "node_id": 90269413
+      },
+      "doubled": {
+        "node_id": 369798936
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Die_Huohuo",
+      "normal": {
+        "node_id": 355630084
+      },
+      "doubled": {
+        "node_id": 284965193
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Die_Jade",
+      "normal": {
+        "node_id": 37534967
+      },
+      "doubled": {
+        "node_id": 998650678
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Die_Jiaoqiu",
+      "normal": {
+        "node_id": 211563439
+      },
+      "doubled": {
+        "node_id": 956014229
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Die_Lingsha",
+      "normal": {
+        "node_id": 58857233
+      },
+      "doubled": {
+        "node_id": 27835029
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Die_Mar7th_10",
+      "normal": {
+        "node_id": 713837253
+      },
+      "doubled": {
+        "node_id": 591473526
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Die_Moze",
+      "normal": {
+        "node_id": 784857900
+      },
+      "doubled": {
+        "node_id": 793849218
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Die_PlayerGirl_20",
+      "normal": {
+        "node_id": 713400589
+      },
+      "doubled": {
+        "node_id": 286145713
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Die_Playergirl_20",
+      "normal": {
+        "node_id": 713400589
+      },
+      "doubled": {
+        "node_id": 286145713
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Die_Playergirl_30",
+      "normal": {
+        "node_id": 509958590
+      },
+      "doubled": {
+        "node_id": 221519270
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Die_Rappa",
+      "normal": {
+        "node_id": 1058419704
+      },
+      "doubled": {
+        "node_id": 933490455
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Die_RuanMei",
+      "normal": {
+        "node_id": 597367793
+      },
+      "doubled": {
+        "node_id": 451372067
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Die_Sunday",
+      "normal": {
+        "node_id": 229800889
+      },
+      "doubled": {
+        "node_id": 798768689
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Die_TheHerta",
+      "normal": {
+        "node_id": 5283426
+      },
+      "doubled": {
+        "node_id": 264257158
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Die_Topaz",
+      "normal": {
+        "node_id": 505098518
+      },
+      "doubled": {
+        "node_id": 30173653
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Die_Yunli",
+      "normal": {
+        "node_id": 766051148
+      },
+      "doubled": {
+        "node_id": 787287217
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Die_blackSwan",
+      "normal": {
+        "node_id": 317934299
+      },
+      "doubled": {
+        "node_id": 411293126
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Die_misha",
+      "normal": {
+        "node_id": 693882318
+      },
+      "doubled": {
+        "node_id": 839834892
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Die_sparkle",
+      "normal": {
+        "node_id": 968162163
+      },
+      "doubled": {
+        "node_id": 474227320
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Evanescia_Die",
+      "normal": {
+        "node_id": 525758097
+      },
+      "doubled": {
+        "node_id": 667069267
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Evanescia_Skill01",
+      "normal": {
+        "node_id": 770539497
+      },
+      "doubled": {
+        "node_id": 936753793
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Evanescia_Skill01_Ready",
+      "normal": {
+        "node_id": 985672982
+      },
+      "doubled": {
+        "node_id": 481595398
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Evanescia_Skill01toSkill02",
+      "normal": {
+        "node_id": 65837277
+      },
+      "doubled": {
+        "node_id": 203704276
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Evanescia_Skill02",
+      "normal": {
+        "node_id": 654858885
+      },
+      "doubled": {
+        "node_id": 268859449
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Evanescia_Skill02toSkill01",
+      "normal": {
+        "node_id": 64588814
+      },
+      "doubled": {
+        "node_id": 190321725
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Evernight_Die",
+      "normal": {
+        "node_id": 359445388
+      },
+      "doubled": {
+        "node_id": 336528534
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Evernight_Skill01",
+      "normal": {
+        "node_id": 986541073
+      },
+      "doubled": {
+        "node_id": 995116220
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Evernight_Skill01_Ready",
+      "normal": {
+        "node_id": 420451354
+      },
+      "doubled": {
+        "node_id": 264028224
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Evernight_Skill01toSkill02",
+      "normal": {
+        "node_id": 514569419
+      },
+      "doubled": {
+        "node_id": 134218528
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Evernight_Skill02",
+      "normal": {
+        "node_id": 64923728
+      },
+      "doubled": {
+        "node_id": 226532097
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Evernight_Skill02toSkill01",
+      "normal": {
+        "node_id": 44809480
+      },
+      "doubled": {
+        "node_id": 363762698
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Evernight_Skill21",
+      "normal": {
+        "node_id": 762561303
+      },
+      "doubled": {
+        "node_id": 79152908
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Gilgamesh_Die",
+      "normal": {
+        "node_id": 801971698
+      },
+      "doubled": {
+        "node_id": 322975589
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Gilgamesh_Skill01",
+      "normal": {
+        "node_id": 977012215
+      },
+      "doubled": {
+        "node_id": 679543097
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Gilgamesh_Skill02_Ready",
+      "normal": {
+        "node_id": 848869556
+      },
+      "doubled": {
+        "node_id": 858719954
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Harscyline_Die",
+      "normal": {
+        "node_id": 446159208
+      },
+      "doubled": {
+        "node_id": 770457297
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Harscyline_Skill01",
+      "normal": {
+        "node_id": 522385428
+      },
+      "doubled": {
+        "node_id": 255319123
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Harscyline_Skill01_Ready",
+      "normal": {
+        "node_id": 823908195
+      },
+      "doubled": {
+        "node_id": 440651828
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Harscyline_Skill01toSkill02",
+      "normal": {
+        "node_id": 798413629
+      },
+      "doubled": {
+        "node_id": 919213603
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Harscyline_Skill02",
+      "normal": {
+        "node_id": 202613607
+      },
+      "doubled": {
+        "node_id": 438468174
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Harscyline_Skill02toSkill01",
+      "normal": {
+        "node_id": 246887049
+      },
+      "doubled": {
+        "node_id": 722565005
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_HimekoNovaServant_Skill01_Ready_R",
+      "normal": {
+        "node_id": 966383799
+      },
+      "doubled": {
+        "node_id": 427848982
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_HimekoNovaServant_Skill03_Start",
+      "normal": {
+        "node_id": 624708039
+      },
+      "doubled": {
+        "node_id": 885832646
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_HimekoNovaServant_Skill11_A3toReady",
+      "normal": {
+        "node_id": 762472507
+      },
+      "doubled": {
+        "node_id": 474337099
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_HimekoNova_Die",
+      "normal": {
+        "node_id": 620434772
+      },
+      "doubled": {
+        "node_id": 28888135
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_HimekoNova_PassiveSkill01",
+      "normal": {
+        "node_id": 399197073
+      },
+      "doubled": {
+        "node_id": 536192569
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_HimekoNova_PassiveSkill02",
+      "normal": {
+        "node_id": 138085888
+      },
+      "doubled": {
+        "node_id": 363782728
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_HimekoNova_PassiveSkill02_02",
+      "normal": {
+        "node_id": 806789204
+      },
+      "doubled": {
+        "node_id": 942534733
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_HimekoNova_Skill01",
+      "normal": {
+        "node_id": 928561153
+      },
+      "doubled": {
+        "node_id": 151432810
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_HimekoNova_Skill01_Ready",
+      "normal": {
+        "node_id": 148485722
+      },
+      "doubled": {
+        "node_id": 3664618
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_HimekoNova_Skill01toSkill02",
+      "normal": {
+        "node_id": 615411719
+      },
+      "doubled": {
+        "node_id": 723738939
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_HimekoNova_Skill02",
+      "normal": {
+        "node_id": 692604630
+      },
+      "doubled": {
+        "node_id": 51281714
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_HimekoNova_Skill02toSkill01",
+      "normal": {
+        "node_id": 251813885
+      },
+      "doubled": {
+        "node_id": 942990806
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Hyacine_Die",
+      "normal": {
+        "node_id": 150773944
+      },
+      "doubled": {
+        "node_id": 979444589
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Hyacine_Skill01",
+      "normal": {
+        "node_id": 282558445
+      },
+      "doubled": {
+        "node_id": 752369896
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Hyacine_Skill01_Ready",
+      "normal": {
+        "node_id": 1058597366
+      },
+      "doubled": {
+        "node_id": 906033070
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Hyacine_Skill01toSkill02",
+      "normal": {
+        "node_id": 173261323
+      },
+      "doubled": {
+        "node_id": 859966667
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Hyacine_Skill02",
+      "normal": {
+        "node_id": 863844185
+      },
+      "doubled": {
+        "node_id": 805148682
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Hyacine_Skill02toSkill01",
+      "normal": {
+        "node_id": 64503568
+      },
+      "doubled": {
+        "node_id": 829189724
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_MortenaxBlade_Die",
+      "normal": {
+        "node_id": 792338101
+      },
+      "doubled": {
+        "node_id": 738685712
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_MortenaxBlade_Skill01toSkill02",
+      "normal": {
+        "node_id": 721172750
+      },
+      "doubled": {
+        "node_id": 923936640
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_MortenaxBlade_Skill02toSkill01",
+      "normal": {
+        "node_id": 592509812
+      },
+      "doubled": {
+        "node_id": 306339759
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_MortenaxBlade_Skill11",
+      "normal": {
+        "node_id": 23858233
+      },
+      "doubled": {
+        "node_id": 932664772
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Mydeimos_Die",
+      "normal": {
+        "node_id": 864267152
+      },
+      "doubled": {
+        "node_id": 332337643
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Mydeimos_Passive",
+      "normal": {
+        "node_id": 821737904
+      },
+      "doubled": {
+        "node_id": 967201341
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Mydeimos_Skill01",
+      "normal": {
+        "node_id": 823111371
+      },
+      "doubled": {
+        "node_id": 1070377384
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Mydeimos_Skill01_Ready",
+      "normal": {
+        "node_id": 920489500
+      },
+      "doubled": {
+        "node_id": 263366970
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Mydeimos_Skill01toSkill02",
+      "normal": {
+        "node_id": 785259481
+      },
+      "doubled": {
+        "node_id": 334038435
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Mydeimos_Skill02",
+      "normal": {
+        "node_id": 986186302
+      },
+      "doubled": {
+        "node_id": 408814937
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Mydeimos_Skill02toSkill01",
+      "normal": {
+        "node_id": 627023858
+      },
+      "doubled": {
+        "node_id": 376041937
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Mydeimos_Skill21",
+      "normal": {
+        "node_id": 1059535244
+      },
+      "doubled": {
+        "node_id": 669893359
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Nihilux_Die",
+      "normal": {
+        "node_id": 514585224
+      },
+      "doubled": {
+        "node_id": 624127089
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Nihilux_Skill01",
+      "normal": {
+        "node_id": 365162673
+      },
+      "doubled": {
+        "node_id": 264086101
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Nihilux_Skill01_Ready",
+      "normal": {
+        "node_id": 1022847514
+      },
+      "doubled": {
+        "node_id": 353957657
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Nihilux_Skill01toSkill02",
+      "normal": {
+        "node_id": 471094670
+      },
+      "doubled": {
+        "node_id": 730415264
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Nihilux_Skill02",
+      "normal": {
+        "node_id": 335795487
+      },
+      "doubled": {
+        "node_id": 458414282
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Nihilux_Skill02toSkill01",
+      "normal": {
+        "node_id": 919790831
+      },
+      "doubled": {
+        "node_id": 314927107
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Nihilux_Skill03_Start",
+      "normal": {
+        "node_id": 83364855
+      },
+      "doubled": {
+        "node_id": 937380201
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Nihilux_Skill_Passive",
+      "normal": {
+        "node_id": 598483893
+      },
+      "doubled": {
+        "node_id": 519406336
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_PassiveSkill_Aventurine",
+      "normal": {
+        "node_id": 703256481
+      },
+      "doubled": {
+        "node_id": 492641968
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_PassiveSkill_Feixiao",
+      "normal": {
+        "node_id": 40466554
+      },
+      "doubled": {
+        "node_id": 647455753
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_PassiveSkill_Jade",
+      "normal": {
+        "node_id": 82083121
+      },
+      "doubled": {
+        "node_id": 841267952
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Passive_Mar7th_10",
+      "normal": {
+        "node_id": 671774859
+      },
+      "doubled": {
+        "node_id": 853150053
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Passive_Moze",
+      "normal": {
+        "node_id": 791122452
+      },
+      "doubled": {
+        "node_id": 832273606
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Pearl_Die",
+      "normal": {
+        "node_id": 671882245
+      },
+      "doubled": {
+        "node_id": 681428841
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Pearl_Skill01",
+      "normal": {
+        "node_id": 117426678
+      },
+      "doubled": {
+        "node_id": 337161816
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Pearl_Skill01_Ready",
+      "normal": {
+        "node_id": 652559101
+      },
+      "doubled": {
+        "node_id": 703665898
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Pearl_Skill01toSkill02",
+      "normal": {
+        "node_id": 983006649
+      },
+      "doubled": {
+        "node_id": 171301993
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Pearl_Skill02",
+      "normal": {
+        "node_id": 814350715
+      },
+      "doubled": {
+        "node_id": 721768458
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Pearl_Skill02toSkill01",
+      "normal": {
+        "node_id": 114800885
+      },
+      "doubled": {
+        "node_id": 853430312
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Pearl_Skill02toSkill11",
+      "normal": {
+        "node_id": 609724251
+      },
+      "doubled": {
+        "node_id": 1073324795
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Pearl_Skill02toSkill12",
+      "normal": {
+        "node_id": 209268249
+      },
+      "doubled": {
+        "node_id": 527025291
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Pearl_Skill03",
+      "normal": {
+        "node_id": 45850619
+      },
+      "doubled": {
+        "node_id": 648364083
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Pearl_Skill04",
+      "normal": {
+        "node_id": 898651364
+      },
+      "doubled": {
+        "node_id": 458389421
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Pearl_Skill11",
+      "normal": {
+        "node_id": 506447881
+      },
+      "doubled": {
+        "node_id": 267580787
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Pearl_Skill12",
+      "normal": {
+        "node_id": 513405719
+      },
+      "doubled": {
+        "node_id": 809811649
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Phainon_Die",
+      "normal": {
+        "node_id": 880300073
+      },
+      "doubled": {
+        "node_id": 226158747
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Phainon_Skill01",
+      "normal": {
+        "node_id": 911777909
+      },
+      "doubled": {
+        "node_id": 209636619
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Phainon_Skill01_Ready",
+      "normal": {
+        "node_id": 504447866
+      },
+      "doubled": {
+        "node_id": 966564678
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Phainon_Skill01toSkill02",
+      "normal": {
+        "node_id": 1052562618
+      },
+      "doubled": {
+        "node_id": 301510437
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Phainon_Skill02toSkill01",
+      "normal": {
+        "node_id": 884124354
+      },
+      "doubled": {
+        "node_id": 24819035
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Phainon_Skill03_End",
+      "normal": {
+        "node_id": 276608360
+      },
+      "doubled": {
+        "node_id": 900980861
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Phainon_Skill21",
+      "normal": {
+        "node_id": 84520670
+      },
+      "doubled": {
+        "node_id": 62956573
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Playergirl_40_Die",
+      "normal": {
+        "node_id": 524164986
+      },
+      "doubled": {
+        "node_id": 496482566
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Playergirl_40_Skill01",
+      "normal": {
+        "node_id": 828753055
+      },
+      "doubled": {
+        "node_id": 209528413
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Playergirl_40_Skill01_Ready",
+      "normal": {
+        "node_id": 471667137
+      },
+      "doubled": {
+        "node_id": 366111908
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Playergirl_40_Skill01toSkill02",
+      "normal": {
+        "node_id": 346836315
+      },
+      "doubled": {
+        "node_id": 624377060
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Playergirl_40_Skill02",
+      "normal": {
+        "node_id": 63277457
+      },
+      "doubled": {
+        "node_id": 273508882
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Playergirl_40_Skill02toSkill01",
+      "normal": {
+        "node_id": 551012230
+      },
+      "doubled": {
+        "node_id": 456374843
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_RobinS_Die",
+      "normal": {
+        "node_id": 951761286
+      },
+      "doubled": {
+        "node_id": 876499981
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_RobinS_PassiveSkill",
+      "normal": {
+        "node_id": 104669147
+      },
+      "doubled": {
+        "node_id": 170210040
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_RobinS_Skill01",
+      "normal": {
+        "node_id": 576263506
+      },
+      "doubled": {
+        "node_id": 440608581
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_RobinS_Skill01_Ready",
+      "normal": {
+        "node_id": 973551381
+      },
+      "doubled": {
+        "node_id": 527779634
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_RobinS_Skill01toSkill02",
+      "normal": {
+        "node_id": 186471218
+      },
+      "doubled": {
+        "node_id": 374365553
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_RobinS_Skill02_02_Short",
+      "normal": {
+        "node_id": 179141727
+      },
+      "doubled": {
+        "node_id": 26458495
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_RobinS_Skill02toSkill01",
+      "normal": {
+        "node_id": 7631605
+      },
+      "doubled": {
+        "node_id": 242209083
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_RobinS_Skill03",
+      "normal": {
+        "node_id": 524629028
+      },
+      "doubled": {
+        "node_id": 631832170
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_RobinS_Skill11",
+      "normal": {
+        "node_id": 70859214
+      },
+      "doubled": {
+        "node_id": 1016865410
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Saber_Die",
+      "normal": {
+        "node_id": 492233808
+      },
+      "doubled": {
+        "node_id": 997947490
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Saber_Skill01",
+      "normal": {
+        "node_id": 712235717
+      },
+      "doubled": {
+        "node_id": 583283510
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Saber_Skill01_Ready",
+      "normal": {
+        "node_id": 824160630
+      },
+      "doubled": {
+        "node_id": 487670449
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Saber_Skill01toSkill02",
+      "normal": {
+        "node_id": 246992923
+      },
+      "doubled": {
+        "node_id": 784956555
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Saber_Skill02toSkill01",
+      "normal": {
+        "node_id": 1018895817
+      },
+      "doubled": {
+        "node_id": 235442755
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Saber_Skill11_Ready",
+      "normal": {
+        "node_id": 274386253
+      },
+      "doubled": {
+        "node_id": 291589572
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_SilverWolf999_Die",
+      "normal": {
+        "node_id": 317955500
+      },
+      "doubled": {
+        "node_id": 283399629
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_SilverWolf999_Skill01",
+      "normal": {
+        "node_id": 878127273
+      },
+      "doubled": {
+        "node_id": 1011146061
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_SilverWolf999_Skill01_Ready",
+      "normal": {
+        "node_id": 269091120
+      },
+      "doubled": {
+        "node_id": 227603951
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_SilverWolf999_Skill01toSkill02",
+      "normal": {
+        "node_id": 426095134
+      },
+      "doubled": {
+        "node_id": 361144511
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_SilverWolf999_Skill02toSkill01",
+      "normal": {
+        "node_id": 76472876
+      },
+      "doubled": {
+        "node_id": 990755061
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_SilverWolf999_Skill03",
+      "normal": {
+        "node_id": 319544495
+      },
+      "doubled": {
+        "node_id": 409751257
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_SilverWolf999_Skill03_End",
+      "normal": {
+        "node_id": 654962539
+      },
+      "doubled": {
+        "node_id": 831528624
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_SilverWolf999_Skill04",
+      "normal": {
+        "node_id": 965517004
+      },
+      "doubled": {
+        "node_id": 792948910
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_SilverWolf999_Skill11_Item_02_Common_Shot",
+      "normal": {
+        "node_id": 1056591776
+      },
+      "doubled": {
+        "node_id": 575777340
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_SilverWolf999_Skill11_Item_03_Common_Shot",
+      "normal": {
+        "node_id": 988455703
+      },
+      "doubled": {
+        "node_id": 729468647
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_SilverWolf999_Skill11_Start",
+      "normal": {
+        "node_id": 1058085739
+      },
+      "doubled": {
+        "node_id": 145193308
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01_Acheron",
+      "normal": {
+        "node_id": 801785741
+      },
+      "doubled": {
+        "node_id": 225601959
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01_Aglaea",
+      "normal": {
+        "node_id": 971073935
+      },
+      "doubled": {
+        "node_id": 18714740
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01_Argenti",
+      "normal": {
+        "node_id": 862821228
+      },
+      "doubled": {
+        "node_id": 671985013
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01_Aventurine",
+      "normal": {
+        "node_id": 198033595
+      },
+      "doubled": {
+        "node_id": 858557500
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01_Dr_Ratio",
+      "normal": {
+        "node_id": 378052005
+      },
+      "doubled": {
+        "node_id": 22338162
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01_Feixiao",
+      "normal": {
+        "node_id": 362190895
+      },
+      "doubled": {
+        "node_id": 497357624
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01_Firefly",
+      "normal": {
+        "node_id": 390107127
+      },
+      "doubled": {
+        "node_id": 1045581291
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01_Fugue",
+      "normal": {
+        "node_id": 880875559
+      },
+      "doubled": {
+        "node_id": 814598943
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01_Gallagher",
+      "normal": {
+        "node_id": 996404700
+      },
+      "doubled": {
+        "node_id": 298022370
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01_Guinaifen",
+      "normal": {
+        "node_id": 604677207
+      },
+      "doubled": {
+        "node_id": 876534292
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01_Huohuo",
+      "normal": {
+        "node_id": 350163468
+      },
+      "doubled": {
+        "node_id": 504860904
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01_Hvy_Gallagher",
+      "normal": {
+        "node_id": 321130530
+      },
+      "doubled": {
+        "node_id": 461894228
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01_Jade",
+      "normal": {
+        "node_id": 590907178
+      },
+      "doubled": {
+        "node_id": 707768805
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01_Jiaoqiu",
+      "normal": {
+        "node_id": 874187990
+      },
+      "doubled": {
+        "node_id": 746739010
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01_Lingsha",
+      "normal": {
+        "node_id": 135663334
+      },
+      "doubled": {
+        "node_id": 213052075
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01_Mar7th_10",
+      "normal": {
+        "node_id": 483058172
+      },
+      "doubled": {
+        "node_id": 1003218345
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01_Moze",
+      "normal": {
+        "node_id": 59136835
+      },
+      "doubled": {
+        "node_id": 58046253
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01_PlayerGirl_20",
+      "normal": {
+        "node_id": 1046588664
+      },
+      "doubled": {
+        "node_id": 718554560
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01_Playergirl_20",
+      "normal": {
+        "node_id": 1046588664
+      },
+      "doubled": {
+        "node_id": 718554560
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01_Playergirl_30",
+      "normal": {
+        "node_id": 350772301
+      },
+      "doubled": {
+        "node_id": 928257362
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01_Rappa",
+      "normal": {
+        "node_id": 409758143
+      },
+      "doubled": {
+        "node_id": 753233483
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01_Ready_Acheron",
+      "normal": {
+        "node_id": 479375847
+      },
+      "doubled": {
+        "node_id": 989104176
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01_Ready_Aglaea",
+      "normal": {
+        "node_id": 978002040
+      },
+      "doubled": {
+        "node_id": 333424828
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01_Ready_Aventurine",
+      "normal": {
+        "node_id": 463796139
+      },
+      "doubled": {
+        "node_id": 854348719
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01_Ready_Boothill",
+      "normal": {
+        "node_id": 1039368277
+      },
+      "doubled": {
+        "node_id": 491476754
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01_Ready_Dr_Ratio",
+      "normal": {
+        "node_id": 872056372
+      },
+      "doubled": {
+        "node_id": 651803653
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01_Ready_Fugue",
+      "normal": {
+        "node_id": 819071065
+      },
+      "doubled": {
+        "node_id": 535372824
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01_Ready_Gallagher",
+      "normal": {
+        "node_id": 552377824
+      },
+      "doubled": {
+        "node_id": 649190670
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01_Ready_Guinaifen",
+      "normal": {
+        "node_id": 911467032
+      },
+      "doubled": {
+        "node_id": 274839250
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01_Ready_Huohuo",
+      "normal": {
+        "node_id": 812317428
+      },
+      "doubled": {
+        "node_id": 594876991
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01_Ready_Jiaoqiu",
+      "normal": {
+        "node_id": 13674477
+      },
+      "doubled": {
+        "node_id": 949142649
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01_Ready_Lingsha",
+      "normal": {
+        "node_id": 373593523
+      },
+      "doubled": {
+        "node_id": 791757491
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01_Ready_Mar7th_10",
+      "normal": {
+        "node_id": 882361858
+      },
+      "doubled": {
+        "node_id": 90040384
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01_Ready_Moze",
+      "normal": {
+        "node_id": 858628088
+      },
+      "doubled": {
+        "node_id": 136019271
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01_Ready_PlayerGirl_20",
+      "normal": {
+        "node_id": 1042748512
+      },
+      "doubled": {
+        "node_id": 580117321
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01_Ready_Playergirl_20",
+      "normal": {
+        "node_id": 1042748512
+      },
+      "doubled": {
+        "node_id": 580117321
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01_Ready_Playergirl_30",
+      "normal": {
+        "node_id": 148665564
+      },
+      "doubled": {
+        "node_id": 892362172
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01_Ready_Rappa",
+      "normal": {
+        "node_id": 881635530
+      },
+      "doubled": {
+        "node_id": 930944793
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01_Ready_Robin",
+      "normal": {
+        "node_id": 778313382
+      },
+      "doubled": {
+        "node_id": 316069835
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01_Ready_RuanMei",
+      "normal": {
+        "node_id": 738198185
+      },
+      "doubled": {
+        "node_id": 427618785
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01_Ready_Sunday",
+      "normal": {
+        "node_id": 863772261
+      },
+      "doubled": {
+        "node_id": 389535277
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01_Ready_TheHerta",
+      "normal": {
+        "node_id": 607260092
+      },
+      "doubled": {
+        "node_id": 581994785
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01_Ready_Topaz",
+      "normal": {
+        "node_id": 844665842
+      },
+      "doubled": {
+        "node_id": 311660817
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01_Ready_Yunli",
+      "normal": {
+        "node_id": 311351633
+      },
+      "doubled": {
+        "node_id": 1042797598
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01_Ready_misha",
+      "normal": {
+        "node_id": 373909716
+      },
+      "doubled": {
+        "node_id": 1021180331
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01_Ready_sparkle",
+      "normal": {
+        "node_id": 891573921
+      },
+      "doubled": {
+        "node_id": 763154397
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01_Robin",
+      "normal": {
+        "node_id": 618919638
+      },
+      "doubled": {
+        "node_id": 946820861
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01_RuanMei",
+      "normal": {
+        "node_id": 929255637
+      },
+      "doubled": {
+        "node_id": 15951815
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01_Sunday",
+      "normal": {
+        "node_id": 314612696
+      },
+      "doubled": {
+        "node_id": 666414857
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01_TheHerta",
+      "normal": {
+        "node_id": 841800829
+      },
+      "doubled": {
+        "node_id": 469868073
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01_blackSwan",
+      "normal": {
+        "node_id": 753778696
+      },
+      "doubled": {
+        "node_id": 772880381
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01_maxMod_Firefly",
+      "normal": {
+        "node_id": 1041689450
+      },
+      "doubled": {
+        "node_id": 288027699
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01_misha",
+      "normal": {
+        "node_id": 530114441
+      },
+      "doubled": {
+        "node_id": 564985056
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01_sparkle",
+      "normal": {
+        "node_id": 105768365
+      },
+      "doubled": {
+        "node_id": 358191185
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01toSkill02_Aglaea",
+      "normal": {
+        "node_id": 938761128
+      },
+      "doubled": {
+        "node_id": 144850097
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01toSkill02_Aventurine",
+      "normal": {
+        "node_id": 75118986
+      },
+      "doubled": {
+        "node_id": 296051807
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01toSkill02_Dr_Ratio",
+      "normal": {
+        "node_id": 50353482
+      },
+      "doubled": {
+        "node_id": 807171894
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01toSkill02_Fugue",
+      "normal": {
+        "node_id": 340695632
+      },
+      "doubled": {
+        "node_id": 651159891
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01toSkill02_Gallagher",
+      "normal": {
+        "node_id": 149584373
+      },
+      "doubled": {
+        "node_id": 229604055
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01toSkill02_Guinaifen",
+      "normal": {
+        "node_id": 609126535
+      },
+      "doubled": {
+        "node_id": 53921458
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01toSkill02_Hanya",
+      "normal": {
+        "node_id": 690187745
+      },
+      "doubled": {
+        "node_id": 287736091
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01toSkill02_Moze",
+      "normal": {
+        "node_id": 218119627
+      },
+      "doubled": {
+        "node_id": 282245078
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01toSkill02_Playergirl_30",
+      "normal": {
+        "node_id": 85393768
+      },
+      "doubled": {
+        "node_id": 683286217
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01toSkill02_Rappa",
+      "normal": {
+        "node_id": 50057406
+      },
+      "doubled": {
+        "node_id": 217060966
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01toSkill02_Sunday",
+      "normal": {
+        "node_id": 825628812
+      },
+      "doubled": {
+        "node_id": 135449357
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01toSkill02_TheHerta",
+      "normal": {
+        "node_id": 76000389
+      },
+      "doubled": {
+        "node_id": 276399190
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill01toSkill02_Topaz",
+      "normal": {
+        "node_id": 509685549
+      },
+      "doubled": {
+        "node_id": 987569744
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill02_Aglaea",
+      "normal": {
+        "node_id": 115877384
+      },
+      "doubled": {
+        "node_id": 123591506
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill02_B_Playergirl_30",
+      "normal": {
+        "node_id": 784559775
+      },
+      "doubled": {
+        "node_id": 252478848
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill02_Boothill",
+      "normal": {
+        "node_id": 852419549
+      },
+      "doubled": {
+        "node_id": 403947536
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill02_Dr_Ratio",
+      "normal": {
+        "node_id": 767512231
+      },
+      "doubled": {
+        "node_id": 229506628
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill02_Firefly",
+      "normal": {
+        "node_id": 308674690
+      },
+      "doubled": {
+        "node_id": 86698417
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill02_Gallagher",
+      "normal": {
+        "node_id": 916722015
+      },
+      "doubled": {
+        "node_id": 717670906
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill02_Guinaifen",
+      "normal": {
+        "node_id": 639225886
+      },
+      "doubled": {
+        "node_id": 195509125
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill02_Hanya_01",
+      "normal": {
+        "node_id": 780448096
+      },
+      "doubled": {
+        "node_id": 324568461
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill02_Huohuo",
+      "normal": {
+        "node_id": 997422194
+      },
+      "doubled": {
+        "node_id": 502065444
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill02_Jade",
+      "normal": {
+        "node_id": 364495309
+      },
+      "doubled": {
+        "node_id": 153105337
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill02_Jiaoqiu",
+      "normal": {
+        "node_id": 717232904
+      },
+      "doubled": {
+        "node_id": 564962458
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill02_Mar7th_10",
+      "normal": {
+        "node_id": 252995306
+      },
+      "doubled": {
+        "node_id": 705088381
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill02_Moze",
+      "normal": {
+        "node_id": 182024970
+      },
+      "doubled": {
+        "node_id": 495749387
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill02_PlayerBoy_20",
+      "normal": {
+        "node_id": 271050234
+      },
+      "doubled": {
+        "node_id": 813388390
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill02_PlayerGirl_20",
+      "normal": {
+        "node_id": 318926738
+      },
+      "doubled": {
+        "node_id": 26762852
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill02_Playergirl_30",
+      "normal": {
+        "node_id": 677237764
+      },
+      "doubled": {
+        "node_id": 736235537
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill02_Rappa",
+      "normal": {
+        "node_id": 180240095
+      },
+      "doubled": {
+        "node_id": 250803445
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill02_Ready_Guinaifen",
+      "normal": {
+        "node_id": 916415312
+      },
+      "doubled": {
+        "node_id": 712271954
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill02_Robin",
+      "normal": {
+        "node_id": 423148447
+      },
+      "doubled": {
+        "node_id": 934210434
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill02_Sunday",
+      "normal": {
+        "node_id": 473672177
+      },
+      "doubled": {
+        "node_id": 846600371
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill02_Topaz",
+      "normal": {
+        "node_id": 90174518
+      },
+      "doubled": {
+        "node_id": 386994951
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill02_misha",
+      "normal": {
+        "node_id": 881736860
+      },
+      "doubled": {
+        "node_id": 636305767
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill02_sparkle",
+      "normal": {
+        "node_id": 927712366
+      },
+      "doubled": {
+        "node_id": 110735945
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill02toSkill01_Aglaea",
+      "normal": {
+        "node_id": 77653433
+      },
+      "doubled": {
+        "node_id": 77653433
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill02toSkill01_Aventurine",
+      "normal": {
+        "node_id": 341500107
+      },
+      "doubled": {
+        "node_id": 298953378
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill02toSkill01_Dr_Ratio",
+      "normal": {
+        "node_id": 651725801
+      },
+      "doubled": {
+        "node_id": 594438000
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill02toSkill01_Gallagher",
+      "normal": {
+        "node_id": 237369005
+      },
+      "doubled": {
+        "node_id": 670893355
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill02toSkill01_Guinaifen",
+      "normal": {
+        "node_id": 762750677
+      },
+      "doubled": {
+        "node_id": 975963950
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill02toSkill01_Hanya",
+      "normal": {
+        "node_id": 82667216
+      },
+      "doubled": {
+        "node_id": 224330836
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill02toSkill01_Playergirl_30",
+      "normal": {
+        "node_id": 237009214
+      },
+      "doubled": {
+        "node_id": 145319821
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill02toSkill01_Rappa",
+      "normal": {
+        "node_id": 758971402
+      },
+      "doubled": {
+        "node_id": 1032574655
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill02toSkill01_Sunday",
+      "normal": {
+        "node_id": 664864553
+      },
+      "doubled": {
+        "node_id": 324187822
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill02toSkill01_Topaz",
+      "normal": {
+        "node_id": 309143982
+      },
+      "doubled": {
+        "node_id": 499818802
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill03_Cast_01_Rappa",
+      "normal": {
+        "node_id": 495059558
+      },
+      "doubled": {
+        "node_id": 610381350
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill03_Cast_02_Rappa",
+      "normal": {
+        "node_id": 761540257
+      },
+      "doubled": {
+        "node_id": 112887541
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill03_Cast_03_Rappa",
+      "normal": {
+        "node_id": 836262960
+      },
+      "doubled": {
+        "node_id": 445940892
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill03_Counter_01_Yunli",
+      "normal": {
+        "node_id": 259102245
+      },
+      "doubled": {
+        "node_id": 706485024
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill03_Feixiao",
+      "normal": {
+        "node_id": 280392921
+      },
+      "doubled": {
+        "node_id": 173817853
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill03_Firefly",
+      "normal": {
+        "node_id": 26342637
+      },
+      "doubled": {
+        "node_id": 603608718
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill03_Gallagher",
+      "normal": {
+        "node_id": 203582054
+      },
+      "doubled": {
+        "node_id": 556612713
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill03_Guinaifen",
+      "normal": {
+        "node_id": 142832686
+      },
+      "doubled": {
+        "node_id": 323212682
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill03_Hanya",
+      "normal": {
+        "node_id": 925549847
+      },
+      "doubled": {
+        "node_id": 120904371
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill03_RuanMei",
+      "normal": {
+        "node_id": 698713850
+      },
+      "doubled": {
+        "node_id": 747584618
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill03_Topaz",
+      "normal": {
+        "node_id": 153369597
+      },
+      "doubled": {
+        "node_id": 965804145
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill11_A_Mar7th_10",
+      "normal": {
+        "node_id": 961797638
+      },
+      "doubled": {
+        "node_id": 450961450
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill11_B_Mar7th_10",
+      "normal": {
+        "node_id": 501687784
+      },
+      "doubled": {
+        "node_id": 648475773
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill11_Bonus_Boothill",
+      "normal": {
+        "node_id": 837494347
+      },
+      "doubled": {
+        "node_id": 935241443
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill11_Done_Boothill",
+      "normal": {
+        "node_id": 363046415
+      },
+      "doubled": {
+        "node_id": 330125808
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill11_Fugue",
+      "normal": {
+        "node_id": 613672258
+      },
+      "doubled": {
+        "node_id": 311333058
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill11_Playergirl_30",
+      "normal": {
+        "node_id": 428800638
+      },
+      "doubled": {
+        "node_id": 394861530
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill11_Ready_Fugue",
+      "normal": {
+        "node_id": 721526659
+      },
+      "doubled": {
+        "node_id": 729335496
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill11_Ready_Playergirl_30",
+      "normal": {
+        "node_id": 567997660
+      },
+      "doubled": {
+        "node_id": 730115805
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill11_Shot_Boothill",
+      "normal": {
+        "node_id": 184268375
+      },
+      "doubled": {
+        "node_id": 386352538
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Skill11_Start_Boothill",
+      "normal": {
+        "node_id": 109701737
+      },
+      "doubled": {
+        "node_id": 541428480
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Sparxie_Die",
+      "normal": {
+        "node_id": 745741867
+      },
+      "doubled": {
+        "node_id": 191067744
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Sparxie_Skill01",
+      "normal": {
+        "node_id": 322744567
+      },
+      "doubled": {
+        "node_id": 446470321
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Sparxie_Skill01_Ready",
+      "normal": {
+        "node_id": 727624790
+      },
+      "doubled": {
+        "node_id": 442757597
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Sparxie_Skill01toSkill02",
+      "normal": {
+        "node_id": 222827975
+      },
+      "doubled": {
+        "node_id": 112052330
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Sparxie_Skill02_Gift",
+      "normal": {
+        "node_id": 325451916
+      },
+      "doubled": {
+        "node_id": 633386570
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Sparxie_Skill02_Gift_Again",
+      "normal": {
+        "node_id": 226408590
+      },
+      "doubled": {
+        "node_id": 226408590
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Sparxie_Skill02toSkill01",
+      "normal": {
+        "node_id": 487672987
+      },
+      "doubled": {
+        "node_id": 876665987
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_TohsakaRin_Die",
+      "normal": {
+        "node_id": 267456261
+      },
+      "doubled": {
+        "node_id": 409468541
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_TohsakaRin_Skill01",
+      "normal": {
+        "node_id": 521904994
+      },
+      "doubled": {
+        "node_id": 404030668
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_TohsakaRin_Skill01_Ready",
+      "normal": {
+        "node_id": 859342763
+      },
+      "doubled": {
+        "node_id": 1012571187
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_TohsakaRin_Skill01toSkill02",
+      "normal": {
+        "node_id": 151475
+      },
+      "doubled": {
+        "node_id": 442842135
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_TohsakaRin_Skill02",
+      "normal": {
+        "node_id": 255297166
+      },
+      "doubled": {
+        "node_id": 766230362
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_TohsakaRin_Skill02toSkill01",
+      "normal": {
+        "node_id": 49043039
+      },
+      "doubled": {
+        "node_id": 215826730
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Tribbie_Die",
+      "normal": {
+        "node_id": 964853896
+      },
+      "doubled": {
+        "node_id": 841451667
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Tribbie_Skill01",
+      "normal": {
+        "node_id": 198905049
+      },
+      "doubled": {
+        "node_id": 1010326461
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Tribbie_Skill01_Ready",
+      "normal": {
+        "node_id": 674988610
+      },
+      "doubled": {
+        "node_id": 648993285
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Tribbie_Skill01toSkill02",
+      "normal": {
+        "node_id": 426932369
+      },
+      "doubled": {
+        "node_id": 183788152
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Tribbie_Skill02toSkill01",
+      "normal": {
+        "node_id": 755233966
+      },
+      "doubled": {
+        "node_id": 806893475
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_Unload_Firefly",
+      "normal": {
+        "node_id": 594407670
+      },
+      "doubled": {
+        "node_id": 369963355
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_YaoGuang_Die",
+      "normal": {
+        "node_id": 1034001613
+      },
+      "doubled": {
+        "node_id": 113735000
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_YaoGuang_Skill01_Ready",
+      "normal": {
+        "node_id": 968004499
+      },
+      "doubled": {
+        "node_id": 399383973
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_YaoGuang_Skill01toSkill02",
+      "normal": {
+        "node_id": 210727385
+      },
+      "doubled": {
+        "node_id": 720168292
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_YaoGuang_Skill02toSkill01",
+      "normal": {
+        "node_id": 872398544
+      },
+      "doubled": {
+        "node_id": 933441404
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_atk_cast_arlan",
+      "normal": {
+        "node_id": 641756982
+      },
+      "doubled": {
+        "node_id": 223958410
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_atk_cast_asta",
+      "normal": {
+        "node_id": 879148475
+      },
+      "doubled": {
+        "node_id": 136045425
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_atk_cast_bailu",
+      "normal": {
+        "node_id": 20290812
+      },
+      "doubled": {
+        "node_id": 981946078
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_atk_cast_blade",
+      "normal": {
+        "node_id": 858321017
+      },
+      "doubled": {
+        "node_id": 940674293
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_atk_cast_bronya",
+      "normal": {
+        "node_id": 562442686
+      },
+      "doubled": {
+        "node_id": 911844168
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_atk_cast_clara",
+      "normal": {
+        "node_id": 473988633
+      },
+      "doubled": {
+        "node_id": 77677827
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_atk_cast_danheng",
+      "normal": {
+        "node_id": 672127102
+      },
+      "doubled": {
+        "node_id": 735783056
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_atk_cast_herta",
+      "normal": {
+        "node_id": 897787507
+      },
+      "doubled": {
+        "node_id": 143354553
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_atk_cast_himeko",
+      "normal": {
+        "node_id": 181096881
+      },
+      "doubled": {
+        "node_id": 953536094
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_atk_cast_hook",
+      "normal": {
+        "node_id": 125491456
+      },
+      "doubled": {
+        "node_id": 301471313
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_atk_cast_hvy_blade",
+      "normal": {
+        "node_id": 883905885
+      },
+      "doubled": {
+        "node_id": 998040644
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_atk_cast_jingyuan",
+      "normal": {
+        "node_id": 4452911
+      },
+      "doubled": {
+        "node_id": 542649496
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_atk_cast_kafka",
+      "normal": {
+        "node_id": 987957812
+      },
+      "doubled": {
+        "node_id": 425754573
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_atk_cast_layer01_fuxuan",
+      "normal": {
+        "node_id": 40805177
+      },
+      "doubled": {
+        "node_id": 21104725
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_atk_cast_luka",
+      "normal": {
+        "node_id": 576030309
+      },
+      "doubled": {
+        "node_id": 446164133
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_atk_cast_luocha",
+      "normal": {
+        "node_id": 846365283
+      },
+      "doubled": {
+        "node_id": 390590862
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_atk_cast_mar7th",
+      "normal": {
+        "node_id": 91470405
+      },
+      "doubled": {
+        "node_id": 1016174502
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_atk_cast_pela",
+      "normal": {
+        "node_id": 18372456
+      },
+      "doubled": {
+        "node_id": 929053648
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_atk_cast_playerboy",
+      "normal": {
+        "node_id": 708195096
+      },
+      "doubled": {
+        "node_id": 703839819
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_atk_cast_playerboy_spear",
+      "normal": {
+        "node_id": 335186565
+      },
+      "doubled": {
+        "node_id": 1044039342
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_atk_cast_playergirl",
+      "normal": {
+        "node_id": 708195096
+      },
+      "doubled": {
+        "node_id": 703839819
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_atk_cast_playergirl_spear",
+      "normal": {
+        "node_id": 335186565
+      },
+      "doubled": {
+        "node_id": 1044039342
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_atk_cast_qingque",
+      "normal": {
+        "node_id": 234888527
+      },
+      "doubled": {
+        "node_id": 565439777
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_atk_cast_sampo",
+      "normal": {
+        "node_id": 591249619
+      },
+      "doubled": {
+        "node_id": 462093113
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_atk_cast_serval",
+      "normal": {
+        "node_id": 889524967
+      },
+      "doubled": {
+        "node_id": 555717724
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_atk_cast_silverwolf",
+      "normal": {
+        "node_id": 1064633659
+      },
+      "doubled": {
+        "node_id": 205902181
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_atk_cast_sushang",
+      "normal": {
+        "node_id": 58244672
+      },
+      "doubled": {
+        "node_id": 161740106
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_atk_cast_tingyun",
+      "normal": {
+        "node_id": 339362261
+      },
+      "doubled": {
+        "node_id": 283749253
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_atk_cast_welt",
+      "normal": {
+        "node_id": 874633316
+      },
+      "doubled": {
+        "node_id": 492929565
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_atk_cast_xueyi",
+      "normal": {
+        "node_id": 99773792
+      },
+      "doubled": {
+        "node_id": 822023173
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_atk_cast_yanqing",
+      "normal": {
+        "node_id": 133302788
+      },
+      "doubled": {
+        "node_id": 224385511
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_atk_gepard",
+      "normal": {
+        "node_id": 41341945
+      },
+      "doubled": {
+        "node_id": 767253457
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_atk_select_blade",
+      "normal": {
+        "node_id": 469036088
+      },
+      "doubled": {
+        "node_id": 646030426
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_atk_select_jingliu",
+      "normal": {
+        "node_id": 908780894
+      },
+      "doubled": {
+        "node_id": 498602441
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_atk_special_playerboy_spear",
+      "normal": {
+        "node_id": 938437328
+      },
+      "doubled": {
+        "node_id": 530448283
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_atk_special_playergirl_spear",
+      "normal": {
+        "node_id": 938437328
+      },
+      "doubled": {
+        "node_id": 530448283
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_bonus_cast_himeko",
+      "normal": {
+        "node_id": 558993223
+      },
+      "doubled": {
+        "node_id": 747723661
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_bonus_skill_cast_blade",
+      "normal": {
+        "node_id": 201645526
+      },
+      "doubled": {
+        "node_id": 915087718
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_call_cast_playergirl_spear",
+      "normal": {
+        "node_id": 907873913
+      },
+      "doubled": {
+        "node_id": 806832102
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_common_stagger_recover",
+      "normal": {
+        "node_id": 251214886
+      },
+      "doubled": {
+        "node_id": 876339897
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_die_01_jingliu",
+      "normal": {
+        "node_id": 358088765
+      },
+      "doubled": {
+        "node_id": 532574577
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_die_arlan",
+      "normal": {
+        "node_id": 809089368
+      },
+      "doubled": {
+        "node_id": 775765768
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_die_asta",
+      "normal": {
+        "node_id": 153709364
+      },
+      "doubled": {
+        "node_id": 60097876
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_die_bailu",
+      "normal": {
+        "node_id": 241481714
+      },
+      "doubled": {
+        "node_id": 297451542
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_die_blade",
+      "normal": {
+        "node_id": 224252659
+      },
+      "doubled": {
+        "node_id": 177498871
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_die_bronya",
+      "normal": {
+        "node_id": 135437324
+      },
+      "doubled": {
+        "node_id": 646449371
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_die_clara",
+      "normal": {
+        "node_id": 201716054
+      },
+      "doubled": {
+        "node_id": 458572588
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_die_danheng",
+      "normal": {
+        "node_id": 450874829
+      },
+      "doubled": {
+        "node_id": 322924240
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_die_gepard",
+      "normal": {
+        "node_id": 516351859
+      },
+      "doubled": {
+        "node_id": 778820755
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_die_herta",
+      "normal": {
+        "node_id": 233660718
+      },
+      "doubled": {
+        "node_id": 798680943
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_die_himeko",
+      "normal": {
+        "node_id": 5475027
+      },
+      "doubled": {
+        "node_id": 700239697
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_die_hook",
+      "normal": {
+        "node_id": 254352802
+      },
+      "doubled": {
+        "node_id": 576675280
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_die_kafka",
+      "normal": {
+        "node_id": 117614985
+      },
+      "doubled": {
+        "node_id": 396160528
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_die_luka",
+      "normal": {
+        "node_id": 678544882
+      },
+      "doubled": {
+        "node_id": 576323074
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_die_luocha",
+      "normal": {
+        "node_id": 973739068
+      },
+      "doubled": {
+        "node_id": 6870969
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_die_mar7th",
+      "normal": {
+        "node_id": 125251674
+      },
+      "doubled": {
+        "node_id": 346866472
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_die_natasha",
+      "normal": {
+        "node_id": 486050141
+      },
+      "doubled": {
+        "node_id": 597935527
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_die_pela",
+      "normal": {
+        "node_id": 105632938
+      },
+      "doubled": {
+        "node_id": 638632398
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_die_playerboy",
+      "normal": {
+        "node_id": 913376993
+      },
+      "doubled": {
+        "node_id": 439654586
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_die_playerboy_spear",
+      "normal": {
+        "node_id": 623082686
+      },
+      "doubled": {
+        "node_id": 781979200
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_die_playergirl",
+      "normal": {
+        "node_id": 941905433
+      },
+      "doubled": {
+        "node_id": 128921858
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_die_playergirl_spear",
+      "normal": {
+        "node_id": 145396372
+      },
+      "doubled": {
+        "node_id": 147392924
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_die_qingque",
+      "normal": {
+        "node_id": 494691736
+      },
+      "doubled": {
+        "node_id": 21358103
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_die_sampo",
+      "normal": {
+        "node_id": 477723132
+      },
+      "doubled": {
+        "node_id": 805226902
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_die_seele",
+      "normal": {
+        "node_id": 323120627
+      },
+      "doubled": {
+        "node_id": 585109587
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_die_serval",
+      "normal": {
+        "node_id": 579269553
+      },
+      "doubled": {
+        "node_id": 666074583
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_die_silverwolf",
+      "normal": {
+        "node_id": 588558810
+      },
+      "doubled": {
+        "node_id": 87779674
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_die_sushang",
+      "normal": {
+        "node_id": 681415629
+      },
+      "doubled": {
+        "node_id": 945377268
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_die_tingyun",
+      "normal": {
+        "node_id": 612650035
+      },
+      "doubled": {
+        "node_id": 309535283
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_die_topaz_zhangzhang",
+      "normal": {
+        "node_id": 1068109238
+      },
+      "doubled": {
+        "node_id": 596623436
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_die_welt",
+      "normal": {
+        "node_id": 748970267
+      },
+      "doubled": {
+        "node_id": 709273664
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_die_xueyi",
+      "normal": {
+        "node_id": 323386080
+      },
+      "doubled": {
+        "node_id": 727681423
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_die_yanqing",
+      "normal": {
+        "node_id": 1048679767
+      },
+      "doubled": {
+        "node_id": 651344820
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_die_yukong",
+      "normal": {
+        "node_id": 884284924
+      },
+      "doubled": {
+        "node_id": 791262242
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_revie_topaz_zhangzhang",
+      "normal": {
+        "node_id": 768035952
+      },
+      "doubled": {
+        "node_id": 894767292
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_seele_again",
+      "normal": {
+        "node_id": 978519992
+      },
+      "doubled": {
+        "node_id": 843326659
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_skill01_Hanya_01",
+      "normal": {
+        "node_id": 377735858
+      },
+      "doubled": {
+        "node_id": 191349781
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_skill11_start_luka",
+      "normal": {
+        "node_id": 404524676
+      },
+      "doubled": {
+        "node_id": 767335960
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_skill_bonus_cast_herta",
+      "normal": {
+        "node_id": 28763623
+      },
+      "doubled": {
+        "node_id": 545425099
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_skill_bonus_cast_jingyuan",
+      "normal": {
+        "node_id": 594221453
+      },
+      "doubled": {
+        "node_id": 451389739
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_skill_bonus_cast_kafka",
+      "normal": {
+        "node_id": 29168713
+      },
+      "doubled": {
+        "node_id": 852719212
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_skill_bonus_open_luocha",
+      "normal": {
+        "node_id": 980881554
+      },
+      "doubled": {
+        "node_id": 574437012
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_skill_cast_01_bronya",
+      "normal": {
+        "node_id": 520492535
+      },
+      "doubled": {
+        "node_id": 39323995
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_skill_cast_02_bronya",
+      "normal": {
+        "node_id": 835580282
+      },
+      "doubled": {
+        "node_id": 983933313
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_skill_cast_arlan",
+      "normal": {
+        "node_id": 160588301
+      },
+      "doubled": {
+        "node_id": 397279486
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_skill_cast_asta",
+      "normal": {
+        "node_id": 667193118
+      },
+      "doubled": {
+        "node_id": 1024633770
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_skill_cast_bailu",
+      "normal": {
+        "node_id": 481464821
+      },
+      "doubled": {
+        "node_id": 991706738
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_skill_cast_blade",
+      "normal": {
+        "node_id": 129336788
+      },
+      "doubled": {
+        "node_id": 950971641
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_skill_cast_danheng",
+      "normal": {
+        "node_id": 528727537
+      },
+      "doubled": {
+        "node_id": 694693818
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_skill_cast_fuxuan",
+      "normal": {
+        "node_id": 239995957
+      },
+      "doubled": {
+        "node_id": 331042684
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_skill_cast_herta",
+      "normal": {
+        "node_id": 387043050
+      },
+      "doubled": {
+        "node_id": 182784023
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_skill_cast_himeko",
+      "normal": {
+        "node_id": 922248716
+      },
+      "doubled": {
+        "node_id": 278466996
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_skill_cast_hook",
+      "normal": {
+        "node_id": 986983865
+      },
+      "doubled": {
+        "node_id": 586791509
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_skill_cast_jingyuan",
+      "normal": {
+        "node_id": 66627989
+      },
+      "doubled": {
+        "node_id": 796739371
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_skill_cast_luka",
+      "normal": {
+        "node_id": 595507928
+      },
+      "doubled": {
+        "node_id": 382975370
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_skill_cast_luocha",
+      "normal": {
+        "node_id": 696542508
+      },
+      "doubled": {
+        "node_id": 180944589
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_skill_cast_mar7th",
+      "normal": {
+        "node_id": 632745534
+      },
+      "doubled": {
+        "node_id": 539656744
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_skill_cast_natasha",
+      "normal": {
+        "node_id": 329072909
+      },
+      "doubled": {
+        "node_id": 514480018
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_skill_cast_pela",
+      "normal": {
+        "node_id": 507388260
+      },
+      "doubled": {
+        "node_id": 88044286
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_skill_cast_playerboy",
+      "normal": {
+        "node_id": 567535627
+      },
+      "doubled": {
+        "node_id": 577418864
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_skill_cast_playerboy_spear",
+      "normal": {
+        "node_id": 953183938
+      },
+      "doubled": {
+        "node_id": 1071688119
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_skill_cast_playergirl",
+      "normal": {
+        "node_id": 567535627
+      },
+      "doubled": {
+        "node_id": 577418864
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_skill_cast_playergirl_spear",
+      "normal": {
+        "node_id": 953183938
+      },
+      "doubled": {
+        "node_id": 1071688119
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_skill_cast_qingque",
+      "normal": {
+        "node_id": 299821073
+      },
+      "doubled": {
+        "node_id": 875470111
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_skill_cast_sampo",
+      "normal": {
+        "node_id": 410240142
+      },
+      "doubled": {
+        "node_id": 55036845
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_skill_cast_seele",
+      "normal": {
+        "node_id": 503787321
+      },
+      "doubled": {
+        "node_id": 362638009
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_skill_cast_serval",
+      "normal": {
+        "node_id": 314822659
+      },
+      "doubled": {
+        "node_id": 195984555
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_skill_cast_silverwolf",
+      "normal": {
+        "node_id": 339858191
+      },
+      "doubled": {
+        "node_id": 919257131
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_skill_cast_sushang",
+      "normal": {
+        "node_id": 474496963
+      },
+      "doubled": {
+        "node_id": 942335370
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_skill_cast_tingyun",
+      "normal": {
+        "node_id": 414044894
+      },
+      "doubled": {
+        "node_id": 962379790
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_skill_cast_welt",
+      "normal": {
+        "node_id": 130213204
+      },
+      "doubled": {
+        "node_id": 884152022
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_skill_cast_xueyi",
+      "normal": {
+        "node_id": 281553777
+      },
+      "doubled": {
+        "node_id": 167044748
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_skill_cast_yanqing",
+      "normal": {
+        "node_id": 242900074
+      },
+      "doubled": {
+        "node_id": 715287732
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_skill_gepard",
+      "normal": {
+        "node_id": 26997408
+      },
+      "doubled": {
+        "node_id": 789524964
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_skill_heal_gepard",
+      "normal": {
+        "node_id": 684811630
+      },
+      "doubled": {
+        "node_id": 776313715
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_skill_passive_cast_bailu",
+      "normal": {
+        "node_id": 969847761
+      },
+      "doubled": {
+        "node_id": 718323136
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_skill_passive_cast_jingliu",
+      "normal": {
+        "node_id": 638519851
+      },
+      "doubled": {
+        "node_id": 866568514
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_skill_passive_cast_qingque",
+      "normal": {
+        "node_id": 787525037
+      },
+      "doubled": {
+        "node_id": 178231735
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_skill_passive_cast_yanqing",
+      "normal": {
+        "node_id": 845915941
+      },
+      "doubled": {
+        "node_id": 782496577
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_skill_select_blade",
+      "normal": {
+        "node_id": 385232960
+      },
+      "doubled": {
+        "node_id": 432694951
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_skill_select_jingliu",
+      "normal": {
+        "node_id": 590871879
+      },
+      "doubled": {
+        "node_id": 340107391
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_skill_shield_playerboy_spear",
+      "normal": {
+        "node_id": 474256055
+      },
+      "doubled": {
+        "node_id": 387326514
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_skill_shield_playergirl_spear",
+      "normal": {
+        "node_id": 474256055
+      },
+      "doubled": {
+        "node_id": 387326514
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_stun_Unload_Firefly",
+      "normal": {
+        "node_id": 146333146
+      },
+      "doubled": {
+        "node_id": 990650644
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_turn_begin_arlan",
+      "normal": {
+        "node_id": 1024679624
+      },
+      "doubled": {
+        "node_id": 201825909
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_turn_begin_bailu",
+      "normal": {
+        "node_id": 475955008
+      },
+      "doubled": {
+        "node_id": 677454194
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_turn_begin_blade",
+      "normal": {
+        "node_id": 674124044
+      },
+      "doubled": {
+        "node_id": 839915112
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_turn_begin_bronya",
+      "normal": {
+        "node_id": 161557919
+      },
+      "doubled": {
+        "node_id": 806750026
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_turn_begin_buff_hook",
+      "normal": {
+        "node_id": 806679887
+      },
+      "doubled": {
+        "node_id": 1044469067
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_turn_begin_clara",
+      "normal": {
+        "node_id": 504798698
+      },
+      "doubled": {
+        "node_id": 217745917
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_turn_begin_danheng",
+      "normal": {
+        "node_id": 959462412
+      },
+      "doubled": {
+        "node_id": 663792083
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_turn_begin_gepard",
+      "normal": {
+        "node_id": 552897904
+      },
+      "doubled": {
+        "node_id": 117472145
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_turn_begin_himeko",
+      "normal": {
+        "node_id": 301570732
+      },
+      "doubled": {
+        "node_id": 295228006
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_turn_begin_jingliu",
+      "normal": {
+        "node_id": 116111078
+      },
+      "doubled": {
+        "node_id": 896280454
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_turn_begin_kafka",
+      "normal": {
+        "node_id": 739070358
+      },
+      "doubled": {
+        "node_id": 573236989
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_turn_begin_luocha",
+      "normal": {
+        "node_id": 619045347
+      },
+      "doubled": {
+        "node_id": 375716926
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_turn_begin_mar7th",
+      "normal": {
+        "node_id": 936900207
+      },
+      "doubled": {
+        "node_id": 278528551
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_turn_begin_natasha",
+      "normal": {
+        "node_id": 675063843
+      },
+      "doubled": {
+        "node_id": 1000746535
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_turn_begin_pela",
+      "normal": {
+        "node_id": 637301333
+      },
+      "doubled": {
+        "node_id": 564083316
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_turn_begin_playerboy",
+      "normal": {
+        "node_id": 771664198
+      },
+      "doubled": {
+        "node_id": 35592933
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_turn_begin_playerboy_spear",
+      "normal": {
+        "node_id": 214540835
+      },
+      "doubled": {
+        "node_id": 972084512
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_turn_begin_playergirl",
+      "normal": {
+        "node_id": 771664198
+      },
+      "doubled": {
+        "node_id": 35592933
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_turn_begin_playergirl_spear",
+      "normal": {
+        "node_id": 214540835
+      },
+      "doubled": {
+        "node_id": 972084512
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_turn_begin_qingque",
+      "normal": {
+        "node_id": 1033527780
+      },
+      "doubled": {
+        "node_id": 239352427
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_turn_begin_sampo",
+      "normal": {
+        "node_id": 182887848
+      },
+      "doubled": {
+        "node_id": 575645351
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_turn_begin_seele",
+      "normal": {
+        "node_id": 582277261
+      },
+      "doubled": {
+        "node_id": 289229938
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_turn_begin_silverwolf",
+      "normal": {
+        "node_id": 616557240
+      },
+      "doubled": {
+        "node_id": 721697768
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_turn_begin_sushang",
+      "normal": {
+        "node_id": 296882278
+      },
+      "doubled": {
+        "node_id": 512537374
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_turn_begin_tingyun",
+      "normal": {
+        "node_id": 311632498
+      },
+      "doubled": {
+        "node_id": 946904216
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_turn_begin_xueyi",
+      "normal": {
+        "node_id": 826720145
+      },
+      "doubled": {
+        "node_id": 231825611
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_turn_begin_yanqing",
+      "normal": {
+        "node_id": 435465596
+      },
+      "doubled": {
+        "node_id": 768991668
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_turn_begin_yukong",
+      "normal": {
+        "node_id": 496671425
+      },
+      "doubled": {
+        "node_id": 794170909
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_ultra_skill_cast_asta",
+      "normal": {
+        "node_id": 484401558
+      },
+      "doubled": {
+        "node_id": 399896643
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_ultra_skill_cast_bailu",
+      "normal": {
+        "node_id": 656114754
+      },
+      "doubled": {
+        "node_id": 201405289
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_ultra_skill_cast_blade",
+      "normal": {
+        "node_id": 460473809
+      },
+      "doubled": {
+        "node_id": 1031664226
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_ultra_skill_cast_bronya",
+      "normal": {
+        "node_id": 964134252
+      },
+      "doubled": {
+        "node_id": 124062142
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_ultra_skill_cast_clara",
+      "normal": {
+        "node_id": 727718869
+      },
+      "doubled": {
+        "node_id": 387084326
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_ultra_skill_cast_danheng",
+      "normal": {
+        "node_id": 1033991152
+      },
+      "doubled": {
+        "node_id": 820258832
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_ultra_skill_cast_fuxuan",
+      "normal": {
+        "node_id": 447587914
+      },
+      "doubled": {
+        "node_id": 888998837
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_ultra_skill_cast_jingliu",
+      "normal": {
+        "node_id": 1050369767
+      },
+      "doubled": {
+        "node_id": 927757517
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_ultra_skill_cast_jingyuan",
+      "normal": {
+        "node_id": 928089707
+      },
+      "doubled": {
+        "node_id": 1019223549
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_ultra_skill_cast_luka",
+      "normal": {
+        "node_id": 1073513649
+      },
+      "doubled": {
+        "node_id": 560648068
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_ultra_skill_cast_natasha",
+      "normal": {
+        "node_id": 519015533
+      },
+      "doubled": {
+        "node_id": 344985324
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_ultra_skill_cast_playerboy",
+      "normal": {
+        "node_id": 821488426
+      },
+      "doubled": {
+        "node_id": 84968083
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_ultra_skill_cast_playergirl",
+      "normal": {
+        "node_id": 603529934
+      },
+      "doubled": {
+        "node_id": 752677660
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_ultra_skill_cast_playergirl_spear",
+      "normal": {
+        "node_id": 935138428
+      },
+      "doubled": {
+        "node_id": 436935336
+      }
+    },
+    {
+      "event": "Ev_sfx_avatar_ultra_skill_cast_tingyun",
+      "normal": {
+        "node_id": 309761820
+      },
+      "doubled": {
+        "node_id": 318764997
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk02_cast_aglaea",
+      "normal": {
+        "node_id": 511067670
+      },
+      "doubled": {
+        "node_id": 393428058
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk02_cast_blade",
+      "normal": {
+        "node_id": 44146425
+      },
+      "doubled": {
+        "node_id": 119039028
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk02_cast_boothill",
+      "normal": {
+        "node_id": 260545305
+      },
+      "doubled": {
+        "node_id": 1002960496
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk02_cast_boothill_b",
+      "normal": {
+        "node_id": 379172584
+      },
+      "doubled": {
+        "node_id": 908761491
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk02_cast_cyrene",
+      "normal": {
+        "node_id": 937042785
+      },
+      "doubled": {
+        "node_id": 523152591
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk02_cast_fugue",
+      "normal": {
+        "node_id": 395558775
+      },
+      "doubled": {
+        "node_id": 504706300
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk02_cast_gallagher",
+      "normal": {
+        "node_id": 302249692
+      },
+      "doubled": {
+        "node_id": 458065740
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk02_cast_luka",
+      "normal": {
+        "node_id": 964443247
+      },
+      "doubled": {
+        "node_id": 294914595
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk02_cast_mar7th2_a",
+      "normal": {
+        "node_id": 632489772
+      },
+      "doubled": {
+        "node_id": 774020618
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk02_cast_mar7th2_b",
+      "normal": {
+        "node_id": 58470618
+      },
+      "doubled": {
+        "node_id": 816578500
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk02_cast_playerboy",
+      "normal": {
+        "node_id": 859254837
+      },
+      "doubled": {
+        "node_id": 924706748
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk02_cast_playerboy2",
+      "normal": {
+        "node_id": 61361041
+      },
+      "doubled": {
+        "node_id": 144084623
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk02_cast_playergirl",
+      "normal": {
+        "node_id": 187247240
+      },
+      "doubled": {
+        "node_id": 724704789
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk02_cast_playergirl2",
+      "normal": {
+        "node_id": 48211259
+      },
+      "doubled": {
+        "node_id": 316955101
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk02_cast_qingque",
+      "normal": {
+        "node_id": 634738046
+      },
+      "doubled": {
+        "node_id": 238990106
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk02_cast_sam",
+      "normal": {
+        "node_id": 707567903
+      },
+      "doubled": {
+        "node_id": 998492778
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast02_pearl",
+      "normal": {
+        "node_id": 876866334
+      },
+      "doubled": {
+        "node_id": 76826698
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast02_playerboy4",
+      "normal": {
+        "node_id": 1045190592
+      },
+      "doubled": {
+        "node_id": 1028512994
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast02_playergirl4",
+      "normal": {
+        "node_id": 228025398
+      },
+      "doubled": {
+        "node_id": 1069042047
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast03_pearl",
+      "normal": {
+        "node_id": 842504743
+      },
+      "doubled": {
+        "node_id": 1011680559
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_Anaxa",
+      "normal": {
+        "node_id": 446499298
+      },
+      "doubled": {
+        "node_id": 942710390
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_acheron",
+      "normal": {
+        "node_id": 695027492
+      },
+      "doubled": {
+        "node_id": 961108893
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_aglaea",
+      "normal": {
+        "node_id": 944238249
+      },
+      "doubled": {
+        "node_id": 292461340
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_argenti",
+      "normal": {
+        "node_id": 405809893
+      },
+      "doubled": {
+        "node_id": 509505166
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_arlan",
+      "normal": {
+        "node_id": 1024820660
+      },
+      "doubled": {
+        "node_id": 615606376
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_ashveil",
+      "normal": {
+        "node_id": 264474815
+      },
+      "doubled": {
+        "node_id": 720688166
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_asta",
+      "normal": {
+        "node_id": 395713809
+      },
+      "doubled": {
+        "node_id": 715586609
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_aventurine",
+      "normal": {
+        "node_id": 446631870
+      },
+      "doubled": {
+        "node_id": 339523338
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_aventurinewaveflair",
+      "normal": {
+        "node_id": 227160954
+      },
+      "doubled": {
+        "node_id": 103309961
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_bailu",
+      "normal": {
+        "node_id": 889675359
+      },
+      "doubled": {
+        "node_id": 106402959
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_blackSwan",
+      "normal": {
+        "node_id": 741185115
+      },
+      "doubled": {
+        "node_id": 246881439
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_blade",
+      "normal": {
+        "node_id": 926741732
+      },
+      "doubled": {
+        "node_id": 426761795
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_boothill",
+      "normal": {
+        "node_id": 334958041
+      },
+      "doubled": {
+        "node_id": 1018630238
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_bronya",
+      "normal": {
+        "node_id": 474172744
+      },
+      "doubled": {
+        "node_id": 981471161
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_castorice",
+      "normal": {
+        "node_id": 1007948155
+      },
+      "doubled": {
+        "node_id": 155977398
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_cerydra",
+      "normal": {
+        "node_id": 539945682
+      },
+      "doubled": {
+        "node_id": 969368489
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_cipher",
+      "normal": {
+        "node_id": 500174586
+      },
+      "doubled": {
+        "node_id": 991332789
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_clara",
+      "normal": {
+        "node_id": 362349898
+      },
+      "doubled": {
+        "node_id": 338508566
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_cyrene",
+      "normal": {
+        "node_id": 573582975
+      },
+      "doubled": {
+        "node_id": 685698680
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_dahlia",
+      "normal": {
+        "node_id": 635151757
+      },
+      "doubled": {
+        "node_id": 268678
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_danheng",
+      "normal": {
+        "node_id": 423853082
+      },
+      "doubled": {
+        "node_id": 255982054
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_danhengil",
+      "normal": {
+        "node_id": 236123091
+      },
+      "doubled": {
+        "node_id": 304560023
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_danhengpt",
+      "normal": {
+        "node_id": 349347321
+      },
+      "doubled": {
+        "node_id": 619609615
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_drratio",
+      "normal": {
+        "node_id": 181599642
+      },
+      "doubled": {
+        "node_id": 880247002
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_evanescia",
+      "normal": {
+        "node_id": 787153726
+      },
+      "doubled": {
+        "node_id": 477378182
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_evernight",
+      "normal": {
+        "node_id": 963422706
+      },
+      "doubled": {
+        "node_id": 556967264
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_fugue",
+      "normal": {
+        "node_id": 579493271
+      },
+      "doubled": {
+        "node_id": 776239252
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_fuxuan",
+      "normal": {
+        "node_id": 772456916
+      },
+      "doubled": {
+        "node_id": 797675628
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_gallagher",
+      "normal": {
+        "node_id": 768660760
+      },
+      "doubled": {
+        "node_id": 914548382
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_gepard",
+      "normal": {
+        "node_id": 594306403
+      },
+      "doubled": {
+        "node_id": 415875147
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_guinaifen",
+      "normal": {
+        "node_id": 384073275
+      },
+      "doubled": {
+        "node_id": 868342830
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_hanya",
+      "normal": {
+        "node_id": 740351762
+      },
+      "doubled": {
+        "node_id": 681116080
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_herta",
+      "normal": {
+        "node_id": 974049393
+      },
+      "doubled": {
+        "node_id": 993865608
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_himeko",
+      "normal": {
+        "node_id": 601884759
+      },
+      "doubled": {
+        "node_id": 245347889
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_himekonova",
+      "normal": {
+        "node_id": 926034399
+      },
+      "doubled": {
+        "node_id": 432671873
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_hook",
+      "normal": {
+        "node_id": 389097464
+      },
+      "doubled": {
+        "node_id": 955836555
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_huohuo",
+      "normal": {
+        "node_id": 580420667
+      },
+      "doubled": {
+        "node_id": 719160846
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_hyacine",
+      "normal": {
+        "node_id": 497117245
+      },
+      "doubled": {
+        "node_id": 111908451
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_hysilens",
+      "normal": {
+        "node_id": 349564470
+      },
+      "doubled": {
+        "node_id": 818918497
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_jade",
+      "normal": {
+        "node_id": 738318649
+      },
+      "doubled": {
+        "node_id": 622600252
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_jiaoqiu",
+      "normal": {
+        "node_id": 1022809616
+      },
+      "doubled": {
+        "node_id": 132176770
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_jingliu",
+      "normal": {
+        "node_id": 1004055695
+      },
+      "doubled": {
+        "node_id": 393542323
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_jingyuan",
+      "normal": {
+        "node_id": 176755472
+      },
+      "doubled": {
+        "node_id": 552162271
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_kafka",
+      "normal": {
+        "node_id": 53493596
+      },
+      "doubled": {
+        "node_id": 302096070
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_lingsha",
+      "normal": {
+        "node_id": 300114451
+      },
+      "doubled": {
+        "node_id": 859506391
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_luka",
+      "normal": {
+        "node_id": 892516856
+      },
+      "doubled": {
+        "node_id": 205144194
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_luocha",
+      "normal": {
+        "node_id": 843673726
+      },
+      "doubled": {
+        "node_id": 1055631383
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_lynx",
+      "normal": {
+        "node_id": 641515660
+      },
+      "doubled": {
+        "node_id": 253268003
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_mar7th",
+      "normal": {
+        "node_id": 360397076
+      },
+      "doubled": {
+        "node_id": 690529554
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_mar7th2",
+      "normal": {
+        "node_id": 645444001
+      },
+      "doubled": {
+        "node_id": 660061129
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_misha",
+      "normal": {
+        "node_id": 267830280
+      },
+      "doubled": {
+        "node_id": 817607217
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_mortenaxblade",
+      "normal": {
+        "node_id": 583406391
+      },
+      "doubled": {
+        "node_id": 369547683
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_moze",
+      "normal": {
+        "node_id": 153184176
+      },
+      "doubled": {
+        "node_id": 26498059
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_mydei",
+      "normal": {
+        "node_id": 412240379
+      },
+      "doubled": {
+        "node_id": 752608588
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_natasha",
+      "normal": {
+        "node_id": 100296591
+      },
+      "doubled": {
+        "node_id": 43914435
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_nihilux",
+      "normal": {
+        "node_id": 807476875
+      },
+      "doubled": {
+        "node_id": 1058889427
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_pearl",
+      "normal": {
+        "node_id": 653655515
+      },
+      "doubled": {
+        "node_id": 473673672
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_pela",
+      "normal": {
+        "node_id": 352120110
+      },
+      "doubled": {
+        "node_id": 220160738
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_phainon",
+      "normal": {
+        "node_id": 954736631
+      },
+      "doubled": {
+        "node_id": 147163645
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_playerboy",
+      "normal": {
+        "node_id": 325279452
+      },
+      "doubled": {
+        "node_id": 485905429
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_playerboy2",
+      "normal": {
+        "node_id": 872275468
+      },
+      "doubled": {
+        "node_id": 83856254
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_playerboy3",
+      "normal": {
+        "node_id": 733052738
+      },
+      "doubled": {
+        "node_id": 267878191
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_playerboy4",
+      "normal": {
+        "node_id": 151312265
+      },
+      "doubled": {
+        "node_id": 318544192
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_playerboy5",
+      "normal": {
+        "node_id": 962974178
+      },
+      "doubled": {
+        "node_id": 557883182
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_playergirl",
+      "normal": {
+        "node_id": 1048079384
+      },
+      "doubled": {
+        "node_id": 231068369
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_playergirl2",
+      "normal": {
+        "node_id": 1059101665
+      },
+      "doubled": {
+        "node_id": 299154912
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_playergirl3",
+      "normal": {
+        "node_id": 76059126
+      },
+      "doubled": {
+        "node_id": 292614747
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_playergirl4",
+      "normal": {
+        "node_id": 285189708
+      },
+      "doubled": {
+        "node_id": 908757163
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_playergirl5",
+      "normal": {
+        "node_id": 678504969
+      },
+      "doubled": {
+        "node_id": 927030810
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_qingque",
+      "normal": {
+        "node_id": 245404081
+      },
+      "doubled": {
+        "node_id": 397799607
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_rappa",
+      "normal": {
+        "node_id": 824460120
+      },
+      "doubled": {
+        "node_id": 112771888
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_robin",
+      "normal": {
+        "node_id": 916351031
+      },
+      "doubled": {
+        "node_id": 800820609
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_robinsummeretto",
+      "normal": {
+        "node_id": 626566733
+      },
+      "doubled": {
+        "node_id": 995448749
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_ruanmei",
+      "normal": {
+        "node_id": 583819420
+      },
+      "doubled": {
+        "node_id": 449441663
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_sam",
+      "normal": {
+        "node_id": 937874062
+      },
+      "doubled": {
+        "node_id": 340867195
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_sampo",
+      "normal": {
+        "node_id": 448300513
+      },
+      "doubled": {
+        "node_id": 57357
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_seele",
+      "normal": {
+        "node_id": 989935330
+      },
+      "doubled": {
+        "node_id": 993868863
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_serval",
+      "normal": {
+        "node_id": 142963398
+      },
+      "doubled": {
+        "node_id": 1000398636
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_silverwolf",
+      "normal": {
+        "node_id": 536551389
+      },
+      "doubled": {
+        "node_id": 923693304
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_silverwolflv999",
+      "normal": {
+        "node_id": 111710614
+      },
+      "doubled": {
+        "node_id": 205664479
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_sparkle",
+      "normal": {
+        "node_id": 326285431
+      },
+      "doubled": {
+        "node_id": 118173613
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_sparxie",
+      "normal": {
+        "node_id": 689776850
+      },
+      "doubled": {
+        "node_id": 732238030
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_sunday",
+      "normal": {
+        "node_id": 929959518
+      },
+      "doubled": {
+        "node_id": 876930
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_sushang",
+      "normal": {
+        "node_id": 902482023
+      },
+      "doubled": {
+        "node_id": 851104802
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_theherta",
+      "normal": {
+        "node_id": 848653349
+      },
+      "doubled": {
+        "node_id": 849222156
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_tingyun",
+      "normal": {
+        "node_id": 423305044
+      },
+      "doubled": {
+        "node_id": 827196694
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_topaz",
+      "normal": {
+        "node_id": 631676855
+      },
+      "doubled": {
+        "node_id": 903795524
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_tribbie",
+      "normal": {
+        "node_id": 823715927
+      },
+      "doubled": {
+        "node_id": 56348069
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_welt",
+      "normal": {
+        "node_id": 958023577
+      },
+      "doubled": {
+        "node_id": 202558608
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_xueyi",
+      "normal": {
+        "node_id": 708062294
+      },
+      "doubled": {
+        "node_id": 442154757
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_yanqing",
+      "normal": {
+        "node_id": 488201142
+      },
+      "doubled": {
+        "node_id": 907159331
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_yaoguang",
+      "normal": {
+        "node_id": 564713434
+      },
+      "doubled": {
+        "node_id": 56334922
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_yukong",
+      "normal": {
+        "node_id": 687949523
+      },
+      "doubled": {
+        "node_id": 705747299
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_atk_cast_yunli",
+      "normal": {
+        "node_id": 251546510
+      },
+      "doubled": {
+        "node_id": 545537105
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_hold_cast_gepard",
+      "normal": {
+        "node_id": 651515298
+      },
+      "doubled": {
+        "node_id": 174218534
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_passive02_skill_svarog",
+      "normal": {
+        "node_id": 553393567
+      },
+      "doubled": {
+        "node_id": 861047481
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_passive_skill02_jade",
+      "normal": {
+        "node_id": 221625195
+      },
+      "doubled": {
+        "node_id": 683356529
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_passive_skill_aventurine",
+      "normal": {
+        "node_id": 91567820
+      },
+      "doubled": {
+        "node_id": 246396410
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_passive_skill_bailu",
+      "normal": {
+        "node_id": 674339434
+      },
+      "doubled": {
+        "node_id": 212799506
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_passive_skill_blade",
+      "normal": {
+        "node_id": 134832603
+      },
+      "doubled": {
+        "node_id": 463889166
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_passive_skill_dahlia",
+      "normal": {
+        "node_id": 879720828
+      },
+      "doubled": {
+        "node_id": 697767481
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_passive_skill_drratio",
+      "normal": {
+        "node_id": 92324038
+      },
+      "doubled": {
+        "node_id": 926123950
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_passive_skill_evernight",
+      "normal": {
+        "node_id": 54011729
+      },
+      "doubled": {
+        "node_id": 68108740
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_passive_skill_fuxuan",
+      "normal": {
+        "node_id": 1013685881
+      },
+      "doubled": {
+        "node_id": 1006626430
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_passive_skill_herta",
+      "normal": {
+        "node_id": 92664111
+      },
+      "doubled": {
+        "node_id": 407945906
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_passive_skill_himeko",
+      "normal": {
+        "node_id": 253118792
+      },
+      "doubled": {
+        "node_id": 932089934
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_passive_skill_himekonova",
+      "normal": {
+        "node_id": 392439205
+      },
+      "doubled": {
+        "node_id": 274590771
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_passive_skill_jade",
+      "normal": {
+        "node_id": 75734924
+      },
+      "doubled": {
+        "node_id": 530304506
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_passive_skill_jingliu",
+      "normal": {
+        "node_id": 972798309
+      },
+      "doubled": {
+        "node_id": 920727008
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_passive_skill_kafka",
+      "normal": {
+        "node_id": 806568431
+      },
+      "doubled": {
+        "node_id": 195840199
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_passive_skill_luocha",
+      "normal": {
+        "node_id": 859434434
+      },
+      "doubled": {
+        "node_id": 577025066
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_passive_skill_mar7th",
+      "normal": {
+        "node_id": 200657738
+      },
+      "doubled": {
+        "node_id": 856091289
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_passive_skill_mar7th2",
+      "normal": {
+        "node_id": 596022052
+      },
+      "doubled": {
+        "node_id": 403129381
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_passive_skill_moze",
+      "normal": {
+        "node_id": 529392071
+      },
+      "doubled": {
+        "node_id": 747679114
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_passive_skill_mydei",
+      "normal": {
+        "node_id": 472543396
+      },
+      "doubled": {
+        "node_id": 207537776
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_passive_skill_qingque",
+      "normal": {
+        "node_id": 756143107
+      },
+      "doubled": {
+        "node_id": 489665603
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_passive_skill_seele",
+      "normal": {
+        "node_id": 718328007
+      },
+      "doubled": {
+        "node_id": 499032031
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_passive_skill_svarog",
+      "normal": {
+        "node_id": 292458161
+      },
+      "doubled": {
+        "node_id": 77543250
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_passive_skill_tohsakarin",
+      "normal": {
+        "node_id": 940466156
+      },
+      "doubled": {
+        "node_id": 377283307
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_passive_skill_xueyi",
+      "normal": {
+        "node_id": 869492539
+      },
+      "doubled": {
+        "node_id": 262182831
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill01_cast01_aventurinewaveflair",
+      "normal": {
+        "node_id": 582969306
+      },
+      "doubled": {
+        "node_id": 556564126
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill01_cast02_aventurinewaveflair",
+      "normal": {
+        "node_id": 289561523
+      },
+      "doubled": {
+        "node_id": 314810882
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill02_cast_ashveil",
+      "normal": {
+        "node_id": 197448869
+      },
+      "doubled": {
+        "node_id": 221914200
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill02_cast_cipher",
+      "normal": {
+        "node_id": 504963799
+      },
+      "doubled": {
+        "node_id": 421243109
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill02_cast_danhengil",
+      "normal": {
+        "node_id": 63558774
+      },
+      "doubled": {
+        "node_id": 399145797
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill02_cast_pearl",
+      "normal": {
+        "node_id": 795068425
+      },
+      "doubled": {
+        "node_id": 476004922
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill02_cast_playerboy",
+      "normal": {
+        "node_id": 314593015
+      },
+      "doubled": {
+        "node_id": 392066113
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill02_cast_playergirl",
+      "normal": {
+        "node_id": 525046414
+      },
+      "doubled": {
+        "node_id": 932025379
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill02_cast_robinsummeretto",
+      "normal": {
+        "node_id": 808373730
+      },
+      "doubled": {
+        "node_id": 721943850
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill02_cast_sam",
+      "normal": {
+        "node_id": 430077865
+      },
+      "doubled": {
+        "node_id": 928732199
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill02_cast_silverwolflv999",
+      "normal": {
+        "node_id": 78928245
+      },
+      "doubled": {
+        "node_id": 18762853
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill02_cast_theherta",
+      "normal": {
+        "node_id": 36154371
+      },
+      "doubled": {
+        "node_id": 141301293
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill02_cast_topaz",
+      "normal": {
+        "node_id": 755503468
+      },
+      "doubled": {
+        "node_id": 17655069
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill02_cast_tribbie",
+      "normal": {
+        "node_id": 656044286
+      },
+      "doubled": {
+        "node_id": 889927280
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill02_cast_yaoguang",
+      "normal": {
+        "node_id": 232466815
+      },
+      "doubled": {
+        "node_id": 236134132
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill03_cast_danhengil",
+      "normal": {
+        "node_id": 111729106
+      },
+      "doubled": {
+        "node_id": 702729787
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill03_cast_evanescia",
+      "normal": {
+        "node_id": 622853271
+      },
+      "doubled": {
+        "node_id": 453173824
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill03_cast_robinsummeretto",
+      "normal": {
+        "node_id": 638398664
+      },
+      "doubled": {
+        "node_id": 743734957
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill03_cast_silverwolflv999",
+      "normal": {
+        "node_id": 1026329754
+      },
+      "doubled": {
+        "node_id": 511832584
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill03_cast_sparxie",
+      "normal": {
+        "node_id": 631765367
+      },
+      "doubled": {
+        "node_id": 65220278
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill04_cast_silverwolf999_01",
+      "normal": {
+        "node_id": 1018956046
+      },
+      "doubled": {
+        "node_id": 300192320
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill04_cast_silverwolf999_06",
+      "normal": {
+        "node_id": 562828576
+      },
+      "doubled": {
+        "node_id": 1020156967
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill04_cast_silverwolf999_07",
+      "normal": {
+        "node_id": 693710760
+      },
+      "doubled": {
+        "node_id": 646490951
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast01_aglaea",
+      "normal": {
+        "node_id": 989193456
+      },
+      "doubled": {
+        "node_id": 625395119
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast01_castorice",
+      "normal": {
+        "node_id": 176096628
+      },
+      "doubled": {
+        "node_id": 619629646
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast01_cerydra",
+      "normal": {
+        "node_id": 897059914
+      },
+      "doubled": {
+        "node_id": 143834097
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast01_cyrene",
+      "normal": {
+        "node_id": 728503081
+      },
+      "doubled": {
+        "node_id": 188541294
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast01_danhengpt",
+      "normal": {
+        "node_id": 1059946725
+      },
+      "doubled": {
+        "node_id": 698500308
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast01_evernight",
+      "normal": {
+        "node_id": 763484864
+      },
+      "doubled": {
+        "node_id": 641960957
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast01_mydei",
+      "normal": {
+        "node_id": 517606008
+      },
+      "doubled": {
+        "node_id": 99368179
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast01_phainon",
+      "normal": {
+        "node_id": 807277750
+      },
+      "doubled": {
+        "node_id": 1041259564
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast01_playboy5",
+      "normal": {
+        "node_id": 359508911
+      },
+      "doubled": {
+        "node_id": 215615836
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast01_playerboy4",
+      "normal": {
+        "node_id": 388170519
+      },
+      "doubled": {
+        "node_id": 308565315
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast01_playergirl4",
+      "normal": {
+        "node_id": 488937592
+      },
+      "doubled": {
+        "node_id": 628355562
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast01_playgirl5",
+      "normal": {
+        "node_id": 260271700
+      },
+      "doubled": {
+        "node_id": 764701886
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast01_sparxie",
+      "normal": {
+        "node_id": 355546623
+      },
+      "doubled": {
+        "node_id": 329686240
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast02_1_mydei",
+      "normal": {
+        "node_id": 526521053
+      },
+      "doubled": {
+        "node_id": 331083403
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast02_aglaea",
+      "normal": {
+        "node_id": 69940805
+      },
+      "doubled": {
+        "node_id": 664655796
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast02_castorice",
+      "normal": {
+        "node_id": 612534549
+      },
+      "doubled": {
+        "node_id": 731942540
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast02_evernight",
+      "normal": {
+        "node_id": 70070221
+      },
+      "doubled": {
+        "node_id": 610343938
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast02_mydei",
+      "normal": {
+        "node_id": 220818303
+      },
+      "doubled": {
+        "node_id": 722473772
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast02_phainon",
+      "normal": {
+        "node_id": 636847564
+      },
+      "doubled": {
+        "node_id": 138649721
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast02_playerboy4",
+      "normal": {
+        "node_id": 39476477
+      },
+      "doubled": {
+        "node_id": 371373829
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast02_playergirl4",
+      "normal": {
+        "node_id": 126097971
+      },
+      "doubled": {
+        "node_id": 668411006
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast02_sparxie",
+      "normal": {
+        "node_id": 394728494
+      },
+      "doubled": {
+        "node_id": 534572013
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast02_sparxie_again",
+      "normal": {
+        "node_id": 198401947
+      },
+      "doubled": {
+        "node_id": 940846196
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast03_phainon",
+      "normal": {
+        "node_id": 411527063
+      },
+      "doubled": {
+        "node_id": 235365520
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast03_sparxie",
+      "normal": {
+        "node_id": 37398137
+      },
+      "doubled": {
+        "node_id": 632850047
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast03_sparxie_V1",
+      "normal": {
+        "node_id": 594899658
+      },
+      "doubled": {
+        "node_id": 894607695
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast04_phainon",
+      "normal": {
+        "node_id": 1016346138
+      },
+      "doubled": {
+        "node_id": 538028587
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast05_phainon",
+      "normal": {
+        "node_id": 340944283
+      },
+      "doubled": {
+        "node_id": 620626924
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast06_phainon",
+      "normal": {
+        "node_id": 74986326
+      },
+      "doubled": {
+        "node_id": 219987494
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_Anaxa",
+      "normal": {
+        "node_id": 901315943
+      },
+      "doubled": {
+        "node_id": 390802679
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_acheron",
+      "normal": {
+        "node_id": 118011598
+      },
+      "doubled": {
+        "node_id": 412074351
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_argenti",
+      "normal": {
+        "node_id": 785899427
+      },
+      "doubled": {
+        "node_id": 165180601
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_arlan",
+      "normal": {
+        "node_id": 518414271
+      },
+      "doubled": {
+        "node_id": 426711131
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_ashveil",
+      "normal": {
+        "node_id": 637244482
+      },
+      "doubled": {
+        "node_id": 20440314
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_asta",
+      "normal": {
+        "node_id": 678977881
+      },
+      "doubled": {
+        "node_id": 687087153
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_aventurine",
+      "normal": {
+        "node_id": 484857468
+      },
+      "doubled": {
+        "node_id": 646697731
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_aventurinewaveflair",
+      "normal": {
+        "node_id": 134460616
+      },
+      "doubled": {
+        "node_id": 728420499
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_bailu",
+      "normal": {
+        "node_id": 923966181
+      },
+      "doubled": {
+        "node_id": 475051502
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_blackSwan",
+      "normal": {
+        "node_id": 897274813
+      },
+      "doubled": {
+        "node_id": 505478708
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_blade",
+      "normal": {
+        "node_id": 143580163
+      },
+      "doubled": {
+        "node_id": 402387584
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_boothill",
+      "normal": {
+        "node_id": 949857292
+      },
+      "doubled": {
+        "node_id": 195202040
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_bronya_self",
+      "normal": {
+        "node_id": 88604884
+      },
+      "doubled": {
+        "node_id": 282677862
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_bronya_team",
+      "normal": {
+        "node_id": 916969161
+      },
+      "doubled": {
+        "node_id": 127155501
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_cipher",
+      "normal": {
+        "node_id": 692732645
+      },
+      "doubled": {
+        "node_id": 107541263
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_clara",
+      "normal": {
+        "node_id": 756744233
+      },
+      "doubled": {
+        "node_id": 930516975
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_dahlia",
+      "normal": {
+        "node_id": 598013281
+      },
+      "doubled": {
+        "node_id": 659603590
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_danheng",
+      "normal": {
+        "node_id": 522753686
+      },
+      "doubled": {
+        "node_id": 453719339
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_danhengil",
+      "normal": {
+        "node_id": 77546548
+      },
+      "doubled": {
+        "node_id": 29689709
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_drratio",
+      "normal": {
+        "node_id": 174098099
+      },
+      "doubled": {
+        "node_id": 788706554
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_evanescia",
+      "normal": {
+        "node_id": 680019445
+      },
+      "doubled": {
+        "node_id": 77540812
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_feixiao",
+      "normal": {
+        "node_id": 901349252
+      },
+      "doubled": {
+        "node_id": 72158119
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_fugue",
+      "normal": {
+        "node_id": 745482073
+      },
+      "doubled": {
+        "node_id": 776223789
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_fuxuan",
+      "normal": {
+        "node_id": 388174968
+      },
+      "doubled": {
+        "node_id": 918153352
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_gallagher",
+      "normal": {
+        "node_id": 69059526
+      },
+      "doubled": {
+        "node_id": 788304393
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_gepard",
+      "normal": {
+        "node_id": 177315973
+      },
+      "doubled": {
+        "node_id": 313919209
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_guinaifen",
+      "normal": {
+        "node_id": 564729042
+      },
+      "doubled": {
+        "node_id": 286195439
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_hanya",
+      "normal": {
+        "node_id": 419806374
+      },
+      "doubled": {
+        "node_id": 912493979
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_herta",
+      "normal": {
+        "node_id": 210377686
+      },
+      "doubled": {
+        "node_id": 414585127
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_himeko",
+      "normal": {
+        "node_id": 49781338
+      },
+      "doubled": {
+        "node_id": 897568886
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_himekonova",
+      "normal": {
+        "node_id": 859924874
+      },
+      "doubled": {
+        "node_id": 610156028
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_hook",
+      "normal": {
+        "node_id": 434650581
+      },
+      "doubled": {
+        "node_id": 177306506
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_huohuo",
+      "normal": {
+        "node_id": 878512426
+      },
+      "doubled": {
+        "node_id": 212364573
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_hysilens",
+      "normal": {
+        "node_id": 277186943
+      },
+      "doubled": {
+        "node_id": 921557992
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_jade",
+      "normal": {
+        "node_id": 751938083
+      },
+      "doubled": {
+        "node_id": 367815148
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_jiaoqiu",
+      "normal": {
+        "node_id": 1053519259
+      },
+      "doubled": {
+        "node_id": 446631528
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_jingyuan",
+      "normal": {
+        "node_id": 1025039330
+      },
+      "doubled": {
+        "node_id": 396868730
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_kafka",
+      "normal": {
+        "node_id": 399435263
+      },
+      "doubled": {
+        "node_id": 1067888119
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_lingsha",
+      "normal": {
+        "node_id": 47577684
+      },
+      "doubled": {
+        "node_id": 911312206
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_luka",
+      "normal": {
+        "node_id": 256872973
+      },
+      "doubled": {
+        "node_id": 526394888
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_luocha",
+      "normal": {
+        "node_id": 936927180
+      },
+      "doubled": {
+        "node_id": 470022378
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_lynx",
+      "normal": {
+        "node_id": 684445765
+      },
+      "doubled": {
+        "node_id": 66902216
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_mar7th",
+      "normal": {
+        "node_id": 958411201
+      },
+      "doubled": {
+        "node_id": 803459986
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_mar7th2",
+      "normal": {
+        "node_id": 410548108
+      },
+      "doubled": {
+        "node_id": 983201967
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_misha",
+      "normal": {
+        "node_id": 956258584
+      },
+      "doubled": {
+        "node_id": 943054599
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_mortenaxblade",
+      "normal": {
+        "node_id": 796637775
+      },
+      "doubled": {
+        "node_id": 631959534
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_moze",
+      "normal": {
+        "node_id": 818540320
+      },
+      "doubled": {
+        "node_id": 788784312
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_natasha",
+      "normal": {
+        "node_id": 611970938
+      },
+      "doubled": {
+        "node_id": 312965497
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_pearl",
+      "normal": {
+        "node_id": 588793770
+      },
+      "doubled": {
+        "node_id": 90931558
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_pela",
+      "normal": {
+        "node_id": 709176238
+      },
+      "doubled": {
+        "node_id": 123636137
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_playerboy",
+      "normal": {
+        "node_id": 556506878
+      },
+      "doubled": {
+        "node_id": 871961539
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_playerboy2",
+      "normal": {
+        "node_id": 261139876
+      },
+      "doubled": {
+        "node_id": 267584089
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_playerboy3",
+      "normal": {
+        "node_id": 953097244
+      },
+      "doubled": {
+        "node_id": 510011693
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_playerboy5",
+      "normal": {
+        "node_id": 1056372466
+      },
+      "doubled": {
+        "node_id": 735722335
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_playergirl",
+      "normal": {
+        "node_id": 8055732
+      },
+      "doubled": {
+        "node_id": 444114446
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_playergirl2",
+      "normal": {
+        "node_id": 881887318
+      },
+      "doubled": {
+        "node_id": 119955968
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_playergirl3",
+      "normal": {
+        "node_id": 1006583558
+      },
+      "doubled": {
+        "node_id": 514814469
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_playergirl5",
+      "normal": {
+        "node_id": 895977208
+      },
+      "doubled": {
+        "node_id": 1025528322
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_qingque",
+      "normal": {
+        "node_id": 1070042387
+      },
+      "doubled": {
+        "node_id": 612411752
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_rappa",
+      "normal": {
+        "node_id": 144704377
+      },
+      "doubled": {
+        "node_id": 471379499
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_robin",
+      "normal": {
+        "node_id": 1060162186
+      },
+      "doubled": {
+        "node_id": 348355307
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_ruanmei",
+      "normal": {
+        "node_id": 731212880
+      },
+      "doubled": {
+        "node_id": 939646748
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_sam",
+      "normal": {
+        "node_id": 972482962
+      },
+      "doubled": {
+        "node_id": 403309044
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_sampo",
+      "normal": {
+        "node_id": 15118501
+      },
+      "doubled": {
+        "node_id": 203482235
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_seele",
+      "normal": {
+        "node_id": 444379116
+      },
+      "doubled": {
+        "node_id": 725640801
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_serval",
+      "normal": {
+        "node_id": 503648991
+      },
+      "doubled": {
+        "node_id": 604232838
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_silverwolf",
+      "normal": {
+        "node_id": 374893421
+      },
+      "doubled": {
+        "node_id": 911142654
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_silverwolf_failed",
+      "normal": {
+        "node_id": 59265672
+      },
+      "doubled": {
+        "node_id": 419701472
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_silverwolf_success",
+      "normal": {
+        "node_id": 634556287
+      },
+      "doubled": {
+        "node_id": 744572521
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_silverwolflv999",
+      "normal": {
+        "node_id": 714122290
+      },
+      "doubled": {
+        "node_id": 929453936
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_sparkle",
+      "normal": {
+        "node_id": 1067834226
+      },
+      "doubled": {
+        "node_id": 407393503
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_sunday",
+      "normal": {
+        "node_id": 835901198
+      },
+      "doubled": {
+        "node_id": 458950900
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_sushang",
+      "normal": {
+        "node_id": 808399861
+      },
+      "doubled": {
+        "node_id": 60019577
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_theherta",
+      "normal": {
+        "node_id": 515172114
+      },
+      "doubled": {
+        "node_id": 1027884922
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_tingyun",
+      "normal": {
+        "node_id": 392407390
+      },
+      "doubled": {
+        "node_id": 571412412
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_topaz",
+      "normal": {
+        "node_id": 858589169
+      },
+      "doubled": {
+        "node_id": 53499026
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_tribbie",
+      "normal": {
+        "node_id": 737170677
+      },
+      "doubled": {
+        "node_id": 425287679
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_welt",
+      "normal": {
+        "node_id": 120103836
+      },
+      "doubled": {
+        "node_id": 141279227
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_xueyi",
+      "normal": {
+        "node_id": 894677088
+      },
+      "doubled": {
+        "node_id": 219885973
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_yanqing",
+      "normal": {
+        "node_id": 553834760
+      },
+      "doubled": {
+        "node_id": 169975147
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_yaoguang",
+      "normal": {
+        "node_id": 489915389
+      },
+      "doubled": {
+        "node_id": 868167305
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_yukong",
+      "normal": {
+        "node_id": 711325095
+      },
+      "doubled": {
+        "node_id": 1034802138
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_skill_cast_yunli",
+      "normal": {
+        "node_id": 388477172
+      },
+      "doubled": {
+        "node_id": 288686738
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_support_himekonova_01",
+      "normal": {
+        "node_id": 523391401
+      },
+      "doubled": {
+        "node_id": 414524401
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_support_himekonova_02_himeko",
+      "normal": {
+        "node_id": 732596579
+      },
+      "doubled": {
+        "node_id": 390955458
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_support_himekonova_04_mar7th",
+      "normal": {
+        "node_id": 778164026
+      },
+      "doubled": {
+        "node_id": 688026263
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_support_himekonova_05_danheng",
+      "normal": {
+        "node_id": 766427883
+      },
+      "doubled": {
+        "node_id": 499777176
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_support_himekonova_06_welt",
+      "normal": {
+        "node_id": 731917657
+      },
+      "doubled": {
+        "node_id": 5942363
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_support_himekonova_07_sunday",
+      "normal": {
+        "node_id": 733627402
+      },
+      "doubled": {
+        "node_id": 246149077
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ulltra_skill_cast_seele",
+      "normal": {
+        "node_id": 954809150
+      },
+      "doubled": {
+        "node_id": 92432933
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill01_select_cyrene_01",
+      "normal": {
+        "node_id": 108222563
+      },
+      "doubled": {
+        "node_id": 9811536
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill01_select_cyrene_02",
+      "normal": {
+        "node_id": 431621399
+      },
+      "doubled": {
+        "node_id": 1066364803
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill01_select_mortenaxblade",
+      "normal": {
+        "node_id": 686119372
+      },
+      "doubled": {
+        "node_id": 16426298
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill02_cast_mortenaxblade",
+      "normal": {
+        "node_id": 467236589
+      },
+      "doubled": {
+        "node_id": 887101190
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill02_select_cyrene",
+      "normal": {
+        "node_id": 295149976
+      },
+      "doubled": {
+        "node_id": 1006788219
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast01_yunli",
+      "normal": {
+        "node_id": 719636547
+      },
+      "doubled": {
+        "node_id": 353760889
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast02_yunli",
+      "normal": {
+        "node_id": 479420484
+      },
+      "doubled": {
+        "node_id": 397039765
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast03_yunli",
+      "normal": {
+        "node_id": 555930950
+      },
+      "doubled": {
+        "node_id": 71729595
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_01_rappa",
+      "normal": {
+        "node_id": 159718513
+      },
+      "doubled": {
+        "node_id": 806238626
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_02_rappa",
+      "normal": {
+        "node_id": 513632292
+      },
+      "doubled": {
+        "node_id": 309300660
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_03_rappa",
+      "normal": {
+        "node_id": 626275932
+      },
+      "doubled": {
+        "node_id": 548934680
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_Anaxa",
+      "normal": {
+        "node_id": 1051819235
+      },
+      "doubled": {
+        "node_id": 352715004
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_acheron",
+      "normal": {
+        "node_id": 813471519
+      },
+      "doubled": {
+        "node_id": 1050609688
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_aglaea",
+      "normal": {
+        "node_id": 270644651
+      },
+      "doubled": {
+        "node_id": 940831250
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_argenti",
+      "normal": {
+        "node_id": 560551724
+      },
+      "doubled": {
+        "node_id": 518134172
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_argenti_b",
+      "normal": {
+        "node_id": 263743386
+      },
+      "doubled": {
+        "node_id": 1011608693
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_arlan",
+      "normal": {
+        "node_id": 415551151
+      },
+      "doubled": {
+        "node_id": 8085747
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_ashveil",
+      "normal": {
+        "node_id": 472125217
+      },
+      "doubled": {
+        "node_id": 122408441
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_asta",
+      "normal": {
+        "node_id": 429155219
+      },
+      "doubled": {
+        "node_id": 671268565
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_aventurine",
+      "normal": {
+        "node_id": 753747837
+      },
+      "doubled": {
+        "node_id": 780232585
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_aventurinewaveflair",
+      "normal": {
+        "node_id": 193167885
+      },
+      "doubled": {
+        "node_id": 520606740
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_bailu",
+      "normal": {
+        "node_id": 968893090
+      },
+      "doubled": {
+        "node_id": 1060240182
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_blackSwan",
+      "normal": {
+        "node_id": 373772045
+      },
+      "doubled": {
+        "node_id": 857235167
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_blade",
+      "normal": {
+        "node_id": 438543726
+      },
+      "doubled": {
+        "node_id": 694384637
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_boothill",
+      "normal": {
+        "node_id": 536554815
+      },
+      "doubled": {
+        "node_id": 1032999071
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_breath_01_acheron",
+      "normal": {
+        "node_id": 75265903
+      },
+      "doubled": {
+        "node_id": 1045000868
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_breath_02_acheron",
+      "normal": {
+        "node_id": 75265903
+      },
+      "doubled": {
+        "node_id": 1045000868
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_bronya",
+      "normal": {
+        "node_id": 643511393
+      },
+      "doubled": {
+        "node_id": 551191992
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_castorice",
+      "normal": {
+        "node_id": 506755352
+      },
+      "doubled": {
+        "node_id": 714415070
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_cerydra",
+      "normal": {
+        "node_id": 566718075
+      },
+      "doubled": {
+        "node_id": 502707326
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_cipher",
+      "normal": {
+        "node_id": 1012355804
+      },
+      "doubled": {
+        "node_id": 106793486
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_clara",
+      "normal": {
+        "node_id": 157465882
+      },
+      "doubled": {
+        "node_id": 787725042
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_dahlia",
+      "normal": {
+        "node_id": 687170017
+      },
+      "doubled": {
+        "node_id": 460467713
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_danheng",
+      "normal": {
+        "node_id": 284924291
+      },
+      "doubled": {
+        "node_id": 1057094763
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_danhengil",
+      "normal": {
+        "node_id": 64809285
+      },
+      "doubled": {
+        "node_id": 328728359
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_danhengpt",
+      "normal": {
+        "node_id": 185128411
+      },
+      "doubled": {
+        "node_id": 379894353
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_drratio",
+      "normal": {
+        "node_id": 426203775
+      },
+      "doubled": {
+        "node_id": 79967078
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_evanescia",
+      "normal": {
+        "node_id": 790266172
+      },
+      "doubled": {
+        "node_id": 780152375
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_evernight",
+      "normal": {
+        "node_id": 1064777667
+      },
+      "doubled": {
+        "node_id": 1003133879
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_fist_feixiao",
+      "normal": {
+        "node_id": 834891979
+      },
+      "doubled": {
+        "node_id": 244760474
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_fugue",
+      "normal": {
+        "node_id": 192353516
+      },
+      "doubled": {
+        "node_id": 501556581
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_fuxuan",
+      "normal": {
+        "node_id": 502796203
+      },
+      "doubled": {
+        "node_id": 203823852
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_gallagher",
+      "normal": {
+        "node_id": 51493950
+      },
+      "doubled": {
+        "node_id": 660428580
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_gepard",
+      "normal": {
+        "node_id": 251387725
+      },
+      "doubled": {
+        "node_id": 990906500
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_guinaifen",
+      "normal": {
+        "node_id": 694751099
+      },
+      "doubled": {
+        "node_id": 1020429888
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_hanya",
+      "normal": {
+        "node_id": 730798123
+      },
+      "doubled": {
+        "node_id": 460955594
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_herta",
+      "normal": {
+        "node_id": 405005568
+      },
+      "doubled": {
+        "node_id": 141271342
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_himeko",
+      "normal": {
+        "node_id": 33224801
+      },
+      "doubled": {
+        "node_id": 690357796
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_himekonova_01",
+      "normal": {
+        "node_id": 991842604
+      },
+      "doubled": {
+        "node_id": 619159086
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_himekonova_02",
+      "normal": {
+        "node_id": 193214727
+      },
+      "doubled": {
+        "node_id": 195761373
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_himekonova_02_danheng",
+      "normal": {
+        "node_id": 743347516
+      },
+      "doubled": {
+        "node_id": 91438082
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_himekonova_02_himeko",
+      "normal": {
+        "node_id": 381647842
+      },
+      "doubled": {
+        "node_id": 384892632
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_himekonova_02_mar7th",
+      "normal": {
+        "node_id": 804900793
+      },
+      "doubled": {
+        "node_id": 164828356
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_himekonova_02_sunday",
+      "normal": {
+        "node_id": 256286770
+      },
+      "doubled": {
+        "node_id": 318802966
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_himekonova_02_welt",
+      "normal": {
+        "node_id": 243968412
+      },
+      "doubled": {
+        "node_id": 168253185
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_hook",
+      "normal": {
+        "node_id": 690856502
+      },
+      "doubled": {
+        "node_id": 606411325
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_huohuo",
+      "normal": {
+        "node_id": 858375054
+      },
+      "doubled": {
+        "node_id": 938551308
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_hysilens",
+      "normal": {
+        "node_id": 338430129
+      },
+      "doubled": {
+        "node_id": 900414617
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_jade",
+      "normal": {
+        "node_id": 430904989
+      },
+      "doubled": {
+        "node_id": 194060464
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_jiaoqiu",
+      "normal": {
+        "node_id": 622358868
+      },
+      "doubled": {
+        "node_id": 129792873
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_jingliu",
+      "normal": {
+        "node_id": 279901421
+      },
+      "doubled": {
+        "node_id": 299930355
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_jingyuan",
+      "normal": {
+        "node_id": 49095975
+      },
+      "doubled": {
+        "node_id": 364369534
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_kafka",
+      "normal": {
+        "node_id": 524566515
+      },
+      "doubled": {
+        "node_id": 332847126
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_lingsha",
+      "normal": {
+        "node_id": 803259680
+      },
+      "doubled": {
+        "node_id": 351265816
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_luka",
+      "normal": {
+        "node_id": 893186913
+      },
+      "doubled": {
+        "node_id": 841912031
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_luocha",
+      "normal": {
+        "node_id": 410213755
+      },
+      "doubled": {
+        "node_id": 243034997
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_lynx",
+      "normal": {
+        "node_id": 85226714
+      },
+      "doubled": {
+        "node_id": 195035239
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_mar7th",
+      "normal": {
+        "node_id": 241080611
+      },
+      "doubled": {
+        "node_id": 215093428
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_mar7th2",
+      "normal": {
+        "node_id": 716368362
+      },
+      "doubled": {
+        "node_id": 74632686
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_misha",
+      "normal": {
+        "node_id": 22717444
+      },
+      "doubled": {
+        "node_id": 770373250
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_moze",
+      "normal": {
+        "node_id": 116213349
+      },
+      "doubled": {
+        "node_id": 547989417
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_mydei",
+      "normal": {
+        "node_id": 132110448
+      },
+      "doubled": {
+        "node_id": 1036799636
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_natasha",
+      "normal": {
+        "node_id": 2912884
+      },
+      "doubled": {
+        "node_id": 314528846
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_pearl",
+      "normal": {
+        "node_id": 887561709
+      },
+      "doubled": {
+        "node_id": 492537341
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_pela",
+      "normal": {
+        "node_id": 997137711
+      },
+      "doubled": {
+        "node_id": 792978570
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_phainon",
+      "normal": {
+        "node_id": 24514168
+      },
+      "doubled": {
+        "node_id": 228311322
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_playerboy",
+      "normal": {
+        "node_id": 818953357
+      },
+      "doubled": {
+        "node_id": 806003188
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_playerboy2",
+      "normal": {
+        "node_id": 496773442
+      },
+      "doubled": {
+        "node_id": 215025998
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_playerboy3",
+      "normal": {
+        "node_id": 434629420
+      },
+      "doubled": {
+        "node_id": 226279722
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_playerboy4",
+      "normal": {
+        "node_id": 842983275
+      },
+      "doubled": {
+        "node_id": 419900513
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_playerboy5",
+      "normal": {
+        "node_id": 391492481
+      },
+      "doubled": {
+        "node_id": 347843926
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_playergirl",
+      "normal": {
+        "node_id": 64046293
+      },
+      "doubled": {
+        "node_id": 112812290
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_playergirl2",
+      "normal": {
+        "node_id": 628646752
+      },
+      "doubled": {
+        "node_id": 40307725
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_playergirl3",
+      "normal": {
+        "node_id": 198258148
+      },
+      "doubled": {
+        "node_id": 61709192
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_playergirl4",
+      "normal": {
+        "node_id": 870121476
+      },
+      "doubled": {
+        "node_id": 710555057
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_playergirl5",
+      "normal": {
+        "node_id": 491337892
+      },
+      "doubled": {
+        "node_id": 257302470
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_qingque",
+      "normal": {
+        "node_id": 204548977
+      },
+      "doubled": {
+        "node_id": 401035067
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_robin",
+      "normal": {
+        "node_id": 161158001
+      },
+      "doubled": {
+        "node_id": 687032203
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_robinsummeretto",
+      "normal": {
+        "node_id": 35463831
+      },
+      "doubled": {
+        "node_id": 84719905
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_ruanmei",
+      "normal": {
+        "node_id": 1035757413
+      },
+      "doubled": {
+        "node_id": 802019689
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_sam",
+      "normal": {
+        "node_id": 644742728
+      },
+      "doubled": {
+        "node_id": 1016182222
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_sampo",
+      "normal": {
+        "node_id": 642631817
+      },
+      "doubled": {
+        "node_id": 514833936
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_serval",
+      "normal": {
+        "node_id": 107980629
+      },
+      "doubled": {
+        "node_id": 472651844
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_silverwolf",
+      "normal": {
+        "node_id": 681653321
+      },
+      "doubled": {
+        "node_id": 560031297
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_silverwolflv999",
+      "normal": {
+        "node_id": 108273054
+      },
+      "doubled": {
+        "node_id": 853792179
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_sparkle",
+      "normal": {
+        "node_id": 1023731782
+      },
+      "doubled": {
+        "node_id": 952752313
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_sparxie",
+      "normal": {
+        "node_id": 386092000
+      },
+      "doubled": {
+        "node_id": 231682757
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_sunday",
+      "normal": {
+        "node_id": 322651497
+      },
+      "doubled": {
+        "node_id": 116359257
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_sushang",
+      "normal": {
+        "node_id": 206630687
+      },
+      "doubled": {
+        "node_id": 803093148
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_theherta",
+      "normal": {
+        "node_id": 446748811
+      },
+      "doubled": {
+        "node_id": 132235155
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_tingyun",
+      "normal": {
+        "node_id": 568165730
+      },
+      "doubled": {
+        "node_id": 282612580
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_topaz",
+      "normal": {
+        "node_id": 981687647
+      },
+      "doubled": {
+        "node_id": 726582989
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_tribbie",
+      "normal": {
+        "node_id": 47145565
+      },
+      "doubled": {
+        "node_id": 111245203
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_welt",
+      "normal": {
+        "node_id": 896070026
+      },
+      "doubled": {
+        "node_id": 170714151
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_xueyi",
+      "normal": {
+        "node_id": 967595176
+      },
+      "doubled": {
+        "node_id": 430607443
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_yanqing",
+      "normal": {
+        "node_id": 913786052
+      },
+      "doubled": {
+        "node_id": 381868896
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_yaoguang",
+      "normal": {
+        "node_id": 513843669
+      },
+      "doubled": {
+        "node_id": 325105328
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cast_yukong",
+      "normal": {
+        "node_id": 735114683
+      },
+      "doubled": {
+        "node_id": 943940069
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_cg_rappa",
+      "normal": {
+        "node_id": 614170240
+      },
+      "doubled": {
+        "node_id": 112971488
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_select_acheron",
+      "normal": {
+        "node_id": 538818500
+      },
+      "doubled": {
+        "node_id": 676647944
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_select_castorice",
+      "normal": {
+        "node_id": 764949668
+      },
+      "doubled": {
+        "node_id": 872086150
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_select_himekonova",
+      "normal": {
+        "node_id": 38100464
+      },
+      "doubled": {
+        "node_id": 932472619
+      }
+    },
+    {
+      "event": "Ev_vo_avatar_ultra_skill_select_phainon",
+      "normal": {
+        "node_id": 635260112
+      },
+      "doubled": {
+        "node_id": 620353950
+      }
+    }
+  ],
+  "native_cues": [
+    {
+      "source_config": "Config/ConfigCharacter/Avatar/Avatar_Ashveil_00_Config.json",
+      "event_file": "Config/ConfigAnimEvents/Avatar/Audio/Avatar_Ashveil_00_Audio_AnimEvent.json",
+      "state": "Skill03_Ready",
+      "event": "Ev_vo_avatar_ultra_skill_select_ashveil",
+      "cue": "ultra_ready"
+    },
+    {
+      "source_config": "Config/ConfigCharacter/Avatar/Avatar_Castorice_00_Config.json",
+      "event_file": "Config/ConfigAnimEvents/Avatar/Audio/Avatar_Castorice_00_Audio_AnimEvent.json",
+      "state": "Skill03",
+      "event": "Ev_vo_avatar_ultra_skill_select_castorice",
+      "cue": "ultra_ready"
+    }
+  ]
+}

@@ -1,0 +1,576 @@
+#include <hksr/framework/presentation/model/ModelActionHandoff.hpp>
+#include <hksr/framework/presentation/playback/TaskPlaybackBindings.hpp>
+#include <stdexcept>
+
+namespace hksr::framework {
+std::shared_ptr<HitInbox> ModelActionHandoff::IncomingHits() const {
+    if (removing_ || Ended() || status_.closed)
+        throw std::runtime_error("hit target ended");
+    if (status_.phase == HandoffPhase::Failed)
+        throw std::runtime_error("hit target model failed");
+    if (status_.phase != HandoffPhase::Ready)
+        return {};
+    if (status_.ready_domain != ActionDomain::Battle)
+        throw std::runtime_error("hit target requires its battle model");
+    return actions_.IncomingHits();
+}
+ModelActionHandoff::ModelActionHandoff(CharacterInstance& character, api::EntityToken owner, api::GameWorld* world,
+                                       std::unique_ptr<api::ModelProfileRequest> request, HandoffServices services,
+                                       DomainControllers controllers, std::string initial_state,
+                                       std::uint32_t voice_avatar, std::string voice_source)
+    : character_(character), owner_(owner), world_(world),
+      transition_(services.transition(owner, world, std::move(request))), controllers_(std::move(controllers)),
+      actions_(owner, world, services.animations(owner), services.effects, services.text),
+      sound_(std::move(services.sound)), prepare_model_change_(std::move(services.prepare_model_change)),
+      initial_state_name_(std::move(initial_state)) {
+    if (character.Creation().factory.entity != owner.entity)
+        throw std::invalid_argument("handoff requires its character owner");
+    actions_.ConfigureVoices(voice_avatar, std::move(voice_source), std::move(services.voice),
+                             std::move(services.ready_voice));
+}
+std::uint64_t ModelActionHandoff::Queue(ActionDomain domain, ActionRequest action) {
+    if (removing_ || status_.closed)
+        throw std::logic_error("handoff closing");
+    if ((std::holds_alternative<ProgramAction>(action) || std::holds_alternative<BattleIdle>(action)) &&
+        domain != ActionDomain::Battle)
+        throw std::invalid_argument("visual program requires its battle model domain");
+    if (domain == ActionDomain::Battle && !transition_->RequestStatus())
+        throw std::logic_error("alternate source unavailable; exploration remains usable");
+    if (restoring_tasks_) {
+        restoring_tasks_ = false;
+        task_restore_.reset();
+        if (domain != task_catalog_->domain)
+            visual_restore_.reset();
+    }
+    if (tasks_) {
+        if (status_.phase == HandoffPhase::Ready && status_.ready_domain == domain && domain == task_catalog_->domain) {
+            if (!releasing_tasks_)
+                tasks_->ReleasePlayback();
+        } else
+            tasks_->Reset(TaskExitReason::ActorLost);
+        releasing_tasks_ = true;
+    }
+    desired_ = Intent{++status_.requested, domain, std::move(action)};
+    if (domain == ActionDomain::Battle && initial_state_name_.empty())
+        status_.initialization_note =
+            "battle config has no readable initial state; automatic completion destination unavailable";
+    return status_.requested;
+}
+ActionExecutionStatus ModelActionHandoff::ActionStatus(std::uint64_t request) const {
+    ActionExecutionStatus result;
+    result.request = request;
+    if (removing_ || status_.closed || Ended() || request != status_.requested) {
+        result.phase = ActionIntentPhase::Cancelled;
+        result.outcome = Ended() ? ActionOutcome::OwnerEnded : ActionOutcome::Cancelled;
+        result.detail = "action owner ended or the request was superseded";
+        return result;
+    }
+    result.phase = ActionIntentPhase::Dispatching;
+    result.detail = "waiting for model/input preparation or official playback call";
+    if (request != status_.servicing)
+        return result;
+    if (status_.phase == HandoffPhase::Failed) {
+        result.phase = ActionIntentPhase::Failed;
+        result.detail = status_.error;
+        return result;
+    }
+    if (status_.output) {
+        result.outcome = status_.output->outcome;
+        result.detail = status_.output->detail;
+        switch (*result.outcome) {
+        case ActionOutcome::Returned:
+            result.phase = ActionIntentPhase::Returned;
+            break;
+        case ActionOutcome::Waiting:
+            break;
+        case ActionOutcome::Cancelled:
+        case ActionOutcome::OwnerEnded:
+            result.phase = ActionIntentPhase::Cancelled;
+            break;
+        default:
+            result.phase = ActionIntentPhase::Failed;
+            break;
+        }
+    }
+    const auto& successor = actions_.Status().successor;
+    if (result.phase == ActionIntentPhase::Returned && status_.phase == HandoffPhase::Ready &&
+        status_.ready_domain && successor &&
+        (successor->returned || successor->observed) && successor->predecessor == status_.playback_serial &&
+        actions_.SuccessorSettled()) {
+        if (*status_.ready_domain == ActionDomain::Battle && successor->state == actions_.CurrentIdle())
+            result.settled_successor = PlacedAction{ActionDomain::Battle, BattleIdle{}};
+        else
+            result.settled_successor = PlacedAction{
+                *status_.ready_domain, FreeStyleState{successor->state, 0, 0, {}, successor->controller_state}};
+    }
+    return result;
+}
+void ModelActionHandoff::ConfigureTasks(std::shared_ptr<const TaskCatalog> catalog,
+                                        std::shared_ptr<VisualProgramPlayer> scene, PoseResolver pose) {
+    if (tasks_)
+        throw std::logic_error("task catalog already configured");
+    if (!catalog || !scene)
+        throw std::invalid_argument("task catalog and scene required");
+    TaskPresentationServices services;
+    services.current_idle = [this] { return actions_.CurrentVisualIdle(); };
+    services.pose =
+        BindTaskPose(actions_, [this, resolve = std::move(pose)](const auto& selection) -> std::optional<PoseCommand> {
+            if (removing_ || Ended())
+                throw std::runtime_error("task actor ended");
+            if (status_.phase != HandoffPhase::Ready || status_.ready_domain != task_catalog_->domain)
+                return {};
+            if (task_catalog_->domain != ActionDomain::Battle)
+                throw std::runtime_error("configured poses require battle domain");
+            if (!resolve)
+                throw std::runtime_error("pose source resolver unavailable");
+            return resolve(selection);
+        });
+    services.animation = [this](const auto& participant) -> std::optional<TaskAnimationEndpoint> {
+        if (participant.name != "body")
+            throw std::invalid_argument("unknown owned task participant: " + participant.name);
+        if (removing_ || Ended())
+            throw std::runtime_error("task actor ended");
+        if (status_.phase != HandoffPhase::Ready || status_.ready_domain != task_catalog_->domain)
+            return {};
+        return BindTaskAnimation(actions_);
+    };
+    services.parameter =
+        [this](const TaskParticipant& participant, const api::AnimationParameter& parameter,
+               api::AnimationParameterPropagation propagation) -> std::optional<api::AnimationParameterResult> {
+        if (participant.name != "body")
+            throw std::invalid_argument("unknown owned parameter participant: " + participant.name);
+        if (removing_ || Ended() || status_.closed)
+            throw std::runtime_error("task parameter actor ended");
+        if (status_.phase == HandoffPhase::Failed)
+            throw std::runtime_error("task parameter model failed");
+        if (status_.phase != HandoffPhase::Ready || status_.ready_domain != task_catalog_->domain)
+            return {};
+        return actions_.SetAnimationParameter(parameter, propagation);
+    };
+    services.sound = [this](const TaskSoundCommand& command) -> std::optional<TaskSoundEndpoint> {
+        if (command.participant.name != "body")
+            throw std::invalid_argument("unsupported sound participant: " + command.participant.name);
+        if (removing_ || Ended())
+            throw std::runtime_error("task actor ended");
+        if (status_.phase != HandoffPhase::Ready || status_.ready_domain != task_catalog_->domain)
+            return {};
+        if (!sound_)
+            throw std::runtime_error("owned sound service unavailable");
+        return BindTaskSound(owner_.generation, sound_(owner_, world_, command.event));
+    };
+    tasks_ = std::make_unique<TaskController>(owner_.generation, catalog, scene, std::move(services));
+    task_catalog_ = std::move(catalog);
+    actions_.ConfigureVisualProgram(std::move(scene));
+}
+TaskControlResult ModelActionHandoff::ControlTask(TaskControlInput input) {
+    if (!tasks_)
+        throw std::logic_error("no task catalog configured for this actor");
+    if (removing_ || Ended() || status_.closed)
+        throw std::logic_error("task actor is closing");
+    TaskControlResult result;
+    if (input.operation == TaskControlOperation::Select) {
+        if (!input.selection)
+            throw std::invalid_argument("task selection missing");
+        input.selection->query.participants = {{"body"}};
+        const auto checked = QueryTasks(input.selection);
+        if (checked.selection->query.availability != TaskAvailability::Available)
+            return checked;
+        const auto selected = checked.selection->resolved;
+        const auto& definition = task_catalog_->Resolve(selected).definition;
+        const bool presentation = definition.mode == TaskExecutionMode::Replace;
+        if (presentation && task_catalog_->domain == ActionDomain::Battle && !transition_->RequestStatus())
+            throw std::logic_error("alternate source unavailable; exploration remains usable");
+        result.selection = tasks_->Select(std::move(*input.selection));
+        if (presentation && result.selection->intent) {
+            restoring_tasks_ = false;
+            task_restore_.reset();
+            releasing_tasks_ = false;
+        }
+        if (presentation && result.selection->intent &&
+            (!desired_ || desired_->domain != task_catalog_->domain || desired_->action ||
+             status_.phase == HandoffPhase::Failed))
+            desired_ = Intent{++status_.requested, task_catalog_->domain, {}};
+    } else if (input.operation == TaskControlOperation::Query) {
+        result = QueryTasks(input.selection);
+        result.requests = tasks_->Requests();
+        return result;
+    } else if (input.operation == TaskControlOperation::Finish)
+        tasks_->RequestFinish();
+    else if (input.operation == TaskControlOperation::Cancel) {
+        restoring_tasks_ = false;
+        task_restore_.reset();
+        visual_restore_.reset();
+        tasks_->Cancel();
+    } else
+        throw std::invalid_argument("unknown task control operation");
+    result.status = tasks_->Status();
+    result.contexts = tasks_->Context().Owners();
+    result.manual_reaction = tasks_->ManualVisualReaction();
+    return result;
+}
+void ModelActionHandoff::RestoreTasks(std::optional<TaskSelection> selection) {
+    if (!tasks_)
+        throw std::logic_error("saved task catalog is unavailable");
+    if (selection)
+        task_catalog_->Resolve(selection->task);
+    if (task_catalog_->domain == ActionDomain::Battle && !transition_->RequestStatus())
+        throw std::logic_error("saved task model source is unavailable");
+    task_restore_ = std::move(selection);
+    restoring_tasks_ = true;
+    desired_ = Intent{++status_.requested, task_catalog_->domain, {}};
+}
+std::optional<TaskSelection> ModelActionHandoff::CaptureTask() const {
+    return restoring_tasks_ ? task_restore_ : tasks_ ? tasks_->Selection() : std::nullopt;
+}
+TaskControlResult ModelActionHandoff::QueryTasks(const std::optional<TaskSelection>& selected) const {
+    if (!tasks_)
+        throw std::logic_error("no task catalog configured for this actor");
+    if (!visual_restore_ && !restoring_tasks_ && !removing_ && !Ended() && !status_.closed)
+        tasks_->PrepareState();
+    TaskControlResult result;
+    if (restoring_tasks_ && task_restore_)
+        result.preparing = task_restore_->task;
+    if (restoring_tasks_ && status_.phase == HandoffPhase::Failed)
+        result.preparation_error = status_.error;
+    auto query = [&](TaskSelection selection) {
+        selection.query.participants = {{"body"}};
+        auto value = tasks_->Query(selection);
+        const auto& definition = task_catalog_->Resolve(value.resolved).definition;
+        const bool presentation = definition.mode == TaskExecutionMode::Replace;
+        if (visual_restore_ || restoring_tasks_) {
+            value.query.availability = TaskAvailability::Unavailable;
+            value.query.reasons.push_back({TaskReasonKind::Condition, "restore", "saved visual state is restoring"});
+        }
+        if (removing_ || Ended() || status_.closed ||
+            (presentation && task_catalog_->domain == ActionDomain::Battle && !transition_->RequestStatus()) ||
+            (!presentation && !definition.entry.empty() &&
+             (status_.phase != HandoffPhase::Ready || status_.ready_domain != task_catalog_->domain))) {
+            value.query.availability = TaskAvailability::Unavailable;
+            if (value.query.facets)
+                value.query.facets->binding = TaskAvailability::Unavailable;
+            value.query.reasons.push_back(
+                {TaskReasonKind::Unresolved, "model", "required owned model domain is unavailable"});
+        }
+        return value;
+    };
+    if (selected)
+        result.selection = query(*selected);
+    else
+        for (const auto& [name, plan] : task_catalog_->tasks) {
+            TaskSelection candidate{{task_catalog_->id, name}};
+            result.catalog.emplace(name, query(candidate).query);
+        }
+    result.status = tasks_->Status();
+    result.contexts = tasks_->Context().Owners();
+    result.manual_reaction = tasks_->ManualVisualReaction();
+    return result;
+}
+void ModelActionHandoff::Remove() {
+    releasing_tasks_ = false;
+    reaction_restore_.reset();
+    if (tasks_)
+        tasks_->Close(TaskExitReason::Deleted);
+    removing_ = true;
+    desired_.reset();
+    actions_.CancelPending();
+    transition_->Cancel();
+}
+bool ModelActionHandoff::Ended() const {
+    return api::TrackedEntities().IsDisposed(owner_) ||
+           api::TrackedEntities().Current(owner_.entity).generation != owner_.generation;
+}
+bool ModelActionHandoff::OwnFrame(const api::WorldFrame& frame) const {
+    return frame.world == world_ && frame.disposing.read.returned && !frame.disposing.value;
+}
+void ModelActionHandoff::UpdateTransitionStatus() {
+    const auto& result = transition_->Status();
+    status_.phase = result.phase;
+    status_.error = result.error;
+    status_.event_value_note = result.event_value_note;
+    status_.initial_state = result.initial_state;
+    if (!result.initialization_note.empty())
+        status_.initialization_note = result.initialization_note;
+    if (result.phase == HandoffPhase::Failed)
+        Fail(result.error);
+}
+bool ModelActionHandoff::VisualReady(ActionDomain domain) const {
+    if (domain == ActionDomain::Exploration) {
+        const auto* visual = character_.AppearanceConsumer();
+        if (!visual)
+            return true;
+        const auto* active = visual->Active();
+        return active && active->Slot().adopted && active->Slot().supply.returned;
+    }
+    const auto* overlay = character_.AlternatePayload();
+    return !overlay || (overlay->Active() && overlay->Active()->published);
+}
+void ModelActionHandoff::Fail(std::string message) {
+    releasing_tasks_ = false;
+    status_.phase = HandoffPhase::Failed;
+    status_.error = std::move(message);
+    status_.ready_domain.reset();
+    actions_.CancelPending();
+    if (tasks_)
+        tasks_->Reset(TaskExitReason::Failed);
+}
+void ModelActionHandoff::Finish(const api::WorldFrame& frame, AppearanceServices appearance,
+                                api::AnimationInputTypes types) {
+    status_.phase = HandoffPhase::Closing;
+    actions_.Close(frame);
+    if (tasks_) {
+        tasks_->Close(TaskExitReason::ActorLost);
+        tasks_->Service(0, frame.sequence);
+    }
+    transition_->Close(frame); // cancel model work before entity retirement
+    character_.Remove();
+    character_.Service(frame, appearance, types);
+    if (Ended()) {
+        transition_->Close(frame);
+        actions_.Close(frame);
+    }
+    status_.event_value_note = transition_->Status().event_value_note;
+    status_.closed = character_.Status().closed && actions_.Status().closed && transition_->Status().closed &&
+                     (!tasks_ || tasks_->Drained());
+    if (status_.closed)
+        status_.phase = HandoffPhase::Closed;
+}
+void ModelActionHandoff::Service(const api::WorldFrame& frame, AppearanceServices appearance,
+                                 api::AnimationInputTypes types) {
+    if (busy_ || status_.closed)
+        return;
+    busy_ = true;
+    struct Exit {
+        bool& flag;
+        ~Exit() {
+            flag = false;
+        }
+    } exit{busy_};
+    // Submission-time checks are insufficient for a queued/running task.
+    // Cancel only this actor's task ownership before another frame can dispatch
+    // its leaf operations, including a same-world exploration -> battle change.
+    if (tasks_ && (!OwnFrame(frame) || !frame.battle.read.returned || frame.battle.value)) {
+        releasing_tasks_ = false;
+        restoring_tasks_ = false;
+        task_restore_.reset();
+        tasks_->Reset(TaskExitReason::WorldLeft);
+        if (desired_ && !desired_->action && desired_->serial != status_.servicing)
+            desired_.reset();
+    }
+    actions_.ServiceEffects(frame);
+    if (removing_ || Ended() || character_.Creation().removal_requested || character_.Creation().closed) {
+        removing_ = true;
+        Finish(frame, appearance, types);
+        return;
+    }
+    if (!OwnFrame(frame)) {
+        if (tasks_)
+            tasks_->Service(0, frame.sequence, false, false);
+        character_.Service(frame, appearance, types);
+        return;
+    }
+    if ((restoring_tasks_ || visual_restore_) && status_.phase == HandoffPhase::Failed) {
+        // Retain the original failure instead of retrying every frame after
+        // Reset has already removed the contexts required by the saved task.
+        character_.Service(frame, appearance, types);
+        if (tasks_)
+            tasks_->Service(0, frame.sequence, false, false);
+        return;
+    }
+    try {
+        if (releasing_tasks_) {
+            // Old authored cleanup may use animation clocks and submit a final
+            // pose. Finish it before queuing the ordinary action, not after it.
+            const auto requested = status_.requested;
+            character_.Service(frame, appearance, types);
+            actions_.Service(frame, status_.ready_domain && VisualReady(*status_.ready_domain),
+                             appearance.assets.objects, playback_rate_);
+            tasks_->Service(frame.delta_time, frame.sequence, false,
+                            !visual_restore_ && status_.phase == HandoffPhase::Ready &&
+                                status_.ready_domain == task_catalog_->domain && actions_.VisualRestoreReady(),
+                            playback_rate_);
+            if (removing_ || Ended() || requested != status_.requested)
+                return;
+            if (!tasks_->Drained())
+                return;
+            releasing_tasks_ = false;
+        }
+        if (desired_ && desired_->serial != status_.servicing) {
+            actions_.SetCompletionState(desired_->domain == ActionDomain::Battle ? initial_state_name_
+                                                                                    : std::string{});
+            actions_.SetPresentationDomain(desired_->domain == ActionDomain::Battle);
+            const bool same_pending_domain =
+                active_ && active_->domain == desired_->domain &&
+                (status_.phase == HandoffPhase::Loading || status_.phase == HandoffPhase::Adopting ||
+                 status_.phase == HandoffPhase::Binding || status_.phase == HandoffPhase::Initializing);
+            active_ = *desired_;
+            status_.servicing = active_->serial;
+            status_.error.clear();
+            status_.playback_serial = 0;
+            status_.output.reset();
+            if (!same_pending_domain) {
+                if (tasks_ && !active_->action && active_->domain == task_catalog_->domain)
+                    actions_.PrepareTaskPlayback();
+                else
+                    actions_.CancelPending(false);
+            }
+            if (same_pending_domain) { /* Preserve the model operation; only replace the desired action. */
+            } else if (status_.phase == HandoffPhase::Ready && status_.ready_domain == active_->domain &&
+                       transition_->Status().controller_ready) {
+                if (active_->action)
+                    status_.playback_serial = actions_.Queue(*active_->action);
+            } else {
+                api::ModelTransitionPlan plan;
+                actions_.CancelHitEffects();
+                plan.destination = active_->domain == ActionDomain::Exploration ? api::ModelDestination::Baseline
+                                                                                : api::ModelDestination::Alternate;
+                plan.controller =
+                    active_->domain == ActionDomain::Exploration ? controllers_.exploration : controllers_.alternate;
+                // Initial exploration already exists; do not reload it.
+                plan.reload = !(status_.phase == HandoffPhase::Ready && status_.ready_domain == active_->domain);
+                plan.require_animator = active_->domain == ActionDomain::Battle || !character_.AppearanceConsumer();
+                plan.initialize = active_->domain == ActionDomain::Battle && !initial_state_name_.empty();
+                initial_requested_ = false;
+                if (plan.reload) {
+                    actions_.CancelVoices();
+                    status_.ready_domain.reset();
+                    status_.initialization_note.clear();
+                    character_.SetExplorationEventsEnabled(false);
+                }
+                transition_->Select(std::move(plan));
+                UpdateTransitionStatus();
+            }
+        }
+        const auto serial = status_.servicing;
+        actions_.ServiceEffects(frame);
+        auto interrupted = [&]() { return removing_ || Ended() || status_.requested != serial; };
+        api::ModelTransitionConsumer consumer;
+        consumer.interrupted = interrupted;
+        consumer.detach = [&]() {
+            character_.SetExplorationInputsEnabled(false);
+            character_.SetAlternatePayloadEnabled(false);
+            character_.Service(frame, appearance, types);
+            return character_.ExplorationInputsDetached() && character_.AlternatePayloadDetached();
+        };
+        consumer.adopt = [&]() {
+            if (active_->domain == ActionDomain::Exploration)
+                character_.SetExplorationInputsEnabled(true);
+            else
+                character_.SetAlternatePayloadEnabled(true);
+            character_.Service(frame, appearance, types);
+            return VisualReady(active_->domain);
+        };
+        consumer.events_ready = [&]() {
+            if (active_->domain == ActionDomain::Exploration)
+                character_.SetExplorationEventsEnabled(true);
+            character_.Service(frame, appearance, types);
+        };
+        consumer.initialize = [&]() {
+            if (!initial_requested_) {
+                actions_.Queue(FreeStyleState{actions_.CurrentIdle()});
+                initial_requested_ = true;
+            }
+            actions_.Service(frame, true, appearance.assets.objects, playback_rate_);
+            const auto& result = actions_.Status();
+            if (result.pending)
+                return api::InitialOutput{};
+            if (!result.last)
+                return api::InitialOutput{api::InitialOutputPhase::Failed};
+            if (result.last->outcome == ActionOutcome::StateAbsent)
+                return api::InitialOutput{api::InitialOutputPhase::Absent};
+            if (result.last->outcome == ActionOutcome::Returned)
+                return api::InitialOutput{api::InitialOutputPhase::Returned, result.last->hash.value};
+            return api::InitialOutput{api::InitialOutputPhase::Failed};
+        };
+        const auto before = transition_->Status().phase;
+        // Foreign visual scenes can own a movement binding on this actor.
+        // Drain those consumers before controller detach as well as Art reload.
+        if (before != HandoffPhase::Ready && prepare_model_change_) {
+            const bool ready = prepare_model_change_({owner_, world_});
+            if (interrupted())
+                return;
+            if (!ready) {
+                if (tasks_)
+                    tasks_->Service(0, frame.sequence, false, false);
+                return;
+            }
+        }
+        transition_->Service(frame, appearance.assets.objects, types, consumer);
+        UpdateTransitionStatus();
+        if (interrupted())
+            return;
+        if (status_.phase == HandoffPhase::Ready) {
+            if (visual_restore_) {
+                // Receivers and model consumers must exist before effects and
+                // phase resources can be reconstructed. Never run this during
+                // baseline capture or the model's initialization request.
+                if (active_->domain == (task_catalog_ ? task_catalog_->domain : ActionDomain::Battle))
+                    actions_.RestoreVisualProgram(*visual_restore_);
+                visual_restore_.reset();
+            }
+            if (before != HandoffPhase::Ready) {
+                status_.ready_domain = active_->domain;
+                if (active_->action)
+                    status_.playback_serial = actions_.Queue(*active_->action);
+            }
+            character_.Service(frame, appearance, types);
+            if (interrupted())
+                return;
+            actions_.Service(frame, status_.ready_domain && VisualReady(*status_.ready_domain),
+                             appearance.assets.objects, playback_rate_);
+            const bool task_ready =
+                tasks_ && status_.ready_domain == task_catalog_->domain && actions_.VisualRestoreReady();
+            if (reaction_restore_ && task_ready) {
+                if (reaction_restore_->source != task_catalog_->visual->source)
+                    throw std::runtime_error("saved reaction belongs to another character source");
+                tasks_->RestoreManualReaction(reaction_restore_);
+                reaction_restore_.reset();
+            }
+            if (restoring_tasks_ && task_ready) {
+                if (task_restore_) {
+                    auto selection = *task_restore_;
+                    selection.query.participants = {{"body"}};
+                    const auto inputs = tasks_->RestoreInputsReady(selection);
+                    if (inputs.state == VisualStepState::Failed)
+                        throw std::runtime_error(inputs.detail);
+                    if (inputs.state == VisualStepState::Pending) {
+                        tasks_->Service(0, frame.sequence, false, false);
+                        return;
+                    }
+                    // This is a trusted saved checkpoint, not a public control
+                    // request. Plain actor state is adopted without consuming
+                    // this frame's ordinary task playback service.
+                    const auto result = tasks_->RestoreSelection(std::move(selection));
+                    if (!result.intent) {
+                        std::string error = "saved task is unavailable";
+                        for (const auto& reason : result.query.reasons)
+                            error += "; " + reason.source + ": " + reason.detail;
+                        throw std::runtime_error(error);
+                    }
+                }
+                restoring_tasks_ = false;
+                task_restore_.reset();
+            }
+            if (tasks_)
+                tasks_->Service(frame.delta_time, frame.sequence, task_ready && active_ && !active_->action, task_ready,
+                                playback_rate_);
+            ObserveActionOutput();
+        } else if (status_.phase == HandoffPhase::Loading || status_.phase == HandoffPhase::Initializing ||
+                   status_.phase == HandoffPhase::Failed) {
+            character_.Service(frame, appearance, types);
+            if (tasks_)
+                tasks_->Service(0, frame.sequence, false, false);
+        }
+    } catch (const std::exception& error) {
+        Fail(error.what());
+    }
+}
+void ModelActionHandoff::ObserveActionOutput() {
+    const auto& output = actions_.Status().last;
+    if (!output || !status_.playback_serial || output->serial != status_.playback_serial ||
+        (status_.output && status_.output->outcome != ActionOutcome::Waiting))
+        return;
+    status_.output = output;
+    if (tasks_ && output->outcome == ActionOutcome::Returned && output->accepted_effect)
+        tasks_->ApplyPlaybackEffect(*output->accepted_effect);
+}
+}

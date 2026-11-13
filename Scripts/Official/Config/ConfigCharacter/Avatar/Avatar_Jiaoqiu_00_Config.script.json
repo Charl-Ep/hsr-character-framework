@@ -1,0 +1,711 @@
+{
+  "format": "hksr.script",
+  "id": "official-scripts:Config/ConfigCharacter/Avatar/Avatar_Jiaoqiu_00_Config.json",
+  "applies_to": "Config/ConfigCharacter/Avatar/Avatar_Jiaoqiu_00_Config.json",
+  "default": true,
+  "imports": ["Common/Elemental.json"],
+  "defaults": {
+    "targets": {
+      "PreviewTarget": {
+        "local_position": [0, 0, 6]
+      },
+      "callback.2315.target.AllTeamCenter": {"alias": "Caster"}
+    }
+  },
+  "actions": {
+    "rest": {
+      "trigger": "internal",
+      "run": [
+        {"op": "call", "function": "@return.rest.pose"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["stable-return", "idle-provider"]
+    },
+    "skill.0.perform": {
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Jiaoqiu_00_Skill01_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Jiaoqiu_00_Skill01_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.0.clock.1", "progress": 0.2727000005},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit",
+              "direction": {},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Jiaoqiu_00/Eff_Avatar_Jiaoqiu_00_Skill01_Hit.prefab",
+                "height": 1.2999999523162842,
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.0.hit.13"
+            },
+            {"op": "wait", "for": "skill.0.hit.13", "until": "accepted"}
+          ],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill01", "end": 0.8000000007, "track": {"logic": 3}, "as": "skill.0.clock.1"},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.8000000007},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.2727000005},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.3600000003},
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "Skill01",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "LookAt: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "RadialBlurEffect: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "skill.0.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Jiaoqiu_00_Config.json", "skill": 0, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "skill.1.perform": {
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Jiaoqiu_00_Skill02_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Jiaoqiu_00_Skill02_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.4340000001},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit_H",
+              "direction": {},
+              "effect": {"path": "", "minimum_interval": 0.0500000007, "maximum_count": 1},
+              "allow_position": true,
+              "as": "skill.1.hit.14"
+            },
+            {"op": "wait", "for": "skill.1.hit.14", "until": "accepted"},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit_H",
+              "direction": {},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Jiaoqiu_00/Eff_Avatar_Jiaoqiu_00_Skill02_Hit.prefab",
+                "height": 1.2999999523162842,
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.1.hit.16"
+            },
+            {"op": "wait", "for": "skill.1.hit.16", "until": "accepted"}
+          ],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill02", "end": -1.0, "track": {"logic": 3}, "as": "skill.1.clock.1"},
+        {"op": "wait", "for": "skill.1.clock.1", "until": "animation_end"},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.3059999998},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.4569999999},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 1.0},
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "Skill02",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "LookAt: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "GlobalMainIntensityEffect: not included in the visual sequence projection",
+          "RadialBlurEffect: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "skill.1.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Jiaoqiu_00_Config.json", "skill": 1, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "skill.2.perform": {
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "run": [
+        {"op": "animation", "state": "Skill03", "end": -1.0, "track": {"logic": 3}, "as": "skill.2.clock.1"},
+        {"op": "wait", "for": "skill.2.clock.1", "until": "animation_end"},
+        {
+          "op": "start",
+          "id": "Avatar_Jiaoqiu_00_Skill03_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Jiaoqiu_00_Skill03_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.2100000001},
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.5100000004},
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.6100000005},
+            {
+              "op": "for_each",
+              "bind": "skill.2.member.9",
+              "targets": ["PreviewTarget"],
+              "collection": "skill.2.targets.10",
+              "run": [],
+              "empty": []
+            },
+            {
+              "op": "for_each",
+              "bind": "skill.2.member.16",
+              "targets": ["PreviewTarget"],
+              "collection": "skill.2.targets.17",
+              "run": [],
+              "empty": []
+            },
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.7800000007},
+            {
+              "op": "for_each",
+              "bind": "skill.2.member.25",
+              "targets": ["PreviewTarget"],
+              "collection": "skill.2.targets.26",
+              "run": [],
+              "empty": []
+            },
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit",
+              "direction": {},
+              "effect": {"path": "", "minimum_interval": 0.0500000007, "maximum_count": 1},
+              "allow_position": true,
+              "as": "skill.2.hit.33"
+            },
+            {"op": "wait", "for": "skill.2.hit.33", "until": "accepted"},
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 1.0}
+          ],
+          "join": true
+        },
+        {"op": "wait", "seconds": 0.466},
+        {"op": "wait", "seconds": 0.9500000008},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "Skill03",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "SyncCharLightAndCameraDir: not included in the visual sequence projection",
+          "LookAt: not included in the visual sequence projection",
+          "HideLevelStage: not included in the visual sequence projection",
+          "SetSkillTargetFormationByPos: not included in the visual sequence projection",
+          "ScaleCharacterModel: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "Retarget: recipient collection is explicitly selected; native filtering, random selection and count limits are not simulated",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "TriggerEffect: effect needs a non-owned target, dynamic path, or Timeline attachment",
+          "WaitTimelineFinish: not included in the visual sequence projection",
+          "ScaleCharacterModel: serial step depends on an unavailable source clock; no timing is inferred",
+          "HideLevelStage: serial step depends on an unavailable source clock; no timing is inferred",
+          "SetTeamFormation: serial step depends on an unavailable source clock; no timing is inferred"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "skill.2.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Jiaoqiu_00_Config.json", "skill": 2, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "skill.3.perform": {
+      "inputs": {
+        "cue": {
+          "type": "integer",
+          "default": 0,
+          "label": "Effect",
+          "choices": [
+            {"value": 0, "label": "OnEnterBattle"}
+          ]
+        }
+      },
+      "requires": [
+        {"op": "number", "name": "cue", "compare": "ge", "value": 0},
+        {"op": "number", "name": "cue", "compare": "lt", "value": 1}
+      ],
+      "run": [
+        {"op": "effect.create", "effects": ["skill.3.effect.0"], "as": "effect"},
+        {"op": "wait", "for": "effect", "until": "accepted"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "effect.remove", "effects": ["skill.3.effect.0"], "optional": ["skill.3.effect.0"], "as": "remove"},
+        {"op": "wait", "for": "remove", "until": "accepted"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "SkillP01",
+        "omissions": ["Actor-owned effect cue only. Original callback conditions and timing are manual inputs; use Finish to end.", "cue: 0=OnEnterBattle"]
+      },
+      "tags": ["manual-effect-cue", "partial-presentation"]
+    },
+    "callback.2294": {
+      "inputs": {
+        "callback.2294.condition.ByCompareWaveCount.1": {
+          "type": "bool",
+          "default": true,
+          "label": "ByCompareWaveCount",
+          "description": "Manual source condition: $.AbilityList[7].Modifiers[1].value._CallbackList[0].CallbackConfig[0].Predicate"
+        }
+      },
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "callback.2294.condition.ByCompareWaveCount.1", "is": true},
+          "then": [
+            {"op": "effect.create", "effects": ["callback.2294.effect.3"], "as": "callback.2294.effect.3"},
+            {"op": "wait", "for": "callback.2294.effect.3", "until": "accepted"}
+          ],
+          "else": []
+        },
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "effect.remove", "effects": ["callback.2294.effect.3"], "optional": ["callback.2294.effect.3"], "as": "callback.2294.remove-effects"},
+        {"op": "wait", "for": "callback.2294.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "effect.remove", "effects": ["callback.2294.effect.3"], "optional": ["callback.2294.effect.3"], "as": "callback.2294.remove-effects"},
+        {"op": "wait", "for": "callback.2294.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "MAvatar_Jiaoqiu_00_Tree01_recoverSP: OnEnterBattle",
+        "omissions": ["Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects."]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "callback.2315": {
+      "bindings": {
+        "targets": ["callback.2315.target.AllTeamCenter"]
+      },
+      "run": [
+        {"op": "effect.create", "effects": ["callback.2315.effect.2"], "as": "callback.2315.effect.2"},
+        {"op": "wait", "for": "callback.2315.effect.2", "until": "accepted"},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "effect.remove", "effects": ["callback.2315.effect.2"], "optional": ["callback.2315.effect.2"], "as": "callback.2315.remove-effects"},
+        {"op": "wait", "for": "callback.2315.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "effect.remove", "effects": ["callback.2315.effect.2"], "optional": ["callback.2315.effect.2"], "as": "callback.2315.remove-effects"},
+        {"op": "wait", "for": "callback.2315.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "MAvatar_Jiaoqiu_00_Aura: OnCreate",
+        "omissions": [
+          "Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects.",
+          "TriggerEffect: callback target AllTeamCenter is a selected owned actor input, defaulting to this actor; native event payload is not assumed"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "flag-effect.0": {
+      "bindings": {
+        "targets": ["Recipient"]
+      },
+      "run": [
+        {"op": "effect.create", "effects": ["flag-effect.0.0"], "as": "flag-effect.0"},
+        {"op": "wait", "for": "flag-effect.0", "until": "accepted"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "effect.remove", "effects": ["flag-effect.0.0"], "optional": ["flag-effect.0.0"], "as": "flag-effect.0.remove"},
+        {"op": "wait", "for": "flag-effect.0.remove", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "effect.remove", "effects": ["flag-effect.0.0"], "optional": ["flag-effect.0.0"], "as": "flag-effect.0.remove"},
+        {"op": "wait", "for": "flag-effect.0.remove", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "STAT_AttackDown",
+        "omissions": ["Manual bound-effect cue; no native modifier or behavior flag is applied. Use Finish to release."]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "skill.4.perform": {
+      "inputs": {
+        "event": {
+          "type": "integer",
+          "default": 0,
+          "label": "Callback",
+          "choices": [
+            {"value": 0, "label": "StageAbility_Maze_Jiaoqiu_00_Modifier: OnEnterBattle"},
+            {"value": 1, "label": "MAvatar_Jiaoqiu_00_Debuff_Flavor: OnCustomEvent"},
+            {"value": 2, "label": "MAvatar_Jiaoqiu_00_Debuff_Flavor: OnPhase1"}
+          ]
+        },
+        "callback.2296.condition.ByIsMazeSkillAffectCurrentWave.1": {
+          "type": "bool",
+          "default": true,
+          "label": "ByIsMazeSkillAffectCurrentWave",
+          "description": "Manual source condition: $.AbilityList[8].Modifiers[0].value._CallbackList[0].CallbackConfig[0].Predicate"
+        }
+      },
+      "requires": [
+        {"op": "number", "name": "event", "compare": "ge", "value": 0},
+        {"op": "number", "name": "event", "compare": "lt", "value": 3}
+      ],
+      "bindings": {
+        "targets": ["PreviewTarget", "Recipient"]
+      },
+      "run": [
+        {
+          "op": "switch",
+          "name": "event",
+          "cases": [
+            {
+              "is": 1,
+              "run": [
+                {"op": "effect.create", "effects": ["callback.2304.effect.2"], "as": "callback.2304.effect.2"},
+                {"op": "wait", "for": "callback.2304.effect.2", "until": "accepted"},
+                {"op": "join"},
+                {
+                  "op": "repeat",
+                  "until_finish": true,
+                  "run": [
+                    {"op": "wait", "frame": true}
+                  ]
+                },
+                {"op": "effect.remove", "effects": ["callback.2304.effect.2"], "optional": ["callback.2304.effect.2"], "as": "callback.2304.remove-effects"},
+                {"op": "wait", "for": "callback.2304.remove-effects", "until": "accepted"},
+                {"op": "call", "function": "@return.return.pose"},
+                {"op": "wait", "for": "return.pose", "until": "submitted"},
+                {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+                {"op": "wait", "for": "return.position"}
+              ],
+              "label": "MAvatar_Jiaoqiu_00_Debuff_Flavor: OnCustomEvent"
+            },
+            {
+              "is": 2,
+              "run": [
+                {"op": "effect.create", "effects": ["callback.2306.effect.1"], "as": "callback.2306.effect.1"},
+                {"op": "wait", "for": "callback.2306.effect.1", "until": "accepted"},
+                {"op": "wait", "seconds": 0.1},
+                {"op": "wait", "seconds": 0.1},
+                {"op": "join"},
+                {
+                  "op": "repeat",
+                  "until_finish": true,
+                  "run": [
+                    {"op": "wait", "frame": true}
+                  ]
+                },
+                {"op": "effect.remove", "effects": ["callback.2306.effect.1"], "optional": ["callback.2306.effect.1"], "as": "callback.2306.remove-effects"},
+                {"op": "wait", "for": "callback.2306.remove-effects", "until": "accepted"},
+                {"op": "call", "function": "@return.return.pose"},
+                {"op": "wait", "for": "return.pose", "until": "submitted"},
+                {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+                {"op": "wait", "for": "return.position"}
+              ],
+              "label": "MAvatar_Jiaoqiu_00_Debuff_Flavor: OnPhase1"
+            }
+          ],
+          "default": [
+            {
+              "op": "if",
+              "condition": {"op": "value", "name": "callback.2296.condition.ByIsMazeSkillAffectCurrentWave.1", "is": true},
+              "then": [
+                {
+                  "op": "hit",
+                  "target": "PreviewTarget",
+                  "animation": "Hit",
+                  "direction": {},
+                  "effect": {
+                    "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Jiaoqiu_00/Eff_Avatar_Jiaoqiu_00_PassiveSkill_Hit_02.prefab",
+                    "height": 1.2999999523162842,
+                    "minimum_interval": 0.0500000007,
+                    "maximum_count": 1
+                  },
+                  "allow_position": true,
+                  "as": "callback.2296.hit.3"
+                },
+                {"op": "wait", "for": "callback.2296.hit.3", "until": "accepted"}
+              ],
+              "else": []
+            },
+            {"op": "join"},
+            {"op": "call", "function": "@return.return.pose"},
+            {"op": "wait", "for": "return.pose", "until": "submitted"},
+            {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+            {"op": "wait", "for": "return.position"}
+          ]
+        }
+      ],
+      "on_interrupt": [
+        {
+          "op": "switch",
+          "name": "event",
+          "cases": [
+            {
+              "is": 1,
+              "run": [
+                {"op": "effect.remove", "effects": ["callback.2304.effect.2"], "optional": ["callback.2304.effect.2"], "as": "callback.2304.remove-effects"},
+                {"op": "wait", "for": "callback.2304.remove-effects", "until": "accepted"},
+                {"op": "call", "function": "@return.return.pose"},
+                {"op": "wait", "for": "return.pose", "until": "submitted"},
+                {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+                {"op": "wait", "for": "return.position"}
+              ],
+              "label": "MAvatar_Jiaoqiu_00_Debuff_Flavor: OnCustomEvent"
+            },
+            {
+              "is": 2,
+              "run": [
+                {"op": "effect.remove", "effects": ["callback.2306.effect.1"], "optional": ["callback.2306.effect.1"], "as": "callback.2306.remove-effects"},
+                {"op": "wait", "for": "callback.2306.remove-effects", "until": "accepted"},
+                {"op": "call", "function": "@return.return.pose"},
+                {"op": "wait", "for": "return.pose", "until": "submitted"},
+                {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+                {"op": "wait", "for": "return.position"}
+              ],
+              "label": "MAvatar_Jiaoqiu_00_Debuff_Flavor: OnPhase1"
+            }
+          ],
+          "default": [
+            {"op": "call", "function": "@return.return.pose"},
+            {"op": "wait", "for": "return.pose", "until": "submitted"},
+            {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+            {"op": "wait", "for": "return.position"}
+          ]
+        }
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "SkillMaze",
+        "omissions": [
+          "Manual visual callback selection; no native combat modifier or automatic event simulation.",
+          "event: 0=StageAbility_Maze_Jiaoqiu_00_Modifier: OnEnterBattle, 1=MAvatar_Jiaoqiu_00_Debuff_Flavor: OnCustomEvent, 2=MAvatar_Jiaoqiu_00_Debuff_Flavor: OnPhase1",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "ModifierAttachEffect: manual bound-effect preview; modifier flags, collider-height offset, native mutex and automatic visibility/lifetime are not applied",
+          "DamageByAttackProperty: no literal hit animation/effect; receiver defaults are not assumed"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "skill.5.perform": {"use": "common.elemental.responses", "next": "rest"},
+    "preview.hit": {
+      "inputs": {
+        "kind": {
+          "type": "text",
+          "default": "Hit",
+          "label": "Hit type",
+          "choices": [
+            {"value": "Hit", "label": "Hit"},
+            {"value": "Hit_H", "label": "Hit_H"}
+          ]
+        }
+      },
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "kind", "is": "Hit_H"},
+          "then": [
+            {"op": "hit", "target": "Caster", "animation": "Hit_H", "as": "hit-heavy"},
+            {"op": "wait", "for": "hit-heavy"}
+          ],
+          "else": [
+            {"op": "hit", "target": "Caster", "animation": "Hit", "as": "hit"},
+            {"op": "wait", "for": "hit"}
+          ]
+        }
+      ],
+      "next": "rest",
+      "presentation": {"label": "Hit"},
+      "tags": ["manual-visual-callback"]
+    },
+    "@receiver-clear/callback.5359.receiver-property.3": {
+      "requires": [
+        {"op": "state", "name": "common.elemental.frozen-hit"}
+      ],
+      "mode": "input",
+      "run": [
+        {"op": "state.exit", "name": "common.elemental.frozen-hit", "only_caster": true, "as": "clear"},
+        {"op": "wait", "for": "clear"}
+      ],
+      "presentation": {
+        "label": "Clear hit effect override",
+        "kind": "setting",
+        "contexts": ["common.elemental.frozen-hit"]
+      },
+      "tags": ["visual-receiver-clear"]
+    }
+  },
+  "functions": {
+    "@return.rest.pose": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "rest.pose.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "rest.pose"
+      }
+    ],
+    "@return.return.pose": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "return.pose.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "return.pose"
+      }
+    ]
+  },
+  "states": {},
+  "resources": {
+    "effects": {
+      "skill.3.effect.0": {"path": "Effects/Eff_Prefab/Eff_Common/Eff_Common_MAZ_RecoverSP.prefab", "target": "Caster"},
+      "callback.2294.effect.3": {"path": "Effects/Eff_Prefab/Eff_Common/Eff_Common_MAZ_RecoverSP.prefab", "target": "Caster"},
+      "callback.2304.effect.2": {
+        "path": "Effects/Eff_Prefab/Eff_Common/Eff_Buff_Common_Fire_Trigger.prefab",
+        "target": "Recipient",
+        "attach_to_target": true,
+        "attach_point": "SelectRoot"
+      },
+      "callback.2306.effect.1": {"path": "Effects/Eff_Prefab/Eff_Common/Eff_Buff_Common_Fire_Trigger.prefab", "target": "Recipient", "attach_point": "SelectRoot"},
+      "callback.2315.effect.2": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Jiaoqiu_00/Eff_Avatar_Jiaoqiu_00_BattleArea_Ground.prefab", "target": "callback.2315.target.AllTeamCenter"},
+      "flag-effect.0.0": {"path": "Effects/Eff_Prefab/Eff_Common/Eff_Debuff_Common_AttackDown.prefab", "target": "Recipient"}
+    }
+  }
+}

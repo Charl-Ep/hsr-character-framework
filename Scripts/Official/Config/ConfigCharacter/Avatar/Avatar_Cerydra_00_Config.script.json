@@ -1,0 +1,1410 @@
+{
+  "format": "hksr.script",
+  "id": "official-scripts:Config/ConfigCharacter/Avatar/Avatar_Cerydra_00_Config.json",
+  "applies_to": "Config/ConfigCharacter/Avatar/Avatar_Cerydra_00_Config.json",
+  "default": true,
+  "imports": ["Common/Elemental.json"],
+  "defaults": {
+    "targets": {
+      "PreviewTarget": {
+        "local_position": [0, 0, 6]
+      },
+      "callback.948.target.CurrentAimAtMainTarget": {"alias": "Caster"}
+    }
+  },
+  "actions": {
+    "rest": {
+      "trigger": "internal",
+      "run": [
+        {"op": "call", "function": "@return.rest.pose"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["stable-return", "idle-provider"]
+    },
+    "skill.0.perform": {
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Cerydra_00_Skill01_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Cerydra_00_Skill01_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.0.clock.1", "progress": 0.09},
+            {"op": "wait", "for": "skill.0.clock.1", "progress": 0.5730000003}
+          ],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill01", "end": 1.0, "track": {"logic": 3}, "as": "skill.0.clock.1"},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.0},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.08},
+        {"op": "effect.create", "effects": ["skill.0.effect.9"], "as": "skill.0.effect.9"},
+        {"op": "wait", "for": "skill.0.effect.9", "until": "accepted"},
+        {"op": "join"},
+        {"op": "effect.remove", "effects": ["skill.0.effect.9"], "optional": ["skill.0.effect.9"], "as": "skill.0.remove-effects"},
+        {"op": "wait", "for": "skill.0.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "effect.remove", "effects": ["skill.0.effect.9"], "optional": ["skill.0.effect.9"], "as": "skill.0.remove-effects"},
+        {"op": "wait", "for": "skill.0.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "Skill01",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "LookAt: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "NewFireProjectile: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "skill.0.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Cerydra_00_Config.json", "skill": 0, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "skill.1.perform": {
+      "inputs": {
+        "skill.1.condition.ByIsContainModifier.5": {"type": "bool", "default": false, "label": "ByIsContainModifier", "description": "Manual source condition: $.AbilityList[2].OnStart[1].Predicate"},
+        "skill.1.condition.ByIsTurnActionEntity.8": {
+          "type": "bool",
+          "default": true,
+          "label": "ByIsTurnActionEntity",
+          "description": "Manual source condition: $.AbilityList[2].OnStart[1].SuccessTaskList[2].Predicate"
+        },
+        "skill.1.condition.ByIsContainModifier.42": {
+          "type": "bool",
+          "default": false,
+          "label": "ByIsContainModifier",
+          "description": "Manual source condition: $.AbilityList[2].OnStart[1].FailedTaskList[0].Predicate"
+        },
+        "skill.1.condition.ByCompareDynamicValue.43": {
+          "type": "bool",
+          "default": false,
+          "label": "ByCompareDynamicValue",
+          "description": "Manual source condition: $.AbilityList[2].OnStart[1].FailedTaskList[0].SuccessTaskList[0].Predicate"
+        },
+        "skill.1.condition.ByIsContainModifier.109": {
+          "type": "bool",
+          "default": true,
+          "label": "ByIsContainModifier",
+          "description": "Manual source condition: $.AbilityList[2].OnStart[1].FailedTaskList[0].FailedTaskList[0].Predicate"
+        },
+        "skill.1.condition.ByIsContainModifier.141": {"type": "bool", "default": false, "label": "ByIsContainModifier", "description": "Manual source condition: $.AbilityList[3].OnStart[3].Predicate"},
+        "skill.1.condition.ByIsContainModifier.161": {
+          "type": "bool",
+          "default": false,
+          "label": "ByIsContainModifier",
+          "description": "Manual source condition: $.AbilityList[3].OnStart[3].FailedTaskList[0].Predicate.PredicateList[0]"
+        },
+        "skill.1.condition.ByCompareDynamicValue.162": {
+          "type": "bool",
+          "default": false,
+          "label": "ByCompareDynamicValue",
+          "description": "Manual source condition: $.AbilityList[3].OnStart[3].FailedTaskList[0].Predicate.PredicateList[1]"
+        }
+      },
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "skill.1.condition.ByIsContainModifier.5", "is": true},
+          "then": [
+            {"op": "effect.create", "effects": ["skill.1.effect.6"], "as": "skill.1.effect.6"},
+            {"op": "wait", "for": "skill.1.effect.6", "until": "accepted"},
+            {
+              "op": "if",
+              "condition": {"op": "value", "name": "skill.1.condition.ByIsTurnActionEntity.8", "is": true},
+              "then": [
+                {"op": "effect.create", "effects": ["skill.1.effect.9"], "as": "skill.1.effect.9"},
+                {"op": "wait", "for": "skill.1.effect.9", "until": "accepted"}
+              ],
+              "else": []
+            },
+            {
+              "op": "start",
+              "id": "Avatar_Cerydra_00_Skill02_Camera_TimeLine",
+              "run": [],
+              "join": true
+            },
+            {"op": "animation", "state": "Skill02", "end": 0.7560000002, "track": {"logic": 3}, "as": "skill.1.clock.1"},
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.0}
+          ],
+          "elif": [
+            {
+              "condition": {"op": "value", "name": "skill.1.condition.ByIsContainModifier.42", "is": true},
+              "then": [
+                {
+                  "op": "if",
+                  "condition": {"op": "value", "name": "skill.1.condition.ByCompareDynamicValue.43", "is": true},
+                  "then": [
+                    {
+                      "op": "start",
+                      "id": "Avatar_Cerydra_00_Skill02_2_Camera_TimeLine",
+                      "run": [],
+                      "join": true
+                    },
+                    {"op": "animation", "state": "Skill02_01", "end": 0.9640000006, "track": {"logic": 3}, "as": "skill.1.clock.2"},
+                    {"op": "wait", "for": "skill.1.clock.2", "progress": 0.0},
+                    {"op": "effect.create", "effects": ["skill.1.effect.56"], "as": "skill.1.effect.56"},
+                    {"op": "wait", "for": "skill.1.effect.56", "until": "accepted"},
+                    {"op": "effect.create", "effects": ["skill.1.effect.57"], "as": "skill.1.effect.57"},
+                    {"op": "wait", "for": "skill.1.effect.57", "until": "accepted"},
+                    {"op": "effect.create", "effects": ["skill.1.effect.58"], "as": "skill.1.effect.58"},
+                    {"op": "wait", "for": "skill.1.effect.58", "until": "accepted"}
+                  ],
+                  "else": [
+                    {
+                      "op": "start",
+                      "id": "Avatar_Cerydra_00_Skill02_1_Camera_TimeLine",
+                      "run": [],
+                      "join": true
+                    },
+                    {"op": "animation", "state": "Skill02_01", "end": 0.6060000001, "track": {"logic": 3}, "as": "skill.1.clock.2"},
+                    {"op": "wait", "for": "skill.1.clock.2", "progress": 0.0},
+                    {"op": "effect.create", "effects": ["skill.1.effect.94"], "as": "skill.1.effect.94"},
+                    {"op": "wait", "for": "skill.1.effect.94", "until": "accepted"},
+                    {"op": "effect.create", "effects": ["skill.1.effect.95"], "as": "skill.1.effect.95"},
+                    {"op": "wait", "for": "skill.1.effect.95", "until": "accepted"},
+                    {"op": "effect.create", "effects": ["skill.1.effect.96"], "as": "skill.1.effect.96"},
+                    {"op": "wait", "for": "skill.1.effect.96", "until": "accepted"}
+                  ]
+                }
+              ]
+            },
+            {
+              "condition": {"op": "value", "name": "skill.1.condition.ByIsContainModifier.109", "is": true},
+              "then": [
+                {
+                  "op": "start",
+                  "id": "Avatar_Cerydra_00_Skill02_3_Camera_TimeLine",
+                  "run": [],
+                  "join": true
+                },
+                {"op": "animation", "state": "Skill02_01", "end": 0.7020000005, "track": {"logic": 3}, "as": "skill.1.clock.2"},
+                {"op": "wait", "for": "skill.1.clock.2", "progress": 0.0},
+                {"op": "effect.create", "effects": ["skill.1.effect.120"], "as": "skill.1.effect.120"},
+                {"op": "wait", "for": "skill.1.effect.120", "until": "accepted"},
+                {"op": "effect.create", "effects": ["skill.1.effect.121"], "as": "skill.1.effect.121"},
+                {"op": "wait", "for": "skill.1.effect.121", "until": "accepted"},
+                {"op": "effect.create", "effects": ["skill.1.effect.122"], "as": "skill.1.effect.122"},
+                {"op": "wait", "for": "skill.1.effect.122", "until": "accepted"}
+              ]
+            }
+          ],
+          "else": [
+            {
+              "op": "start",
+              "id": "Avatar_Cerydra_00_Skill02_Others_Phase02",
+              "run": [
+                {
+                  "op": "if",
+                  "condition": {"op": "value", "name": "skill.1.condition.ByIsContainModifier.141", "is": true},
+                  "then": [],
+                  "elif": [
+                    {
+                      "condition": {"op": "value", "name": "skill.1.condition.ByIsContainModifier.161", "is": true},
+                      "then": [
+                        {
+                          "op": "if",
+                          "condition": {"op": "value", "name": "skill.1.condition.ByCompareDynamicValue.162", "is": true},
+                          "then": [],
+                          "else": []
+                        }
+                      ]
+                    }
+                  ],
+                  "else": []
+                }
+              ]
+            }
+          ]
+        },
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {
+          "op": "effect.remove",
+          "effects": [
+            "skill.1.effect.6",
+            "skill.1.effect.9",
+            "skill.1.effect.56",
+            "skill.1.effect.57",
+            "skill.1.effect.58",
+            "skill.1.effect.94",
+            "skill.1.effect.95",
+            "skill.1.effect.96",
+            "skill.1.effect.120",
+            "skill.1.effect.121",
+            "skill.1.effect.122"
+          ],
+          "optional": [
+            "skill.1.effect.6",
+            "skill.1.effect.9",
+            "skill.1.effect.56",
+            "skill.1.effect.57",
+            "skill.1.effect.58",
+            "skill.1.effect.94",
+            "skill.1.effect.95",
+            "skill.1.effect.96",
+            "skill.1.effect.120",
+            "skill.1.effect.121",
+            "skill.1.effect.122"
+          ],
+          "as": "skill.1.remove-effects"
+        },
+        {"op": "wait", "for": "skill.1.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {
+          "op": "effect.remove",
+          "effects": [
+            "skill.1.effect.6",
+            "skill.1.effect.9",
+            "skill.1.effect.56",
+            "skill.1.effect.57",
+            "skill.1.effect.58",
+            "skill.1.effect.94",
+            "skill.1.effect.95",
+            "skill.1.effect.96",
+            "skill.1.effect.120",
+            "skill.1.effect.121",
+            "skill.1.effect.122"
+          ],
+          "optional": [
+            "skill.1.effect.6",
+            "skill.1.effect.9",
+            "skill.1.effect.56",
+            "skill.1.effect.57",
+            "skill.1.effect.58",
+            "skill.1.effect.94",
+            "skill.1.effect.95",
+            "skill.1.effect.96",
+            "skill.1.effect.120",
+            "skill.1.effect.121",
+            "skill.1.effect.122"
+          ],
+          "as": "skill.1.remove-effects"
+        },
+        {"op": "wait", "for": "skill.1.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "Skill02",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "SetModifierEffectVisible: not included in the visual sequence projection",
+          "PlayTimeline: not included in the visual sequence projection",
+          "SetTeamFormation: not included in the visual sequence projection",
+          "ScaleCharacterModel: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "TriggerEffect: effect needs a non-owned target, dynamic path, or Timeline attachment",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "WaitTimelineFinish: not included in the visual sequence projection",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "SyncCharLightAndCameraDir: not included in the visual sequence projection",
+          "HideLevelStage: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "TriggerEffect: serial step depends on an unavailable source clock; no timing is inferred",
+          "RemoveEffect: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitTimelineFinish: serial step depends on an unavailable source clock; no timing is inferred",
+          "TriggerAbility: serial step depends on an unavailable source clock; no timing is inferred",
+          "TryStartConnectUltraSkillFrameCapture: serial step depends on an unavailable source clock; no timing is inferred",
+          "TriggerSound: sound emitter LocalPlayer is not the owned actor; no body or real-player substitution",
+          "SetModifierEffectVisible: serial step depends on an unavailable source clock; no timing is inferred",
+          "PredicateTaskList: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitSecond: serial step depends on an unavailable source clock; no timing is inferred",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "StopTimeline: serial step depends on an unavailable source clock; no timing is inferred",
+          "HideLevelStage: serial step depends on an unavailable source clock; no timing is inferred",
+          "ScaleCharacterModel: serial step depends on an unavailable source clock; no timing is inferred",
+          "SetTeamFormation: serial step depends on an unavailable source clock; no timing is inferred",
+          "SyncCharLightAndCameraDir: serial step depends on an unavailable source clock; no timing is inferred",
+          "TriggerAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "wait_request: source clock producer is conditional but its selection is not proven by this wait scope"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "skill.1.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Cerydra_00_Config.json", "skill": 1, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "skill.2.perform": {
+      "inputs": {
+        "skill.2.condition.ByCompareTargetCountClientOnly.34": {
+          "type": "bool",
+          "default": false,
+          "label": "ByCompareTargetCountClientOnly",
+          "description": "Manual source condition: $.AbilityList[5].OnStart[12].Predicate"
+        }
+      },
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Cerydra_00_Skill03_Camera",
+          "run": [],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill03", "end": -1.0, "track": {"logic": 3}, "as": "skill.2.clock.1"},
+        {"op": "wait", "for": "skill.2.clock.1", "until": "animation_end"},
+        {
+          "op": "start",
+          "id": "Avatar_Cerydra_00_Skill03_Phase02",
+          "run": [
+            {
+              "op": "for_each",
+              "bind": "skill.2.member.7",
+              "targets": ["PreviewTarget"],
+              "collection": "skill.2.targets.8",
+              "run": [],
+              "empty": [
+                {
+                  "op": "for_each",
+                  "bind": "skill.2.member.9",
+                  "targets": ["PreviewTarget"],
+                  "collection": "skill.2.targets.10",
+                  "run": [],
+                  "empty": [
+                    {
+                      "op": "for_each",
+                      "bind": "skill.2.member.12",
+                      "targets": ["PreviewTarget"],
+                      "collection": "skill.2.targets.13",
+                      "run": [],
+                      "empty": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.8080000001},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit",
+              "direction": {},
+              "effect": {"path": "", "minimum_interval": 0.0500000007, "maximum_count": 1},
+              "allow_position": true,
+              "as": "skill.2.hit.23"
+            },
+            {"op": "wait", "for": "skill.2.hit.23", "until": "accepted"},
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.8380000002}
+          ],
+          "join": true
+        },
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "skill.2.condition.ByCompareTargetCountClientOnly.34", "is": true},
+          "then": [
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.09},
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.1200000001},
+            {"op": "effect.create", "effects": ["skill.2.effect.36"], "as": "skill.2.effect.36"},
+            {"op": "wait", "for": "skill.2.effect.36", "until": "accepted"}
+          ],
+          "else": [
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.09},
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.1200000001},
+            {"op": "effect.create", "effects": ["skill.2.effect.39"], "as": "skill.2.effect.39"},
+            {"op": "wait", "for": "skill.2.effect.39", "until": "accepted"}
+          ]
+        },
+        {"op": "wait", "for": "skill.2.clock.1", "progress": 0.7900000007},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {
+          "op": "effect.remove",
+          "effects": ["skill.2.effect.36", "skill.2.effect.39"],
+          "optional": ["skill.2.effect.36", "skill.2.effect.39"],
+          "as": "skill.2.remove-effects"
+        },
+        {"op": "wait", "for": "skill.2.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {
+          "op": "effect.remove",
+          "effects": ["skill.2.effect.36", "skill.2.effect.39"],
+          "optional": ["skill.2.effect.36", "skill.2.effect.39"],
+          "as": "skill.2.remove-effects"
+        },
+        {"op": "wait", "for": "skill.2.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "Skill03",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "ResetHeadLookAt: not included in the visual sequence projection",
+          "SyncCharLightAndCameraDir: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "Retarget: recipient collection is explicitly selected; native filtering, random selection and count limits are not simulated",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "WaitTimelineFinish: not included in the visual sequence projection",
+          "TriggerSkipDeadHandler: serial step depends on an unavailable source clock; no timing is inferred",
+          "SkillPerformFinish: serial step depends on an unavailable source clock; no timing is inferred",
+          "SetTeamFormation: not included in the visual sequence projection",
+          "MakeCharacterHUDVisible: not included in the visual sequence projection",
+          "LookAt: not included in the visual sequence projection",
+          "ScaleCharacterModel: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "HideLevelStage: not included in the visual sequence projection",
+          "SetSkillTargetFormationByPos: not included in the visual sequence projection",
+          "ScaleCharacterModel: serial step depends on an unavailable source clock; no timing is inferred",
+          "SetTeamFormation: serial step depends on an unavailable source clock; no timing is inferred",
+          "HideLevelStage: serial step depends on an unavailable source clock; no timing is inferred",
+          "ReleaseCharacterHUDVisibleControl: serial step depends on an unavailable source clock; no timing is inferred"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "skill.2.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Cerydra_00_Config.json", "skill": 2, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "skill.3.perform": {
+      "inputs": {
+        "cue": {
+          "type": "integer",
+          "default": 0,
+          "label": "Effect",
+          "choices": [
+            {"value": 0, "label": "OnAimAtTargetsRefresh_CL"},
+            {"value": 1, "label": "OnAimAtTargetsRefresh_CL"},
+            {"value": 2, "label": "Avatar_Cerydra_00_Skill02_InsertRank01"}
+          ]
+        }
+      },
+      "requires": [
+        {"op": "number", "name": "cue", "compare": "ge", "value": 0},
+        {"op": "number", "name": "cue", "compare": "lt", "value": 3}
+      ],
+      "run": [
+        {
+          "op": "switch",
+          "name": "cue",
+          "cases": [
+            {
+              "is": 1,
+              "run": [
+                {"op": "effect.create", "effects": ["skill.3.effect.1"], "as": "effect"},
+                {"op": "wait", "for": "effect", "until": "accepted"},
+                {
+                  "op": "repeat",
+                  "until_finish": true,
+                  "run": [
+                    {"op": "wait", "frame": true}
+                  ]
+                },
+                {"op": "effect.remove", "effects": ["skill.3.effect.1"], "optional": ["skill.3.effect.1"], "as": "remove"},
+                {"op": "wait", "for": "remove", "until": "accepted"}
+              ],
+              "label": "OnAimAtTargetsRefresh_CL"
+            },
+            {
+              "is": 2,
+              "run": [
+                {"op": "effect.create", "effects": ["skill.3.effect.2"], "as": "effect"},
+                {"op": "wait", "for": "effect", "until": "accepted"},
+                {
+                  "op": "repeat",
+                  "until_finish": true,
+                  "run": [
+                    {"op": "wait", "frame": true}
+                  ]
+                },
+                {"op": "effect.remove", "effects": ["skill.3.effect.2"], "optional": ["skill.3.effect.2"], "as": "remove"},
+                {"op": "wait", "for": "remove", "until": "accepted"}
+              ],
+              "label": "Avatar_Cerydra_00_Skill02_InsertRank01"
+            }
+          ],
+          "default": [
+            {"op": "effect.create", "effects": ["skill.3.effect.0"], "as": "effect"},
+            {"op": "wait", "for": "effect", "until": "accepted"},
+            {
+              "op": "repeat",
+              "until_finish": true,
+              "run": [
+                {"op": "wait", "frame": true}
+              ]
+            },
+            {"op": "effect.remove", "effects": ["skill.3.effect.0"], "optional": ["skill.3.effect.0"], "as": "remove"},
+            {"op": "wait", "for": "remove", "until": "accepted"}
+          ]
+        }
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "SkillP01",
+        "omissions": [
+          "Actor-owned effect cue only. Original callback conditions and timing are manual inputs; use Finish to end.",
+          "cue: 0=OnAimAtTargetsRefresh_CL, 1=OnAimAtTargetsRefresh_CL, 2=Avatar_Cerydra_00_Skill02_InsertRank01"
+        ]
+      },
+      "tags": ["manual-effect-cue", "partial-presentation"]
+    },
+    "callback.948": {
+      "inputs": {
+        "callback.948.condition.ByIsContainModifier.2": {
+          "type": "bool",
+          "default": false,
+          "label": "ByIsContainModifier",
+          "description": "Manual source condition: $.AbilityList[7].Modifiers[2].value._CallbackList[3].CallbackConfig[0].SuccessTaskList[0].Predicate"
+        },
+        "callback.948.condition.ByIsContainModifier.17": {
+          "type": "bool",
+          "default": false,
+          "label": "ByIsContainModifier",
+          "description": "Manual source condition: $.AbilityList[7].Modifiers[2].value._CallbackList[3].CallbackConfig[0].SuccessTaskList[2].Predicate"
+        },
+        "callback.948.condition.ByCompareDynamicValue.18": {
+          "type": "bool",
+          "default": true,
+          "label": "ByCompareDynamicValue",
+          "description": "Manual source condition: $.AbilityList[7].Modifiers[2].value._CallbackList[3].CallbackConfig[0].SuccessTaskList[2].SuccessTaskList[0].Predicate"
+        },
+        "callback.948.condition.ByCompareDynamicValue.44": {
+          "type": "bool",
+          "default": true,
+          "label": "ByCompareDynamicValue",
+          "description": "Manual source condition: $.AbilityList[7].Modifiers[2].value._CallbackList[3].CallbackConfig[0].SuccessTaskList[2].FailedTaskList[0].Predicate.PredicateList[0]"
+        },
+        "callback.948.condition.ByCompareDynamicValue.45": {
+          "type": "bool",
+          "default": true,
+          "label": "ByCompareDynamicValue",
+          "description": "Manual source condition: $.AbilityList[7].Modifiers[2].value._CallbackList[3].CallbackConfig[0].SuccessTaskList[2].FailedTaskList[0].Predicate.PredicateList[1]"
+        },
+        "callback.948.condition.ByCurrentSkillType.48": {
+          "type": "bool",
+          "default": true,
+          "label": "ByCurrentSkillType",
+          "description": "Manual source condition: $.AbilityList[7].Modifiers[2].value._CallbackList[3].CallbackConfig[0].Predicate.PredicateList[0]"
+        },
+        "callback.948.condition.ByTargetTeam.49": {
+          "type": "bool",
+          "default": true,
+          "label": "ByTargetTeam",
+          "description": "Manual source condition: $.AbilityList[7].Modifiers[2].value._CallbackList[3].CallbackConfig[0].Predicate.PredicateList[1]"
+        }
+      },
+      "bindings": {
+        "targets": ["callback.948.target.CurrentAimAtMainTarget"]
+      },
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "callback.948.condition.ByCurrentSkillType.48", "is": true},
+          "then": [
+            {
+              "op": "if",
+              "condition": {"op": "value", "name": "callback.948.condition.ByTargetTeam.49", "is": true},
+              "then": [
+                {
+                  "op": "if",
+                  "condition": {"op": "value", "name": "callback.948.condition.ByIsContainModifier.2", "is": true},
+                  "then": [
+                    {"op": "effect.create", "effects": ["callback.948.effect.4"], "as": "callback.948.effect.4"},
+                    {"op": "wait", "for": "callback.948.effect.4", "until": "accepted"}
+                  ],
+                  "else": [
+                    {"op": "effect.create", "effects": ["callback.948.effect.6"], "as": "callback.948.effect.6"},
+                    {"op": "wait", "for": "callback.948.effect.6", "until": "accepted"}
+                  ]
+                },
+                {
+                  "op": "if",
+                  "condition": {"op": "value", "name": "callback.948.condition.ByIsContainModifier.17", "is": true},
+                  "then": [
+                    {
+                      "op": "if",
+                      "condition": {"op": "value", "name": "callback.948.condition.ByCompareDynamicValue.18", "is": true},
+                      "then": [
+                        {
+                          "op": "effect.remove_event",
+                          "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Cerydra_00/Eff_Avatar_Cerydra_00_Skill01to02_chess_01.prefab",
+                          "fade": false,
+                          "as": "callback.948.remove.19.0"
+                        },
+                        {"op": "wait", "for": "callback.948.remove.19.0", "until": "accepted"},
+                        {
+                          "op": "effect.remove_event",
+                          "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Cerydra_00/Eff_Avatar_Cerydra_00_Skill02_chess_Ready_loop_Gold.prefab",
+                          "fade": false,
+                          "as": "callback.948.remove.20.0"
+                        },
+                        {"op": "wait", "for": "callback.948.remove.20.0", "until": "accepted"},
+                        {"op": "effect.create", "effects": ["callback.948.effect.21"], "as": "callback.948.effect.21"},
+                        {"op": "wait", "for": "callback.948.effect.21", "until": "accepted"}
+                      ],
+                      "else": []
+                    }
+                  ],
+                  "elif": [
+                    {
+                      "condition": {"op": "value", "name": "callback.948.condition.ByCompareDynamicValue.44", "is": true},
+                      "then": [
+                        {
+                          "op": "if",
+                          "condition": {"op": "value", "name": "callback.948.condition.ByCompareDynamicValue.45", "is": true},
+                          "then": [
+                            {
+                              "op": "effect.remove_event",
+                              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Cerydra_00/Eff_Avatar_Cerydra_00_Skill01to02_chess_01.prefab",
+                              "fade": false,
+                              "as": "callback.948.remove.30.0"
+                            },
+                            {"op": "wait", "for": "callback.948.remove.30.0", "until": "accepted"},
+                            {
+                              "op": "effect.remove_event",
+                              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Cerydra_00/Eff_Avatar_Cerydra_00_Skill02_chess_Ready_loop_Gold.prefab",
+                              "fade": false,
+                              "as": "callback.948.remove.31.0"
+                            },
+                            {"op": "wait", "for": "callback.948.remove.31.0", "until": "accepted"},
+                            {"op": "effect.create", "effects": ["callback.948.effect.32"], "as": "callback.948.effect.32"},
+                            {"op": "wait", "for": "callback.948.effect.32", "until": "accepted"}
+                          ],
+                          "else": []
+                        }
+                      ]
+                    }
+                  ],
+                  "else": []
+                }
+              ],
+              "else": []
+            }
+          ],
+          "else": []
+        },
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {
+          "op": "effect.remove",
+          "effects": ["callback.948.effect.4", "callback.948.effect.6", "callback.948.effect.21", "callback.948.effect.32"],
+          "optional": ["callback.948.effect.4", "callback.948.effect.6", "callback.948.effect.21", "callback.948.effect.32"],
+          "as": "callback.948.remove-effects"
+        },
+        {"op": "wait", "for": "callback.948.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {
+          "op": "effect.remove",
+          "effects": ["callback.948.effect.4", "callback.948.effect.6", "callback.948.effect.21", "callback.948.effect.32"],
+          "optional": ["callback.948.effect.4", "callback.948.effect.6", "callback.948.effect.21", "callback.948.effect.32"],
+          "as": "callback.948.remove-effects"
+        },
+        {"op": "wait", "for": "callback.948.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "MAvatar_Cerydra_00_BP_PreShow: OnAimAtTargetsRefresh_CL",
+        "omissions": [
+          "Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects.",
+          "TriggerEffect: callback target CurrentAimAtMainTarget is a selected owned actor input, defaulting to this actor; native event payload is not assumed",
+          "SetEffectAnimatorParameter: not included in the visual sequence projection",
+          "SetEffectAnimatorTrigger: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "callback.967": {
+      "inputs": {
+        "callback.967.condition.ByAny.1": {
+          "type": "bool",
+          "default": true,
+          "label": "ByAny",
+          "description": "Manual source condition: $.GlobalModifiers[5].value._CallbackList[0].CallbackConfig[0].Predicate"
+        },
+        "callback.967.condition.ByCurrentSkillType.5": {
+          "type": "bool",
+          "default": false,
+          "label": "ByCurrentSkillType",
+          "description": "Manual source condition: $.GlobalModifiers[5].value._CallbackList[0].CallbackConfig[0].SuccessTaskList[1].Predicate.PredicateList[0]"
+        },
+        "callback.967.condition.ByCompareTarget.6": {
+          "type": "bool",
+          "default": false,
+          "label": "ByCompareTarget",
+          "description": "Manual source condition: $.GlobalModifiers[5].value._CallbackList[0].CallbackConfig[0].SuccessTaskList[1].Predicate.PredicateList[1]"
+        }
+      },
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "callback.967.condition.ByAny.1", "is": true},
+          "then": [
+            {
+              "op": "if",
+              "condition": {"op": "value", "name": "callback.967.condition.ByCurrentSkillType.5", "is": true},
+              "then": [
+                {
+                  "op": "if",
+                  "condition": {"op": "value", "name": "callback.967.condition.ByCompareTarget.6", "is": true},
+                  "then": [],
+                  "else": [
+                    {"op": "effect.create", "effects": ["callback.967.effect.4"], "as": "callback.967.effect.4"},
+                    {"op": "wait", "for": "callback.967.effect.4", "until": "accepted"}
+                  ]
+                }
+              ],
+              "else": [
+                {"op": "effect.create", "effects": ["callback.967.effect.4"], "as": "callback.967.effect.4"},
+                {"op": "wait", "for": "callback.967.effect.4", "until": "accepted"}
+              ]
+            }
+          ],
+          "else": []
+        },
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "effect.remove", "effects": ["callback.967.effect.4"], "optional": ["callback.967.effect.4"], "as": "callback.967.remove-effects"},
+        {"op": "wait", "for": "callback.967.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "effect.remove", "effects": ["callback.967.effect.4"], "optional": ["callback.967.effect.4"], "as": "callback.967.remove-effects"},
+        {"op": "wait", "for": "callback.967.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "MAvatar_Cerydra_00_PointB3_RecoverEnergy: OnBeforeSkillUse",
+        "omissions": ["Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects."]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "callback.981": {
+      "bindings": {
+        "targets": ["Recipient"]
+      },
+      "run": [
+        {"op": "effect.create", "effects": ["callback.981.effect.5"], "as": "callback.981.effect.5"},
+        {"op": "wait", "for": "callback.981.effect.5", "until": "accepted"},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "effect.remove", "effects": ["callback.981.effect.5"], "optional": ["callback.981.effect.5"], "as": "callback.981.remove-effects"},
+        {"op": "wait", "for": "callback.981.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "effect.remove", "effects": ["callback.981.effect.5"], "optional": ["callback.981.effect.5"], "as": "callback.981.remove-effects"},
+        {"op": "wait", "for": "callback.981.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "MAvatar_Cerydra_00_Skill02_Target_Lv1: OnStack",
+        "omissions": [
+          "Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects.",
+          "ModifierAttachEffect: manual bound-effect preview; modifier flags, collider-height offset, native mutex and automatic visibility/lifetime are not applied"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "callback.985": {
+      "bindings": {
+        "targets": ["Recipient"]
+      },
+      "run": [
+        {"op": "effect.create", "effects": ["callback.985.effect.6"], "as": "callback.985.effect.6"},
+        {"op": "wait", "for": "callback.985.effect.6", "until": "accepted"},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "effect.remove", "effects": ["callback.985.effect.6"], "optional": ["callback.985.effect.6"], "as": "callback.985.remove-effects"},
+        {"op": "wait", "for": "callback.985.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "effect.remove", "effects": ["callback.985.effect.6"], "optional": ["callback.985.effect.6"], "as": "callback.985.remove-effects"},
+        {"op": "wait", "for": "callback.985.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "MAvatar_Cerydra_00_Skill02_Target_Lv2: OnStack",
+        "omissions": [
+          "Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects.",
+          "ModifierAttachEffect: manual bound-effect preview; modifier flags, collider-height offset, native mutex and automatic visibility/lifetime are not applied"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "followup.0": {
+      "inputs": {
+        "followup.0.condition.ByCompareTarget.14": {"type": "bool", "default": false, "label": "ByCompareTarget", "description": "Manual source condition: $.AbilityList[8].OnStart[15].Predicate"}
+      },
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Cerydra_00_Skill02_Insert_Camera",
+          "run": [
+            {"op": "wait", "seconds": 0.01},
+            {"op": "wait", "seconds": 0.5010000003}
+          ],
+          "join": true
+        },
+        {"op": "wait", "seconds": 0.2669999997},
+        {"op": "wait", "seconds": 0.1129999998},
+        {"op": "wait", "seconds": 0.0136000001},
+        {"op": "wait", "seconds": 0.4669999999},
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "followup.0.condition.ByCompareTarget.14", "is": true},
+          "then": [],
+          "else": [
+            {"op": "effect.create", "effects": ["followup.0.effect.21"], "as": "followup.0.effect.21"},
+            {"op": "wait", "for": "followup.0.effect.21", "until": "accepted"}
+          ]
+        },
+        {"op": "wait", "seconds": 0.8030000005},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "effect.remove", "effects": ["followup.0.effect.21"], "optional": ["followup.0.effect.21"], "as": "followup.0.remove-effects"},
+        {"op": "wait", "for": "followup.0.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "effect.remove", "effects": ["followup.0.effect.21"], "optional": ["followup.0.effect.21"], "as": "followup.0.remove-effects"},
+        {"op": "wait", "for": "followup.0.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "Avatar_Cerydra_00_Skill02_InsertRank01",
+        "omissions": [
+          "Manual follow-up presentation; no native action queue or combat condition evaluation.",
+          "retained visual sequence",
+          "VCameraNoiseChange: not included in the visual sequence projection",
+          "HideLevelStage: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "TriggerEffect: effect needs a non-owned target, dynamic path, or Timeline attachment",
+          "TriggerAnimState: animation has no literal owned-body binding",
+          "PauseEntityFollowAttach: not included in the visual sequence projection",
+          "ScaleCharacterModel: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "SetTeamFormation: not included in the visual sequence projection",
+          "SetEntityForceVisible: not included in the visual sequence projection",
+          "SyncCharLightAndCameraDir: not included in the visual sequence projection",
+          "RemoveEffect: effect removal has no owned target binding"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "skill.5.perform": {"use": "common.elemental.responses", "next": "rest"},
+    "preview.hit": {
+      "inputs": {
+        "kind": {
+          "type": "text",
+          "default": "Hit",
+          "label": "Hit type",
+          "choices": [
+            {"value": "Hit", "label": "Hit"},
+            {"value": "Hit_H", "label": "Hit_H"}
+          ]
+        }
+      },
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "kind", "is": "Hit_H"},
+          "then": [
+            {"op": "hit", "target": "Caster", "animation": "Hit_H", "as": "hit-heavy"},
+            {"op": "wait", "for": "hit-heavy"}
+          ],
+          "else": [
+            {"op": "hit", "target": "Caster", "animation": "Hit", "as": "hit"},
+            {"op": "wait", "for": "hit"}
+          ]
+        }
+      ],
+      "next": "rest",
+      "presentation": {"label": "Hit"},
+      "tags": ["manual-visual-callback"]
+    },
+    "skill.4.perform": {
+      "inputs": {
+        "skill.1.condition.ByIsContainModifier.5": {"type": "bool", "default": false, "label": "ByIsContainModifier", "description": "Manual source condition: $.AbilityList[2].OnStart[1].Predicate"},
+        "skill.1.condition.ByIsTurnActionEntity.8": {
+          "type": "bool",
+          "default": true,
+          "label": "ByIsTurnActionEntity",
+          "description": "Manual source condition: $.AbilityList[2].OnStart[1].SuccessTaskList[2].Predicate"
+        },
+        "skill.1.condition.ByIsContainModifier.42": {
+          "type": "bool",
+          "default": false,
+          "label": "ByIsContainModifier",
+          "description": "Manual source condition: $.AbilityList[2].OnStart[1].FailedTaskList[0].Predicate"
+        },
+        "skill.1.condition.ByCompareDynamicValue.43": {
+          "type": "bool",
+          "default": false,
+          "label": "ByCompareDynamicValue",
+          "description": "Manual source condition: $.AbilityList[2].OnStart[1].FailedTaskList[0].SuccessTaskList[0].Predicate"
+        },
+        "skill.1.condition.ByIsContainModifier.109": {
+          "type": "bool",
+          "default": true,
+          "label": "ByIsContainModifier",
+          "description": "Manual source condition: $.AbilityList[2].OnStart[1].FailedTaskList[0].FailedTaskList[0].Predicate"
+        },
+        "skill.1.condition.ByIsContainModifier.141": {"type": "bool", "default": false, "label": "ByIsContainModifier", "description": "Manual source condition: $.AbilityList[3].OnStart[3].Predicate"},
+        "skill.1.condition.ByIsContainModifier.161": {
+          "type": "bool",
+          "default": false,
+          "label": "ByIsContainModifier",
+          "description": "Manual source condition: $.AbilityList[3].OnStart[3].FailedTaskList[0].Predicate.PredicateList[0]"
+        },
+        "skill.1.condition.ByCompareDynamicValue.162": {
+          "type": "bool",
+          "default": false,
+          "label": "ByCompareDynamicValue",
+          "description": "Manual source condition: $.AbilityList[3].OnStart[3].FailedTaskList[0].Predicate.PredicateList[1]"
+        }
+      },
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "skill.1.condition.ByIsContainModifier.5", "is": true},
+          "then": [
+            {"op": "effect.create", "effects": ["skill.1.effect.6"], "as": "skill.1.effect.6"},
+            {"op": "wait", "for": "skill.1.effect.6", "until": "accepted"},
+            {
+              "op": "if",
+              "condition": {"op": "value", "name": "skill.1.condition.ByIsTurnActionEntity.8", "is": true},
+              "then": [
+                {"op": "effect.create", "effects": ["skill.1.effect.9"], "as": "skill.1.effect.9"},
+                {"op": "wait", "for": "skill.1.effect.9", "until": "accepted"}
+              ],
+              "else": []
+            },
+            {
+              "op": "start",
+              "id": "Avatar_Cerydra_00_Skill02_Camera_TimeLine",
+              "run": [],
+              "join": true
+            },
+            {"op": "animation", "state": "Skill02", "end": 0.7560000002, "track": {"logic": 3}, "as": "skill.1.clock.1"},
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.0}
+          ],
+          "elif": [
+            {
+              "condition": {"op": "value", "name": "skill.1.condition.ByIsContainModifier.42", "is": true},
+              "then": [
+                {
+                  "op": "if",
+                  "condition": {"op": "value", "name": "skill.1.condition.ByCompareDynamicValue.43", "is": true},
+                  "then": [
+                    {
+                      "op": "start",
+                      "id": "Avatar_Cerydra_00_Skill02_2_Camera_TimeLine",
+                      "run": [],
+                      "join": true
+                    },
+                    {"op": "animation", "state": "Skill02_01", "end": 0.9640000006, "track": {"logic": 3}, "as": "skill.1.clock.2"},
+                    {"op": "wait", "for": "skill.1.clock.2", "progress": 0.0},
+                    {"op": "effect.create", "effects": ["skill.1.effect.56"], "as": "skill.1.effect.56"},
+                    {"op": "wait", "for": "skill.1.effect.56", "until": "accepted"},
+                    {"op": "effect.create", "effects": ["skill.1.effect.57"], "as": "skill.1.effect.57"},
+                    {"op": "wait", "for": "skill.1.effect.57", "until": "accepted"},
+                    {"op": "effect.create", "effects": ["skill.1.effect.58"], "as": "skill.1.effect.58"},
+                    {"op": "wait", "for": "skill.1.effect.58", "until": "accepted"}
+                  ],
+                  "else": [
+                    {
+                      "op": "start",
+                      "id": "Avatar_Cerydra_00_Skill02_1_Camera_TimeLine",
+                      "run": [],
+                      "join": true
+                    },
+                    {"op": "animation", "state": "Skill02_01", "end": 0.6060000001, "track": {"logic": 3}, "as": "skill.1.clock.2"},
+                    {"op": "wait", "for": "skill.1.clock.2", "progress": 0.0},
+                    {"op": "effect.create", "effects": ["skill.1.effect.94"], "as": "skill.1.effect.94"},
+                    {"op": "wait", "for": "skill.1.effect.94", "until": "accepted"},
+                    {"op": "effect.create", "effects": ["skill.1.effect.95"], "as": "skill.1.effect.95"},
+                    {"op": "wait", "for": "skill.1.effect.95", "until": "accepted"},
+                    {"op": "effect.create", "effects": ["skill.1.effect.96"], "as": "skill.1.effect.96"},
+                    {"op": "wait", "for": "skill.1.effect.96", "until": "accepted"}
+                  ]
+                }
+              ]
+            },
+            {
+              "condition": {"op": "value", "name": "skill.1.condition.ByIsContainModifier.109", "is": true},
+              "then": [
+                {
+                  "op": "start",
+                  "id": "Avatar_Cerydra_00_Skill02_3_Camera_TimeLine",
+                  "run": [],
+                  "join": true
+                },
+                {"op": "animation", "state": "Skill02_01", "end": 0.7020000005, "track": {"logic": 3}, "as": "skill.1.clock.2"},
+                {"op": "wait", "for": "skill.1.clock.2", "progress": 0.0},
+                {"op": "effect.create", "effects": ["skill.1.effect.120"], "as": "skill.1.effect.120"},
+                {"op": "wait", "for": "skill.1.effect.120", "until": "accepted"},
+                {"op": "effect.create", "effects": ["skill.1.effect.121"], "as": "skill.1.effect.121"},
+                {"op": "wait", "for": "skill.1.effect.121", "until": "accepted"},
+                {"op": "effect.create", "effects": ["skill.1.effect.122"], "as": "skill.1.effect.122"},
+                {"op": "wait", "for": "skill.1.effect.122", "until": "accepted"}
+              ]
+            }
+          ],
+          "else": [
+            {
+              "op": "start",
+              "id": "Avatar_Cerydra_00_Skill02_Others_Phase02",
+              "run": [
+                {
+                  "op": "if",
+                  "condition": {"op": "value", "name": "skill.1.condition.ByIsContainModifier.141", "is": true},
+                  "then": [],
+                  "elif": [
+                    {
+                      "condition": {"op": "value", "name": "skill.1.condition.ByIsContainModifier.161", "is": true},
+                      "then": [
+                        {
+                          "op": "if",
+                          "condition": {"op": "value", "name": "skill.1.condition.ByCompareDynamicValue.162", "is": true},
+                          "then": [],
+                          "else": []
+                        }
+                      ]
+                    }
+                  ],
+                  "else": []
+                }
+              ]
+            }
+          ]
+        },
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {
+          "op": "effect.remove",
+          "effects": [
+            "skill.1.effect.6",
+            "skill.1.effect.9",
+            "skill.1.effect.56",
+            "skill.1.effect.57",
+            "skill.1.effect.58",
+            "skill.1.effect.94",
+            "skill.1.effect.95",
+            "skill.1.effect.96",
+            "skill.1.effect.120",
+            "skill.1.effect.121",
+            "skill.1.effect.122"
+          ],
+          "optional": [
+            "skill.1.effect.6",
+            "skill.1.effect.9",
+            "skill.1.effect.56",
+            "skill.1.effect.57",
+            "skill.1.effect.58",
+            "skill.1.effect.94",
+            "skill.1.effect.95",
+            "skill.1.effect.96",
+            "skill.1.effect.120",
+            "skill.1.effect.121",
+            "skill.1.effect.122"
+          ],
+          "as": "skill.1.remove-effects"
+        },
+        {"op": "wait", "for": "skill.1.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {
+          "op": "effect.remove",
+          "effects": [
+            "skill.1.effect.6",
+            "skill.1.effect.9",
+            "skill.1.effect.56",
+            "skill.1.effect.57",
+            "skill.1.effect.58",
+            "skill.1.effect.94",
+            "skill.1.effect.95",
+            "skill.1.effect.96",
+            "skill.1.effect.120",
+            "skill.1.effect.121",
+            "skill.1.effect.122"
+          ],
+          "optional": [
+            "skill.1.effect.6",
+            "skill.1.effect.9",
+            "skill.1.effect.56",
+            "skill.1.effect.57",
+            "skill.1.effect.58",
+            "skill.1.effect.94",
+            "skill.1.effect.95",
+            "skill.1.effect.96",
+            "skill.1.effect.120",
+            "skill.1.effect.121",
+            "skill.1.effect.122"
+          ],
+          "as": "skill.1.remove-effects"
+        },
+        {"op": "wait", "for": "skill.1.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "SkillMaze → Skill02",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "Manual inserted presentation using the retained initial slot 1 -> Skill02; dynamic slot changes, native queue/auto-cast, caller conditions and nonvisual setup are not replayed.",
+          "Source: Manual inserted presentation using the retained initial slot 1 -> Skill02; dynamic slot changes, native queue/auto-cast, caller conditions and nonvisual setup are not replayed."
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "@receiver-clear/callback.5359.receiver-property.3": {
+      "requires": [
+        {"op": "state", "name": "common.elemental.frozen-hit"}
+      ],
+      "mode": "input",
+      "run": [
+        {"op": "state.exit", "name": "common.elemental.frozen-hit", "only_caster": true, "as": "clear"},
+        {"op": "wait", "for": "clear"}
+      ],
+      "presentation": {
+        "label": "Clear hit effect override",
+        "kind": "setting",
+        "contexts": ["common.elemental.frozen-hit"]
+      },
+      "tags": ["visual-receiver-clear"]
+    }
+  },
+  "functions": {
+    "@return.rest.pose": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "rest.pose.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "rest.pose"
+      }
+    ],
+    "@return.return.pose": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "return.pose.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "return.pose"
+      }
+    ]
+  },
+  "states": {},
+  "resources": {
+    "effects": {
+      "skill.3.effect.0": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Cerydra_00/Eff_Avatar_Cerydra_00_Skill02_chess_Ready_loop.prefab",
+        "target": "Caster",
+        "unique_name": "Eff_Avatar_Cerydra_00_Skill02_chess_Ready_loop"
+      },
+      "skill.3.effect.2": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Cerydra_00/Eff_Avatar_Cerydra_00_Skill02_POP_02.prefab",
+        "target": "Caster",
+        "position_offset": [0.0, 0.9210000038146973, 0.012400000356137753],
+        "scale": [1.899999976158142, 1.899999976158142, 1.899999976158142]
+      },
+      "skill.3.effect.1": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Cerydra_00/Eff_Avatar_Cerydra_00_Skill02_chess_Ready_loop.prefab",
+        "target": "Caster",
+        "unique_name": "Eff_Avatar_Cerydra_00_Skill02_chess_Ready_loop"
+      },
+      "skill.0.effect.9": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Cerydra_00/Eff_Avatar_Cerydra_00_Skill01_01.prefab",
+        "target": "Caster",
+        "position_offset": [-1.5, 0.0, 0.0]
+      },
+      "skill.1.effect.6": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Cerydra_00/Eff_Avatar_Cerydra_00_Skill02_Chess_02_02.prefab", "target": "Caster"},
+      "skill.1.effect.9": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Cerydra_00/Eff_Avatar_Cerydra_00_Skill02_POP.prefab",
+        "target": "Caster",
+        "position_offset": [0.014499999582767487, 0.9890000224113464, 0.05460000038146973]
+      },
+      "skill.1.effect.56": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Cerydra_00/Eff_Avatar_Cerydra_00_Skill02_Chess_01_2.prefab", "target": "Caster"},
+      "skill.1.effect.57": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Cerydra_00/Eff_Avatar_Cerydra_00_Skill02_Scene.prefab", "target": "Caster"},
+      "skill.1.effect.58": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Cerydra_00/Eff_Avatar_Cerydra_00_Skill02_SceneLight.prefab", "target": "Caster"},
+      "skill.1.effect.94": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Cerydra_00/Eff_Avatar_Cerydra_00_Skill02_Chess_01_2.prefab", "target": "Caster"},
+      "skill.1.effect.95": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Cerydra_00/Eff_Avatar_Cerydra_00_Skill02_Scene.prefab", "target": "Caster"},
+      "skill.1.effect.96": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Cerydra_00/Eff_Avatar_Cerydra_00_Skill02_SceneLight.prefab", "target": "Caster"},
+      "skill.1.effect.120": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Cerydra_00/Eff_Avatar_Cerydra_00_Skill02_SceneLight_02.prefab", "target": "Caster"},
+      "skill.1.effect.121": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Cerydra_00/Eff_Avatar_Cerydra_00_Skill02_Scene_03.prefab", "target": "Caster"},
+      "skill.1.effect.122": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Cerydra_00/Eff_Avatar_Cerydra_00_Skill02_Chess_01_4.prefab", "target": "Caster"},
+      "skill.2.effect.36": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Cerydra_00/Eff_Avatar_Cerydra_00_Skill03_FireBody_01.prefab", "target": "Caster"},
+      "skill.2.effect.39": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Cerydra_00/Eff_Avatar_Cerydra_00_Skill03_FireBody_01.prefab", "target": "Caster"},
+      "callback.948.effect.4": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Cerydra_00/Eff_Avatar_Cerydra_00_Skill_Select_Again.prefab",
+        "target": "callback.948.target.CurrentAimAtMainTarget"
+      },
+      "callback.948.effect.6": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Cerydra_00/Eff_Avatar_Cerydra_00_Skill_Select.prefab", "target": "callback.948.target.CurrentAimAtMainTarget"},
+      "callback.948.effect.21": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Cerydra_00/Eff_Avatar_Cerydra_00_Skill02_chess_Ready_loop.prefab",
+        "target": "Caster",
+        "unique_name": "Eff_Avatar_Cerydra_00_Skill02_chess_Ready_loop"
+      },
+      "callback.948.effect.32": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Cerydra_00/Eff_Avatar_Cerydra_00_Skill02_chess_Ready_loop.prefab",
+        "target": "Caster",
+        "unique_name": "Eff_Avatar_Cerydra_00_Skill02_chess_Ready_loop"
+      },
+      "callback.967.effect.4": {"path": "Effects/Eff_Prefab/Eff_Common/Eff_Common_MAZ_RecoverSP.prefab", "target": "Caster"},
+      "callback.981.effect.5": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Cerydra_00/Eff_Avatar_Cerydra_00_Skill02_Buff_Loop.prefab",
+        "target": "Recipient",
+        "attach_to_target": true,
+        "unique_name": "Eff_Avatar_Cerydra_00_Skill02_Buff_Loop"
+      },
+      "callback.985.effect.6": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Cerydra_00/Eff_Avatar_Cerydra_00_Skill02_Buff_02_Loop.prefab",
+        "target": "Recipient",
+        "attach_to_target": true
+      },
+      "followup.0.effect.21": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Cerydra_00/Eff_Avatar_Cerydra_00_Skill02_POP_02.prefab",
+        "target": "Caster",
+        "position_offset": [0.0, 0.9210000038146973, 0.012400000356137753],
+        "scale": [1.899999976158142, 1.899999976158142, 1.899999976158142]
+      }
+    }
+  }
+}

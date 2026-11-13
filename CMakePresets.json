@@ -1,0 +1,18 @@
+{
+  "version": 6,
+  "configurePresets": [
+    {
+      "name": "release",
+      "displayName": "Windows x64 Release (developer terminal)",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/out/release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install",
+        "BUILD_TESTING": "ON"
+      }
+    }
+  ],
+  "buildPresets": [{"name": "release", "configurePreset": "release"}],
+  "testPresets": [{"name": "release", "configurePreset": "release", "output": {"outputOnFailure": true}}]
+}

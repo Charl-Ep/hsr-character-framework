@@ -1,0 +1,1214 @@
+{
+  "format": "hksr.script",
+  "id": "official-scripts:Config/ConfigCharacter/Avatar/Avatar_Gilgamesh_00_Config.json",
+  "applies_to": "Config/ConfigCharacter/Avatar/Avatar_Gilgamesh_00_Config.json",
+  "default": true,
+  "imports": ["Common/Elemental.json"],
+  "defaults": {
+    "targets": {
+      "PreviewTarget": {
+        "local_position": [0, 0, 6]
+      }
+    }
+  },
+  "actions": {
+    "rest": {
+      "trigger": "internal",
+      "run": [
+        {"op": "call", "function": "@return.rest.pose"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["stable-return", "idle-provider"]
+    },
+    "skill.0.perform": {
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Gilgamesh_00_Skill01_Camera_1",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Gilgamesh_00_Skill01_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.0.clock.1", "progress": 0.1689999995},
+            {"op": "wait", "for": "skill.0.clock.1", "progress": 0.192},
+            {"op": "wait", "for": "skill.0.clock.1", "progress": 0.2379999996}
+          ],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill01", "end": -1.0, "track": {"logic": 3}, "as": "skill.0.clock.1"},
+        {"op": "wait", "for": "skill.0.clock.1", "until": "animation_end"},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "Skill01",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "LookAt: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "FireProjectile: not included in the visual sequence projection",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "WaitTimelineFinish: not included in the visual sequence projection",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "skill.0.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Gilgamesh_00_Config.json", "skill": 0, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "skill.1.perform": {
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Gilgamesh_00_Skill02_Camera_1",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Gilgamesh_00_Skill02_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.1015000003},
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.1300000001},
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.5820000004},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit_H",
+              "direction": {"horizontal": -80.0},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Gilgamesh_00/Eff_Avatar_Gilgamesh_00_Skill02_hit.prefab",
+                "height": 0.0,
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.1.hit.21"
+            },
+            {"op": "wait", "for": "skill.1.hit.21", "until": "accepted"},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit_H",
+              "direction": {"horizontal": -80.0},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Gilgamesh_00/Eff_Avatar_Gilgamesh_00_Skill02_hit.prefab",
+                "height": 0.0,
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.1.hit.23"
+            },
+            {"op": "wait", "for": "skill.1.hit.23", "until": "accepted"},
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.6410000005},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit_H",
+              "direction": {"horizontal": -80.0},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Gilgamesh_00/Eff_Avatar_Gilgamesh_00_Skill02_hit.prefab",
+                "height": 0.0,
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.1.hit.25"
+            },
+            {"op": "wait", "for": "skill.1.hit.25", "until": "accepted"},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit_H",
+              "direction": {"horizontal": -80.0},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Gilgamesh_00/Eff_Avatar_Gilgamesh_00_Skill02_hit.prefab",
+                "height": 0.0,
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.1.hit.27"
+            },
+            {"op": "wait", "for": "skill.1.hit.27", "until": "accepted"},
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.7000000006},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit_H",
+              "direction": {"horizontal": -80.0},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Gilgamesh_00/Eff_Avatar_Gilgamesh_00_Skill02_hit.prefab",
+                "height": 0.0,
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.1.hit.29"
+            },
+            {"op": "wait", "for": "skill.1.hit.29", "until": "accepted"},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit_H",
+              "direction": {"horizontal": -80.0},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Gilgamesh_00/Eff_Avatar_Gilgamesh_00_Skill02_hit.prefab",
+                "height": 0.0,
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.1.hit.31"
+            },
+            {"op": "wait", "for": "skill.1.hit.31", "until": "accepted"},
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.759},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit_H",
+              "direction": {"horizontal": -80.0},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Gilgamesh_00/Eff_Avatar_Gilgamesh_00_Skill02_hit.prefab",
+                "height": 0.0,
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.1.hit.33"
+            },
+            {"op": "wait", "for": "skill.1.hit.33", "until": "accepted"},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit_H",
+              "direction": {"horizontal": -80.0},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Gilgamesh_00/Eff_Avatar_Gilgamesh_00_Skill02_hit.prefab",
+                "height": 0.0,
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.1.hit.35"
+            },
+            {"op": "wait", "for": "skill.1.hit.35", "until": "accepted"},
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.8190000001},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit_H",
+              "direction": {"horizontal": -80.0},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Gilgamesh_00/Eff_Avatar_Gilgamesh_00_Skill02_hit.prefab",
+                "height": 0.0,
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.1.hit.37"
+            },
+            {"op": "wait", "for": "skill.1.hit.37", "until": "accepted"},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit_H",
+              "direction": {"horizontal": -80.0},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Gilgamesh_00/Eff_Avatar_Gilgamesh_00_Skill02_hit.prefab",
+                "height": 0.0,
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.1.hit.39"
+            },
+            {"op": "wait", "for": "skill.1.hit.39", "until": "accepted"}
+          ],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill02", "end": 1.0, "track": {"logic": 3}, "as": "skill.1.clock.1"},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.04},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.01},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.253},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.4740000001},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.6200000005},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.9900000009},
+        {"op": "join"},
+        {"op": "wait", "for": "skill.1.clock.1", "until": "animation_end"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "Skill02",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "LookAt: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "TriggerAnimState: animation has no literal owned-body binding",
+          "TargetTimeSlow: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "GlobalMainIntensityEffect: not included in the visual sequence projection",
+          "HideLevelStage: not included in the visual sequence projection",
+          "PBEMMHIOJBO: not included in the visual sequence projection",
+          "SetSkillTargetFormationByPos: not included in the visual sequence projection",
+          "WaitTimelineFinish: not included in the visual sequence projection",
+          "HideLevelStage: serial step depends on an unavailable source clock; no timing is inferred",
+          "PBEMMHIOJBO: serial step depends on an unavailable source clock; no timing is inferred",
+          "SetTeamFormation: serial step depends on an unavailable source clock; no timing is inferred"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "skill.1.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Gilgamesh_00_Config.json", "skill": 1, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "skill.2.perform": {
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Gilgamesh_00_Skill03_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Gilgamesh_00_Skill03_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.4537000006},
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.4988000004},
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.5581},
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.6223000006},
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.6523000006},
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.7000000006},
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.7500000006},
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.779},
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.8100000007}
+          ],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill03", "end": -1.0, "track": {"logic": 3}, "as": "skill.2.clock.1"},
+        {"op": "wait", "for": "skill.2.clock.1", "until": "animation_end"},
+        {"op": "wait", "for": "skill.2.clock.1", "progress": 0.4289999997},
+        {"op": "wait", "for": "skill.2.clock.1", "progress": 0.7770000002},
+        {"op": "wait", "for": "skill.2.clock.1", "progress": 0.9800000009},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "Skill03",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "LookAt: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "GlobalMainIntensityEffect: not included in the visual sequence projection",
+          "TriggerAnimState: animation has no literal owned-body binding",
+          "MakeCharacterHUDVisible: not included in the visual sequence projection",
+          "DamageByAttackProperty: hit presentation not projected: hit requires an explicit motion/source binding: HitMotion",
+          "LoopExecuteTaskListWithInterval: not included in the visual sequence projection",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "TriggerSkipDeadHandler: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "HideLevelStage: not included in the visual sequence projection",
+          "SetSkillTargetFormationByPos: not included in the visual sequence projection",
+          "SetTeamFormation: not included in the visual sequence projection",
+          "ScaleCharacterModel: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "TryStartConnectUltraSkillFrameCapture: not included in the visual sequence projection",
+          "WaitTimelineFinish: not included in the visual sequence projection",
+          "TriggerAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "LookAt: serial step depends on an unavailable source clock; no timing is inferred",
+          "ScaleCharacterModel: serial step depends on an unavailable source clock; no timing is inferred",
+          "HideLevelStage: serial step depends on an unavailable source clock; no timing is inferred",
+          "SetTeamFormation: serial step depends on an unavailable source clock; no timing is inferred"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "skill.2.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Gilgamesh_00_Config.json", "skill": 2, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "skill.3.perform": {
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Gilgamesh_00_Skill01_Camera_1",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Gilgamesh_00_Skill21_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.3.clock.1", "progress": 0.1689999995},
+            {"op": "wait", "for": "skill.3.clock.1", "progress": 0.192},
+            {"op": "wait", "for": "skill.3.clock.1", "progress": 0.2379999996}
+          ],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill01", "end": -1.0, "track": {"logic": 3}, "as": "skill.3.clock.1"},
+        {"op": "wait", "for": "skill.3.clock.1", "until": "animation_end"},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "Skill21",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "LookAt: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "FireProjectile: not included in the visual sequence projection",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "WaitTimelineFinish: not included in the visual sequence projection",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "skill.3.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Gilgamesh_00_Config.json", "skill": 3, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "callback.1806": {
+      "bindings": {
+        "targets": ["Recipient"]
+      },
+      "run": [
+        {"op": "effect.create", "effects": ["callback.1806.effect.2"], "as": "callback.1806.effect.2"},
+        {"op": "wait", "for": "callback.1806.effect.2", "until": "accepted"},
+        {"op": "effect.create", "effects": ["callback.1806.effect.4"], "as": "callback.1806.effect.4"},
+        {"op": "wait", "for": "callback.1806.effect.4", "until": "accepted"},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {
+          "op": "effect.remove",
+          "effects": ["callback.1806.effect.2", "callback.1806.effect.4"],
+          "optional": ["callback.1806.effect.2", "callback.1806.effect.4"],
+          "as": "callback.1806.remove-effects"
+        },
+        {"op": "wait", "for": "callback.1806.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {
+          "op": "effect.remove",
+          "effects": ["callback.1806.effect.2", "callback.1806.effect.4"],
+          "optional": ["callback.1806.effect.2", "callback.1806.effect.4"],
+          "as": "callback.1806.remove-effects"
+        },
+        {"op": "wait", "for": "callback.1806.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "Avatar_Gilgamesh_00_SaberBuff: OnStack",
+        "omissions": [
+          "Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects.",
+          "ModifierAttachEffect: manual bound-effect preview; modifier flags, collider-height offset, native mutex and automatic visibility/lifetime are not applied"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "callback.1807": {
+      "bindings": {
+        "targets": ["Recipient"]
+      },
+      "run": [
+        {"op": "effect.create", "effects": ["callback.1807.effect.2"], "as": "callback.1807.effect.2"},
+        {"op": "wait", "for": "callback.1807.effect.2", "until": "accepted"},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "effect.remove", "effects": ["callback.1807.effect.2"], "optional": ["callback.1807.effect.2"], "as": "callback.1807.remove-effects"},
+        {"op": "wait", "for": "callback.1807.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "effect.remove", "effects": ["callback.1807.effect.2"], "optional": ["callback.1807.effect.2"], "as": "callback.1807.remove-effects"},
+        {"op": "wait", "for": "callback.1807.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "Avatar_Gilgamesh_00_SaberBuff2: OnStack",
+        "omissions": [
+          "Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects.",
+          "ModifierAttachEffect: manual bound-effect preview; modifier flags, collider-height offset, native mutex and automatic visibility/lifetime are not applied"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "skill.4.perform": {
+      "inputs": {
+        "event": {
+          "type": "integer",
+          "default": 0,
+          "label": "Callback",
+          "choices": [
+            {"value": 0, "label": "MAvatar_Gilgamesh_00_Skill02_CD: OnListenAllowAction"},
+            {"value": 1, "label": "Avatar_Gilgamesh_00_KingPassive: OnModifierRemove", "diagnostic": true},
+            {"value": 2, "label": "Avatar_Gilgamesh_00_KingPassive: OnModifierAdd", "diagnostic": true},
+            {"value": 3, "label": "Avatar_Gilgamesh_00_DamageUp: OnStack"},
+            {"value": 4, "label": "Avatar_Gilgamesh_00_KingHappy: OnStack"}
+          ]
+        },
+        "callback.1785.condition.ByIsTurnOwnerEntity.6": {
+          "type": "bool",
+          "default": true,
+          "label": "ByIsTurnOwnerEntity",
+          "description": "Manual source condition: $.GlobalModifiers[1].value._CallbackList[0].CallbackConfig[0].Predicate.PredicateList[0]"
+        },
+        "callback.1792.condition.ByContainBehaviorFlag.1": {
+          "type": "bool",
+          "default": false,
+          "label": "ByContainBehaviorFlag",
+          "description": "Manual source condition: $.GlobalModifiers[6].value._CallbackList[3].CallbackConfig[0].Predicate",
+          "diagnostic": true
+        },
+        "callback.1793.condition.ByContainBehaviorFlag.3": {
+          "type": "bool",
+          "default": false,
+          "label": "ByContainBehaviorFlag",
+          "description": "Manual source condition: $.GlobalModifiers[6].value._CallbackList[2].CallbackConfig[0].Predicate.PredicateList[0]",
+          "diagnostic": true
+        },
+        "callback.1793.condition.ByIsContainModifier.4": {
+          "type": "bool",
+          "default": false,
+          "label": "ByIsContainModifier",
+          "description": "Manual source condition: $.GlobalModifiers[6].value._CallbackList[2].CallbackConfig[0].Predicate.PredicateList[1]",
+          "diagnostic": true
+        }
+      },
+      "requires": [
+        {"op": "number", "name": "event", "compare": "ge", "value": 0},
+        {"op": "number", "name": "event", "compare": "lt", "value": 5}
+      ],
+      "run": [
+        {
+          "op": "switch",
+          "name": "event",
+          "cases": [
+            {
+              "is": 1,
+              "run": [
+                {
+                  "op": "if",
+                  "condition": {"op": "value", "name": "callback.1792.condition.ByContainBehaviorFlag.1", "is": true},
+                  "then": [],
+                  "else": []
+                },
+                {"op": "join"},
+                {"op": "call", "function": "@return.return.pose"},
+                {"op": "wait", "for": "return.pose", "until": "submitted"},
+                {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+                {"op": "wait", "for": "return.position"}
+              ],
+              "label": "Avatar_Gilgamesh_00_KingPassive: OnModifierRemove"
+            },
+            {
+              "is": 2,
+              "run": [
+                {
+                  "op": "if",
+                  "condition": {"op": "value", "name": "callback.1793.condition.ByContainBehaviorFlag.3", "is": true},
+                  "then": [
+                    {
+                      "op": "if",
+                      "condition": {"op": "value", "name": "callback.1793.condition.ByIsContainModifier.4", "is": true},
+                      "then": [],
+                      "else": []
+                    }
+                  ],
+                  "else": []
+                },
+                {"op": "join"},
+                {"op": "call", "function": "@return.return.pose"},
+                {"op": "wait", "for": "return.pose", "until": "submitted"},
+                {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+                {"op": "wait", "for": "return.position"}
+              ],
+              "label": "Avatar_Gilgamesh_00_KingPassive: OnModifierAdd"
+            },
+            {
+              "is": 3,
+              "run": [
+                {"op": "effect.create", "effects": ["callback.1798.effect.2"], "as": "callback.1798.effect.2"},
+                {"op": "wait", "for": "callback.1798.effect.2", "until": "accepted"},
+                {"op": "join"},
+                {
+                  "op": "repeat",
+                  "until_finish": true,
+                  "run": [
+                    {"op": "wait", "frame": true}
+                  ]
+                },
+                {"op": "effect.remove", "effects": ["callback.1798.effect.2"], "optional": ["callback.1798.effect.2"], "as": "callback.1798.remove-effects"},
+                {"op": "wait", "for": "callback.1798.remove-effects", "until": "accepted"},
+                {"op": "call", "function": "@return.return.pose"},
+                {"op": "wait", "for": "return.pose", "until": "submitted"},
+                {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+                {"op": "wait", "for": "return.position"}
+              ],
+              "label": "Avatar_Gilgamesh_00_DamageUp: OnStack"
+            },
+            {
+              "is": 4,
+              "run": [
+                {"op": "attachment.visibility", "points": ["Weapon1"], "visible": false, "as": "callback.1801.attachment.1"},
+                {"op": "wait", "for": "callback.1801.attachment.1", "until": "accepted"},
+                {"op": "join"},
+                {
+                  "op": "repeat",
+                  "until_finish": true,
+                  "run": [
+                    {"op": "wait", "frame": true}
+                  ]
+                },
+                {"op": "call", "function": "@return.return.pose"},
+                {"op": "wait", "for": "return.pose", "until": "submitted"},
+                {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+                {"op": "wait", "for": "return.position"}
+              ],
+              "label": "Avatar_Gilgamesh_00_KingHappy: OnStack"
+            }
+          ],
+          "default": [
+            {
+              "op": "if",
+              "condition": {"op": "value", "name": "callback.1785.condition.ByIsTurnOwnerEntity.6", "is": true},
+              "then": [
+                {"op": "sound", "event": "Ev_vo_avatar_skill_cast01_gilgamesh", "as": "callback.1785.sound.4"}
+              ],
+              "else": []
+            },
+            {"op": "join"},
+            {"op": "call", "function": "@return.return.pose"},
+            {"op": "wait", "for": "return.pose", "until": "submitted"},
+            {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+            {"op": "wait", "for": "return.position"}
+          ]
+        }
+      ],
+      "on_interrupt": [
+        {
+          "op": "switch",
+          "name": "event",
+          "cases": [
+            {
+              "is": 1,
+              "run": [
+                {"op": "call", "function": "@return.return.pose"},
+                {"op": "wait", "for": "return.pose", "until": "submitted"},
+                {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+                {"op": "wait", "for": "return.position"}
+              ],
+              "label": "Avatar_Gilgamesh_00_KingPassive: OnModifierRemove"
+            },
+            {
+              "is": 2,
+              "run": [
+                {"op": "call", "function": "@return.return.pose"},
+                {"op": "wait", "for": "return.pose", "until": "submitted"},
+                {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+                {"op": "wait", "for": "return.position"}
+              ],
+              "label": "Avatar_Gilgamesh_00_KingPassive: OnModifierAdd"
+            },
+            {
+              "is": 3,
+              "run": [
+                {"op": "effect.remove", "effects": ["callback.1798.effect.2"], "optional": ["callback.1798.effect.2"], "as": "callback.1798.remove-effects"},
+                {"op": "wait", "for": "callback.1798.remove-effects", "until": "accepted"},
+                {"op": "call", "function": "@return.return.pose"},
+                {"op": "wait", "for": "return.pose", "until": "submitted"},
+                {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+                {"op": "wait", "for": "return.position"}
+              ],
+              "label": "Avatar_Gilgamesh_00_DamageUp: OnStack"
+            },
+            {
+              "is": 4,
+              "run": [
+                {"op": "call", "function": "@return.return.pose"},
+                {"op": "wait", "for": "return.pose", "until": "submitted"},
+                {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+                {"op": "wait", "for": "return.position"}
+              ],
+              "label": "Avatar_Gilgamesh_00_KingHappy: OnStack"
+            }
+          ],
+          "default": [
+            {"op": "call", "function": "@return.return.pose"},
+            {"op": "wait", "for": "return.pose", "until": "submitted"},
+            {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+            {"op": "wait", "for": "return.position"}
+          ]
+        }
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "SkillP01",
+        "omissions": [
+          "Manual visual callback selection; no native combat modifier or automatic event simulation.",
+          "event: 0=MAvatar_Gilgamesh_00_Skill02_CD: OnListenAllowAction, 1=Avatar_Gilgamesh_00_KingPassive: OnModifierRemove, 2=Avatar_Gilgamesh_00_KingPassive: OnModifierAdd, 3=Avatar_Gilgamesh_00_DamageUp: OnStack, 4=Avatar_Gilgamesh_00_KingHappy: OnStack",
+          "SetControlSkillMapping: Skill mapping is configuration, not a request to play its destination ready pose; native mapping is not executed",
+          "ModifierAttachEffect: manual bound-effect preview; modifier flags, collider-height offset, native mutex and automatic visibility/lifetime are not applied",
+          "SetHeadButtonEff: not included in the visual sequence projection",
+          "ShowActionBarEffect: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "skill.5.perform": {
+      "inputs": {
+        "event": {
+          "type": "integer",
+          "default": 0,
+          "label": "Callback",
+          "choices": [
+            {"value": 0, "label": "Avatar_Gilgamesh_00_SaberBuff3: OnStack"},
+            {"value": 1, "label": "Avatar_Gilgamesh_00_Insert_SelectTargetSelf"}
+          ]
+        },
+        "followup.0.condition.ByTargetListAny.20": {
+          "type": "bool",
+          "default": true,
+          "label": "ByTargetListAny",
+          "description": "Manual source condition: $.AbilityList[14].OnStart[0].Predicate.PredicateList[0]"
+        },
+        "followup.0.condition.ByHaveEnemyAlive.21": {
+          "type": "bool",
+          "default": true,
+          "label": "ByHaveEnemyAlive",
+          "description": "Manual source condition: $.AbilityList[14].OnStart[0].Predicate.PredicateList[1]"
+        }
+      },
+      "requires": [
+        {"op": "number", "name": "event", "compare": "ge", "value": 0},
+        {"op": "number", "name": "event", "compare": "lt", "value": 2}
+      ],
+      "bindings": {
+        "targets": ["Recipient"]
+      },
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "event", "is": 1},
+          "then": [
+            {
+              "op": "if",
+              "condition": {"op": "value", "name": "followup.0.condition.ByTargetListAny.20", "is": true},
+              "then": [
+                {
+                  "op": "if",
+                  "condition": {"op": "value", "name": "followup.0.condition.ByHaveEnemyAlive.21", "is": true},
+                  "then": [
+                    {
+                      "op": "start",
+                      "id": "Avatar_Gilgamesh_00_Insert_Phase01",
+                      "run": [
+                        {"op": "animation", "state": "PassiveSkill_Combo", "end": -1.0, "track": {"logic": 3}, "as": "followup.0.clock.2"},
+                        {"op": "wait", "for": "followup.0.clock.2", "until": "animation_end"},
+                        {
+                          "op": "start",
+                          "id": "Avatar_Gilgamesh_00_Insert_Camera",
+                          "run": [],
+                          "join": true
+                        }
+                      ],
+                      "join": true
+                    }
+                  ],
+                  "else": []
+                }
+              ],
+              "else": []
+            },
+            {"op": "join"},
+            {
+              "op": "repeat",
+              "until_finish": true,
+              "run": [
+                {"op": "wait", "frame": true}
+              ]
+            },
+            {"op": "call", "function": "@return.return.pose"},
+            {"op": "wait", "for": "return.pose", "until": "submitted"},
+            {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+            {"op": "wait", "for": "return.position"}
+          ],
+          "else": [
+            {"op": "effect.create", "effects": ["callback.1809.effect.2"], "as": "callback.1809.effect.2"},
+            {"op": "wait", "for": "callback.1809.effect.2", "until": "accepted"},
+            {"op": "join"},
+            {
+              "op": "repeat",
+              "until_finish": true,
+              "run": [
+                {"op": "wait", "frame": true}
+              ]
+            },
+            {"op": "effect.remove", "effects": ["callback.1809.effect.2"], "optional": ["callback.1809.effect.2"], "as": "callback.1809.remove-effects"},
+            {"op": "wait", "for": "callback.1809.remove-effects", "until": "accepted"},
+            {"op": "call", "function": "@return.return.pose"},
+            {"op": "wait", "for": "return.pose", "until": "submitted"},
+            {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+            {"op": "wait", "for": "return.position"}
+          ]
+        }
+      ],
+      "on_interrupt": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "event", "is": 1},
+          "then": [
+            {"op": "call", "function": "@return.return.pose"},
+            {"op": "wait", "for": "return.pose", "until": "submitted"},
+            {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+            {"op": "wait", "for": "return.position"}
+          ],
+          "else": [
+            {"op": "effect.remove", "effects": ["callback.1809.effect.2"], "optional": ["callback.1809.effect.2"], "as": "callback.1809.remove-effects"},
+            {"op": "wait", "for": "callback.1809.remove-effects", "until": "accepted"},
+            {"op": "call", "function": "@return.return.pose"},
+            {"op": "wait", "for": "return.pose", "until": "submitted"},
+            {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+            {"op": "wait", "for": "return.position"}
+          ]
+        }
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "SkillP02",
+        "omissions": [
+          "Manual visual callback selection; no native combat modifier or automatic event simulation.",
+          "event: 0=Avatar_Gilgamesh_00_SaberBuff3: OnStack, 1=Avatar_Gilgamesh_00_Insert_SelectTargetSelf",
+          "ModifierAttachEffect: manual bound-effect preview; modifier flags, collider-height offset, native mutex and automatic visibility/lifetime are not applied",
+          "HideLevelStage: not included in the visual sequence projection",
+          "SetCharacterAnimFollow: not included in the visual sequence projection",
+          "SetSkillTargetFormationByPos: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "TriggerParallelAbility: not included in the visual sequence projection",
+          "WaitTimelineFinish: not included in the visual sequence projection",
+          "SetTeamFormation: serial step depends on an unavailable source clock; no timing is inferred",
+          "HideLevelStage: serial step depends on an unavailable source clock; no timing is inferred",
+          "PredicateTaskList: serial step depends on an unavailable source clock; no timing is inferred",
+          "SetCharacterAnimFollow: serial step depends on an unavailable source clock; no timing is inferred",
+          "TriggerAnimState: serial step depends on an unavailable source clock; no timing is inferred"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "skill.6.perform": {
+      "inputs": {
+        "event": {
+          "type": "integer",
+          "default": 0,
+          "label": "Callback",
+          "choices": [
+            {"value": 0, "label": "MAvatar_Gilgamesh_00_Skill02_CD: OnListenAllowAction"},
+            {"value": 1, "label": "Avatar_Gilgamesh_00_DamageUp: OnStack"},
+            {"value": 2, "label": "SkillMaze_Avatar_Gilgamesh_00_Modifier: OnEnterBattle"}
+          ]
+        },
+        "callback.1785.condition.ByIsTurnOwnerEntity.6": {
+          "type": "bool",
+          "default": true,
+          "label": "ByIsTurnOwnerEntity",
+          "description": "Manual source condition: $.GlobalModifiers[1].value._CallbackList[0].CallbackConfig[0].Predicate.PredicateList[0]"
+        },
+        "callback.1815.condition.ByIsContainModifier.15": {
+          "type": "bool",
+          "default": true,
+          "label": "ByIsContainModifier",
+          "description": "Manual source condition: $.GlobalModifiers[18].value._CallbackList[0].CallbackConfig[0].Predicate.PredicateList[0]"
+        },
+        "callback.1815.condition.ByIsMazeSkillAffectCurrentWave.16": {
+          "type": "bool",
+          "default": true,
+          "label": "ByIsMazeSkillAffectCurrentWave",
+          "description": "Manual source condition: $.GlobalModifiers[18].value._CallbackList[0].CallbackConfig[0].Predicate.PredicateList[1]"
+        },
+        "callback.1815.condition.ByCompareWaveCount.17": {
+          "type": "bool",
+          "default": true,
+          "label": "ByCompareWaveCount",
+          "description": "Manual source condition: $.GlobalModifiers[18].value._CallbackList[0].CallbackConfig[0].Predicate.PredicateList[2]"
+        }
+      },
+      "requires": [
+        {"op": "number", "name": "event", "compare": "ge", "value": 0},
+        {"op": "number", "name": "event", "compare": "lt", "value": 3}
+      ],
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "run": [
+        {
+          "op": "switch",
+          "name": "event",
+          "cases": [
+            {
+              "is": 1,
+              "run": [
+                {"op": "effect.create", "effects": ["callback.1798.effect.2"], "as": "callback.1798.effect.2"},
+                {"op": "wait", "for": "callback.1798.effect.2", "until": "accepted"},
+                {"op": "join"},
+                {
+                  "op": "repeat",
+                  "until_finish": true,
+                  "run": [
+                    {"op": "wait", "frame": true}
+                  ]
+                },
+                {"op": "effect.remove", "effects": ["callback.1798.effect.2"], "optional": ["callback.1798.effect.2"], "as": "callback.1798.remove-effects"},
+                {"op": "wait", "for": "callback.1798.remove-effects", "until": "accepted"},
+                {"op": "call", "function": "@return.return.pose"},
+                {"op": "wait", "for": "return.pose", "until": "submitted"},
+                {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+                {"op": "wait", "for": "return.position"}
+              ],
+              "label": "Avatar_Gilgamesh_00_DamageUp: OnStack"
+            },
+            {
+              "is": 2,
+              "run": [
+                {
+                  "op": "if",
+                  "condition": {"op": "value", "name": "callback.1815.condition.ByIsContainModifier.15", "is": true},
+                  "then": [
+                    {
+                      "op": "if",
+                      "condition": {"op": "value", "name": "callback.1815.condition.ByIsMazeSkillAffectCurrentWave.16", "is": true},
+                      "then": [
+                        {
+                          "op": "if",
+                          "condition": {"op": "value", "name": "callback.1815.condition.ByCompareWaveCount.17", "is": true},
+                          "then": [
+                            {
+                              "op": "hit",
+                              "target": "PreviewTarget",
+                              "animation": "Hit",
+                              "direction": {},
+                              "effect": {"path": "", "height": 1.2000000476837158, "minimum_interval": 0.0500000007, "maximum_count": 1},
+                              "allow_position": true,
+                              "as": "callback.1815.hit.3"
+                            },
+                            {"op": "wait", "for": "callback.1815.hit.3", "until": "accepted"}
+                          ],
+                          "else": []
+                        }
+                      ],
+                      "else": []
+                    }
+                  ],
+                  "else": []
+                },
+                {"op": "join"},
+                {"op": "call", "function": "@return.return.pose"},
+                {"op": "wait", "for": "return.pose", "until": "submitted"},
+                {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+                {"op": "wait", "for": "return.position"}
+              ],
+              "label": "SkillMaze_Avatar_Gilgamesh_00_Modifier: OnEnterBattle"
+            }
+          ],
+          "default": [
+            {
+              "op": "if",
+              "condition": {"op": "value", "name": "callback.1785.condition.ByIsTurnOwnerEntity.6", "is": true},
+              "then": [
+                {"op": "sound", "event": "Ev_vo_avatar_skill_cast01_gilgamesh", "as": "callback.1785.sound.4"}
+              ],
+              "else": []
+            },
+            {"op": "join"},
+            {"op": "call", "function": "@return.return.pose"},
+            {"op": "wait", "for": "return.pose", "until": "submitted"},
+            {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+            {"op": "wait", "for": "return.position"}
+          ]
+        }
+      ],
+      "on_interrupt": [
+        {
+          "op": "switch",
+          "name": "event",
+          "cases": [
+            {
+              "is": 1,
+              "run": [
+                {"op": "effect.remove", "effects": ["callback.1798.effect.2"], "optional": ["callback.1798.effect.2"], "as": "callback.1798.remove-effects"},
+                {"op": "wait", "for": "callback.1798.remove-effects", "until": "accepted"},
+                {"op": "call", "function": "@return.return.pose"},
+                {"op": "wait", "for": "return.pose", "until": "submitted"},
+                {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+                {"op": "wait", "for": "return.position"}
+              ],
+              "label": "Avatar_Gilgamesh_00_DamageUp: OnStack"
+            },
+            {
+              "is": 2,
+              "run": [
+                {"op": "call", "function": "@return.return.pose"},
+                {"op": "wait", "for": "return.pose", "until": "submitted"},
+                {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+                {"op": "wait", "for": "return.position"}
+              ],
+              "label": "SkillMaze_Avatar_Gilgamesh_00_Modifier: OnEnterBattle"
+            }
+          ],
+          "default": [
+            {"op": "call", "function": "@return.return.pose"},
+            {"op": "wait", "for": "return.pose", "until": "submitted"},
+            {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+            {"op": "wait", "for": "return.position"}
+          ]
+        }
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "SkillMaze",
+        "omissions": [
+          "Manual visual callback selection; no native combat modifier or automatic event simulation.",
+          "event: 0=MAvatar_Gilgamesh_00_Skill02_CD: OnListenAllowAction, 1=Avatar_Gilgamesh_00_DamageUp: OnStack, 2=SkillMaze_Avatar_Gilgamesh_00_Modifier: OnEnterBattle",
+          "ModifierAttachEffect: manual bound-effect preview; modifier flags, collider-height offset, native mutex and automatic visibility/lifetime are not applied",
+          "SetHeadButtonEff: not included in the visual sequence projection",
+          "ShowActionBarEffect: not included in the visual sequence projection",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "DamagePerformFinish: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "skill.7.perform": {"use": "common.elemental.responses", "next": "rest"},
+    "preview.hit": {
+      "inputs": {
+        "kind": {
+          "type": "text",
+          "default": "Hit",
+          "label": "Hit type",
+          "choices": [
+            {"value": "Hit", "label": "Hit"},
+            {"value": "Hit_H", "label": "Hit_H"}
+          ]
+        }
+      },
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "kind", "is": "Hit_H"},
+          "then": [
+            {"op": "hit", "target": "Caster", "animation": "Hit_H", "as": "hit-heavy"},
+            {"op": "wait", "for": "hit-heavy"}
+          ],
+          "else": [
+            {"op": "hit", "target": "Caster", "animation": "Hit", "as": "hit"},
+            {"op": "wait", "for": "hit"}
+          ]
+        }
+      ],
+      "next": "rest",
+      "presentation": {"label": "Hit"},
+      "tags": ["manual-visual-callback"]
+    },
+    "@receiver-clear/callback.5359.receiver-property.3": {
+      "requires": [
+        {"op": "state", "name": "common.elemental.frozen-hit"}
+      ],
+      "mode": "input",
+      "run": [
+        {"op": "state.exit", "name": "common.elemental.frozen-hit", "only_caster": true, "as": "clear"},
+        {"op": "wait", "for": "clear"}
+      ],
+      "presentation": {
+        "label": "Clear hit effect override",
+        "kind": "setting",
+        "contexts": ["common.elemental.frozen-hit"]
+      },
+      "tags": ["visual-receiver-clear"]
+    }
+  },
+  "functions": {
+    "@return.rest.pose": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "rest.pose.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "rest.pose"
+      }
+    ],
+    "@return.return.pose": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "return.pose.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "return.pose"
+      }
+    ]
+  },
+  "states": {},
+  "resources": {
+    "effects": {
+      "callback.1798.effect.2": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Gilgamesh_00/Eff_Avatar_Gilgamesh_00_Skill02_Ready_outline_1.prefab",
+        "target": "Caster",
+        "attach_to_target": true,
+        "attach_point": "Origin",
+        "unique_name": "Gilgamesh_PowerUp"
+      },
+      "callback.1806.effect.2": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Saber_00/Eff_Avatar_Saber_00_Skill01_Weapon.prefab",
+        "target": "Recipient",
+        "attach_to_target": true,
+        "attach_point": "Sword"
+      },
+      "callback.1806.effect.4": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Saber_00/Eff_Avatar_Saber_00_Skill01_Weapon02.prefab",
+        "target": "Recipient",
+        "attach_to_target": true,
+        "attach_point": "Sword"
+      },
+      "callback.1807.effect.2": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Gilgamesh_00/Eff_Avatar_Gilgamesh_00_Passiveskill_Combo_Saber_Weapo_02.prefab",
+        "target": "Recipient",
+        "attach_to_target": true,
+        "attach_point": "Sword"
+      },
+      "callback.1809.effect.2": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Saber_00/Eff_Avatar_Saber_00_Passive_Weapon.prefab",
+        "target": "Recipient",
+        "attach_to_target": true,
+        "attach_point": "Sword"
+      }
+    }
+  }
+}

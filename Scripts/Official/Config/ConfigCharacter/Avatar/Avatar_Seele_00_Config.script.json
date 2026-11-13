@@ -1,0 +1,953 @@
+{
+  "format": "hksr.script",
+  "id": "official-scripts:Config/ConfigCharacter/Avatar/Avatar_Seele_00_Config.json",
+  "applies_to": "Config/ConfigCharacter/Avatar/Avatar_Seele_00_Config.json",
+  "default": true,
+  "imports": ["Common/Elemental.json"],
+  "defaults": {
+    "targets": {
+      "PreviewTarget": {
+        "local_position": [0, 0, 6]
+      }
+    }
+  },
+  "actions": {
+    "rest": {
+      "trigger": "internal",
+      "run": [
+        {"op": "call", "function": "@return.rest.pose"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["stable-return", "idle-provider"]
+    },
+    "skill.0.perform": {
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Seele_00_Skill01_Camera",
+          "run": [
+            {"op": "wait", "for": "skill.0.clock.1", "progress": 0.0100000002},
+            {"op": "wait", "for": "skill.0.clock.1", "progress": 0.2090000051},
+            {"op": "wait", "for": "skill.0.clock.1", "progress": 0.2772434353},
+            {"op": "wait", "for": "skill.0.clock.1", "progress": 0.2869999997}
+          ],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Seele_00_Skill01_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.0.clock.1", "progress": 0.1779999996},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit",
+              "direction": {"horizontal": 60.0, "vertical": 15.0},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Seele_00/Eff_Avatar_Seele_00_Skill01_Hit01.prefab",
+                "height": 1.0,
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.0.hit.8"
+            },
+            {"op": "wait", "for": "skill.0.hit.8", "until": "accepted"},
+            {"op": "wait", "for": "skill.0.clock.1", "progress": 0.2869999997},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit",
+              "direction": {"horizontal": -70.0, "vertical": -5.0},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Seele_00/Eff_Avatar_Seele_00_Skill02_Hit01.prefab",
+                "height": 0.800000011920929,
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.0.hit.10"
+            },
+            {"op": "wait", "for": "skill.0.hit.10", "until": "accepted"}
+          ],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill01", "end": 0.0, "track": {"logic": 3}, "as": "skill.0.clock.1"},
+        {
+          "op": "movement",
+          "animation": "skill.0.clock.1",
+          "segments": [
+            {
+              "destination": "target",
+              "name": "PreviewTarget",
+              "target_geometry": true,
+              "start": 0.0559999996,
+              "end": 0.1539999998,
+              "sample": {"distance": 1.3000000002, "percentage": 1.0, "include_radii": true}
+            },
+            {
+              "destination": "origin",
+              "start": 0.4700000004,
+              "end": 0.6920000005,
+              "sample": {"distance": 0.0, "percentage": 1.0, "include_radii": true}
+            }
+          ],
+          "as": "skill.0.clock.1.movement"
+        },
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.0},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.09},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.6700000006},
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "Skill01",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "LookAt: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "RadialBlurEffect: not included in the visual sequence projection",
+          "MoveToTargetPosition: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "skill.0.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Seele_00_Config.json", "skill": 0, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "skill.1.perform": {
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Seele_00_Skill02_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Seele_00_Skill02_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.02},
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.1189999994},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit",
+              "direction": {},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Seele_00/Eff_Avatar_Seele_00_Skill01_Hit02.prefab",
+                "height": 0.800000011920929,
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.1.hit.25"
+            },
+            {"op": "wait", "for": "skill.1.hit.25", "until": "accepted"},
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.2310000001},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit",
+              "direction": {"horizontal": 90.0, "vertical": 35.0},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Seele_00/Eff_Avatar_Seele_00_Skill01_Hit01.prefab",
+                "height": 1.0,
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.1.hit.27"
+            },
+            {"op": "wait", "for": "skill.1.hit.27", "until": "accepted"},
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.2700000002},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit",
+              "direction": {"horizontal": -70.0, "vertical": -35.0},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Seele_00/Eff_Avatar_Seele_00_Skill02_Hit01.prefab",
+                "height": 1.2000000476837158,
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.1.hit.29"
+            },
+            {"op": "wait", "for": "skill.1.hit.29", "until": "accepted"},
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.6089999999},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit_H",
+              "direction": {"horizontal": 100.0, "vertical": 35.0},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Seele_00/Eff_Avatar_Seele_00_Skill01_Hit03.prefab",
+                "height": 1.2000000476837158,
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.1.hit.31"
+            },
+            {"op": "wait", "for": "skill.1.hit.31", "until": "accepted"},
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 1.0}
+          ],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill02", "end": 0.0, "track": {"logic": 3}, "as": "skill.1.clock.1"},
+        {
+          "op": "movement",
+          "animation": "skill.1.clock.1",
+          "segments": [
+            {
+              "destination": "origin",
+              "end": 0.0149999996,
+              "sample": {"distance": 0.0, "percentage": 1.0}
+            },
+            {
+              "destination": "target",
+              "name": "PreviewTarget",
+              "target_geometry": true,
+              "start": 0.0149999996,
+              "end": 0.0709999999,
+              "sample": {"distance": 0.8000000007, "percentage": 1.0, "include_radii": true}
+            },
+            {
+              "destination": "target",
+              "name": "PreviewTarget",
+              "target_geometry": true,
+              "start": 0.3700000003,
+              "end": 0.4000000003,
+              "sample": {"distance": 1.0, "percentage": 1.0}
+            },
+            {
+              "destination": "origin",
+              "start": 0.8720000006,
+              "end": 0.8780000002,
+              "sample": {"distance": 0.0, "percentage": 1.0}
+            }
+          ],
+          "as": "skill.1.clock.1.movement"
+        },
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.0},
+        {"op": "render.visibility", "key": "SetEntityVisible.reason.0", "visible": false, "as": "skill.1.entity_visible.35"},
+        {"op": "wait", "for": "skill.1.entity_visible.35", "until": "accepted"},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.0089999993},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.1079999995},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.0239999997},
+        {"op": "render.visibility", "key": "SetEntityVisible.reason.0", "visible": true, "as": "skill.1.entity_visible.39"},
+        {"op": "wait", "for": "skill.1.entity_visible.39", "until": "accepted"},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.2039999999},
+        {"op": "render.visibility", "key": "SetEntityVisible.reason.0", "visible": false, "as": "skill.1.entity_visible.41"},
+        {"op": "wait", "for": "skill.1.entity_visible.41", "until": "accepted"},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.2810000001},
+        {"op": "render.visibility", "key": "SetEntityVisible.reason.0", "visible": true, "as": "skill.1.entity_visible.43"},
+        {"op": "wait", "for": "skill.1.entity_visible.43", "until": "accepted"},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.5710000004},
+        {"op": "render.visibility", "key": "SetEntityVisible.reason.0", "visible": false, "as": "skill.1.entity_visible.45"},
+        {"op": "wait", "for": "skill.1.entity_visible.45", "until": "accepted"},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.5920000004},
+        {"op": "render.visibility", "key": "SetEntityVisible.reason.0", "visible": true, "as": "skill.1.entity_visible.47"},
+        {"op": "wait", "for": "skill.1.entity_visible.47", "until": "accepted"},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.5920000004},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.7050000003},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.8200000007},
+        {"op": "render.visibility", "key": "SetEntityVisible.reason.0", "visible": false, "as": "skill.1.entity_visible.51"},
+        {"op": "wait", "for": "skill.1.entity_visible.51", "until": "accepted"},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.9500000008},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 1.0},
+        {"op": "render.visibility", "key": "SetEntityVisible.reason.0", "visible": true, "as": "skill.1.entity_visible.54"},
+        {"op": "wait", "for": "skill.1.entity_visible.54", "until": "accepted"},
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "Skill02",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "LookAt: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "SetEntityVisible: Non-render visibility side effects intentionally excluded: MuteColliderWhenInvisible",
+          "RadialBlurEffect: not included in the visual sequence projection",
+          "GlobalMainIntensityEffect: not included in the visual sequence projection",
+          "MoveToTargetPosition: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "skill.1.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Seele_00_Config.json", "skill": 1, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "skill.2.perform": {
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Seele_00_Skill03_Camera",
+          "run": [
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.4520000002},
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.688},
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.9060000078}
+          ],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Seele_00_Skill03_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.9020000007},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit_H",
+              "direction": {"horizontal": 180.0, "vertical": -10.0},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Seele_00/Eff_Avatar_Seele_00_Skill03_Hit.prefab",
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.2.hit.11"
+            },
+            {"op": "wait", "for": "skill.2.hit.11", "until": "accepted"},
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.9120000007}
+          ],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill03", "end": 0.9810000008, "track": {"logic": 3}, "as": "skill.2.clock.1"},
+        {"op": "wait", "for": "skill.2.clock.1", "progress": 0.9600000008},
+        {"op": "join"},
+        {"op": "wait", "for": "skill.2.clock.1", "until": "animation_end"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "Skill03",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "LookAt: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "WaitTimelineFinish: not included in the visual sequence projection",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "TargetTimeSlow: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "TriggerSkipDeadHandler: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "GlobalMainIntensityEffect: not included in the visual sequence projection",
+          "TryStartConnectUltraSkillFrameCapture: not included in the visual sequence projection",
+          "SetTeamFormation: serial step depends on an unavailable source clock; no timing is inferred",
+          "HideLevelStage: serial step depends on an unavailable source clock; no timing is inferred",
+          "GlobalMainIntensityEffect: serial step depends on an unavailable source clock; no timing is inferred",
+          "MoveToTargetPosition: serial step depends on an unavailable source clock; no timing is inferred"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "skill.2.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Seele_00_Config.json", "skill": 2, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "skill.3.perform": {
+      "inputs": {
+        "cue": {
+          "type": "integer",
+          "default": 0,
+          "label": "Effect",
+          "choices": [
+            {"value": 0, "label": "OnAfterAttack"},
+            {"value": 1, "label": "OnAfterAttack"},
+            {"value": 2, "label": "OnStack"},
+            {"value": 3, "label": "OnStack"}
+          ]
+        }
+      },
+      "requires": [
+        {"op": "number", "name": "cue", "compare": "ge", "value": 0},
+        {"op": "number", "name": "cue", "compare": "lt", "value": 4}
+      ],
+      "run": [
+        {
+          "op": "switch",
+          "name": "cue",
+          "cases": [
+            {
+              "is": 1,
+              "run": [
+                {"op": "effect.create", "effects": ["skill.3.effect.1"], "as": "effect"},
+                {"op": "wait", "for": "effect", "until": "accepted"},
+                {
+                  "op": "repeat",
+                  "until_finish": true,
+                  "run": [
+                    {"op": "wait", "frame": true}
+                  ]
+                },
+                {"op": "effect.remove", "effects": ["skill.3.effect.1"], "optional": ["skill.3.effect.1"], "as": "remove"},
+                {"op": "wait", "for": "remove", "until": "accepted"}
+              ],
+              "label": "OnAfterAttack"
+            },
+            {
+              "is": 2,
+              "run": [
+                {"op": "effect.create", "effects": ["skill.3.effect.2"], "as": "effect"},
+                {"op": "wait", "for": "effect", "until": "accepted"},
+                {
+                  "op": "repeat",
+                  "until_finish": true,
+                  "run": [
+                    {"op": "wait", "frame": true}
+                  ]
+                },
+                {"op": "effect.remove", "effects": ["skill.3.effect.2"], "optional": ["skill.3.effect.2"], "as": "remove"},
+                {"op": "wait", "for": "remove", "until": "accepted"}
+              ],
+              "label": "OnStack"
+            },
+            {
+              "is": 3,
+              "run": [
+                {"op": "effect.create", "effects": ["skill.3.effect.3"], "as": "effect"},
+                {"op": "wait", "for": "effect", "until": "accepted"},
+                {
+                  "op": "repeat",
+                  "until_finish": true,
+                  "run": [
+                    {"op": "wait", "frame": true}
+                  ]
+                },
+                {"op": "effect.remove", "effects": ["skill.3.effect.3"], "optional": ["skill.3.effect.3"], "as": "remove"},
+                {"op": "wait", "for": "remove", "until": "accepted"}
+              ],
+              "label": "OnStack"
+            }
+          ],
+          "default": [
+            {"op": "effect.create", "effects": ["skill.3.effect.0"], "as": "effect"},
+            {"op": "wait", "for": "effect", "until": "accepted"},
+            {
+              "op": "repeat",
+              "until_finish": true,
+              "run": [
+                {"op": "wait", "frame": true}
+              ]
+            },
+            {"op": "effect.remove", "effects": ["skill.3.effect.0"], "optional": ["skill.3.effect.0"], "as": "remove"},
+            {"op": "wait", "for": "remove", "until": "accepted"}
+          ]
+        }
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "SkillP01",
+        "omissions": [
+          "Actor-owned effect cue only. Original callback conditions and timing are manual inputs; use Finish to end.",
+          "cue: 0=OnAfterAttack, 1=OnAfterAttack, 2=OnStack, 3=OnStack"
+        ]
+      },
+      "tags": ["manual-effect-cue", "partial-presentation"]
+    },
+    "skill.4.perform": {
+      "inputs": {
+        "cue": {
+          "type": "integer",
+          "default": 0,
+          "label": "Effect",
+          "choices": [
+            {"value": 0, "label": "OnAfterAttack"},
+            {"value": 1, "label": "OnAfterAttack"},
+            {"value": 2, "label": "OnStack"},
+            {"value": 3, "label": "OnStack"}
+          ]
+        }
+      },
+      "requires": [
+        {"op": "number", "name": "cue", "compare": "ge", "value": 0},
+        {"op": "number", "name": "cue", "compare": "lt", "value": 4}
+      ],
+      "run": [
+        {
+          "op": "switch",
+          "name": "cue",
+          "cases": [
+            {
+              "is": 1,
+              "run": [
+                {"op": "effect.create", "effects": ["skill.4.effect.1"], "as": "effect"},
+                {"op": "wait", "for": "effect", "until": "accepted"},
+                {
+                  "op": "repeat",
+                  "until_finish": true,
+                  "run": [
+                    {"op": "wait", "frame": true}
+                  ]
+                },
+                {"op": "effect.remove", "effects": ["skill.4.effect.1"], "optional": ["skill.4.effect.1"], "as": "remove"},
+                {"op": "wait", "for": "remove", "until": "accepted"}
+              ],
+              "label": "OnAfterAttack"
+            },
+            {
+              "is": 2,
+              "run": [
+                {"op": "effect.create", "effects": ["skill.4.effect.2"], "as": "effect"},
+                {"op": "wait", "for": "effect", "until": "accepted"},
+                {
+                  "op": "repeat",
+                  "until_finish": true,
+                  "run": [
+                    {"op": "wait", "frame": true}
+                  ]
+                },
+                {"op": "effect.remove", "effects": ["skill.4.effect.2"], "optional": ["skill.4.effect.2"], "as": "remove"},
+                {"op": "wait", "for": "remove", "until": "accepted"}
+              ],
+              "label": "OnStack"
+            },
+            {
+              "is": 3,
+              "run": [
+                {"op": "effect.create", "effects": ["skill.4.effect.3"], "as": "effect"},
+                {"op": "wait", "for": "effect", "until": "accepted"},
+                {
+                  "op": "repeat",
+                  "until_finish": true,
+                  "run": [
+                    {"op": "wait", "frame": true}
+                  ]
+                },
+                {"op": "effect.remove", "effects": ["skill.4.effect.3"], "optional": ["skill.4.effect.3"], "as": "remove"},
+                {"op": "wait", "for": "remove", "until": "accepted"}
+              ],
+              "label": "OnStack"
+            }
+          ],
+          "default": [
+            {"op": "effect.create", "effects": ["skill.4.effect.0"], "as": "effect"},
+            {"op": "wait", "for": "effect", "until": "accepted"},
+            {
+              "op": "repeat",
+              "until_finish": true,
+              "run": [
+                {"op": "wait", "frame": true}
+              ]
+            },
+            {"op": "effect.remove", "effects": ["skill.4.effect.0"], "optional": ["skill.4.effect.0"], "as": "remove"},
+            {"op": "wait", "for": "remove", "until": "accepted"}
+          ]
+        }
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "SkillMaze",
+        "omissions": [
+          "Actor-owned effect cue only. Original callback conditions and timing are manual inputs; use Finish to end.",
+          "cue: 0=OnAfterAttack, 1=OnAfterAttack, 2=OnStack, 3=OnStack"
+        ]
+      },
+      "tags": ["manual-effect-cue", "partial-presentation"]
+    },
+    "callback.3831": {
+      "run": [
+        {
+          "op": "hit",
+          "target": "Recipient",
+          "animation": "Hit",
+          "direction": {},
+          "effect": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Seele_00/Eff_Avatar_Seele_00_Skill01_Hit01.prefab", "minimum_interval": 0.0500000007, "maximum_count": 1},
+          "allow_position": true,
+          "as": "callback.3831.hit.1"
+        },
+        {"op": "wait", "for": "callback.3831.hit.1", "until": "accepted"},
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "MAvatar_Seele_Rank06_Flag: OnAfterBeingAttacked",
+        "omissions": ["Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects."]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "callback.3845": {
+      "inputs": {
+        "callback.3845.condition.ByAny.1": {
+          "type": "bool",
+          "default": true,
+          "label": "ByAny",
+          "description": "Manual source condition: $.GlobalModifiers[0].value._CallbackList[3].CallbackConfig[0].Predicate"
+        }
+      },
+      "trigger": "internal",
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "callback.3845.condition.ByAny.1", "is": true},
+          "then": [
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Seele_00/Eff_Avatar_Seele_00_Common_Weapon.prefab",
+              "as": "callback.3845.remove.2.0"
+            },
+            {"op": "wait", "for": "callback.3845.remove.2.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Seele_00/Eff_Avatar_Seele_00_Common_Weapon2.prefab",
+              "as": "callback.3845.remove.3.0"
+            },
+            {"op": "wait", "for": "callback.3845.remove.3.0", "until": "accepted"}
+          ],
+          "else": []
+        },
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "MAvatar_Seele_00_Passive_DamageUp: OnBeforeSkillUse",
+        "listed": false,
+        "omissions": ["Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects."]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation", "resource-cleanup-helper"]
+    },
+    "callback.3846": {
+      "inputs": {
+        "callback.3846.condition.ByAny.1": {
+          "type": "bool",
+          "default": true,
+          "label": "ByAny",
+          "description": "Manual source condition: $.GlobalModifiers[0].value._CallbackList[2].CallbackConfig[0].Predicate"
+        }
+      },
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "callback.3846.condition.ByAny.1", "is": true},
+          "then": [
+            {"op": "effect.create", "effects": ["callback.3846.effect.2"], "as": "callback.3846.effect.2"},
+            {"op": "wait", "for": "callback.3846.effect.2", "until": "accepted"},
+            {"op": "effect.create", "effects": ["callback.3846.effect.3"], "as": "callback.3846.effect.3"},
+            {"op": "wait", "for": "callback.3846.effect.3", "until": "accepted"}
+          ],
+          "else": []
+        },
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {
+          "op": "effect.remove",
+          "effects": ["callback.3846.effect.2", "callback.3846.effect.3"],
+          "optional": ["callback.3846.effect.2", "callback.3846.effect.3"],
+          "as": "callback.3846.remove-effects"
+        },
+        {"op": "wait", "for": "callback.3846.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {
+          "op": "effect.remove",
+          "effects": ["callback.3846.effect.2", "callback.3846.effect.3"],
+          "optional": ["callback.3846.effect.2", "callback.3846.effect.3"],
+          "as": "callback.3846.remove-effects"
+        },
+        {"op": "wait", "for": "callback.3846.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "MAvatar_Seele_00_Passive_DamageUp: OnAfterAttack",
+        "omissions": ["Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects."]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "callback.3847": {
+      "inputs": {
+        "callback.3847.condition.ByAny.5": {
+          "type": "bool",
+          "default": false,
+          "label": "ByAny",
+          "description": "Manual source condition: $.GlobalModifiers[0].value._CallbackList[1].CallbackConfig[2].Predicate"
+        }
+      },
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "callback.3847.condition.ByAny.5", "is": true},
+          "then": [],
+          "else": [
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Seele_00/Eff_Avatar_Seele_00_Common_Weapon.prefab",
+              "as": "callback.3847.remove.6.0"
+            },
+            {"op": "wait", "for": "callback.3847.remove.6.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Seele_00/Eff_Avatar_Seele_00_Common_Weapon2.prefab",
+              "as": "callback.3847.remove.7.0"
+            },
+            {"op": "wait", "for": "callback.3847.remove.7.0", "until": "accepted"},
+            {"op": "effect.create", "effects": ["callback.3847.effect.8"], "as": "callback.3847.effect.8"},
+            {"op": "wait", "for": "callback.3847.effect.8", "until": "accepted"},
+            {"op": "effect.create", "effects": ["callback.3847.effect.9"], "as": "callback.3847.effect.9"},
+            {"op": "wait", "for": "callback.3847.effect.9", "until": "accepted"}
+          ]
+        },
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {
+          "op": "effect.remove",
+          "effects": ["callback.3847.effect.8", "callback.3847.effect.9"],
+          "optional": ["callback.3847.effect.8", "callback.3847.effect.9"],
+          "as": "callback.3847.remove-effects"
+        },
+        {"op": "wait", "for": "callback.3847.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {
+          "op": "effect.remove",
+          "effects": ["callback.3847.effect.8", "callback.3847.effect.9"],
+          "optional": ["callback.3847.effect.8", "callback.3847.effect.9"],
+          "as": "callback.3847.remove-effects"
+        },
+        {"op": "wait", "for": "callback.3847.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "MAvatar_Seele_00_Passive_DamageUp: OnStack",
+        "omissions": ["Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects."]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "callback.3848": {
+      "trigger": "internal",
+      "run": [
+        {
+          "op": "effect.remove_event",
+          "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Seele_00/Eff_Avatar_Seele_00_Common_Weapon.prefab",
+          "as": "callback.3848.remove.1.0"
+        },
+        {"op": "wait", "for": "callback.3848.remove.1.0", "until": "accepted"},
+        {
+          "op": "effect.remove_event",
+          "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Seele_00/Eff_Avatar_Seele_00_Common_Weapon2.prefab",
+          "as": "callback.3848.remove.2.0"
+        },
+        {"op": "wait", "for": "callback.3848.remove.2.0", "until": "accepted"},
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "MAvatar_Seele_00_Passive_DamageUp: OnDestroy",
+        "listed": false,
+        "omissions": ["Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects."]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation", "resource-cleanup-helper"]
+    },
+    "skill.5.perform": {"use": "common.elemental.responses", "next": "rest"},
+    "preview.hit": {
+      "inputs": {
+        "kind": {
+          "type": "text",
+          "default": "Hit",
+          "label": "Hit type",
+          "choices": [
+            {"value": "Hit", "label": "Hit"},
+            {"value": "Hit_H", "label": "Hit_H"}
+          ]
+        }
+      },
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "kind", "is": "Hit_H"},
+          "then": [
+            {"op": "hit", "target": "Caster", "animation": "Hit_H", "as": "hit-heavy"},
+            {"op": "wait", "for": "hit-heavy"}
+          ],
+          "else": [
+            {"op": "hit", "target": "Caster", "animation": "Hit", "as": "hit"},
+            {"op": "wait", "for": "hit"}
+          ]
+        }
+      ],
+      "next": "rest",
+      "presentation": {"label": "Hit"},
+      "tags": ["manual-visual-callback"]
+    },
+    "@receiver-clear/callback.5359.receiver-property.3": {
+      "requires": [
+        {"op": "state", "name": "common.elemental.frozen-hit"}
+      ],
+      "mode": "input",
+      "run": [
+        {"op": "state.exit", "name": "common.elemental.frozen-hit", "only_caster": true, "as": "clear"},
+        {"op": "wait", "for": "clear"}
+      ],
+      "presentation": {
+        "label": "Clear hit effect override",
+        "kind": "setting",
+        "contexts": ["common.elemental.frozen-hit"]
+      },
+      "tags": ["visual-receiver-clear"]
+    }
+  },
+  "functions": {
+    "@return.rest.pose": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "rest.pose.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "rest.pose"
+      }
+    ],
+    "@return.return.pose": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "return.pose.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "return.pose"
+      }
+    ]
+  },
+  "states": {},
+  "resources": {
+    "effects": {
+      "skill.3.effect.0": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Seele_00/Eff_Avatar_Seele_00_Common_Weapon.prefab", "target": "Caster"},
+      "skill.3.effect.3": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Seele_00/Eff_Avatar_Seele_00_Common_Weapon2.prefab", "target": "Caster"},
+      "skill.3.effect.2": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Seele_00/Eff_Avatar_Seele_00_Common_Weapon.prefab", "target": "Caster"},
+      "skill.3.effect.1": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Seele_00/Eff_Avatar_Seele_00_Common_Weapon2.prefab", "target": "Caster"},
+      "skill.4.effect.0": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Seele_00/Eff_Avatar_Seele_00_Common_Weapon.prefab", "target": "Caster"},
+      "skill.4.effect.3": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Seele_00/Eff_Avatar_Seele_00_Common_Weapon2.prefab", "target": "Caster"},
+      "skill.4.effect.2": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Seele_00/Eff_Avatar_Seele_00_Common_Weapon.prefab", "target": "Caster"},
+      "skill.4.effect.1": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Seele_00/Eff_Avatar_Seele_00_Common_Weapon2.prefab", "target": "Caster"},
+      "callback.3846.effect.2": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Seele_00/Eff_Avatar_Seele_00_Common_Weapon.prefab", "target": "Caster"},
+      "callback.3846.effect.3": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Seele_00/Eff_Avatar_Seele_00_Common_Weapon2.prefab", "target": "Caster"},
+      "callback.3847.effect.8": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Seele_00/Eff_Avatar_Seele_00_Common_Weapon.prefab", "target": "Caster"},
+      "callback.3847.effect.9": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Seele_00/Eff_Avatar_Seele_00_Common_Weapon2.prefab", "target": "Caster"}
+    }
+  }
+}

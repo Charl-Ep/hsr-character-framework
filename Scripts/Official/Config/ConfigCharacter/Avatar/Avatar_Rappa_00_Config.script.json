@@ -1,0 +1,2066 @@
+{
+  "format": "hksr.script",
+  "id": "official-scripts:Config/ConfigCharacter/Avatar/Avatar_Rappa_00_Config.json",
+  "applies_to": "Config/ConfigCharacter/Avatar/Avatar_Rappa_00_Config.json",
+  "default": true,
+  "imports": ["Common/Elemental.json"],
+  "defaults": {
+    "targets": {
+      "PreviewTarget": {
+        "local_position": [0, 0, 6]
+      },
+      "AbilityTargetEntity": {
+        "local_position": [0, 0, 6]
+      },
+      "SkillPointEntity": {"alias": "AbilityTargetEntity"}
+    }
+  },
+  "actions": {
+    "base.rest": {
+      "trigger": "internal",
+      "runtime": {"policy": "ready", "selected": ""},
+      "run": [
+        {"op": "call", "function": "@return.rest.pose"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["stable-return", "idle-provider"]
+    },
+    "base.skill.0.perform": {
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "runtime": {"policy": "performance", "selected": "Skill01"},
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Rappa_00_Skill01_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Rappa_00_Skill01_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.0.clock.1", "progress": 0.1249999997},
+            {"op": "wait", "for": "skill.0.clock.1", "progress": 0.1569999996},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit",
+              "direction": {"horizontal": -70.0, "vertical": -30.0},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Rappa_00/Eff_Avatar_Rappa_00_Skill01_Hit01.prefab",
+                "height": 1.399999976158142,
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.0.hit.12"
+            },
+            {"op": "wait", "for": "skill.0.hit.12", "until": "accepted"},
+            {"op": "wait", "for": "skill.0.clock.1", "progress": 0.2300000002},
+            {"op": "wait", "for": "skill.0.clock.1", "progress": 0.2449999998},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit",
+              "direction": {"vertical": 50.0},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Rappa_00/Eff_Avatar_Rappa_00_Skill01_Hit02.prefab",
+                "height": 1.2000000476837158,
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.0.hit.15"
+            },
+            {"op": "wait", "for": "skill.0.hit.15", "until": "accepted"}
+          ],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill01", "start": 0.01, "end": 0.0, "track": {"logic": 3}, "as": "skill.0.clock.1"},
+        {
+          "op": "movement",
+          "animation": "skill.0.clock.1",
+          "segments": [
+            {
+              "destination": "target",
+              "name": "PreviewTarget",
+              "target_geometry": true,
+              "start": 0.0959999996,
+              "end": 0.141,
+              "sample": {"distance": 2.0, "percentage": 1.0, "include_radii": true}
+            },
+            {
+              "destination": "origin",
+              "start": 0.6400000005,
+              "end": 0.7070000001,
+              "sample": {"distance": 0.0, "percentage": 1.0, "include_radii": true}
+            }
+          ],
+          "as": "skill.0.clock.1.movement"
+        },
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.0},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.1019999999},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.1400000001},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.6820000004},
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill01",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "TriggerEffect: effect needs a non-owned target, dynamic path, or Timeline attachment",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "LookAt: not included in the visual sequence projection",
+          "RadialBlurEffect: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.0.ready.-1": {
+      "runtime": {"policy": "ready", "selected": "Skill01"},
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Rappa_00_Config.json", "skill": 0, "as": "ready"}
+      ],
+      "presentation": {
+        "label": "Skill01 · Ready",
+        "ready": {"config": "Config/ConfigCharacter/Avatar/Avatar_Rappa_00_Config.json", "skill": 0}
+      },
+      "tags": ["ready-pose"]
+    },
+    "base.skill.1.perform": {
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "runtime": {"policy": "performance", "selected": "Skill02"},
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Rappa_00_Skill02_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Rappa_00_Skill02_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.0889999994},
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.1600000001},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit",
+              "direction": {},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Rappa_00/Eff_Avatar_Rappa_00_Skill02_Hit01.prefab",
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.1.hit.15"
+            },
+            {"op": "wait", "for": "skill.1.hit.15", "until": "accepted"},
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.3814800011},
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.4089999997},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit",
+              "direction": {},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Rappa_00/Eff_Avatar_Rappa_00_Skill02_Hit02.prefab",
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.1.hit.18"
+            },
+            {"op": "wait", "for": "skill.1.hit.18", "until": "accepted"},
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.5550000001}
+          ],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill02", "end": 0.0, "track": {"logic": 3}, "as": "skill.1.clock.1"},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.0},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.7800000007},
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill02",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "GlobalMainIntensityEffect: not included in the visual sequence projection",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "RadialBlurEffect: not included in the visual sequence projection",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "TriggerAnimStateWithMove: movement not projected: Config/ConfigAbility/Avatar/Avatar_Rappa_00_Ability.json:$.AbilityList[8].OnStart[2]: movement destination not bound: DarkTeamCenter"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.1.ready.-1": {
+      "runtime": {"policy": "ready", "selected": "Skill02"},
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Rappa_00_Config.json", "skill": 1, "as": "ready"}
+      ],
+      "presentation": {
+        "label": "Skill02 · Ready",
+        "ready": {"config": "Config/ConfigCharacter/Avatar/Avatar_Rappa_00_Config.json", "skill": 1}
+      },
+      "tags": ["ready-pose"]
+    },
+    "base.skill.2.perform": {
+      "runtime": {"policy": "performance", "selected": "Skill03"},
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Rappa_00_Skill03_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Rappa_00_Skill03_Phase02",
+          "run": []
+        },
+        {"op": "animation", "state": "Skill03", "end": -1.0, "track": {"logic": 3}, "as": "skill.2.clock.1"},
+        {"op": "wait", "for": "skill.2.clock.1", "until": "animation_end"},
+        {"op": "wait", "for": "skill.2.clock.1", "progress": 0.6400000005},
+        {"op": "wait", "for": "skill.2.clock.1", "progress": 0.8750000004},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill03",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "ReleaseEnvProfile: not included in the visual sequence projection",
+          "SetEntityPosition: not included in the visual sequence projection",
+          "LookAt: not included in the visual sequence projection",
+          "HeadLookAt: not included in the visual sequence projection",
+          "GlobalMainIntensityEffect: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "LAJIKDENEOO: not included in the visual sequence projection",
+          "WaitTimelineFinish: not included in the visual sequence projection",
+          "SetControlSkillMapping: serial step depends on an unavailable source clock; no timing is inferred",
+          "TurnInsertAction: serial step depends on an unavailable source clock; no timing is inferred",
+          "EnableFieldEffectSoftZOffset: serial step depends on an unavailable source clock; no timing is inferred",
+          "GlobalMainIntensityEffect: serial step depends on an unavailable source clock; no timing is inferred",
+          "SkillPerformFinish: serial step depends on an unavailable source clock; no timing is inferred",
+          "HideLevelStage: not included in the visual sequence projection",
+          "HideLevelStage: serial step depends on an unavailable source clock; no timing is inferred",
+          "OverrideSelectDarkTeamEntityCamera: serial step depends on an unavailable source clock; no timing is inferred"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.2.ready.-1": {
+      "runtime": {"policy": "ready", "selected": "Skill03"},
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Rappa_00_Config.json", "skill": 2, "as": "ready"}
+      ],
+      "presentation": {
+        "label": "Skill03 · Ready",
+        "ready": {"config": "Config/ConfigCharacter/Avatar/Avatar_Rappa_00_Config.json", "skill": 2}
+      },
+      "tags": ["ready-pose"]
+    },
+    "base.skill.3.perform": {
+      "runtime": {"policy": "performance", "selected": "Skill34"},
+      "run": [
+        {"op": "animation", "state": "Skill03_01_IntoReady", "end": -1.0, "track": {"logic": 1}, "as": "skill.3.clock.1"},
+        {"op": "wait", "for": "skill.3.clock.1", "until": "animation_end"},
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill34",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "SetTeamFormation: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.3.ready.-1": {
+      "runtime": {"policy": "ready", "selected": "Skill34"},
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Rappa_00_Config.json", "skill": 3, "as": "ready"}
+      ],
+      "presentation": {
+        "label": "Skill34 · Ready",
+        "ready": {"config": "Config/ConfigCharacter/Avatar/Avatar_Rappa_00_Config.json", "skill": 3}
+      },
+      "tags": ["ready-pose"]
+    },
+    "base.skill.4.perform": {
+      "inputs": {
+        "skill.4.condition.ByHasStanceWeak.16": {"type": "bool", "default": false, "label": "ByHasStanceWeak", "description": "Manual source condition: $.AbilityList[3].OnStart[10].Predicate"},
+        "skill.4.condition.ByRankActivated.18": {
+          "type": "bool",
+          "default": false,
+          "label": "ByRankActivated",
+          "description": "Manual source condition: $.AbilityList[3].OnStart[10].SuccessTaskList[1].Predicate"
+        },
+        "skill.4.condition.ByRankActivated.24": {
+          "type": "bool",
+          "default": false,
+          "label": "ByRankActivated",
+          "description": "Manual source condition: $.AbilityList[3].OnStart[10].FailedTaskList[0].Predicate"
+        },
+        "skill.4.condition.ByHasStanceWeak.31": {
+          "type": "bool",
+          "default": false,
+          "label": "ByHasStanceWeak",
+          "description": "Manual source condition: $.AbilityList[3].OnStart[11].TaskList[0].Predicate"
+        }
+      },
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "runtime": {"policy": "performance", "selected": "Skill11"},
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Rappa_00_Skill03_FPS_Hit1_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Rappa_00_Skill11_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.4.clock.1", "progress": 0.1666670006},
+            {"op": "effect.create", "effects": ["base.skill.4.effect.14"], "as": "skill.4.effect.14"},
+            {"op": "wait", "for": "skill.4.effect.14", "until": "accepted"},
+            {"op": "wait", "for": "skill.4.clock.1", "progress": 0.4666672011},
+            {"op": "effect.create", "effects": ["base.skill.4.effect.15"], "as": "skill.4.effect.15"},
+            {"op": "wait", "for": "skill.4.effect.15", "until": "accepted"},
+            {"op": "wait", "for": "skill.4.clock.1", "progress": 0.5350000001},
+            {"op": "wait", "seconds": 0.09},
+            {
+              "op": "if",
+              "condition": {"op": "value", "name": "skill.4.condition.ByHasStanceWeak.16", "is": true},
+              "then": [
+                {
+                  "op": "if",
+                  "condition": {"op": "value", "name": "skill.4.condition.ByRankActivated.18", "is": true},
+                  "then": [
+                    {
+                      "op": "hit",
+                      "target": "PreviewTarget",
+                      "animation": "Hit",
+                      "direction": {"horizontal": 70.0, "vertical": -30.0},
+                      "effect": {"path": "", "minimum_interval": 0.0500000007, "maximum_count": 1},
+                      "allow_position": true,
+                      "as": "skill.4.hit.20"
+                    },
+                    {"op": "wait", "for": "skill.4.hit.20", "until": "accepted"}
+                  ],
+                  "else": [
+                    {
+                      "op": "hit",
+                      "target": "PreviewTarget",
+                      "animation": "Hit",
+                      "direction": {"horizontal": 70.0, "vertical": -30.0},
+                      "effect": {"path": "", "minimum_interval": 0.0500000007, "maximum_count": 1},
+                      "allow_position": true,
+                      "as": "skill.4.hit.22"
+                    },
+                    {"op": "wait", "for": "skill.4.hit.22", "until": "accepted"}
+                  ]
+                }
+              ],
+              "elif": [
+                {
+                  "condition": {"op": "value", "name": "skill.4.condition.ByRankActivated.24", "is": true},
+                  "then": [
+                    {
+                      "op": "hit",
+                      "target": "PreviewTarget",
+                      "animation": "Hit",
+                      "direction": {"horizontal": 70.0, "vertical": -30.0},
+                      "effect": {"path": "", "minimum_interval": 0.0500000007, "maximum_count": 1},
+                      "allow_position": true,
+                      "as": "skill.4.hit.26"
+                    },
+                    {"op": "wait", "for": "skill.4.hit.26", "until": "accepted"}
+                  ]
+                }
+              ],
+              "else": [
+                {
+                  "op": "hit",
+                  "target": "PreviewTarget",
+                  "animation": "Hit",
+                  "direction": {"horizontal": 70.0, "vertical": -30.0},
+                  "effect": {"path": "", "minimum_interval": 0.0500000007, "maximum_count": 1},
+                  "allow_position": true,
+                  "as": "skill.4.hit.28"
+                },
+                {"op": "wait", "for": "skill.4.hit.28", "until": "accepted"}
+              ]
+            },
+            {
+              "op": "for_each",
+              "bind": "skill.4.member.29",
+              "targets": ["PreviewTarget"],
+              "collection": "skill.4.targets.30",
+              "run": [
+                {
+                  "op": "if",
+                  "condition": {"op": "value", "name": "skill.4.condition.ByHasStanceWeak.31", "is": true},
+                  "then": [
+                    {
+                      "op": "hit",
+                      "target": "skill.4.member.29",
+                      "animation": "Hit",
+                      "direction": {"horizontal": 70.0, "vertical": -30.0},
+                      "effect": {"path": "", "minimum_interval": 0.0500000007, "maximum_count": 1},
+                      "allow_position": true,
+                      "as": "skill.4.hit.33"
+                    },
+                    {"op": "wait", "for": "skill.4.hit.33", "until": "accepted"}
+                  ],
+                  "else": [
+                    {
+                      "op": "hit",
+                      "target": "skill.4.member.29",
+                      "animation": "Hit",
+                      "direction": {"horizontal": 70.0, "vertical": -30.0},
+                      "effect": {"path": "", "minimum_interval": 0.0500000007, "maximum_count": 1},
+                      "allow_position": true,
+                      "as": "skill.4.hit.35"
+                    },
+                    {"op": "wait", "for": "skill.4.hit.35", "until": "accepted"}
+                  ]
+                }
+              ],
+              "empty": []
+            }
+          ],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill03_01", "end": -1.0, "track": {"logic": 3}, "as": "skill.4.clock.1"},
+        {"op": "wait", "for": "skill.4.clock.1", "until": "animation_end"},
+        {"op": "wait", "for": "skill.4.clock.1", "progress": 1.0},
+        {
+          "op": "start",
+          "id": "Avatar_Rappa_00_Skill03_FPS_Camera_Steady",
+          "run": [],
+          "join": true
+        },
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {
+          "op": "effect.remove",
+          "effects": ["base.skill.4.effect.14", "base.skill.4.effect.15"],
+          "optional": ["base.skill.4.effect.14", "base.skill.4.effect.15"],
+          "as": "skill.4.remove-effects"
+        },
+        {"op": "wait", "for": "skill.4.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {
+          "op": "effect.remove",
+          "effects": ["base.skill.4.effect.14", "base.skill.4.effect.15"],
+          "optional": ["base.skill.4.effect.14", "base.skill.4.effect.15"],
+          "as": "skill.4.remove-effects"
+        },
+        {"op": "wait", "for": "skill.4.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill11",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "LookAt: not included in the visual sequence projection",
+          "SetEntityPosition: not included in the visual sequence projection",
+          "HeadLookAt: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "SetDynamicValueByTargetToTeamCenterDistance: not included in the visual sequence projection",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "Retarget: recipient collection is explicitly selected; native filtering, random selection and count limits are not simulated",
+          "SetControlSkillMapping: Skill mapping is configuration, not a request to play its destination ready pose; native mapping is not executed",
+          "UseSkillOneMore: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.4.ready.-1": {
+      "runtime": {"policy": "ready", "selected": "Skill11"},
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Rappa_00_Config.json", "skill": 4, "as": "ready"}
+      ],
+      "presentation": {
+        "label": "Skill11 · Ready",
+        "ready": {"config": "Config/ConfigCharacter/Avatar/Avatar_Rappa_00_Config.json", "skill": 4}
+      },
+      "tags": ["ready-pose"]
+    },
+    "base.skill.5.perform": {
+      "inputs": {
+        "skill.5.condition.ByHasStanceWeak.11": {"type": "bool", "default": false, "label": "ByHasStanceWeak", "description": "Manual source condition: $.AbilityList[5].OnStart[6].Predicate"},
+        "skill.5.condition.ByRankActivated.13": {
+          "type": "bool",
+          "default": false,
+          "label": "ByRankActivated",
+          "description": "Manual source condition: $.AbilityList[5].OnStart[6].SuccessTaskList[1].Predicate"
+        },
+        "skill.5.condition.ByRankActivated.19": {
+          "type": "bool",
+          "default": false,
+          "label": "ByRankActivated",
+          "description": "Manual source condition: $.AbilityList[5].OnStart[6].FailedTaskList[0].Predicate"
+        },
+        "skill.5.condition.ByHasStanceWeak.26": {
+          "type": "bool",
+          "default": false,
+          "label": "ByHasStanceWeak",
+          "description": "Manual source condition: $.AbilityList[5].OnStart[7].TaskList[0].Predicate"
+        }
+      },
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "runtime": {"policy": "performance", "selected": "Skill12"},
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Rappa_00_Skill03_FPS_Hit2_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Rappa_00_Skill12_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.5.clock.1", "progress": 0.2333336011},
+            {"op": "effect.create", "effects": ["base.skill.5.effect.10"], "as": "skill.5.effect.10"},
+            {"op": "wait", "for": "skill.5.effect.10", "until": "accepted"},
+            {"op": "wait", "for": "skill.5.clock.1", "progress": 0.5350000001},
+            {"op": "wait", "seconds": 0.09},
+            {
+              "op": "if",
+              "condition": {"op": "value", "name": "skill.5.condition.ByHasStanceWeak.11", "is": true},
+              "then": [
+                {
+                  "op": "if",
+                  "condition": {"op": "value", "name": "skill.5.condition.ByRankActivated.13", "is": true},
+                  "then": [
+                    {
+                      "op": "hit",
+                      "target": "PreviewTarget",
+                      "animation": "Hit",
+                      "direction": {"horizontal": 30.0, "vertical": 30.0},
+                      "effect": {"path": "", "minimum_interval": 0.0500000007, "maximum_count": 1},
+                      "allow_position": true,
+                      "as": "skill.5.hit.15"
+                    },
+                    {"op": "wait", "for": "skill.5.hit.15", "until": "accepted"}
+                  ],
+                  "else": [
+                    {
+                      "op": "hit",
+                      "target": "PreviewTarget",
+                      "animation": "Hit",
+                      "direction": {"horizontal": 30.0, "vertical": 30.0},
+                      "effect": {"path": "", "minimum_interval": 0.0500000007, "maximum_count": 1},
+                      "allow_position": true,
+                      "as": "skill.5.hit.17"
+                    },
+                    {"op": "wait", "for": "skill.5.hit.17", "until": "accepted"}
+                  ]
+                }
+              ],
+              "elif": [
+                {
+                  "condition": {"op": "value", "name": "skill.5.condition.ByRankActivated.19", "is": true},
+                  "then": [
+                    {
+                      "op": "hit",
+                      "target": "PreviewTarget",
+                      "animation": "Hit",
+                      "direction": {"horizontal": 30.0, "vertical": 30.0},
+                      "effect": {"path": "", "minimum_interval": 0.0500000007, "maximum_count": 1},
+                      "allow_position": true,
+                      "as": "skill.5.hit.21"
+                    },
+                    {"op": "wait", "for": "skill.5.hit.21", "until": "accepted"}
+                  ]
+                }
+              ],
+              "else": [
+                {
+                  "op": "hit",
+                  "target": "PreviewTarget",
+                  "animation": "Hit",
+                  "direction": {"horizontal": 30.0, "vertical": 30.0},
+                  "effect": {"path": "", "minimum_interval": 0.0500000007, "maximum_count": 1},
+                  "allow_position": true,
+                  "as": "skill.5.hit.23"
+                },
+                {"op": "wait", "for": "skill.5.hit.23", "until": "accepted"}
+              ]
+            },
+            {
+              "op": "for_each",
+              "bind": "skill.5.member.24",
+              "targets": ["PreviewTarget"],
+              "collection": "skill.5.targets.25",
+              "run": [
+                {
+                  "op": "if",
+                  "condition": {"op": "value", "name": "skill.5.condition.ByHasStanceWeak.26", "is": true},
+                  "then": [
+                    {
+                      "op": "hit",
+                      "target": "skill.5.member.24",
+                      "animation": "Hit",
+                      "direction": {"horizontal": 30.0, "vertical": 30.0},
+                      "effect": {"path": "", "minimum_interval": 0.0500000007, "maximum_count": 1},
+                      "allow_position": true,
+                      "as": "skill.5.hit.28"
+                    },
+                    {"op": "wait", "for": "skill.5.hit.28", "until": "accepted"}
+                  ],
+                  "else": [
+                    {
+                      "op": "hit",
+                      "target": "skill.5.member.24",
+                      "animation": "Hit",
+                      "direction": {"horizontal": 30.0, "vertical": 30.0},
+                      "effect": {"path": "", "minimum_interval": 0.0500000007, "maximum_count": 1},
+                      "allow_position": true,
+                      "as": "skill.5.hit.30"
+                    },
+                    {"op": "wait", "for": "skill.5.hit.30", "until": "accepted"}
+                  ]
+                }
+              ],
+              "empty": []
+            }
+          ],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill03_02", "end": -1.0, "track": {"logic": 3}, "as": "skill.5.clock.1"},
+        {"op": "wait", "for": "skill.5.clock.1", "until": "animation_end"},
+        {"op": "wait", "for": "skill.5.clock.1", "progress": 1.0},
+        {
+          "op": "start",
+          "id": "Avatar_Rappa_00_Skill03_FPS_Camera_Steady",
+          "run": [],
+          "join": true
+        },
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "effect.remove", "effects": ["base.skill.5.effect.10"], "optional": ["base.skill.5.effect.10"], "as": "skill.5.remove-effects"},
+        {"op": "wait", "for": "skill.5.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "effect.remove", "effects": ["base.skill.5.effect.10"], "optional": ["base.skill.5.effect.10"], "as": "skill.5.remove-effects"},
+        {"op": "wait", "for": "skill.5.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill12",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "LookAt: not included in the visual sequence projection",
+          "SetEntityPosition: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "SetDynamicValueByTargetToTeamCenterDistance: not included in the visual sequence projection",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "Retarget: recipient collection is explicitly selected; native filtering, random selection and count limits are not simulated",
+          "SetControlSkillMapping: Skill mapping is configuration, not a request to play its destination ready pose; native mapping is not executed",
+          "UseSkillOneMore: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.5.ready.-1": {
+      "runtime": {"policy": "ready", "selected": "Skill12"},
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Rappa_00_Config.json", "skill": 5, "as": "ready"}
+      ],
+      "presentation": {
+        "label": "Skill12 · Ready",
+        "ready": {"config": "Config/ConfigCharacter/Avatar/Avatar_Rappa_00_Config.json", "skill": 5}
+      },
+      "tags": ["ready-pose"]
+    },
+    "base.skill.6.perform": {
+      "inputs": {
+        "skill.6.condition.ByHasStanceWeak.18": {
+          "type": "bool",
+          "default": false,
+          "label": "ByHasStanceWeak",
+          "description": "Manual source condition: $.AbilityList[7].OnStart[4].TaskList[0].Predicate"
+        }
+      },
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "runtime": {"policy": "performance", "selected": "Skill13"},
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Rappa_00_Skill03_FPS_Hit3_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Rappa_00_Skill13_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.6.clock.1", "progress": 0.5350000001},
+            {"op": "wait", "seconds": 0.09},
+            {
+              "op": "for_each",
+              "bind": "skill.6.member.16",
+              "targets": ["PreviewTarget"],
+              "collection": "skill.6.targets.17",
+              "run": [
+                {
+                  "op": "if",
+                  "condition": {"op": "value", "name": "skill.6.condition.ByHasStanceWeak.18", "is": true},
+                  "then": [
+                    {
+                      "op": "hit",
+                      "target": "skill.6.member.16",
+                      "animation": "Hit",
+                      "direction": {"vertical": 50.0},
+                      "effect": {"path": "", "minimum_interval": 0.0500000007, "maximum_count": 1},
+                      "allow_position": true,
+                      "as": "skill.6.hit.20"
+                    },
+                    {"op": "wait", "for": "skill.6.hit.20", "until": "accepted"}
+                  ],
+                  "else": [
+                    {
+                      "op": "hit",
+                      "target": "skill.6.member.16",
+                      "animation": "Hit",
+                      "direction": {"vertical": 50.0},
+                      "effect": {"path": "", "minimum_interval": 0.0500000007, "maximum_count": 1},
+                      "allow_position": true,
+                      "as": "skill.6.hit.22"
+                    },
+                    {"op": "wait", "for": "skill.6.hit.22", "until": "accepted"}
+                  ]
+                }
+              ],
+              "empty": []
+            },
+            {
+              "op": "for_each",
+              "bind": "skill.6.member.24",
+              "targets": ["PreviewTarget"],
+              "collection": "skill.6.targets.25",
+              "run": [
+                {
+                  "op": "hit",
+                  "target": "skill.6.member.24",
+                  "animation": "Hit",
+                  "direction": {},
+                  "effect": {"path": "", "minimum_interval": 0.0500000007, "maximum_count": 1},
+                  "allow_position": true,
+                  "as": "skill.6.hit.29"
+                },
+                {"op": "wait", "for": "skill.6.hit.29", "until": "accepted"}
+              ],
+              "empty": []
+            }
+          ],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill03_03", "end": -1.0, "track": {"logic": 3}, "as": "skill.6.clock.1"},
+        {"op": "wait", "for": "skill.6.clock.1", "until": "animation_end"},
+        {"op": "wait", "for": "skill.6.clock.1", "progress": 0.5250000001},
+        {"op": "wait", "for": "skill.6.clock.1", "progress": 0.6110000004},
+        {"op": "wait", "for": "skill.6.clock.1", "progress": 1.0},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill13",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "LookAt: not included in the visual sequence projection",
+          "SetEntityPosition: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "Retarget: recipient collection is explicitly selected; native filtering, random selection and count limits are not simulated",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "SetControlSkillMapping: Skill mapping is configuration, not a request to play its destination ready pose; native mapping is not executed",
+          "LAJIKDENEOO: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "TriggerSkipDeadHandler: not included in the visual sequence projection",
+          "RadialBlurEffect: not included in the visual sequence projection",
+          "SetEffectAnimatorParameter: not included in the visual sequence projection",
+          "GlobalMainIntensityEffect: serial step depends on an unavailable source clock; no timing is inferred",
+          "AnimSetParameter: serial step depends on an unavailable source clock; no timing is inferred",
+          "GlobalMainIntensityEffect: not included in the visual sequence projection",
+          "OverrideSelectDarkTeamEntityCamera: not included in the visual sequence projection",
+          "EnableFieldEffectSoftZOffset: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.6.ready.-1": {
+      "runtime": {"policy": "ready", "selected": "Skill13"},
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Rappa_00_Config.json", "skill": 6, "as": "ready"}
+      ],
+      "presentation": {
+        "label": "Skill13 · Ready",
+        "ready": {"config": "Config/ConfigCharacter/Avatar/Avatar_Rappa_00_Config.json", "skill": 6}
+      },
+      "tags": ["ready-pose"]
+    },
+    "base.skill.7.perform": {
+      "inputs": {
+        "skill.7.condition.ByHasStanceWeak.18": {
+          "type": "bool",
+          "default": false,
+          "label": "ByHasStanceWeak",
+          "description": "Manual source condition: $.AbilityList[7].OnStart[4].TaskList[0].Predicate"
+        }
+      },
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "runtime": {"policy": "performance", "selected": "Skill14"},
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Rappa_00_Skill03_FPS_Hit3_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Rappa_00_Skill13_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.7.clock.1", "progress": 0.5350000001},
+            {"op": "wait", "seconds": 0.09},
+            {
+              "op": "for_each",
+              "bind": "skill.7.member.16",
+              "targets": ["PreviewTarget"],
+              "collection": "skill.7.targets.17",
+              "run": [
+                {
+                  "op": "if",
+                  "condition": {"op": "value", "name": "skill.7.condition.ByHasStanceWeak.18", "is": true},
+                  "then": [
+                    {
+                      "op": "hit",
+                      "target": "skill.7.member.16",
+                      "animation": "Hit",
+                      "direction": {"vertical": 50.0},
+                      "effect": {"path": "", "minimum_interval": 0.0500000007, "maximum_count": 1},
+                      "allow_position": true,
+                      "as": "skill.7.hit.20"
+                    },
+                    {"op": "wait", "for": "skill.7.hit.20", "until": "accepted"}
+                  ],
+                  "else": [
+                    {
+                      "op": "hit",
+                      "target": "skill.7.member.16",
+                      "animation": "Hit",
+                      "direction": {"vertical": 50.0},
+                      "effect": {"path": "", "minimum_interval": 0.0500000007, "maximum_count": 1},
+                      "allow_position": true,
+                      "as": "skill.7.hit.22"
+                    },
+                    {"op": "wait", "for": "skill.7.hit.22", "until": "accepted"}
+                  ]
+                }
+              ],
+              "empty": []
+            },
+            {
+              "op": "for_each",
+              "bind": "skill.7.member.24",
+              "targets": ["PreviewTarget"],
+              "collection": "skill.7.targets.25",
+              "run": [
+                {
+                  "op": "hit",
+                  "target": "skill.7.member.24",
+                  "animation": "Hit",
+                  "direction": {},
+                  "effect": {"path": "", "minimum_interval": 0.0500000007, "maximum_count": 1},
+                  "allow_position": true,
+                  "as": "skill.7.hit.29"
+                },
+                {"op": "wait", "for": "skill.7.hit.29", "until": "accepted"}
+              ],
+              "empty": []
+            }
+          ],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill03_03", "end": -1.0, "track": {"logic": 3}, "as": "skill.7.clock.1"},
+        {"op": "wait", "for": "skill.7.clock.1", "until": "animation_end"},
+        {"op": "wait", "for": "skill.7.clock.1", "progress": 0.5250000001},
+        {"op": "wait", "for": "skill.7.clock.1", "progress": 0.6110000004},
+        {"op": "wait", "for": "skill.7.clock.1", "progress": 1.0},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill14",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "LookAt: not included in the visual sequence projection",
+          "SetEntityPosition: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "Retarget: recipient collection is explicitly selected; native filtering, random selection and count limits are not simulated",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "SetControlSkillMapping: Skill mapping is configuration, not a request to play its destination ready pose; native mapping is not executed",
+          "LAJIKDENEOO: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "TriggerSkipDeadHandler: not included in the visual sequence projection",
+          "RadialBlurEffect: not included in the visual sequence projection",
+          "SetEffectAnimatorParameter: not included in the visual sequence projection",
+          "GlobalMainIntensityEffect: serial step depends on an unavailable source clock; no timing is inferred",
+          "AnimSetParameter: serial step depends on an unavailable source clock; no timing is inferred",
+          "GlobalMainIntensityEffect: not included in the visual sequence projection",
+          "OverrideSelectDarkTeamEntityCamera: not included in the visual sequence projection",
+          "EnableFieldEffectSoftZOffset: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.7.ready.-1": {
+      "runtime": {"policy": "ready", "selected": "Skill14"},
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Rappa_00_Config.json", "skill": 7, "as": "ready"}
+      ],
+      "presentation": {
+        "label": "Skill14 · Ready",
+        "ready": {"config": "Config/ConfigCharacter/Avatar/Avatar_Rappa_00_Config.json", "skill": 7}
+      },
+      "tags": ["ready-pose"]
+    },
+    "base.skill.8.perform": {
+      "runtime": {"policy": "performance", "selected": "SkillP01"},
+      "run": [
+        {"op": "animation", "state": "StandBy", "end": 1, "track": {"logic": 1}, "as": "body"},
+        {"op": "wait", "for": "body", "until": "animation_end"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "SkillP01",
+        "omissions": [
+          "Only body animation and native events; additional ability choreography is not included.",
+          "NKLOMENKLHK: not included in the visual sequence projection",
+          "LAJIKDENEOO: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.callback.3473": {
+      "inputs": {
+        "callback.3473.condition.ByIsTurnActionEntity.2": {
+          "type": "bool",
+          "default": true,
+          "label": "ByIsTurnActionEntity",
+          "description": "Manual source condition: $.AbilityList[14].Modifiers[0].value._CallbackList[9].CallbackConfig[0].Predicate"
+        }
+      },
+      "runtime": {"policy": "performance", "selected": ""},
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "callback.3473.condition.ByIsTurnActionEntity.2", "is": true},
+          "then": [
+            {"op": "animation", "state": "StandBy", "end": -1.0, "track": {"logic": 1}, "as": "callback.3473.clock.1"},
+            {"op": "wait", "for": "callback.3473.clock.1", "until": "animation_end"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Rappa_00/Eff_Avatar_Rappa_00_Common_Cam.prefab",
+              "as": "callback.3473.remove.3.0"
+            },
+            {"op": "wait", "for": "callback.3473.remove.3.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Rappa_00/Eff_Avatar_Rappa_00_Skill03_03Hand.prefab",
+              "as": "callback.3473.remove.4.0"
+            },
+            {"op": "wait", "for": "callback.3473.remove.4.0", "until": "accepted"}
+          ],
+          "else": []
+        },
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Avatar_Rappa_00_Passive_Modifier: OnListenInsertAbilityStart",
+        "omissions": ["Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects."]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "base.callback.3474": {
+      "inputs": {
+        "callback.3474.condition.ByIsTurnActionEntity.2": {
+          "type": "bool",
+          "default": true,
+          "label": "ByIsTurnActionEntity",
+          "description": "Manual source condition: $.AbilityList[14].Modifiers[0].value._CallbackList[8].CallbackConfig[0].Predicate"
+        }
+      },
+      "runtime": {"policy": "performance", "selected": ""},
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "callback.3474.condition.ByIsTurnActionEntity.2", "is": true},
+          "then": [
+            {"op": "animation", "state": "StandBy", "end": -1.0, "track": {"logic": 1}, "as": "callback.3474.clock.1"},
+            {"op": "wait", "for": "callback.3474.clock.1", "until": "animation_end"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Rappa_00/Eff_Avatar_Rappa_00_Common_Cam.prefab",
+              "as": "callback.3474.remove.3.0"
+            },
+            {"op": "wait", "for": "callback.3474.remove.3.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Rappa_00/Eff_Avatar_Rappa_00_Skill03_03Hand.prefab",
+              "as": "callback.3474.remove.4.0"
+            },
+            {"op": "wait", "for": "callback.3474.remove.4.0", "until": "accepted"}
+          ],
+          "else": []
+        },
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Avatar_Rappa_00_Passive_Modifier: OnListenInsertActionStart",
+        "omissions": ["Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects."]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "base.callback.3475": {
+      "inputs": {
+        "callback.3475.condition.ByCompareTarget.2": {
+          "type": "bool",
+          "default": false,
+          "label": "ByCompareTarget",
+          "description": "Manual source condition: $.AbilityList[14].Modifiers[0].value._CallbackList[7].CallbackConfig[0].Predicate"
+        }
+      },
+      "runtime": {"policy": "performance", "selected": ""},
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "callback.3475.condition.ByCompareTarget.2", "is": true},
+          "then": [],
+          "else": [
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Rappa_00/Eff_Avatar_Rappa_00_Common_Cam.prefab",
+              "as": "callback.3475.remove.3.0"
+            },
+            {"op": "wait", "for": "callback.3475.remove.3.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Rappa_00/Eff_Avatar_Rappa_00_Skill03_03Hand.prefab",
+              "as": "callback.3475.remove.4.0"
+            },
+            {"op": "wait", "for": "callback.3475.remove.4.0", "until": "accepted"},
+            {"op": "animation", "state": "StandBy", "end": -1.0, "track": {"logic": 1}, "as": "callback.3475.clock.1"},
+            {"op": "wait", "for": "callback.3475.clock.1", "until": "animation_end"}
+          ]
+        },
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Avatar_Rappa_00_Passive_Modifier: OnListenUltraSkillPrepare",
+        "omissions": ["Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects."]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "base.callback.3477": {
+      "inputs": {
+        "callback.3477.condition.ByIsTurnActionEntity.2": {
+          "type": "bool",
+          "default": true,
+          "label": "ByIsTurnActionEntity",
+          "description": "Manual source condition: $.AbilityList[14].Modifiers[0].value._CallbackList[5].CallbackConfig[0].Predicate"
+        }
+      },
+      "runtime": {"policy": "performance", "selected": ""},
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "callback.3477.condition.ByIsTurnActionEntity.2", "is": true},
+          "then": [
+            {"op": "animation", "state": "StandBy", "end": -1.0, "track": {"logic": 1}, "as": "callback.3477.clock.1"},
+            {"op": "wait", "for": "callback.3477.clock.1", "until": "animation_end"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Rappa_00/Eff_Avatar_Rappa_00_Common_Cam.prefab",
+              "as": "callback.3477.remove.3.0"
+            },
+            {"op": "wait", "for": "callback.3477.remove.3.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Rappa_00/Eff_Avatar_Rappa_00_Skill03_03Hand.prefab",
+              "as": "callback.3477.remove.4.0"
+            },
+            {"op": "wait", "for": "callback.3477.remove.4.0", "until": "accepted"}
+          ],
+          "else": []
+        },
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Avatar_Rappa_00_Passive_Modifier: OnListenBeforeSkillUse",
+        "omissions": ["Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects."]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "base.callback.3480": {
+      "inputs": {
+        "callback.3480.condition.ByIsTurnOwnerEntity.5": {
+          "type": "bool",
+          "default": true,
+          "label": "ByIsTurnOwnerEntity",
+          "description": "Manual source condition: $.AbilityList[14].Modifiers[0].value._CallbackList[2].CallbackConfig[0].Predicate.PredicateList[0]"
+        },
+        "callback.3480.condition.ByContainBehaviorFlag.6": {
+          "type": "bool",
+          "default": true,
+          "label": "ByContainBehaviorFlag",
+          "description": "Manual source condition: $.AbilityList[14].Modifiers[0].value._CallbackList[2].CallbackConfig[0].Predicate.PredicateList[1]"
+        }
+      },
+      "runtime": {"policy": "performance", "selected": ""},
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "callback.3480.condition.ByIsTurnOwnerEntity.5", "is": true},
+          "then": [
+            {
+              "op": "if",
+              "condition": {"op": "value", "name": "callback.3480.condition.ByContainBehaviorFlag.6", "is": true},
+              "then": [
+                {"op": "animation", "state": "StandBy", "end": -1.0, "track": {"logic": 1}, "as": "callback.3480.clock.1"},
+                {"op": "wait", "for": "callback.3480.clock.1", "until": "animation_end"},
+                {
+                  "op": "effect.remove_event",
+                  "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Rappa_00/Eff_Avatar_Rappa_00_Common_Cam.prefab",
+                  "as": "callback.3480.remove.3.0"
+                },
+                {"op": "wait", "for": "callback.3480.remove.3.0", "until": "accepted"},
+                {
+                  "op": "effect.remove_event",
+                  "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Rappa_00/Eff_Avatar_Rappa_00_Skill03_03Hand.prefab",
+                  "as": "callback.3480.remove.4.0"
+                },
+                {"op": "wait", "for": "callback.3480.remove.4.0", "until": "accepted"}
+              ],
+              "else": []
+            }
+          ],
+          "else": []
+        },
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Avatar_Rappa_00_Passive_Modifier: OnListenTurnEnd",
+        "omissions": ["Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects."]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "base.callback.3481": {
+      "inputs": {
+        "callback.3481.condition.ByIsTurnOwnerEntity.5": {
+          "type": "bool",
+          "default": true,
+          "label": "ByIsTurnOwnerEntity",
+          "description": "Manual source condition: $.AbilityList[14].Modifiers[0].value._CallbackList[1].CallbackConfig[0].Predicate.PredicateList[0]"
+        }
+      },
+      "runtime": {"policy": "performance", "selected": ""},
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "callback.3481.condition.ByIsTurnOwnerEntity.5", "is": true},
+          "then": [
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Rappa_00/Eff_Avatar_Rappa_00_Common_Cam.prefab",
+              "as": "callback.3481.remove.3.0"
+            },
+            {"op": "wait", "for": "callback.3481.remove.3.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Rappa_00/Eff_Avatar_Rappa_00_Skill03_03Hand.prefab",
+              "as": "callback.3481.remove.4.0"
+            },
+            {"op": "wait", "for": "callback.3481.remove.4.0", "until": "accepted"},
+            {"op": "animation", "state": "StandBy", "end": -1.0, "track": {"logic": 1}, "as": "callback.3481.clock.1"},
+            {"op": "wait", "for": "callback.3481.clock.1", "until": "animation_end"}
+          ],
+          "else": []
+        },
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Avatar_Rappa_00_Passive_Modifier: OnListenAllowAction",
+        "omissions": ["Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects."]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "base.callback.3482": {
+      "inputs": {
+        "callback.3482.condition.ByIsTurnOwnerEntity.5": {
+          "type": "bool",
+          "default": true,
+          "label": "ByIsTurnOwnerEntity",
+          "description": "Manual source condition: $.AbilityList[14].Modifiers[0].value._CallbackList[0].CallbackConfig[0].Predicate.PredicateList[0]"
+        },
+        "callback.3482.condition.ByContainBehaviorFlag.6": {
+          "type": "bool",
+          "default": true,
+          "label": "ByContainBehaviorFlag",
+          "description": "Manual source condition: $.AbilityList[14].Modifiers[0].value._CallbackList[0].CallbackConfig[0].Predicate.PredicateList[1]"
+        },
+        "callback.3482.condition.ByIsTurnOwnerEntity.7": {
+          "type": "bool",
+          "default": true,
+          "label": "ByIsTurnOwnerEntity",
+          "description": "Manual source condition: $.AbilityList[14].Modifiers[0].value._CallbackList[0].CallbackConfig[1].Predicate"
+        }
+      },
+      "runtime": {"policy": "performance", "selected": ""},
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "callback.3482.condition.ByIsTurnOwnerEntity.5", "is": true},
+          "then": [
+            {
+              "op": "if",
+              "condition": {"op": "value", "name": "callback.3482.condition.ByContainBehaviorFlag.6", "is": true},
+              "then": [
+                {"op": "animation", "state": "StandBy", "end": -1.0, "track": {"logic": 1}, "as": "callback.3482.body.2"},
+                {"op": "wait", "for": "callback.3482.body.2", "until": "animation_end"},
+                {
+                  "op": "effect.remove_event",
+                  "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Rappa_00/Eff_Avatar_Rappa_00_Common_Cam.prefab",
+                  "as": "callback.3482.remove.3.0"
+                },
+                {"op": "wait", "for": "callback.3482.remove.3.0", "until": "accepted"},
+                {
+                  "op": "effect.remove_event",
+                  "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Rappa_00/Eff_Avatar_Rappa_00_Skill03_03Hand.prefab",
+                  "as": "callback.3482.remove.4.0"
+                },
+                {"op": "wait", "for": "callback.3482.remove.4.0", "until": "accepted"}
+              ],
+              "else": []
+            }
+          ],
+          "else": []
+        },
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "callback.3482.condition.ByIsTurnOwnerEntity.7", "is": true},
+          "then": [
+            {"op": "animation", "state": "StandBy", "end": -1.0, "track": {"logic": 1}, "as": "callback.3482.body.8"},
+            {"op": "wait", "for": "callback.3482.body.8", "until": "animation_end"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Rappa_00/Eff_Avatar_Rappa_00_Common_Cam.prefab",
+              "as": "callback.3482.remove.9.0"
+            },
+            {"op": "wait", "for": "callback.3482.remove.9.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Rappa_00/Eff_Avatar_Rappa_00_Skill03_03Hand.prefab",
+              "as": "callback.3482.remove.10.0"
+            },
+            {"op": "wait", "for": "callback.3482.remove.10.0", "until": "accepted"}
+          ],
+          "else": []
+        },
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Avatar_Rappa_00_Passive_Modifier: OnListenTurnBegin",
+        "omissions": ["Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects."]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "base.callback.3491": {
+      "inputs": {
+        "callback.3491.condition.ByCompareDynamicValue.1": {
+          "type": "bool",
+          "default": false,
+          "label": "ByCompareDynamicValue",
+          "description": "Manual source condition: $.GlobalModifiers[0].value._CallbackList[4].CallbackConfig[0].Predicate",
+          "diagnostic": true
+        },
+        "callback.3491.condition.ByContainBehaviorFlag.8": {
+          "type": "bool",
+          "default": false,
+          "label": "ByContainBehaviorFlag",
+          "description": "Manual source condition: $.GlobalModifiers[0].value._CallbackList[4].CallbackConfig[0].SuccessTaskList[0].Predicate.PredicateList[0]",
+          "diagnostic": true
+        },
+        "callback.3491.condition.ByContainBehaviorFlag.9": {
+          "type": "bool",
+          "default": false,
+          "label": "ByContainBehaviorFlag",
+          "description": "Manual source condition: $.GlobalModifiers[0].value._CallbackList[4].CallbackConfig[0].SuccessTaskList[0].Predicate.PredicateList[1]",
+          "diagnostic": true
+        }
+      },
+      "runtime": {"policy": "performance", "selected": ""},
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "callback.3491.condition.ByCompareDynamicValue.1", "is": true},
+          "then": [
+            {
+              "op": "if",
+              "condition": {"op": "value", "name": "callback.3491.condition.ByContainBehaviorFlag.8", "is": true},
+              "then": [
+                {
+                  "op": "if",
+                  "condition": {"op": "value", "name": "callback.3491.condition.ByContainBehaviorFlag.9", "is": true},
+                  "then": [],
+                  "else": []
+                }
+              ],
+              "else": []
+            }
+          ],
+          "else": []
+        },
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "MAvatar_Rappa_00_UltraMode: OnBeforeInsertActionPrepare",
+        "listed": false,
+        "omissions": [
+          "Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects.",
+          "SetControlSkillMapping: Skill mapping is configuration, not a request to play its destination ready pose; native mapping is not executed",
+          "GlobalMainIntensityEffect: not included in the visual sequence projection",
+          "EnableFieldEffectSoftZOffset: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation", "diagnostic-omission-only"]
+    },
+    "base.callback.3494": {
+      "inputs": {
+        "callback.3494.condition.ByContainBehaviorFlag.7": {
+          "type": "bool",
+          "default": false,
+          "label": "ByContainBehaviorFlag",
+          "description": "Manual source condition: $.GlobalModifiers[0].value._CallbackList[1].CallbackConfig[0].Predicate.PredicateList[0]",
+          "diagnostic": true
+        },
+        "callback.3494.condition.ByContainBehaviorFlag.8": {
+          "type": "bool",
+          "default": false,
+          "label": "ByContainBehaviorFlag",
+          "description": "Manual source condition: $.GlobalModifiers[0].value._CallbackList[1].CallbackConfig[0].Predicate.PredicateList[1]",
+          "diagnostic": true
+        }
+      },
+      "runtime": {"policy": "performance", "selected": ""},
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "callback.3494.condition.ByContainBehaviorFlag.7", "is": true},
+          "then": [
+            {
+              "op": "if",
+              "condition": {"op": "value", "name": "callback.3494.condition.ByContainBehaviorFlag.8", "is": true},
+              "then": [],
+              "else": []
+            }
+          ],
+          "else": []
+        },
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "MAvatar_Rappa_00_UltraMode: OnActionPhaseBegin",
+        "listed": false,
+        "omissions": [
+          "Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects.",
+          "SetControlSkillMapping: Skill mapping is configuration, not a request to play its destination ready pose; native mapping is not executed",
+          "GlobalMainIntensityEffect: not included in the visual sequence projection",
+          "EnableFieldEffectSoftZOffset: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation", "diagnostic-omission-only"]
+    },
+    "base.skill.9.perform": {
+      "inputs": {
+        "event": {
+          "type": "integer",
+          "default": 0,
+          "label": "Callback",
+          "choices": [
+            {"value": 0, "label": "StageAbility_Maze_Rappa_00_Modifier_Dmg: OnEnterBattle"}
+          ]
+        },
+        "callback.3488.condition.ByIsMazeSkillAffectCurrentWave.15": {
+          "type": "bool",
+          "default": true,
+          "label": "ByIsMazeSkillAffectCurrentWave",
+          "description": "Manual source condition: $.AbilityList[15].Modifiers[0].value._CallbackList[0].CallbackConfig[0].Predicate.PredicateList[0]"
+        },
+        "callback.3488.condition.ByCompareWaveCount.16": {
+          "type": "bool",
+          "default": true,
+          "label": "ByCompareWaveCount",
+          "description": "Manual source condition: $.AbilityList[15].Modifiers[0].value._CallbackList[0].CallbackConfig[0].Predicate.PredicateList[1]"
+        }
+      },
+      "requires": [
+        {"op": "number", "name": "event", "compare": "ge", "value": 0},
+        {"op": "number", "name": "event", "compare": "lt", "value": 1}
+      ],
+      "bindings": {
+        "targets": ["Recipient"]
+      },
+      "runtime": {"policy": "performance", "selected": "SkillMaze"},
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "callback.3488.condition.ByIsMazeSkillAffectCurrentWave.15", "is": true},
+          "then": [
+            {
+              "op": "if",
+              "condition": {"op": "value", "name": "callback.3488.condition.ByCompareWaveCount.16", "is": true},
+              "then": [
+                {
+                  "op": "for_each",
+                  "bind": "callback.3488.member.2",
+                  "targets": ["Recipient"],
+                  "collection": "callback.3488.targets.3",
+                  "run": [
+                    {"op": "effect.create", "effects": ["base.callback.3488.effect.6"], "as": "callback.3488.effect.6"},
+                    {"op": "wait", "for": "callback.3488.effect.6", "until": "accepted"},
+                    {
+                      "op": "hit",
+                      "target": "callback.3488.member.2",
+                      "animation": "Hit",
+                      "direction": {},
+                      "effect": {"path": "", "minimum_interval": 0.0500000007, "maximum_count": 1},
+                      "allow_position": true,
+                      "as": "callback.3488.hit.7"
+                    },
+                    {"op": "wait", "for": "callback.3488.hit.7", "until": "accepted"},
+                    {
+                      "op": "for_each",
+                      "bind": "callback.3488.member.8",
+                      "targets": ["Recipient"],
+                      "collection": "callback.3488.targets.9",
+                      "run": [
+                        {
+                          "op": "hit",
+                          "target": "callback.3488.member.8",
+                          "animation": "Hit",
+                          "direction": {},
+                          "effect": {"path": "", "minimum_interval": 0.0500000007, "maximum_count": 1},
+                          "allow_position": true,
+                          "as": "callback.3488.hit.12"
+                        },
+                        {"op": "wait", "for": "callback.3488.hit.12", "until": "accepted"}
+                      ],
+                      "empty": []
+                    }
+                  ],
+                  "empty": []
+                },
+                {"op": "wait", "seconds": 0.2000000001}
+              ],
+              "else": []
+            }
+          ],
+          "else": []
+        },
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "effect.remove", "effects": ["base.callback.3488.effect.6"], "optional": ["base.callback.3488.effect.6"], "as": "callback.3488.remove-effects"},
+        {"op": "wait", "for": "callback.3488.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "effect.remove", "effects": ["base.callback.3488.effect.6"], "optional": ["base.callback.3488.effect.6"], "as": "callback.3488.remove-effects"},
+        {"op": "wait", "for": "callback.3488.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "SkillMaze",
+        "omissions": [
+          "Manual visual callback selection; no native combat modifier or automatic event simulation.",
+          "event: 0=StageAbility_Maze_Rappa_00_Modifier_Dmg: OnEnterBattle",
+          "Retarget: recipient collection is explicitly selected; native filtering, random selection and count limits are not simulated"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "base.skill.10.perform": {
+      "use": "common.elemental.responses",
+      "runtime": {"policy": "performance", "selected": "PassiveSkill02"},
+      "next": "base.rest"
+    },
+    "base.preview.hit": {
+      "inputs": {
+        "kind": {
+          "type": "text",
+          "default": "Hit",
+          "label": "Hit type",
+          "choices": [
+            {"value": "Hit", "label": "Hit"},
+            {"value": "Hit_H", "label": "Hit_H"}
+          ]
+        }
+      },
+      "runtime": {"policy": "performance", "selected": ""},
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "kind", "is": "Hit_H"},
+          "then": [
+            {"op": "hit", "target": "Caster", "animation": "Hit_H", "as": "hit-heavy"},
+            {"op": "wait", "for": "hit-heavy"}
+          ],
+          "else": [
+            {"op": "hit", "target": "Caster", "animation": "Hit", "as": "hit"},
+            {"op": "wait", "for": "hit"}
+          ]
+        }
+      ],
+      "next": "base.rest",
+      "presentation": {"label": "Hit"},
+      "tags": ["manual-visual-callback"]
+    },
+    "compiled.0.Avatar_Rappa_00_Config.skill-0.entry": {
+      "requires": [
+        {"op": "target", "name": "AbilityTargetEntity", "allow_position": true},
+        {"op": "playback", "name": "performance", "values": ["ready"]},
+        {"op": "playback", "name": "selected", "is": "Skill01"}
+      ],
+      "runtime": {"policy": "continuous"},
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Rappa_00_Skill01_Phase01",
+          "run": [
+            {
+              "op": "start",
+              "id": "Avatar_Rappa_00_Skill01_Phase02",
+              "run": [
+                {"op": "wait", "for": "body.0", "progress": 0.1249999997},
+                {"op": "wait", "for": "body.0", "progress": 0.1569999996},
+                {"op": "attack.record", "target": "AbilityTargetEntity", "allow_position": true, "as": "$.AbilityList[1].OnStart[2].record"},
+                {"op": "wait", "for": "$.AbilityList[1].OnStart[2].record", "until": "accepted"},
+                {
+                  "op": "hit",
+                  "target": "AbilityTargetEntity",
+                  "animation": "Hit",
+                  "events": ["after_hit", "after_hit_all"],
+                  "direction": {"horizontal": -70.0, "vertical": -30.0},
+                  "effect": {
+                    "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Rappa_00/Eff_Avatar_Rappa_00_Skill01_Hit01.prefab",
+                    "height": 1.399999976158142,
+                    "minimum_interval": 0.0500000007,
+                    "maximum_count": 1
+                  },
+                  "allow_position": true,
+                  "as": "$.AbilityList[1].OnStart[2]"
+                },
+                {"op": "wait", "for": "$.AbilityList[1].OnStart[2]", "until": "accepted"},
+                {
+                  "op": "effect.create",
+                  "effects": ["compiled.0.Avatar_Rappa_00_Config.skill-0.$.AbilityList[1].OnStart[3]"],
+                  "as": "$.AbilityList[1].OnStart[3]"
+                },
+                {"op": "wait", "for": "$.AbilityList[1].OnStart[3]", "until": "accepted"},
+                {"op": "wait", "for": "body.0", "progress": 0.2300000002},
+                {"op": "wait", "for": "body.0", "progress": 0.2449999998},
+                {"op": "attack.record", "target": "AbilityTargetEntity", "allow_position": true, "as": "$.AbilityList[1].OnStart[6].record"},
+                {"op": "wait", "for": "$.AbilityList[1].OnStart[6].record", "until": "accepted"},
+                {
+                  "op": "hit",
+                  "target": "AbilityTargetEntity",
+                  "animation": "Hit",
+                  "events": ["after_hit", "after_hit_all"],
+                  "direction": {"vertical": 50.0},
+                  "effect": {
+                    "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Rappa_00/Eff_Avatar_Rappa_00_Skill01_Hit02.prefab",
+                    "height": 1.2000000476837158,
+                    "minimum_interval": 0.0500000007,
+                    "maximum_count": 1
+                  },
+                  "allow_position": true,
+                  "as": "$.AbilityList[1].OnStart[6]"
+                },
+                {"op": "wait", "for": "$.AbilityList[1].OnStart[6]", "until": "accepted"},
+                {"op": "attack.finish", "as": "$.AbilityList[1].OnStart[7]"},
+                {"op": "wait", "for": "$.AbilityList[1].OnStart[7]", "until": "accepted"},
+                {"op": "playback.value", "variable": "performance", "operation": "set", "value": "finished", "as": "$.AbilityList[1].OnStart[8]"}
+              ],
+              "join": true
+            },
+            {"op": "facing.target", "target": "AbilityTargetEntity", "as": "$.AbilityList[0].OnStart[2]"},
+            {"op": "wait", "for": "$.AbilityList[0].OnStart[2]", "until": "accepted"},
+            {"op": "animation", "state": "Skill01", "start": 0.01, "end": 0.0, "track": {"logic": 3}, "as": "body.0"},
+            {
+              "op": "movement",
+              "animation": "body.0",
+              "segments": [
+                {
+                  "destination": "target",
+                  "name": "AbilityTargetEntity",
+                  "target_geometry": true,
+                  "start": 0.0959999996,
+                  "end": 0.141,
+                  "sample": {"distance": 2.0, "percentage": 1.0, "include_radii": true}
+                },
+                {
+                  "destination": "origin",
+                  "start": 0.6400000005,
+                  "end": 0.7070000001,
+                  "sample": {"distance": 0.0, "percentage": 1.0, "include_radii": true}
+                }
+              ],
+              "as": "body.0.movement"
+            },
+            {"op": "wait", "for": "body.0", "progress": 0.0},
+            {"op": "wait", "for": "body.0", "progress": 0.1019999999},
+            {"op": "wait", "for": "body.0", "progress": 0.1400000001},
+            {"op": "wait", "for": "body.0", "progress": 0.6820000004}
+          ],
+          "join": true
+        },
+        {"op": "join"},
+        {"op": "playback.value", "variable": "performance", "operation": "set", "value": "resetting", "as": "after"},
+        {"op": "call", "function": "@return.return"},
+        {"op": "wait", "for": "return", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return-position"},
+        {"op": "wait", "for": "return-position"},
+        {"op": "playback.value", "variable": "performance", "operation": "set", "value": "ready", "as": "reset"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.abort-return"},
+        {"op": "wait", "for": "abort-return", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "abort-position"},
+        {"op": "wait", "for": "abort-position"}
+      ],
+      "next": "compiled.0.Avatar_Rappa_00_Config.skill-0.rest",
+      "presentation": {"label": "Avatar_Rappa_00_Skill01_Phase01"},
+      "tags": ["entry-development"]
+    },
+    "compiled.0.Avatar_Rappa_00_Config.skill-0.select": {
+      "requires": [
+        {"op": "playback", "name": "performance", "values": ["ready", "failed"]}
+      ],
+      "runtime": {"policy": "setting", "selected": "Skill01"},
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Rappa_00_Config.json", "skill": 0, "as": "ready"},
+        {"op": "wait", "for": "ready"}
+      ],
+      "presentation": {
+        "label": "Skill01_Ready",
+        "ready": {"config": "Config/ConfigCharacter/Avatar/Avatar_Rappa_00_Config.json", "skill": 0}
+      },
+      "tags": ["selection-development"]
+    },
+    "compiled.0.Avatar_Rappa_00_Config.skill-0.rest": {
+      "trigger": "internal",
+      "runtime": {"policy": "ready", "selected": ""},
+      "run": [
+        {"op": "call", "function": "@return.idle"},
+        {"op": "wait", "for": "idle", "until": "submitted"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["stable-return"]
+    },
+    "@receiver-clear/base.callback.5359.receiver-property.3": {
+      "requires": [
+        {"op": "state", "name": "common.elemental.frozen-hit"}
+      ],
+      "mode": "input",
+      "run": [
+        {"op": "state.exit", "name": "common.elemental.frozen-hit", "only_caster": true, "as": "clear"},
+        {"op": "wait", "for": "clear"}
+      ],
+      "presentation": {
+        "label": "Clear hit effect override",
+        "kind": "setting",
+        "contexts": ["common.elemental.frozen-hit"]
+      },
+      "tags": ["visual-receiver-clear"]
+    },
+    "@idle": {
+      "runtime": {"policy": "ready", "selected": ""},
+      "run": [
+        {"op": "call", "function": "@return.rest.pose"}
+      ],
+      "presentation": {"label": "Idle"},
+      "tags": ["script-idle"]
+    }
+  },
+  "functions": {
+    "@return.rest.pose": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "rest.pose.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "rest.pose"
+      }
+    ],
+    "@return.return.pose": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "return.pose.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "return.pose"
+      }
+    ],
+    "@return.return": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "return.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "return"
+      }
+    ],
+    "@return.abort-return": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "abort-return.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "abort-return"
+      }
+    ],
+    "@return.idle": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "idle.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "idle"
+      }
+    ]
+  },
+  "states": {},
+  "resources": {
+    "effects": {
+      "base.skill.4.effect.14": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Rappa_00/Eff_Avatar_Rappa_00_Skill03_Dg01.prefab",
+        "target": "Caster",
+        "position_offset": [0.5, 0.0, 0.0]
+      },
+      "base.skill.4.effect.15": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Rappa_00/Eff_Avatar_Rappa_00_Skill03_Hit01.prefab",
+        "target": "Caster",
+        "position_offset": [0.5, 0.0, 0.0]
+      },
+      "base.skill.5.effect.10": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Rappa_00/Eff_Avatar_Rappa_00_Skill03_Dg02.prefab",
+        "target": "Caster",
+        "position_offset": [0.25, 0.0, 0.0]
+      },
+      "base.callback.3488.effect.6": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Rappa_00/Eff_Avatar_Rappa_00_PassiveSkill_Hit02.prefab",
+        "target": "callback.3488.member.2",
+        "attach_point": "SelectRoot"
+      },
+      "compiled.0.Avatar_Rappa_00_Config.skill-0.$.AbilityList[1].OnStart[3]": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Rappa_00/Eff_Avatar_Rappa_00_Skill01_Hit01_Ground.prefab",
+        "target": "AbilityTargetEntity",
+        "mutex": {"interval": 0.0, "maximum": 1, "scope": "global"},
+        "allow_position": true
+      }
+    }
+  }
+}

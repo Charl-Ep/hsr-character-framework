@@ -1,0 +1,903 @@
+{
+  "format": "hksr.script",
+  "id": "official-scripts:Config/ConfigCharacter/Avatar/Avatar_Aventurine_00_Config.json",
+  "applies_to": "Config/ConfigCharacter/Avatar/Avatar_Aventurine_00_Config.json",
+  "default": true,
+  "imports": ["Common/Elemental.json"],
+  "defaults": {
+    "targets": {
+      "PreviewTarget": {
+        "local_position": [0, 0, 6]
+      }
+    }
+  },
+  "actions": {
+    "rest": {
+      "trigger": "internal",
+      "run": [
+        {"op": "call", "function": "@return.rest.pose"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["stable-return", "idle-provider"]
+    },
+    "skill.0.perform": {
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Aventurine_00_Skill01_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Aventurine_00_Skill01_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.0.clock.1", "progress": 0.1939999999},
+            {"op": "wait", "for": "skill.0.clock.1", "progress": 0.425},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit_H",
+              "direction": {},
+              "effect": {"path": "", "height": 1.0, "minimum_interval": 0.0500000007, "maximum_count": 1},
+              "allow_position": true,
+              "as": "skill.0.hit.18"
+            },
+            {"op": "wait", "for": "skill.0.hit.18", "until": "accepted"}
+          ],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill01", "end": 1.0, "track": {"logic": 3}, "as": "skill.0.clock.1"},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.0},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.3659999999},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.4210000003},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.9800000009},
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "Skill01",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "LookAt: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "TriggerEffect: effect needs a non-owned target, dynamic path, or Timeline attachment"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "skill.0.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Aventurine_00_Config.json", "skill": 0, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "skill.1.perform": {
+      "run": [
+        {
+          "op": "effect.remove_event",
+          "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Aventurine_00/Eff_Avatar_Aventurine_00_Skill02_Ready.prefab",
+          "fade": false,
+          "as": "skill.1.remove.5.0"
+        },
+        {"op": "wait", "for": "skill.1.remove.5.0", "until": "accepted"},
+        {
+          "op": "start",
+          "id": "Avatar_Aventurine_00_Skill02_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Aventurine_00_Skill02_Phase02",
+          "run": [],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill02", "end": 1.0, "track": {"logic": 3}, "as": "skill.1.clock.1"},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 1.0},
+        {"op": "animation", "state": "Skill02_End01", "end": 1.0, "track": {"logic": 3}, "as": "skill.1.clock.2"},
+        {"op": "wait", "for": "skill.1.clock.2", "progress": 0.0},
+        {"op": "wait", "for": "skill.1.clock.2", "progress": 0.9000000008},
+        {"op": "wait", "for": "skill.1.clock.2", "progress": 1.0},
+        {"op": "animation", "state": "StandBy", "end": -1.0, "track": {"logic": 1}, "as": "skill.1.clock.3"},
+        {"op": "wait", "for": "skill.1.clock.3", "until": "animation_end"},
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "Skill02",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "LookAt: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitTimelineFinish: not included in the visual sequence projection",
+          "IncludeTaskListTemplate: serial step depends on an unavailable source clock; no timing is inferred",
+          "LoopTargetList: serial step depends on an unavailable source clock; no timing is inferred",
+          "SkillPerformFinish: serial step depends on an unavailable source clock; no timing is inferred",
+          "GlobalMainIntensityEffect: not included in the visual sequence projection",
+          "TriggerEffect: effect needs a non-owned target, dynamic path, or Timeline attachment",
+          "RemoveEffect: effect removal has no owned target binding"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "skill.1.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Aventurine_00_Config.json", "skill": 1, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "skill.2.perform": {
+      "inputs": {
+        "skill.2.condition.ByIsContainModifier.38": {
+          "type": "bool",
+          "default": false,
+          "label": "ByIsContainModifier",
+          "description": "Manual source condition: $.AbilityList[5].OnStart[8].TaskList[0].Predicate"
+        }
+      },
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Aventurine_00_Skill03_Camera",
+          "run": [
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.202}
+          ],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill03", "end": -1.0, "track": {"logic": 3}, "as": "skill.2.clock.1"},
+        {"op": "wait", "for": "skill.2.clock.1", "until": "animation_end"},
+        {
+          "op": "start",
+          "id": "Avatar_Aventurine_00_Skill03_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.0009999999},
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.7810000006},
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.7880000001},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit_H",
+              "direction": {},
+              "effect": {"path": "", "height": 1.0, "minimum_interval": 0.0500000007, "maximum_count": 1},
+              "allow_position": true,
+              "as": "skill.2.hit.10"
+            },
+            {"op": "wait", "for": "skill.2.hit.10", "until": "accepted"},
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.7920000005},
+            {
+              "op": "for_each",
+              "bind": "skill.2.member.14",
+              "targets": ["PreviewTarget"],
+              "collection": "skill.2.targets.15",
+              "run": [],
+              "empty": []
+            },
+            {
+              "op": "for_each",
+              "bind": "skill.2.member.24",
+              "targets": ["PreviewTarget"],
+              "collection": "skill.2.targets.25",
+              "run": [],
+              "empty": []
+            }
+          ],
+          "join": true
+        },
+        {"op": "wait", "for": "skill.2.clock.1", "progress": 0.202},
+        {
+          "op": "for_each",
+          "bind": "skill.2.member.36",
+          "targets": ["PreviewTarget"],
+          "collection": "skill.2.targets.37",
+          "run": [
+            {
+              "op": "if",
+              "condition": {"op": "value", "name": "skill.2.condition.ByIsContainModifier.38", "is": true},
+              "then": [
+                {"op": "effect.create", "effects": ["skill.2.effect.39"], "as": "skill.2.effect.39"},
+                {"op": "wait", "for": "skill.2.effect.39", "until": "accepted"}
+              ],
+              "else": [
+                {"op": "effect.create", "effects": ["skill.2.effect.40"], "as": "skill.2.effect.40"},
+                {"op": "wait", "for": "skill.2.effect.40", "until": "accepted"}
+              ]
+            }
+          ],
+          "empty": []
+        },
+        {"op": "wait", "for": "skill.2.clock.1", "progress": 0.7880000001},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {
+          "op": "effect.remove",
+          "effects": ["skill.2.effect.39", "skill.2.effect.40"],
+          "optional": ["skill.2.effect.39", "skill.2.effect.40"],
+          "as": "skill.2.remove-effects"
+        },
+        {"op": "wait", "for": "skill.2.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {
+          "op": "effect.remove",
+          "effects": ["skill.2.effect.39", "skill.2.effect.40"],
+          "optional": ["skill.2.effect.39", "skill.2.effect.40"],
+          "as": "skill.2.remove-effects"
+        },
+        {"op": "wait", "for": "skill.2.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "Skill03",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "LookAt: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "TargetTimeSlow: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "Retarget: recipient collection is explicitly selected; native filtering, random selection and count limits are not simulated",
+          "RandomConfig: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "SetSkillTargetFormationByPos: not included in the visual sequence projection",
+          "HideLevelStage: not included in the visual sequence projection",
+          "TriggerEffect: effect needs a non-owned target, dynamic path, or Timeline attachment",
+          "ScaleCharacterModel: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "WaitTimelineFinish: not included in the visual sequence projection",
+          "HideLevelStage: serial step depends on an unavailable source clock; no timing is inferred",
+          "ScaleCharacterModel: serial step depends on an unavailable source clock; no timing is inferred",
+          "SetTeamFormation: serial step depends on an unavailable source clock; no timing is inferred",
+          "MoveToTargetPosition: serial step depends on an unavailable source clock; no timing is inferred",
+          "TriggerAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "LookAt: serial step depends on an unavailable source clock; no timing is inferred",
+          "RemoveEffect: serial step depends on an unavailable source clock; no timing is inferred"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "skill.2.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Aventurine_00_Config.json", "skill": 2, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "callback.736": {
+      "inputs": {
+        "enabled": {"type": "bool", "default": true, "label": "Enabled"}
+      },
+      "bindings": {
+        "targets": ["Recipient"]
+      },
+      "mode": "input",
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "enabled", "is": true},
+          "then": [
+            {"op": "state.enter", "name": "callback.736.receiver-property.1", "as": "setting.1"},
+            {"op": "wait", "for": "setting.1"}
+          ],
+          "else": [
+            {"op": "state.exit", "name": "callback.736.receiver-property.1", "as": "setting.1"},
+            {"op": "wait", "for": "setting.1"}
+          ]
+        }
+      ],
+      "presentation": {
+        "label": "MAvatar_Aventurine_StackableShield: OnStack",
+        "kind": "setting",
+        "contexts": ["callback.736.receiver-property.1"],
+        "omissions": [
+          "SetResilience: owned visual receiver override only; no shield value, expiry, native modifier or automatic death/break transition",
+          "StackShield: not included in the visual sequence projection",
+          "SetModifierOverrideNameForStatus: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "skill.3.perform": {
+      "inputs": {
+        "event": {
+          "type": "integer",
+          "default": 0,
+          "label": "Callback",
+          "choices": [
+            {"value": 0, "label": "MAvatar_Aventurine_00_Skill02_ShieldEffect: OnStack"},
+            {"value": 1, "label": "MAvatar_Aventurine_00_ResistCtrl: OnImmuneDebuff"},
+            {"value": 2, "label": "Avatar_Aventurine_00_PassiveSkill01_InsertAbility"}
+          ]
+        },
+        "callback.722.condition.ByCompareDynamicValue.1": {
+          "type": "bool",
+          "default": false,
+          "label": "ByCompareDynamicValue",
+          "description": "Manual source condition: $.GlobalModifiers[5].value._CallbackList[0].CallbackConfig[0].Predicate"
+        },
+        "callback.722.condition.ByCompareDynamicValue.2": {
+          "type": "bool",
+          "default": true,
+          "label": "ByCompareDynamicValue",
+          "description": "Manual source condition: $.GlobalModifiers[5].value._CallbackList[0].CallbackConfig[0].SuccessTaskList[0].Predicate"
+        },
+        "callback.722.condition.ByCompareDynamicValue.17": {
+          "type": "bool",
+          "default": false,
+          "label": "ByCompareDynamicValue",
+          "description": "Manual source condition: $.GlobalModifiers[5].value._CallbackList[0].CallbackConfig[0].FailedTaskList[1].Predicate"
+        },
+        "callback.722.condition.ByCompareDynamicValue.18": {
+          "type": "bool",
+          "default": true,
+          "label": "ByCompareDynamicValue",
+          "description": "Manual source condition: $.GlobalModifiers[5].value._CallbackList[0].CallbackConfig[0].FailedTaskList[1].SuccessTaskList[0].Predicate"
+        },
+        "callback.722.condition.ByCompareDynamicValue.27": {
+          "type": "bool",
+          "default": false,
+          "label": "ByCompareDynamicValue",
+          "description": "Manual source condition: $.GlobalModifiers[5].value._CallbackList[0].CallbackConfig[0].FailedTaskList[1].FailedTaskList[0].Predicate"
+        },
+        "callback.722.condition.ByCompareDynamicValue.28": {
+          "type": "bool",
+          "default": true,
+          "label": "ByCompareDynamicValue",
+          "description": "Manual source condition: $.GlobalModifiers[5].value._CallbackList[0].CallbackConfig[0].FailedTaskList[1].FailedTaskList[0].SuccessTaskList[0].Predicate"
+        },
+        "callback.722.condition.ByCompareDynamicValue.37": {
+          "type": "bool",
+          "default": true,
+          "label": "ByCompareDynamicValue",
+          "description": "Manual source condition: $.GlobalModifiers[5].value._CallbackList[0].CallbackConfig[0].FailedTaskList[1].FailedTaskList[0].FailedTaskList[0].Predicate"
+        },
+        "callback.742.condition.ByCheckModifierCallBackBehaviorFlag.5": {
+          "type": "bool",
+          "default": true,
+          "label": "ByCheckModifierCallBackBehaviorFlag",
+          "description": "Manual source condition: $.GlobalModifiers[28].value._CallbackList[0].CallbackConfig[0].Predicate.PredicateList[0]"
+        },
+        "callback.742.condition.ByIsContainModifier.6": {
+          "type": "bool",
+          "default": true,
+          "label": "ByIsContainModifier",
+          "description": "Manual source condition: $.GlobalModifiers[28].value._CallbackList[0].CallbackConfig[0].Predicate.PredicateList[1]"
+        }
+      },
+      "requires": [
+        {"op": "number", "name": "event", "compare": "ge", "value": 0},
+        {"op": "number", "name": "event", "compare": "lt", "value": 3}
+      ],
+      "bindings": {
+        "targets": ["Recipient"]
+      },
+      "run": [
+        {
+          "op": "switch",
+          "name": "event",
+          "cases": [
+            {
+              "is": 1,
+              "run": [
+                {
+                  "op": "if",
+                  "condition": {"op": "value", "name": "callback.742.condition.ByCheckModifierCallBackBehaviorFlag.5", "is": true},
+                  "then": [
+                    {
+                      "op": "if",
+                      "condition": {"op": "value", "name": "callback.742.condition.ByIsContainModifier.6", "is": true},
+                      "then": [
+                        {"op": "effect.create", "effects": ["callback.742.effect.2"], "as": "callback.742.effect.2"},
+                        {"op": "wait", "for": "callback.742.effect.2", "until": "accepted"}
+                      ],
+                      "else": []
+                    }
+                  ],
+                  "else": []
+                },
+                {"op": "join"},
+                {
+                  "op": "repeat",
+                  "until_finish": true,
+                  "run": [
+                    {"op": "wait", "frame": true}
+                  ]
+                },
+                {"op": "effect.remove", "effects": ["callback.742.effect.2"], "optional": ["callback.742.effect.2"], "as": "callback.742.remove-effects"},
+                {"op": "wait", "for": "callback.742.remove-effects", "until": "accepted"},
+                {"op": "call", "function": "@return.return.pose"},
+                {"op": "wait", "for": "return.pose", "until": "submitted"},
+                {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+                {"op": "wait", "for": "return.position"}
+              ],
+              "label": "MAvatar_Aventurine_00_ResistCtrl: OnImmuneDebuff"
+            },
+            {
+              "is": 2,
+              "run": [
+                {
+                  "op": "start",
+                  "id": "Avatar_Aventurine_00_PassiveSkill01_InsertAbility_Camera",
+                  "run": [],
+                  "join": true
+                },
+                {
+                  "op": "start",
+                  "id": "Avatar_Aventurine_00_PassiveSkill01_InsertAbilityPhase02",
+                  "run": [
+                    {"op": "wait", "for": "followup.0.clock.1", "progress": 0.5189999998},
+                    {"op": "wait", "for": "followup.0.clock.1", "progress": 1.0}
+                  ],
+                  "join": true
+                },
+                {"op": "animation", "state": "PassiveSkill", "end": 1.0, "track": {"logic": 3}, "as": "followup.0.clock.1"},
+                {"op": "wait", "for": "followup.0.clock.1", "progress": 0.0},
+                {"op": "wait", "for": "followup.0.clock.1", "progress": 0.2689999996},
+                {"op": "join"},
+                {"op": "wait", "for": "followup.0.clock.1", "until": "animation_end"},
+                {"op": "call", "function": "@return.return.pose"},
+                {"op": "wait", "for": "return.pose", "until": "submitted"},
+                {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+                {"op": "wait", "for": "return.position"}
+              ],
+              "label": "Avatar_Aventurine_00_PassiveSkill01_InsertAbility"
+            }
+          ],
+          "default": [
+            {
+              "op": "if",
+              "condition": {"op": "value", "name": "callback.722.condition.ByCompareDynamicValue.1", "is": true},
+              "then": [
+                {
+                  "op": "if",
+                  "condition": {"op": "value", "name": "callback.722.condition.ByCompareDynamicValue.2", "is": true},
+                  "then": [
+                    {"op": "effect.create", "effects": ["callback.722.effect.3"], "as": "callback.722.effect.3"},
+                    {"op": "wait", "for": "callback.722.effect.3", "until": "accepted"}
+                  ],
+                  "else": []
+                },
+                {"op": "state.enter", "name": "callback.722.receiver-property.9", "as": "callback.722.receiver-property.9"},
+                {"op": "wait", "for": "callback.722.receiver-property.9"}
+              ],
+              "elif": [
+                {
+                  "condition": {"op": "value", "name": "callback.722.condition.ByCompareDynamicValue.17", "is": true},
+                  "then": [
+                    {
+                      "op": "if",
+                      "condition": {"op": "value", "name": "callback.722.condition.ByCompareDynamicValue.18", "is": true},
+                      "then": [
+                        {"op": "effect.create", "effects": ["callback.722.effect.19"], "as": "callback.722.effect.19"},
+                        {"op": "wait", "for": "callback.722.effect.19", "until": "accepted"}
+                      ],
+                      "else": []
+                    },
+                    {"op": "state.enter", "name": "callback.722.receiver-property.25", "as": "callback.722.receiver-property.25"},
+                    {"op": "wait", "for": "callback.722.receiver-property.25"}
+                  ]
+                },
+                {
+                  "condition": {"op": "value", "name": "callback.722.condition.ByCompareDynamicValue.27", "is": true},
+                  "then": [
+                    {
+                      "op": "if",
+                      "condition": {"op": "value", "name": "callback.722.condition.ByCompareDynamicValue.28", "is": true},
+                      "then": [
+                        {"op": "effect.create", "effects": ["callback.722.effect.29"], "as": "callback.722.effect.29"},
+                        {"op": "wait", "for": "callback.722.effect.29", "until": "accepted"}
+                      ],
+                      "else": []
+                    },
+                    {"op": "state.enter", "name": "callback.722.receiver-property.35", "as": "callback.722.receiver-property.35"},
+                    {"op": "wait", "for": "callback.722.receiver-property.35"}
+                  ]
+                }
+              ],
+              "else": [
+                {
+                  "op": "if",
+                  "condition": {"op": "value", "name": "callback.722.condition.ByCompareDynamicValue.37", "is": true},
+                  "then": [
+                    {"op": "effect.create", "effects": ["callback.722.effect.38"], "as": "callback.722.effect.38"},
+                    {"op": "wait", "for": "callback.722.effect.38", "until": "accepted"}
+                  ],
+                  "else": []
+                },
+                {"op": "state.enter", "name": "callback.722.receiver-property.41", "as": "callback.722.receiver-property.41"},
+                {"op": "wait", "for": "callback.722.receiver-property.41"}
+              ]
+            },
+            {"op": "join"},
+            {
+              "op": "repeat",
+              "until_finish": true,
+              "run": [
+                {"op": "wait", "frame": true}
+              ]
+            },
+            {
+              "op": "effect.remove",
+              "effects": ["callback.722.effect.3", "callback.722.effect.19", "callback.722.effect.29", "callback.722.effect.38"],
+              "optional": ["callback.722.effect.3", "callback.722.effect.19", "callback.722.effect.29", "callback.722.effect.38"],
+              "as": "callback.722.remove-effects"
+            },
+            {"op": "wait", "for": "callback.722.remove-effects", "until": "accepted"},
+            {"op": "call", "function": "@return.return.pose"},
+            {"op": "wait", "for": "return.pose", "until": "submitted"},
+            {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+            {"op": "wait", "for": "return.position"}
+          ]
+        }
+      ],
+      "on_interrupt": [
+        {
+          "op": "switch",
+          "name": "event",
+          "cases": [
+            {
+              "is": 1,
+              "run": [
+                {"op": "effect.remove", "effects": ["callback.742.effect.2"], "optional": ["callback.742.effect.2"], "as": "callback.742.remove-effects"},
+                {"op": "wait", "for": "callback.742.remove-effects", "until": "accepted"},
+                {"op": "call", "function": "@return.return.pose"},
+                {"op": "wait", "for": "return.pose", "until": "submitted"},
+                {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+                {"op": "wait", "for": "return.position"}
+              ],
+              "label": "MAvatar_Aventurine_00_ResistCtrl: OnImmuneDebuff"
+            },
+            {
+              "is": 2,
+              "run": [
+                {"op": "call", "function": "@return.return.pose"},
+                {"op": "wait", "for": "return.pose", "until": "submitted"},
+                {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+                {"op": "wait", "for": "return.position"}
+              ],
+              "label": "Avatar_Aventurine_00_PassiveSkill01_InsertAbility"
+            }
+          ],
+          "default": [
+            {
+              "op": "effect.remove",
+              "effects": ["callback.722.effect.3", "callback.722.effect.19", "callback.722.effect.29", "callback.722.effect.38"],
+              "optional": ["callback.722.effect.3", "callback.722.effect.19", "callback.722.effect.29", "callback.722.effect.38"],
+              "as": "callback.722.remove-effects"
+            },
+            {"op": "wait", "for": "callback.722.remove-effects", "until": "accepted"},
+            {"op": "call", "function": "@return.return.pose"},
+            {"op": "wait", "for": "return.pose", "until": "submitted"},
+            {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+            {"op": "wait", "for": "return.position"}
+          ]
+        }
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "SkillP01",
+        "omissions": [
+          "Manual visual callback selection; no native combat modifier or automatic event simulation.",
+          "event: 0=MAvatar_Aventurine_00_Skill02_ShieldEffect: OnStack, 1=MAvatar_Aventurine_00_ResistCtrl: OnImmuneDebuff, 2=Avatar_Aventurine_00_PassiveSkill01_InsertAbility",
+          "SetModifierOverrideNameForStatus: not included in the visual sequence projection",
+          "ModifierOverrideOnHitEffect: owned visual receiver override only; no shield value, expiry, native modifier or automatic death/break transition",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "LoopExecuteTaskList: not included in the visual sequence projection",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "TargetTimeSlow: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "TriggerEffect: effect needs a non-owned target, dynamic path, or Timeline attachment",
+          "HideLevelStage: not included in the visual sequence projection",
+          "SetTeamFormation: not included in the visual sequence projection",
+          "GlobalMainIntensityEffect: not included in the visual sequence projection",
+          "WaitTimelineFinish: not included in the visual sequence projection",
+          "HideLevelStage: serial step depends on an unavailable source clock; no timing is inferred",
+          "GlobalMainIntensityEffect: serial step depends on an unavailable source clock; no timing is inferred",
+          "SetTeamRootOffset: serial step depends on an unavailable source clock; no timing is inferred",
+          "SetTeamFormation: serial step depends on an unavailable source clock; no timing is inferred"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "skill.5.perform": {"use": "common.elemental.responses", "next": "rest"},
+    "preview.hit": {
+      "inputs": {
+        "kind": {
+          "type": "text",
+          "default": "Hit",
+          "label": "Hit type",
+          "choices": [
+            {"value": "Hit", "label": "Hit"},
+            {"value": "Hit_H", "label": "Hit_H"}
+          ]
+        }
+      },
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "kind", "is": "Hit_H"},
+          "then": [
+            {"op": "hit", "target": "Caster", "animation": "Hit_H", "as": "hit-heavy"},
+            {"op": "wait", "for": "hit-heavy"}
+          ],
+          "else": [
+            {"op": "hit", "target": "Caster", "animation": "Hit", "as": "hit"},
+            {"op": "wait", "for": "hit"}
+          ]
+        }
+      ],
+      "next": "rest",
+      "presentation": {"label": "Hit"},
+      "tags": ["manual-visual-callback"]
+    },
+    "source.4": {
+      "requires": [
+        {
+          "op": "unresolved",
+          "source": "Config/ConfigCharacter/Avatar/Avatar_Aventurine_00_Config.json:$.SkillList[4]",
+          "detail": "Retained activation has no enabled projected task; empty source is not a visual action"
+        }
+      ],
+      "trigger": "internal",
+      "run": [],
+      "presentation": {
+        "label": "SkillMaze",
+        "listed": false,
+        "omissions": ["Retained activation has no enabled projected task; empty source is not a visual action"]
+      },
+      "tags": ["retained-source"]
+    },
+    "@receiver-clear/callback.722.receiver-property.9": {
+      "requires": [
+        {"op": "state", "name": "callback.722.receiver-property.9"}
+      ],
+      "mode": "input",
+      "run": [
+        {"op": "state.exit", "name": "callback.722.receiver-property.9", "only_caster": true, "as": "clear"},
+        {"op": "wait", "for": "clear"}
+      ],
+      "presentation": {
+        "label": "Clear hit effect override",
+        "kind": "setting",
+        "contexts": ["callback.722.receiver-property.9"]
+      },
+      "tags": ["visual-receiver-clear"]
+    },
+    "@receiver-clear/callback.722.receiver-property.25": {
+      "requires": [
+        {"op": "state", "name": "callback.722.receiver-property.25"}
+      ],
+      "mode": "input",
+      "run": [
+        {"op": "state.exit", "name": "callback.722.receiver-property.25", "only_caster": true, "as": "clear"},
+        {"op": "wait", "for": "clear"}
+      ],
+      "presentation": {
+        "label": "Clear hit effect override",
+        "kind": "setting",
+        "contexts": ["callback.722.receiver-property.25"]
+      },
+      "tags": ["visual-receiver-clear"]
+    },
+    "@receiver-clear/callback.722.receiver-property.35": {
+      "requires": [
+        {"op": "state", "name": "callback.722.receiver-property.35"}
+      ],
+      "mode": "input",
+      "run": [
+        {"op": "state.exit", "name": "callback.722.receiver-property.35", "only_caster": true, "as": "clear"},
+        {"op": "wait", "for": "clear"}
+      ],
+      "presentation": {
+        "label": "Clear hit effect override",
+        "kind": "setting",
+        "contexts": ["callback.722.receiver-property.35"]
+      },
+      "tags": ["visual-receiver-clear"]
+    },
+    "@receiver-clear/callback.722.receiver-property.41": {
+      "requires": [
+        {"op": "state", "name": "callback.722.receiver-property.41"}
+      ],
+      "mode": "input",
+      "run": [
+        {"op": "state.exit", "name": "callback.722.receiver-property.41", "only_caster": true, "as": "clear"},
+        {"op": "wait", "for": "clear"}
+      ],
+      "presentation": {
+        "label": "Clear hit effect override",
+        "kind": "setting",
+        "contexts": ["callback.722.receiver-property.41"]
+      },
+      "tags": ["visual-receiver-clear"]
+    },
+    "@receiver-clear/callback.5359.receiver-property.3": {
+      "requires": [
+        {"op": "state", "name": "common.elemental.frozen-hit"}
+      ],
+      "mode": "input",
+      "run": [
+        {"op": "state.exit", "name": "common.elemental.frozen-hit", "only_caster": true, "as": "clear"},
+        {"op": "wait", "for": "clear"}
+      ],
+      "presentation": {
+        "label": "Clear hit effect override",
+        "kind": "setting",
+        "contexts": ["common.elemental.frozen-hit"]
+      },
+      "tags": ["visual-receiver-clear"]
+    }
+  },
+  "functions": {
+    "@return.rest.pose": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "rest.pose.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "rest.pose"
+      }
+    ],
+    "@return.return.pose": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "return.pose.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "return.pose"
+      }
+    ]
+  },
+  "states": {
+    "callback.722.receiver-property.25": {
+      "callbacks": {},
+      "hit_effects": [
+        {
+          "stacking": "multiple",
+          "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Aventurine_00/Eff_Avatar_Aventurine_00_Skill02_Shield_A02_HIt.prefab",
+          "priority": 0,
+          "count": 1,
+          "death_count": 0,
+          "death_path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Aventurine_00/Eff_Avatar_Aventurine_00_Skill02_Shield_A02_HIt.prefab",
+          "keep_original": false,
+          "replay_on_mutex": false,
+          "offset": [0.0, 1.100000023841858, 0.6000000238418579]
+        }
+      ],
+      "instances": {"name": "callback.722.receiver-property.25", "receiver": "Recipient", "match": "receiver_caster"},
+      "restore": []
+    },
+    "callback.722.receiver-property.35": {
+      "callbacks": {},
+      "hit_effects": [
+        {
+          "stacking": "multiple",
+          "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Aventurine_00/Eff_Avatar_Aventurine_00_Skill02_Shield_A03_HIt.prefab",
+          "priority": 0,
+          "count": 1,
+          "death_count": 0,
+          "death_path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Aventurine_00/Eff_Avatar_Aventurine_00_Skill02_Shield_A03_HIt.prefab",
+          "keep_original": false,
+          "replay_on_mutex": false,
+          "offset": [0.0, 1.100000023841858, 0.6000000238418579]
+        }
+      ],
+      "instances": {"name": "callback.722.receiver-property.35", "receiver": "Recipient", "match": "receiver_caster"},
+      "restore": []
+    },
+    "callback.722.receiver-property.41": {
+      "callbacks": {},
+      "hit_effects": [
+        {
+          "stacking": "multiple",
+          "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Aventurine_00/Eff_Avatar_Aventurine_00_Skill02_Shield_A04_HIt.prefab",
+          "priority": 0,
+          "count": 1,
+          "death_count": 0,
+          "death_path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Aventurine_00/Eff_Avatar_Aventurine_00_Skill02_Shield_A04_HIt.prefab",
+          "keep_original": false,
+          "replay_on_mutex": false,
+          "offset": [0.0, 1.100000023841858, 0.6000000238418579]
+        }
+      ],
+      "instances": {"name": "callback.722.receiver-property.41", "receiver": "Recipient", "match": "receiver_caster"},
+      "restore": []
+    },
+    "callback.722.receiver-property.9": {
+      "callbacks": {},
+      "hit_effects": [
+        {
+          "stacking": "multiple",
+          "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Aventurine_00/Eff_Avatar_Aventurine_00_Skill02_Shield_A01_HIt.prefab",
+          "priority": 0,
+          "count": 1,
+          "death_count": 0,
+          "death_path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Aventurine_00/Eff_Avatar_Aventurine_00_Skill02_Shield_A01_HIt.prefab",
+          "keep_original": false,
+          "replay_on_mutex": false,
+          "offset": [0.0, 1.100000023841858, 0.6000000238418579]
+        }
+      ],
+      "instances": {"name": "callback.722.receiver-property.9", "receiver": "Recipient", "match": "receiver_caster"},
+      "restore": []
+    },
+    "callback.736.receiver-property.1": {
+      "callbacks": {},
+      "resilience": 0,
+      "instances": {"name": "callback.736.receiver-property.1", "receiver": "Recipient", "match": "receiver_caster"},
+      "restore": []
+    }
+  },
+  "resources": {
+    "effects": {
+      "skill.2.effect.39": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Aventurine_00/Eff_Avatar_Aventurine_00_Skill03_BossSmoke_AML.prefab",
+        "target": "skill.2.member.36",
+        "position_offset": [-1.5, 0.0, -6.0]
+      },
+      "skill.2.effect.40": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Aventurine_00/Eff_Avatar_Aventurine_00_Skill03_BossSmoke_AML.prefab", "target": "skill.2.member.36"},
+      "callback.722.effect.3": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Aventurine_00/Eff_Avatar_Aventurine_00_Skill02_Shield_A01.prefab", "target": "Recipient"},
+      "callback.722.effect.19": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Aventurine_00/Eff_Avatar_Aventurine_00_Skill02_Shield_A02.prefab", "target": "Recipient"},
+      "callback.722.effect.29": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Aventurine_00/Eff_Avatar_Aventurine_00_Skill02_Shield_A03.prefab", "target": "Recipient"},
+      "callback.722.effect.38": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Aventurine_00/Eff_Avatar_Aventurine_00_Skill02_Shield_A04.prefab", "target": "Recipient"},
+      "callback.742.effect.2": {"path": "Effects/Eff_Prefab/Eff_Common/Eff_Buff_Common_DispelDebuff.prefab", "target": "Recipient"}
+    }
+  }
+}

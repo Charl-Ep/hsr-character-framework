@@ -1,0 +1,996 @@
+{
+  "format": "hksr.script",
+  "id": "official-scripts:Config/ConfigCharacter/Avatar/Avatar_PlayerGirl_40_Config.json",
+  "applies_to": "Config/ConfigCharacter/Avatar/Avatar_PlayerGirl_40_Config.json",
+  "default": true,
+  "imports": ["Common/Elemental.json"],
+  "defaults": {
+    "targets": {
+      "PreviewTarget": {
+        "local_position": [0, 0, 6]
+      },
+      "callback.3416.target.CurrentAimAtMainTarget": {"alias": "Caster"},
+      "AbilityTargetEntity": {
+        "local_position": [0, 0, 6]
+      },
+      "SkillPointEntity": {"alias": "AbilityTargetEntity"}
+    }
+  },
+  "actions": {
+    "base.rest": {
+      "trigger": "internal",
+      "runtime": {"policy": "ready", "selected": ""},
+      "run": [
+        {"op": "call", "function": "@return.rest.pose"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["stable-return", "idle-provider"]
+    },
+    "base.skill.0.perform": {
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "runtime": {"policy": "performance", "selected": "Skill01"},
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_PlayerGirl_40_Skill01_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_PlayerGirl_40_Skill01_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.0.clock.1", "progress": 0.1039999998},
+            {"op": "wait", "for": "skill.0.clock.1", "progress": 0.111},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit",
+              "direction": {},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_PlayerBoy_40/Eff_Avatar_PlayerBoy_40_Skill01_Hit.prefab",
+                "height": 1.0,
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.0.hit.14"
+            },
+            {"op": "wait", "for": "skill.0.hit.14", "until": "accepted"},
+            {"op": "wait", "for": "skill.0.clock.1", "progress": 0.3049999999},
+            {"op": "wait", "for": "skill.0.clock.1", "progress": 0.3279999997},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit",
+              "direction": {},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_PlayerBoy_40/Eff_Avatar_PlayerBoy_40_Skill01_Hit2.prefab",
+                "height": 1.0,
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.0.hit.17"
+            },
+            {"op": "wait", "for": "skill.0.hit.17", "until": "accepted"}
+          ],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill01", "end": 0.0, "track": {"logic": 3}, "as": "skill.0.clock.1"},
+        {
+          "op": "movement",
+          "animation": "skill.0.clock.1",
+          "segments": [
+            {
+              "destination": "target",
+              "name": "PreviewTarget",
+              "target_geometry": true,
+              "start": 0.02,
+              "end": 0.1159999996,
+              "sample": {"distance": 4.5000000004, "percentage": 1.0, "include_radii": true}
+            },
+            {
+              "destination": "origin",
+              "start": 0.5910000004,
+              "end": 0.8000000007,
+              "sample": {"distance": 0.0, "percentage": 1.0, "include_radii": true}
+            }
+          ],
+          "as": "skill.0.clock.1.movement"
+        },
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.0},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.0119999998},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.07},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.7500000006},
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill01",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "TriggerEffect: effect needs a non-owned target, dynamic path, or Timeline attachment",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "LookAt: not included in the visual sequence projection",
+          "RadialBlurEffect: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.0.ready.-1": {
+      "runtime": {"policy": "ready", "selected": "Skill01"},
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_PlayerGirl_40_Config.json", "skill": 0, "as": "ready"}
+      ],
+      "presentation": {
+        "label": "Skill01 · Ready",
+        "ready": {"config": "Config/ConfigCharacter/Avatar/Avatar_PlayerGirl_40_Config.json", "skill": 0}
+      },
+      "tags": ["ready-pose"]
+    },
+    "base.skill.1.perform": {
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "runtime": {"policy": "performance", "selected": "Skill02"},
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_PlayerGirl_40_Skill02_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_PlayerGirl_40_Skill02_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.3400000003},
+            {
+              "op": "for_each",
+              "bind": "skill.1.member.15",
+              "targets": ["PreviewTarget"],
+              "collection": "skill.1.targets.16",
+              "run": [],
+              "empty": []
+            },
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit",
+              "direction": {},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_PlayerBoy_40/Eff_Avatar_PlayerBoy_40_Skill02_Hit.prefab",
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.1.hit.30"
+            },
+            {"op": "wait", "for": "skill.1.hit.30", "until": "accepted"},
+            {
+              "op": "for_each",
+              "bind": "skill.1.member.34",
+              "targets": ["PreviewTarget"],
+              "collection": "skill.1.targets.35",
+              "run": [],
+              "empty": []
+            }
+          ],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill02", "end": 1.0, "track": {"logic": 3}, "as": "skill.1.clock.1"},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 1.0},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.1259999996},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.5000000004},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.8000000007},
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill02",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "AddGlobalDynamicOffsetIgnoreEntity: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "NMBCOGABNMC: not included in the visual sequence projection",
+          "IDNEFFCGFFL: not included in the visual sequence projection",
+          "CANBAEOKAJD: not included in the visual sequence projection",
+          "Retarget: recipient collection is explicitly selected; native filtering, random selection and count limits are not simulated",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "DamageByAttackProperty: no literal hit animation/effect; receiver defaults are not assumed",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "LookAt: not included in the visual sequence projection",
+          "TriggerAnimStateWithMove: movement not projected: Config/ConfigAbility/Avatar/Avatar_PlayerGirl_40_Ability.json:$.AbilityList[2].OnStart[4]: movement destination not bound: DarkTeamCenter",
+          "GlobalMainIntensityEffect: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.1.ready.-1": {
+      "runtime": {"policy": "ready", "selected": "Skill02"},
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_PlayerGirl_40_Config.json", "skill": 1, "as": "ready"}
+      ],
+      "presentation": {
+        "label": "Skill02 · Ready",
+        "ready": {"config": "Config/ConfigCharacter/Avatar/Avatar_PlayerGirl_40_Config.json", "skill": 1}
+      },
+      "tags": ["ready-pose"]
+    },
+    "base.skill.2.perform": {
+      "inputs": {
+        "skill.2.condition.ByCompareTarget.15": {"type": "bool", "default": true, "label": "ByCompareTarget", "description": "Manual source condition: $.AbilityList[6].OnStart[3].Predicate"}
+      },
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "runtime": {"policy": "performance", "selected": "Skill03"},
+      "run": [
+        {"op": "animation", "state": "Skill03", "end": -1.0, "track": {"logic": 3}, "as": "skill.2.clock.1"},
+        {"op": "wait", "for": "skill.2.clock.1", "until": "animation_end"},
+        {
+          "op": "start",
+          "id": "Avatar_PlayerGirl_40_Skill03_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_PlayerGirl_40_Skill03_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.8000000007},
+            {
+              "op": "if",
+              "condition": {"op": "value", "name": "skill.2.condition.ByCompareTarget.15", "is": true},
+              "then": [
+                {"op": "animation", "state": "StandBy", "end": -1.0, "track": {"logic": 1}, "as": "skill.2.clock.10"},
+                {"op": "wait", "for": "skill.2.clock.10", "until": "animation_end"}
+              ],
+              "else": []
+            },
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.8100000007},
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.8480000002},
+            {
+              "op": "for_each",
+              "bind": "skill.2.member.27",
+              "targets": ["PreviewTarget"],
+              "collection": "skill.2.targets.28",
+              "run": [],
+              "empty": []
+            },
+            {
+              "op": "for_each",
+              "bind": "skill.2.member.42",
+              "targets": ["PreviewTarget"],
+              "collection": "skill.2.targets.43",
+              "run": [],
+              "empty": []
+            },
+            {
+              "op": "for_each",
+              "bind": "skill.2.member.52",
+              "targets": ["PreviewTarget"],
+              "collection": "skill.2.targets.53",
+              "run": [],
+              "empty": []
+            },
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 1.0}
+          ]
+        },
+        {"op": "wait", "for": "skill.2.clock.1", "progress": 1.0},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill03",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "SyncCharLightAndCameraDir: not included in the visual sequence projection",
+          "HideLevelStage: not included in the visual sequence projection",
+          "GlobalMainIntensityEffect: not included in the visual sequence projection",
+          "SetEntityVisible: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "ScaleCharacterModel: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "SetTeamFormation: not included in the visual sequence projection",
+          "SwitchCaseByDynamicValue: not included in the visual sequence projection",
+          "JDOLDFECMPL: not included in the visual sequence projection",
+          "NMBCOGABNMC: not included in the visual sequence projection",
+          "IDNEFFCGFFL: not included in the visual sequence projection",
+          "CANBAEOKAJD: not included in the visual sequence projection",
+          "Retarget: recipient collection is explicitly selected; native filtering, random selection and count limits are not simulated",
+          "BIKKDNAMGMG: not included in the visual sequence projection",
+          "ClearEntityFollowAttachPoint: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "WaitTimelineFinish: not included in the visual sequence projection",
+          "ScaleCharacterModel: serial step depends on an unavailable source clock; no timing is inferred",
+          "HideLevelStage: serial step depends on an unavailable source clock; no timing is inferred",
+          "SetEntityVisible: serial step depends on an unavailable source clock; no timing is inferred"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.2.ready.-1": {
+      "runtime": {"policy": "ready", "selected": "Skill03"},
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_PlayerGirl_40_Config.json", "skill": 2, "as": "ready"}
+      ],
+      "presentation": {
+        "label": "Skill03 · Ready",
+        "ready": {"config": "Config/ConfigCharacter/Avatar/Avatar_PlayerGirl_40_Config.json", "skill": 2}
+      },
+      "tags": ["ready-pose"]
+    },
+    "base.skill.3.perform": {
+      "inputs": {
+        "skill.3.condition.ByHaveEnemyAlive.18": {"type": "bool", "default": false, "label": "ByHaveEnemyAlive", "description": "Manual source condition: $.AbilityList[8].OnStart[13].Predicate"}
+      },
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "runtime": {"policy": "performance", "selected": "Skill04"},
+      "run": [
+        {"op": "animation", "state": "Skill04", "end": -1.0, "track": {"logic": 3}, "as": "skill.3.clock.1"},
+        {"op": "wait", "for": "skill.3.clock.1", "until": "animation_end"},
+        {
+          "op": "start",
+          "id": "Avatar_PlayerGirl_40_ElationSkill_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_PlayerGirl_40_ElationSkill_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.3.clock.1", "progress": 0.1900000001},
+            {"op": "wait", "for": "skill.3.clock.1", "progress": 0.2300000002},
+            {"op": "wait", "for": "skill.3.clock.1", "progress": 0.4340000001},
+            {"op": "wait", "for": "skill.3.clock.1", "progress": 0.7880000001},
+            {"op": "wait", "for": "skill.3.clock.1", "progress": 0.8080000001},
+            {
+              "op": "if",
+              "condition": {"op": "value", "name": "skill.3.condition.ByHaveEnemyAlive.18", "is": true},
+              "then": [
+                {
+                  "op": "hit",
+                  "target": "PreviewTarget",
+                  "animation": "Hit_H",
+                  "direction": {},
+                  "effect": {"path": "", "minimum_interval": 0.0500000007, "maximum_count": 1},
+                  "allow_position": true,
+                  "as": "skill.3.hit.20"
+                },
+                {"op": "wait", "for": "skill.3.hit.20", "until": "accepted"}
+              ],
+              "else": [
+                {
+                  "op": "hit",
+                  "target": "PreviewTarget",
+                  "animation": "Hit_H",
+                  "direction": {},
+                  "effect": {"path": "", "minimum_interval": 0.0500000007, "maximum_count": 1},
+                  "allow_position": true,
+                  "as": "skill.3.hit.22"
+                },
+                {"op": "wait", "for": "skill.3.hit.22", "until": "accepted"}
+              ]
+            },
+            {"op": "wait", "for": "skill.3.clock.1", "progress": 0.9800000009},
+            {"op": "wait", "for": "skill.3.clock.1", "progress": 1.0}
+          ],
+          "join": true
+        },
+        {"op": "wait", "for": "skill.3.clock.1", "progress": 0.5620000003},
+        {"op": "wait", "for": "skill.3.clock.1", "progress": 0.7750000003},
+        {"op": "wait", "for": "skill.3.clock.1", "progress": 0.9300000008},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill04",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "TriggerAnimState: animation has no literal owned-body binding",
+          "HideLevelStage: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "TriggerEffect: effect needs a non-owned target, dynamic path, or Timeline attachment",
+          "ScaleCharacterModel: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "TargetTimeSlow: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "LoopExecuteTaskListWithInterval: not included in the visual sequence projection",
+          "ClearTargetTimeSlow: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "TriggerSkipDeadHandler: not included in the visual sequence projection",
+          "RadialBlurEffect: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "MakeCharacterHUDVisible: not included in the visual sequence projection",
+          "SetTeamFormation: not included in the visual sequence projection",
+          "ReleaseCharacterHUDVisibleControl: not included in the visual sequence projection",
+          "WaitTimelineFinish: not included in the visual sequence projection",
+          "ScaleCharacterModel: serial step depends on an unavailable source clock; no timing is inferred",
+          "HideLevelStage: serial step depends on an unavailable source clock; no timing is inferred",
+          "GlobalMainIntensityEffect: serial step depends on an unavailable source clock; no timing is inferred",
+          "SetTeamFormation: serial step depends on an unavailable source clock; no timing is inferred"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.4.perform": {
+      "inputs": {
+        "cue": {
+          "type": "integer",
+          "default": 0,
+          "label": "Effect",
+          "choices": [
+            {"value": 0, "label": "OnAfterAttack"}
+          ]
+        }
+      },
+      "requires": [
+        {"op": "number", "name": "cue", "compare": "ge", "value": 0},
+        {"op": "number", "name": "cue", "compare": "lt", "value": 1}
+      ],
+      "runtime": {"policy": "performance", "selected": "SkillP01"},
+      "run": [
+        {"op": "effect.create", "effects": ["base.skill.4.effect.0"], "as": "effect"},
+        {"op": "wait", "for": "effect", "until": "accepted"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "effect.remove", "effects": ["base.skill.4.effect.0"], "optional": ["base.skill.4.effect.0"], "as": "remove"},
+        {"op": "wait", "for": "remove", "until": "accepted"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "SkillP01",
+        "omissions": ["Actor-owned effect cue only. Original callback conditions and timing are manual inputs; use Finish to end.", "cue: 0=OnAfterAttack"]
+      },
+      "tags": ["manual-effect-cue", "partial-presentation"]
+    },
+    "base.callback.3414": {
+      "runtime": {"policy": "performance", "selected": ""},
+      "run": [
+        {"op": "effect.create", "effects": ["base.callback.3414.effect.2"], "as": "callback.3414.effect.2"},
+        {"op": "wait", "for": "callback.3414.effect.2", "until": "accepted"},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "effect.remove", "effects": ["base.callback.3414.effect.2"], "optional": ["base.callback.3414.effect.2"], "as": "callback.3414.remove-effects"},
+        {"op": "wait", "for": "callback.3414.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "effect.remove", "effects": ["base.callback.3414.effect.2"], "optional": ["base.callback.3414.effect.2"], "as": "callback.3414.remove-effects"},
+        {"op": "wait", "for": "callback.3414.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "MAvatar_PlayerGirl_40_Passive: OnAfterAttack",
+        "omissions": [
+          "Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects.",
+          "JDOLDFECMPL: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "base.callback.3416": {
+      "inputs": {
+        "callback.3416.condition.ByCurrentSkillName.1": {
+          "type": "bool",
+          "default": true,
+          "label": "ByCurrentSkillName",
+          "description": "Manual source condition: $.AbilityList[9].Modifiers[4].value._CallbackList[0].CallbackConfig[0].Predicate"
+        },
+        "callback.3416.condition.ByCompareTarget.2": {
+          "type": "bool",
+          "default": false,
+          "label": "ByCompareTarget",
+          "description": "Manual source condition: $.AbilityList[9].Modifiers[4].value._CallbackList[0].CallbackConfig[0].SuccessTaskList[0].Predicate"
+        },
+        "callback.3416.condition.ByTargetEntityType.8": {
+          "type": "bool",
+          "default": false,
+          "label": "ByTargetEntityType",
+          "description": "Manual source condition: $.AbilityList[9].Modifiers[4].value._CallbackList[0].CallbackConfig[0].SuccessTaskList[0].SuccessTaskList[1].Predicate"
+        }
+      },
+      "bindings": {
+        "targets": ["Recipient", "callback.3416.target.CurrentAimAtMainTarget"]
+      },
+      "runtime": {"policy": "performance", "selected": ""},
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "callback.3416.condition.ByCurrentSkillName.1", "is": true},
+          "then": [
+            {
+              "op": "if",
+              "condition": {"op": "value", "name": "callback.3416.condition.ByCompareTarget.2", "is": true},
+              "then": [
+                {
+                  "op": "for_each",
+                  "bind": "callback.3416.member.3",
+                  "targets": ["Recipient"],
+                  "collection": "callback.3416.targets.4",
+                  "run": [],
+                  "empty": []
+                },
+                {
+                  "op": "if",
+                  "condition": {"op": "value", "name": "callback.3416.condition.ByTargetEntityType.8", "is": true},
+                  "then": [
+                    {"op": "effect.create", "effects": ["base.callback.3416.effect.10"], "as": "callback.3416.effect.10"},
+                    {"op": "wait", "for": "callback.3416.effect.10", "until": "accepted"}
+                  ],
+                  "else": [
+                    {"op": "effect.create", "effects": ["base.callback.3416.effect.12"], "as": "callback.3416.effect.12"},
+                    {"op": "wait", "for": "callback.3416.effect.12", "until": "accepted"}
+                  ]
+                }
+              ],
+              "else": [
+                {
+                  "op": "for_each",
+                  "bind": "callback.3416.member.13",
+                  "targets": ["Recipient"],
+                  "collection": "callback.3416.targets.14",
+                  "run": [],
+                  "empty": []
+                },
+                {"op": "effect.create", "effects": ["base.callback.3416.effect.19"], "as": "callback.3416.effect.19"},
+                {"op": "wait", "for": "callback.3416.effect.19", "until": "accepted"}
+              ]
+            }
+          ],
+          "else": []
+        },
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {
+          "op": "effect.remove",
+          "effects": ["base.callback.3416.effect.10", "base.callback.3416.effect.12", "base.callback.3416.effect.19"],
+          "optional": ["base.callback.3416.effect.10", "base.callback.3416.effect.12", "base.callback.3416.effect.19"],
+          "as": "callback.3416.remove-effects"
+        },
+        {"op": "wait", "for": "callback.3416.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {
+          "op": "effect.remove",
+          "effects": ["base.callback.3416.effect.10", "base.callback.3416.effect.12", "base.callback.3416.effect.19"],
+          "optional": ["base.callback.3416.effect.10", "base.callback.3416.effect.12", "base.callback.3416.effect.19"],
+          "as": "callback.3416.remove-effects"
+        },
+        {"op": "wait", "for": "callback.3416.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "MAvatar_PlayerGirl_40_UltraSelect: OnAimAtTargetsRefresh_CL",
+        "omissions": [
+          "Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects.",
+          "RemoveEffect: per-member removal deferred to the shared execution cleanup",
+          "Retarget: recipient collection is explicitly selected; native filtering, random selection and count limits are not simulated",
+          "TriggerEffect: callback target CurrentAimAtMainTarget is a selected owned actor input, defaulting to this actor; native event payload is not assumed"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "base.skill.6.perform": {
+      "use": "common.elemental.responses",
+      "runtime": {"policy": "performance", "selected": "PassiveSkill02"},
+      "next": "base.rest"
+    },
+    "base.preview.hit": {
+      "inputs": {
+        "kind": {
+          "type": "text",
+          "default": "Hit",
+          "label": "Hit type",
+          "choices": [
+            {"value": "Hit", "label": "Hit"},
+            {"value": "Hit_H", "label": "Hit_H"}
+          ]
+        }
+      },
+      "runtime": {"policy": "performance", "selected": ""},
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "kind", "is": "Hit_H"},
+          "then": [
+            {"op": "hit", "target": "Caster", "animation": "Hit_H", "as": "hit-heavy"},
+            {"op": "wait", "for": "hit-heavy"}
+          ],
+          "else": [
+            {"op": "hit", "target": "Caster", "animation": "Hit", "as": "hit"},
+            {"op": "wait", "for": "hit"}
+          ]
+        }
+      ],
+      "next": "base.rest",
+      "presentation": {"label": "Hit"},
+      "tags": ["manual-visual-callback"]
+    },
+    "base.source.5": {
+      "requires": [
+        {
+          "op": "unresolved",
+          "source": "Config/ConfigCharacter/Avatar/Avatar_PlayerGirl_40_Config.json:$.SkillList[5]",
+          "detail": "Retained activation has no enabled projected task; empty source is not a visual action"
+        }
+      ],
+      "trigger": "internal",
+      "run": [],
+      "presentation": {
+        "label": "SkillMaze",
+        "listed": false,
+        "omissions": ["Retained activation has no enabled projected task; empty source is not a visual action"]
+      },
+      "tags": ["retained-source"]
+    },
+    "compiled.0.Avatar_PlayerGirl_40_Config.skill-0.entry": {
+      "requires": [
+        {"op": "target", "name": "AbilityTargetEntity", "allow_position": true},
+        {"op": "playback", "name": "performance", "values": ["ready"]},
+        {"op": "playback", "name": "selected", "is": "Skill01"}
+      ],
+      "runtime": {"policy": "continuous"},
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_PlayerGirl_40_Skill01_Phase01",
+          "run": [
+            {
+              "op": "start",
+              "id": "Avatar_PlayerGirl_40_Skill01_Phase02",
+              "run": [
+                {"op": "wait", "for": "body.0", "progress": 0.1039999998},
+                {
+                  "op": "effect.create",
+                  "effects": ["compiled.0.Avatar_PlayerGirl_40_Config.skill-0.$.AbilityList[1].OnStart[1]"],
+                  "as": "$.AbilityList[1].OnStart[1]"
+                },
+                {"op": "wait", "for": "$.AbilityList[1].OnStart[1]", "until": "accepted"},
+                {"op": "wait", "for": "body.0", "progress": 0.111},
+                {"op": "attack.record", "target": "AbilityTargetEntity", "allow_position": true, "as": "$.AbilityList[1].OnStart[3].record"},
+                {"op": "wait", "for": "$.AbilityList[1].OnStart[3].record", "until": "accepted"},
+                {
+                  "op": "hit",
+                  "target": "AbilityTargetEntity",
+                  "animation": "Hit",
+                  "events": ["after_hit", "after_hit_all"],
+                  "direction": {},
+                  "effect": {
+                    "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_PlayerBoy_40/Eff_Avatar_PlayerBoy_40_Skill01_Hit.prefab",
+                    "height": 1.0,
+                    "minimum_interval": 0.0500000007,
+                    "maximum_count": 1
+                  },
+                  "allow_position": true,
+                  "as": "$.AbilityList[1].OnStart[3]"
+                },
+                {"op": "wait", "for": "$.AbilityList[1].OnStart[3]", "until": "accepted"},
+                {"op": "wait", "for": "body.0", "progress": 0.3049999999},
+                {
+                  "op": "effect.create",
+                  "effects": ["compiled.0.Avatar_PlayerGirl_40_Config.skill-0.$.AbilityList[1].OnStart[5]"],
+                  "as": "$.AbilityList[1].OnStart[5]"
+                },
+                {"op": "wait", "for": "$.AbilityList[1].OnStart[5]", "until": "accepted"},
+                {"op": "wait", "for": "body.0", "progress": 0.3279999997},
+                {"op": "attack.record", "target": "AbilityTargetEntity", "allow_position": true, "as": "$.AbilityList[1].OnStart[7].record"},
+                {"op": "wait", "for": "$.AbilityList[1].OnStart[7].record", "until": "accepted"},
+                {
+                  "op": "hit",
+                  "target": "AbilityTargetEntity",
+                  "animation": "Hit",
+                  "events": ["after_hit", "after_hit_all"],
+                  "direction": {},
+                  "effect": {
+                    "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_PlayerBoy_40/Eff_Avatar_PlayerBoy_40_Skill01_Hit2.prefab",
+                    "height": 1.0,
+                    "minimum_interval": 0.0500000007,
+                    "maximum_count": 1
+                  },
+                  "allow_position": true,
+                  "as": "$.AbilityList[1].OnStart[7]"
+                },
+                {"op": "wait", "for": "$.AbilityList[1].OnStart[7]", "until": "accepted"},
+                {"op": "attack.finish", "as": "$.AbilityList[1].OnStart[8]"},
+                {"op": "wait", "for": "$.AbilityList[1].OnStart[8]", "until": "accepted"},
+                {"op": "playback.value", "variable": "performance", "operation": "set", "value": "finished", "as": "$.AbilityList[1].OnStart[9]"}
+              ],
+              "join": true
+            },
+            {"op": "facing.target", "target": "AbilityTargetEntity", "duration": 0.10000000149011612, "as": "$.AbilityList[0].OnStart[2]"},
+            {"op": "wait", "for": "$.AbilityList[0].OnStart[2]", "until": "accepted"},
+            {"op": "animation", "state": "Skill01", "end": 0.0, "track": {"logic": 3}, "as": "body.0"},
+            {
+              "op": "movement",
+              "animation": "body.0",
+              "segments": [
+                {
+                  "destination": "target",
+                  "name": "AbilityTargetEntity",
+                  "target_geometry": true,
+                  "start": 0.02,
+                  "end": 0.1159999996,
+                  "sample": {"distance": 4.5000000004, "percentage": 1.0, "include_radii": true}
+                },
+                {
+                  "destination": "origin",
+                  "start": 0.5910000004,
+                  "end": 0.8000000007,
+                  "sample": {"distance": 0.0, "percentage": 1.0, "include_radii": true}
+                }
+              ],
+              "as": "body.0.movement"
+            },
+            {"op": "wait", "for": "body.0", "progress": 0.0},
+            {"op": "wait", "for": "body.0", "progress": 0.0119999998},
+            {"op": "wait", "for": "body.0", "progress": 0.07},
+            {"op": "wait", "for": "body.0", "progress": 0.7500000006}
+          ],
+          "join": true
+        },
+        {"op": "join"},
+        {"op": "playback.value", "variable": "performance", "operation": "set", "value": "resetting", "as": "after"},
+        {"op": "call", "function": "@return.return"},
+        {"op": "wait", "for": "return", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return-position"},
+        {"op": "wait", "for": "return-position"},
+        {"op": "playback.value", "variable": "performance", "operation": "set", "value": "ready", "as": "reset"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.abort-return"},
+        {"op": "wait", "for": "abort-return", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "abort-position"},
+        {"op": "wait", "for": "abort-position"}
+      ],
+      "next": "compiled.0.Avatar_PlayerGirl_40_Config.skill-0.rest",
+      "presentation": {"label": "Avatar_PlayerGirl_40_Skill01_Phase01"},
+      "tags": ["entry-development"]
+    },
+    "compiled.0.Avatar_PlayerGirl_40_Config.skill-0.select": {
+      "requires": [
+        {"op": "playback", "name": "performance", "values": ["ready", "failed"]}
+      ],
+      "runtime": {"policy": "setting", "selected": "Skill01"},
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_PlayerGirl_40_Config.json", "skill": 0, "as": "ready"},
+        {"op": "wait", "for": "ready"}
+      ],
+      "presentation": {
+        "label": "Skill01_Ready",
+        "ready": {"config": "Config/ConfigCharacter/Avatar/Avatar_PlayerGirl_40_Config.json", "skill": 0}
+      },
+      "tags": ["selection-development"]
+    },
+    "compiled.0.Avatar_PlayerGirl_40_Config.skill-0.rest": {
+      "trigger": "internal",
+      "runtime": {"policy": "ready", "selected": ""},
+      "run": [
+        {"op": "call", "function": "@return.idle"},
+        {"op": "wait", "for": "idle", "until": "submitted"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["stable-return"]
+    },
+    "@receiver-clear/base.callback.5359.receiver-property.3": {
+      "requires": [
+        {"op": "state", "name": "common.elemental.frozen-hit"}
+      ],
+      "mode": "input",
+      "run": [
+        {"op": "state.exit", "name": "common.elemental.frozen-hit", "only_caster": true, "as": "clear"},
+        {"op": "wait", "for": "clear"}
+      ],
+      "presentation": {
+        "label": "Clear hit effect override",
+        "kind": "setting",
+        "contexts": ["common.elemental.frozen-hit"]
+      },
+      "tags": ["visual-receiver-clear"]
+    },
+    "@idle": {
+      "runtime": {"policy": "ready", "selected": ""},
+      "run": [
+        {"op": "call", "function": "@return.rest.pose"}
+      ],
+      "presentation": {"label": "Idle"},
+      "tags": ["script-idle"]
+    }
+  },
+  "functions": {
+    "@return.rest.pose": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "rest.pose.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "rest.pose"
+      }
+    ],
+    "@return.return.pose": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "return.pose.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "return.pose"
+      }
+    ],
+    "@return.return": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "return.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "return"
+      }
+    ],
+    "@return.abort-return": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "abort-return.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "abort-return"
+      }
+    ],
+    "@return.idle": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "idle.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "idle"
+      }
+    ]
+  },
+  "states": {},
+  "resources": {
+    "effects": {
+      "base.skill.4.effect.0": {"path": "Effects/Eff_Prefab/Eff_Common/Eff_Common_MAZ_RecoverSP.prefab", "target": "Caster"},
+      "base.callback.3414.effect.2": {"path": "Effects/Eff_Prefab/Eff_Common/Eff_Common_MAZ_RecoverSP.prefab", "target": "Caster"},
+      "base.callback.3416.effect.10": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_PlayerBoy_40/Eff_Avatar_PlayerBoy_40_Skill03_Ready032.prefab",
+        "target": "callback.3416.target.CurrentAimAtMainTarget",
+        "unique_name": "Eff_Avatar_PlayerBoy_40_Skill03_Ready032"
+      },
+      "base.callback.3416.effect.12": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_PlayerBoy_40/Eff_Avatar_PlayerBoy_40_Skill03_Ready03.prefab",
+        "target": "callback.3416.target.CurrentAimAtMainTarget",
+        "unique_name": "Eff_Avatar_PlayerBoy_40_Skill03_Ready03"
+      },
+      "base.callback.3416.effect.19": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_PlayerBoy_40/Eff_Avatar_PlayerBoy_40_Skill03_Ready032.prefab",
+        "target": "callback.3416.target.CurrentAimAtMainTarget",
+        "unique_name": "Eff_Avatar_PlayerBoy_40_Skill03_Ready032"
+      },
+      "compiled.0.Avatar_PlayerGirl_40_Config.skill-0.$.AbilityList[1].OnStart[1]": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_PlayerBoy_40/Eff_Avatar_PlayerBoy_40_Skill01_atk1.prefab",
+        "target": "AbilityTargetEntity",
+        "mutex": {"interval": 0.0, "maximum": 1, "scope": "global"},
+        "allow_position": true
+      },
+      "compiled.0.Avatar_PlayerGirl_40_Config.skill-0.$.AbilityList[1].OnStart[5]": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_PlayerBoy_40/Eff_Avatar_PlayerBoy_40_Skill01_atk2.prefab",
+        "target": "AbilityTargetEntity",
+        "mutex": {"interval": 0.0, "maximum": 1, "scope": "global"},
+        "allow_position": true
+      }
+    }
+  }
+}

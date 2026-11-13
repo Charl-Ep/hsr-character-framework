@@ -1,0 +1,2451 @@
+{
+  "format": "hksr.script",
+  "id": "official-scripts:Config/ConfigCharacter/Avatar/Avatar_Sparxie_00_Config.json",
+  "applies_to": "Config/ConfigCharacter/Avatar/Avatar_Sparxie_00_Config.json",
+  "default": true,
+  "scope": "gift-scene",
+  "imports": ["Common/Elemental.json"],
+  "defaults": {
+    "targets": {
+      "PreviewTarget": {
+        "local_position": [0, 0, 6]
+      },
+      "AbilityTargetEntity": {
+        "local_position": [0, 0, 6]
+      },
+      "SkillPointEntity": {"alias": "AbilityTargetEntity"}
+    },
+    "choices": {"fire": "yes", "prize": "grand"}
+  },
+  "actions": {
+    "base.rest": {
+      "trigger": "internal",
+      "runtime": {"policy": "ready", "selected": ""},
+      "run": [
+        {"op": "call", "function": "@return.rest.pose"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["stable-return", "idle-provider"]
+    },
+    "base.skill.0.perform": {
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "runtime": {"policy": "performance", "selected": "Skill01"},
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Sparxie_00_Skill01_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Sparxie_00_Skill01_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.0.clock.1", "progress": 0.3000000002},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit",
+              "direction": {},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill01_Hit01.prefab",
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.0.hit.7"
+            },
+            {"op": "wait", "for": "skill.0.hit.7", "until": "accepted"},
+            {"op": "wait", "for": "skill.0.clock.1", "progress": 0.7760000003}
+          ],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill01", "end": -1.0, "track": {"logic": 3}, "as": "skill.0.clock.1"},
+        {"op": "wait", "for": "skill.0.clock.1", "until": "animation_end"},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.2679999996},
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill01",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "LookAt: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "TriggerEffect: effect needs a non-owned target, dynamic path, or Timeline attachment"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.0.ready.-1": {
+      "runtime": {"policy": "ready", "selected": "Skill01"},
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Sparxie_00_Config.json", "skill": 0, "as": "ready"}
+      ],
+      "presentation": {
+        "label": "Skill01 · Ready",
+        "ready": {"config": "Config/ConfigCharacter/Avatar/Avatar_Sparxie_00_Config.json", "skill": 0}
+      },
+      "tags": ["ready-pose"]
+    },
+    "base.skill.1.perform": {
+      "inputs": {
+        "skill.1.condition.ByCompareDynamicValue.31": {
+          "type": "bool",
+          "default": true,
+          "label": "ByCompareDynamicValue",
+          "description": "Manual source condition: $.AbilityList[3].OnStart[7].Predicate.PredicateList[0]"
+        },
+        "skill.1.condition.ByCompareDynamicValue.32": {
+          "type": "bool",
+          "default": true,
+          "label": "ByCompareDynamicValue",
+          "description": "Manual source condition: $.AbilityList[3].OnStart[7].Predicate.PredicateList[1]"
+        }
+      },
+      "runtime": {"policy": "performance", "selected": "Skill02"},
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Sparxie_00_Skill02_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Sparxie_00_Skill02_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 0.6330000003},
+            {
+              "op": "if",
+              "condition": {"op": "value", "name": "skill.1.condition.ByCompareDynamicValue.31", "is": true},
+              "then": [
+                {
+                  "op": "if",
+                  "condition": {"op": "value", "name": "skill.1.condition.ByCompareDynamicValue.32", "is": true},
+                  "then": [
+                    {"op": "effect.create", "effects": ["base.skill.1.effect.29"], "as": "skill.1.effect.29"},
+                    {"op": "wait", "for": "skill.1.effect.29", "until": "accepted"}
+                  ],
+                  "else": []
+                }
+              ],
+              "else": []
+            },
+            {"op": "wait", "for": "skill.1.clock.1", "progress": 1.0}
+          ],
+          "join": true
+        },
+        {"op": "effect.create", "effects": ["base.skill.1.effect.42"], "as": "skill.1.effect.42"},
+        {"op": "wait", "for": "skill.1.effect.42", "until": "accepted"},
+        {"op": "effect.create", "effects": ["base.skill.1.effect.43"], "as": "skill.1.effect.43"},
+        {"op": "wait", "for": "skill.1.effect.43", "until": "accepted"},
+        {"op": "effect.create", "effects": ["base.skill.1.effect.44"], "as": "skill.1.effect.44"},
+        {"op": "wait", "for": "skill.1.effect.44", "until": "accepted"},
+        {"op": "effect.create", "effects": ["base.skill.1.effect.45"], "as": "skill.1.effect.45"},
+        {"op": "wait", "for": "skill.1.effect.45", "until": "accepted"},
+        {"op": "effect.create", "effects": ["base.skill.1.effect.46"], "as": "skill.1.effect.46"},
+        {"op": "wait", "for": "skill.1.effect.46", "until": "accepted"},
+        {"op": "effect.create", "effects": ["base.skill.1.effect.47"], "as": "skill.1.effect.47"},
+        {"op": "wait", "for": "skill.1.effect.47", "until": "accepted"},
+        {"op": "effect.create", "effects": ["base.skill.1.effect.48"], "as": "skill.1.effect.48"},
+        {"op": "wait", "for": "skill.1.effect.48", "until": "accepted"},
+        {"op": "effect.create", "effects": ["base.skill.1.effect.49"], "as": "skill.1.effect.49"},
+        {"op": "wait", "for": "skill.1.effect.49", "until": "accepted"},
+        {"op": "effect.create", "effects": ["base.skill.1.effect.50"], "as": "skill.1.effect.50"},
+        {"op": "wait", "for": "skill.1.effect.50", "until": "accepted"},
+        {"op": "effect.create", "effects": ["base.skill.1.effect.51"], "as": "skill.1.effect.51"},
+        {"op": "wait", "for": "skill.1.effect.51", "until": "accepted"},
+        {"op": "effect.create", "effects": ["base.skill.1.effect.52"], "as": "skill.1.effect.52"},
+        {"op": "wait", "for": "skill.1.effect.52", "until": "accepted"},
+        {"op": "effect.create", "effects": ["base.skill.1.effect.53"], "as": "skill.1.effect.53"},
+        {"op": "wait", "for": "skill.1.effect.53", "until": "accepted"},
+        {"op": "effect.create", "effects": ["base.skill.1.effect.54"], "as": "skill.1.effect.54"},
+        {"op": "wait", "for": "skill.1.effect.54", "until": "accepted"},
+        {"op": "effect.create", "effects": ["base.skill.1.effect.55"], "as": "skill.1.effect.55"},
+        {"op": "wait", "for": "skill.1.effect.55", "until": "accepted"},
+        {"op": "effect.create", "effects": ["base.skill.1.effect.56"], "as": "skill.1.effect.56"},
+        {"op": "wait", "for": "skill.1.effect.56", "until": "accepted"},
+        {"op": "animation", "state": "Skill02_Gift", "end": -1.0, "track": {"logic": 3}, "as": "skill.1.clock.1"},
+        {"op": "wait", "for": "skill.1.clock.1", "until": "animation_end"},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 0.2029999999},
+        {"op": "wait", "for": "skill.1.clock.1", "progress": 1.0},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {
+          "op": "effect.remove",
+          "effects": [
+            "base.skill.1.effect.29",
+            "base.skill.1.effect.42",
+            "base.skill.1.effect.43",
+            "base.skill.1.effect.44",
+            "base.skill.1.effect.45",
+            "base.skill.1.effect.46",
+            "base.skill.1.effect.47",
+            "base.skill.1.effect.48",
+            "base.skill.1.effect.49",
+            "base.skill.1.effect.50",
+            "base.skill.1.effect.51",
+            "base.skill.1.effect.52",
+            "base.skill.1.effect.53",
+            "base.skill.1.effect.54",
+            "base.skill.1.effect.55",
+            "base.skill.1.effect.56"
+          ],
+          "optional": [
+            "base.skill.1.effect.29",
+            "base.skill.1.effect.42",
+            "base.skill.1.effect.43",
+            "base.skill.1.effect.44",
+            "base.skill.1.effect.45",
+            "base.skill.1.effect.46",
+            "base.skill.1.effect.47",
+            "base.skill.1.effect.48",
+            "base.skill.1.effect.49",
+            "base.skill.1.effect.50",
+            "base.skill.1.effect.51",
+            "base.skill.1.effect.52",
+            "base.skill.1.effect.53",
+            "base.skill.1.effect.54",
+            "base.skill.1.effect.55",
+            "base.skill.1.effect.56"
+          ],
+          "as": "skill.1.remove-effects"
+        },
+        {"op": "wait", "for": "skill.1.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {
+          "op": "effect.remove",
+          "effects": [
+            "base.skill.1.effect.29",
+            "base.skill.1.effect.42",
+            "base.skill.1.effect.43",
+            "base.skill.1.effect.44",
+            "base.skill.1.effect.45",
+            "base.skill.1.effect.46",
+            "base.skill.1.effect.47",
+            "base.skill.1.effect.48",
+            "base.skill.1.effect.49",
+            "base.skill.1.effect.50",
+            "base.skill.1.effect.51",
+            "base.skill.1.effect.52",
+            "base.skill.1.effect.53",
+            "base.skill.1.effect.54",
+            "base.skill.1.effect.55",
+            "base.skill.1.effect.56"
+          ],
+          "optional": [
+            "base.skill.1.effect.29",
+            "base.skill.1.effect.42",
+            "base.skill.1.effect.43",
+            "base.skill.1.effect.44",
+            "base.skill.1.effect.45",
+            "base.skill.1.effect.46",
+            "base.skill.1.effect.47",
+            "base.skill.1.effect.48",
+            "base.skill.1.effect.49",
+            "base.skill.1.effect.50",
+            "base.skill.1.effect.51",
+            "base.skill.1.effect.52",
+            "base.skill.1.effect.53",
+            "base.skill.1.effect.54",
+            "base.skill.1.effect.55",
+            "base.skill.1.effect.56"
+          ],
+          "as": "skill.1.remove-effects"
+        },
+        {"op": "wait", "for": "skill.1.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill02",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "LookAt: not included in the visual sequence projection",
+          "ShowBattleAvatarPanel: not included in the visual sequence projection",
+          "SetViewModeEnabled: not included in the visual sequence projection",
+          "HideLevelStage: not included in the visual sequence projection",
+          "SetSkillTargetFormationByPos: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "SetControlSkillMapping: Skill mapping is configuration, not a request to play its destination ready pose; native mapping is not executed",
+          "CNLIMBPHJNP: not included in the visual sequence projection",
+          "ChangeCharacterConfigParam: not included in the visual sequence projection",
+          "ShowEntityFloatMessage: not included in the visual sequence projection",
+          "JDOLDFECMPL: not included in the visual sequence projection",
+          "RandomConfig: not included in the visual sequence projection",
+          "SetSkillButtonAdditionalStatus: not included in the visual sequence projection",
+          "SetDynamicValueBySkillProperty: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "PlayTimeline: not included in the visual sequence projection",
+          "TriggerEffect: effect needs a non-owned target, dynamic path, or Timeline attachment",
+          "SetEffectProgress: not included in the visual sequence projection",
+          "SetEffectAnimatorTrigger: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.1.ready.-1": {
+      "runtime": {"policy": "ready", "selected": "Skill02"},
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Sparxie_00_Config.json", "skill": 1, "as": "ready"}
+      ],
+      "presentation": {
+        "label": "Skill02 · Ready",
+        "ready": {"config": "Config/ConfigCharacter/Avatar/Avatar_Sparxie_00_Config.json", "skill": 1}
+      },
+      "tags": ["ready-pose"]
+    },
+    "base.skill.2.perform": {
+      "runtime": {"policy": "performance", "selected": "Skill03"},
+      "run": [
+        {"op": "animation", "state": "Skill03", "end": -1.0, "track": {"logic": 3}, "as": "skill.2.clock.1"},
+        {"op": "wait", "for": "skill.2.clock.1", "until": "animation_end"},
+        {
+          "op": "start",
+          "id": "Avatar_Sparxie_00_Skill03_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Sparxie_00_Skill03_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.8550000004},
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 1.0}
+          ],
+          "join": true
+        },
+        {"op": "render.visibility", "key": "SetEntityVisible.reason.0", "visible": false, "as": "skill.2.entity_visible.21"},
+        {"op": "wait", "for": "skill.2.entity_visible.21", "until": "accepted"},
+        {"op": "wait", "for": "skill.2.clock.1", "progress": 0.5150000001},
+        {"op": "render.visibility", "key": "SetEntityVisible.reason.0", "visible": true, "as": "skill.2.entity_visible.23"},
+        {"op": "wait", "for": "skill.2.entity_visible.23", "until": "accepted"},
+        {"op": "wait", "for": "skill.2.clock.1", "progress": 0.7000000006},
+        {"op": "wait", "for": "skill.2.clock.1", "progress": 0.9800000009},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill03",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "HideLevelStage: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "JDOLDFECMPL: not included in the visual sequence projection",
+          "LAJIKDENEOO: not included in the visual sequence projection",
+          "ModifyEntityBoostPoint: not included in the visual sequence projection",
+          "DamageByAttackProperty: hit presentation not projected: hit requires an explicit motion/source binding: HitMotion",
+          "DamageByAttackProperty: no literal hit animation/effect; receiver defaults are not assumed",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "TriggerSkipDeadHandler: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "SetEntityVisible: Non-render visibility side effects intentionally excluded: MuteColliderWhenInvisible",
+          "ScaleCharacterModel: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "SetSkillTargetFormationByPos: not included in the visual sequence projection",
+          "ResetHeadLookAt: not included in the visual sequence projection",
+          "TryStartConnectUltraSkillFrameCapture: not included in the visual sequence projection",
+          "WaitTimelineFinish: not included in the visual sequence projection",
+          "SetTeamFormation: serial step depends on an unavailable source clock; no timing is inferred",
+          "ScaleCharacterModel: serial step depends on an unavailable source clock; no timing is inferred",
+          "HideLevelStage: serial step depends on an unavailable source clock; no timing is inferred"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.2.ready.-1": {
+      "runtime": {"policy": "ready", "selected": "Skill03"},
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Sparxie_00_Config.json", "skill": 2, "as": "ready"}
+      ],
+      "presentation": {
+        "label": "Skill03 · Ready",
+        "ready": {"config": "Config/ConfigCharacter/Avatar/Avatar_Sparxie_00_Config.json", "skill": 2}
+      },
+      "tags": ["ready-pose"]
+    },
+    "base.skill.3.perform": {
+      "inputs": {
+        "skill.3.condition.ByContainBehaviorFlag.7": {"type": "bool", "default": false, "label": "ByContainBehaviorFlag", "description": "Manual source condition: $.AbilityList[6].OnStart[3].Predicate"},
+        "skill.3.condition.ByContainBehaviorFlag.19": {"type": "bool", "default": false, "label": "ByContainBehaviorFlag", "description": "Manual source condition: $.AbilityList[7].OnStart[4].Predicate"}
+      },
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "runtime": {"policy": "performance", "selected": "Skill11"},
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "skill.3.condition.ByContainBehaviorFlag.7", "is": true},
+          "then": [
+            {
+              "op": "start",
+              "id": "Avatar_Sparxie_00_Skill11_Camera",
+              "run": [],
+              "join": true
+            },
+            {
+              "op": "start",
+              "id": "Avatar_Sparxie_00_Skill11_Phase02",
+              "run": [
+                {
+                  "op": "if",
+                  "condition": {"op": "value", "name": "skill.3.condition.ByContainBehaviorFlag.19", "is": true},
+                  "then": [
+                    {"op": "wait", "for": "skill.3.clock.1", "progress": 0.4000000003},
+                    {"op": "wait", "for": "skill.3.clock.1", "progress": 0.6000000005},
+                    {
+                      "op": "hit",
+                      "target": "PreviewTarget",
+                      "animation": "Hit_H",
+                      "direction": {},
+                      "effect": {"path": "", "height": 1.2000000476837158, "minimum_interval": 0.0500000007, "maximum_count": 1},
+                      "allow_position": true,
+                      "as": "skill.3.hit.22"
+                    },
+                    {"op": "wait", "for": "skill.3.hit.22", "until": "accepted"},
+                    {
+                      "op": "hit",
+                      "target": "PreviewTarget",
+                      "animation": "Hit_H",
+                      "direction": {},
+                      "effect": {"path": "", "minimum_interval": 0.0500000007, "maximum_count": 1},
+                      "allow_position": true,
+                      "as": "skill.3.hit.24"
+                    },
+                    {"op": "wait", "for": "skill.3.hit.24", "until": "accepted"},
+                    {
+                      "op": "hit",
+                      "target": "PreviewTarget",
+                      "animation": "Hit",
+                      "direction": {},
+                      "effect": {"path": "", "height": 1.2000000476837158, "minimum_interval": 0.0500000007, "maximum_count": 1},
+                      "allow_position": true,
+                      "as": "skill.3.hit.26"
+                    },
+                    {"op": "wait", "for": "skill.3.hit.26", "until": "accepted"},
+                    {
+                      "op": "hit",
+                      "target": "PreviewTarget",
+                      "animation": "Hit",
+                      "direction": {},
+                      "effect": {"path": "", "height": 1.2000000476837158, "minimum_interval": 0.0500000007, "maximum_count": 1},
+                      "allow_position": true,
+                      "as": "skill.3.hit.28"
+                    },
+                    {"op": "wait", "for": "skill.3.hit.28", "until": "accepted"}
+                  ],
+                  "else": []
+                }
+              ],
+              "join": true
+            },
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Rabbit.prefab",
+              "immediate": true,
+              "as": "skill.3.remove.44.0"
+            },
+            {"op": "wait", "for": "skill.3.remove.44.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Rabbit_02.prefab",
+              "immediate": true,
+              "as": "skill.3.remove.45.0"
+            },
+            {"op": "wait", "for": "skill.3.remove.45.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Rabbit_03.prefab",
+              "immediate": true,
+              "as": "skill.3.remove.46.0"
+            },
+            {"op": "wait", "for": "skill.3.remove.46.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Rabbit_04.prefab",
+              "immediate": true,
+              "as": "skill.3.remove.47.0"
+            },
+            {"op": "wait", "for": "skill.3.remove.47.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Rabbit_05.prefab",
+              "immediate": true,
+              "as": "skill.3.remove.48.0"
+            },
+            {"op": "wait", "for": "skill.3.remove.48.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Rabbit_Gift.prefab",
+              "immediate": true,
+              "as": "skill.3.remove.49.0"
+            },
+            {"op": "wait", "for": "skill.3.remove.49.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_PK_01.prefab",
+              "immediate": true,
+              "as": "skill.3.remove.50.0"
+            },
+            {"op": "wait", "for": "skill.3.remove.50.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_PKLine.prefab",
+              "immediate": true,
+              "as": "skill.3.remove.51.0"
+            },
+            {"op": "wait", "for": "skill.3.remove.51.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_StencilMask.prefab",
+              "immediate": true,
+              "as": "skill.3.remove.52.0"
+            },
+            {"op": "wait", "for": "skill.3.remove.52.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_face_01.prefab",
+              "immediate": true,
+              "as": "skill.3.remove.53.0"
+            },
+            {"op": "wait", "for": "skill.3.remove.53.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_face_02.prefab",
+              "immediate": true,
+              "as": "skill.3.remove.54.0"
+            },
+            {"op": "wait", "for": "skill.3.remove.54.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_face_03.prefab",
+              "immediate": true,
+              "as": "skill.3.remove.55.0"
+            },
+            {"op": "wait", "for": "skill.3.remove.55.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Skin_01.prefab",
+              "immediate": true,
+              "as": "skill.3.remove.56.0"
+            },
+            {"op": "wait", "for": "skill.3.remove.56.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Rabbit_Scene_01.prefab",
+              "immediate": true,
+              "as": "skill.3.remove.57.0"
+            },
+            {"op": "wait", "for": "skill.3.remove.57.0", "until": "accepted"},
+            {"op": "animation", "state": "Skill02", "end": -1.0, "track": {"logic": 3}, "as": "skill.3.clock.1"},
+            {"op": "wait", "for": "skill.3.clock.1", "until": "animation_end"},
+            {"op": "wait", "for": "skill.3.clock.1", "progress": 0.2400000002},
+            {"op": "wait", "for": "skill.3.clock.1", "progress": 0.3071428239},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Avatar.prefab",
+              "immediate": true,
+              "as": "skill.3.remove.60.0"
+            },
+            {"op": "wait", "for": "skill.3.remove.60.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_UI_01.prefab",
+              "immediate": true,
+              "as": "skill.3.remove.61.0"
+            },
+            {"op": "wait", "for": "skill.3.remove.61.0", "until": "accepted"},
+            {"op": "wait", "for": "skill.3.clock.1", "progress": 1.0},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_scene01.prefab",
+              "fade": false,
+              "immediate": true,
+              "as": "skill.3.remove.64.0"
+            },
+            {"op": "wait", "for": "skill.3.remove.64.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Boom_01.prefab",
+              "fade": false,
+              "immediate": true,
+              "as": "skill.3.remove.65.0"
+            },
+            {"op": "wait", "for": "skill.3.remove.65.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_StencilMask_01.prefab",
+              "fade": false,
+              "immediate": true,
+              "as": "skill.3.remove.66.0"
+            },
+            {"op": "wait", "for": "skill.3.remove.66.0", "until": "accepted"},
+            {"op": "animation", "state": "StandBy", "end": -1.0, "track": {"logic": 1}, "as": "skill.3.clock.2"},
+            {"op": "wait", "for": "skill.3.clock.2", "until": "animation_end"}
+          ],
+          "else": [
+            {
+              "op": "start",
+              "id": "Avatar_Sparxie_00_Skill11_Camera_V1",
+              "run": [],
+              "join": true
+            },
+            {
+              "op": "start",
+              "id": "Avatar_Sparxie_00_Skill11_Phase02",
+              "run": [
+                {
+                  "op": "if",
+                  "condition": {"op": "value", "name": "skill.3.condition.ByContainBehaviorFlag.19", "is": true},
+                  "then": [],
+                  "else": [
+                    {"op": "wait", "for": "skill.3.clock.3", "progress": 0.5000000004},
+                    {
+                      "op": "hit",
+                      "target": "PreviewTarget",
+                      "animation": "Hit_H",
+                      "direction": {},
+                      "effect": {"path": "", "height": 1.2000000476837158, "minimum_interval": 0.0500000007, "maximum_count": 1},
+                      "allow_position": true,
+                      "as": "skill.3.hit.93"
+                    },
+                    {"op": "wait", "for": "skill.3.hit.93", "until": "accepted"},
+                    {
+                      "op": "hit",
+                      "target": "PreviewTarget",
+                      "animation": "Hit_H",
+                      "direction": {},
+                      "effect": {"path": "", "minimum_interval": 0.0500000007, "maximum_count": 1},
+                      "allow_position": true,
+                      "as": "skill.3.hit.95"
+                    },
+                    {"op": "wait", "for": "skill.3.hit.95", "until": "accepted"}
+                  ]
+                }
+              ],
+              "join": true
+            },
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Rabbit_Gift.prefab",
+              "immediate": true,
+              "as": "skill.3.remove.111.0"
+            },
+            {"op": "wait", "for": "skill.3.remove.111.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_PK_01.prefab",
+              "immediate": true,
+              "as": "skill.3.remove.112.0"
+            },
+            {"op": "wait", "for": "skill.3.remove.112.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_PKLine.prefab",
+              "immediate": true,
+              "as": "skill.3.remove.113.0"
+            },
+            {"op": "wait", "for": "skill.3.remove.113.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_StencilMask.prefab",
+              "immediate": true,
+              "as": "skill.3.remove.114.0"
+            },
+            {"op": "wait", "for": "skill.3.remove.114.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_face_01.prefab",
+              "immediate": true,
+              "as": "skill.3.remove.115.0"
+            },
+            {"op": "wait", "for": "skill.3.remove.115.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_face_02.prefab",
+              "immediate": true,
+              "as": "skill.3.remove.116.0"
+            },
+            {"op": "wait", "for": "skill.3.remove.116.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_face_03.prefab",
+              "immediate": true,
+              "as": "skill.3.remove.117.0"
+            },
+            {"op": "wait", "for": "skill.3.remove.117.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Skin_01.prefab",
+              "immediate": true,
+              "as": "skill.3.remove.118.0"
+            },
+            {"op": "wait", "for": "skill.3.remove.118.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Rabbit_Scene_01.prefab",
+              "immediate": true,
+              "as": "skill.3.remove.119.0"
+            },
+            {"op": "wait", "for": "skill.3.remove.119.0", "until": "accepted"},
+            {"op": "animation", "state": "Skill02_V1", "end": -1.0, "track": {"logic": 3}, "as": "skill.3.clock.3"},
+            {"op": "wait", "for": "skill.3.clock.3", "until": "animation_end"},
+            {"op": "wait", "for": "skill.3.clock.3", "progress": 0.2400000002},
+            {"op": "wait", "for": "skill.3.clock.3", "progress": 0.3071428239},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Avatar.prefab",
+              "immediate": true,
+              "as": "skill.3.remove.122.0"
+            },
+            {"op": "wait", "for": "skill.3.remove.122.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_UI_01.prefab",
+              "immediate": true,
+              "as": "skill.3.remove.123.0"
+            },
+            {"op": "wait", "for": "skill.3.remove.123.0", "until": "accepted"},
+            {"op": "wait", "for": "skill.3.clock.3", "progress": 0.9310000007},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_scene01.prefab",
+              "fade": false,
+              "immediate": true,
+              "as": "skill.3.remove.126.0"
+            },
+            {"op": "wait", "for": "skill.3.remove.126.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Boom_01.prefab",
+              "fade": false,
+              "immediate": true,
+              "as": "skill.3.remove.127.0"
+            },
+            {"op": "wait", "for": "skill.3.remove.127.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Boom_V1_01.prefab",
+              "fade": false,
+              "immediate": true,
+              "as": "skill.3.remove.128.0"
+            },
+            {"op": "wait", "for": "skill.3.remove.128.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_StencilMask_01.prefab",
+              "fade": false,
+              "immediate": true,
+              "as": "skill.3.remove.129.0"
+            },
+            {"op": "wait", "for": "skill.3.remove.129.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Rabbit.prefab",
+              "fade": false,
+              "immediate": true,
+              "as": "skill.3.remove.130.0"
+            },
+            {"op": "wait", "for": "skill.3.remove.130.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Rabbit_02.prefab",
+              "fade": false,
+              "immediate": true,
+              "as": "skill.3.remove.131.0"
+            },
+            {"op": "wait", "for": "skill.3.remove.131.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Rabbit_03.prefab",
+              "fade": false,
+              "immediate": true,
+              "as": "skill.3.remove.132.0"
+            },
+            {"op": "wait", "for": "skill.3.remove.132.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Rabbit_04.prefab",
+              "fade": false,
+              "immediate": true,
+              "as": "skill.3.remove.133.0"
+            },
+            {"op": "wait", "for": "skill.3.remove.133.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Rabbit_05.prefab",
+              "fade": false,
+              "immediate": true,
+              "as": "skill.3.remove.134.0"
+            },
+            {"op": "wait", "for": "skill.3.remove.134.0", "until": "accepted"},
+            {"op": "animation", "state": "StandBy", "end": -1.0, "track": {"logic": 1}, "as": "skill.3.clock.2"},
+            {"op": "wait", "for": "skill.3.clock.2", "until": "animation_end"}
+          ]
+        },
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill11",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "ShowBattleAvatarPanel: not included in the visual sequence projection",
+          "MakeCharacterHUDVisible: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "ChangeCharacterConfigParam: not included in the visual sequence projection",
+          "LoopExecuteTaskListWithInterval: not included in the visual sequence projection",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "DamagePerformFinish: serial step depends on an unavailable source clock; no timing is inferred",
+          "SetControlSkillMapping: serial step depends on an unavailable source clock; no timing is inferred",
+          "TriggerSkipDeadHandler: serial step depends on an unavailable source clock; no timing is inferred",
+          "SkillPerformFinish: serial step depends on an unavailable source clock; no timing is inferred",
+          "StopTimeline: not included in the visual sequence projection",
+          "PlayTimeline: not included in the visual sequence projection",
+          "SetEffectProgress: not included in the visual sequence projection",
+          "RemoveEffect: effect removal has no owned target binding",
+          "FrameCaptureIfNeed: not included in the visual sequence projection",
+          "SetViewModeEnabled: not included in the visual sequence projection",
+          "HideLevelStage: not included in the visual sequence projection",
+          "TriggerEffect: effect needs a non-owned target, dynamic path, or Timeline attachment",
+          "SetEffectAnimatorTrigger: not included in the visual sequence projection",
+          "SetTeamFormation: serial step depends on an unavailable source clock; no timing is inferred",
+          "wait_request: source clock producer is conditional but its selection is not proven by this wait scope",
+          "hit: step depends on an omitted or unavailable source producer",
+          "wait_request: step depends on an omitted or unavailable source producer"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.3.ready.-1": {
+      "runtime": {"policy": "ready", "selected": "Skill11"},
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Sparxie_00_Config.json", "skill": 3, "as": "ready"}
+      ],
+      "presentation": {
+        "label": "Skill11 · Ready",
+        "ready": {"config": "Config/ConfigCharacter/Avatar/Avatar_Sparxie_00_Config.json", "skill": 3}
+      },
+      "tags": ["ready-pose"]
+    },
+    "base.skill.4.perform": {
+      "inputs": {
+        "skill.4.condition.ByCompareDynamicValue.18": {
+          "type": "bool",
+          "default": true,
+          "label": "ByCompareDynamicValue",
+          "description": "Manual source condition: $.AbilityList[5].OnStart[0].Predicate.PredicateList[0]"
+        },
+        "skill.4.condition.ByCompareDynamicValue.19": {
+          "type": "bool",
+          "default": true,
+          "label": "ByCompareDynamicValue",
+          "description": "Manual source condition: $.AbilityList[5].OnStart[0].Predicate.PredicateList[1]"
+        }
+      },
+      "runtime": {"policy": "performance", "selected": "Skill21"},
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Sparxie_00_Skill21_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Sparxie_00_Skill21_Phase02",
+          "run": [
+            {
+              "op": "if",
+              "condition": {"op": "value", "name": "skill.4.condition.ByCompareDynamicValue.18", "is": true},
+              "then": [
+                {
+                  "op": "if",
+                  "condition": {"op": "value", "name": "skill.4.condition.ByCompareDynamicValue.19", "is": true},
+                  "then": [
+                    {"op": "effect.create", "effects": ["base.skill.4.effect.16"], "as": "skill.4.effect.16"},
+                    {"op": "wait", "for": "skill.4.effect.16", "until": "accepted"}
+                  ],
+                  "else": []
+                }
+              ],
+              "else": []
+            },
+            {"op": "wait", "for": "skill.4.clock.1", "progress": 1.0}
+          ],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill02_Gift_Again", "end": -1.0, "track": {"logic": 3}, "as": "skill.4.clock.1"},
+        {"op": "wait", "for": "skill.4.clock.1", "until": "animation_end"},
+        {"op": "wait", "for": "skill.4.clock.1", "progress": 1.0},
+        {"op": "join"},
+        {"op": "effect.remove", "effects": ["base.skill.4.effect.16"], "optional": ["base.skill.4.effect.16"], "as": "skill.4.remove-effects"},
+        {"op": "wait", "for": "skill.4.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "effect.remove", "effects": ["base.skill.4.effect.16"], "optional": ["base.skill.4.effect.16"], "as": "skill.4.remove-effects"},
+        {"op": "wait", "for": "skill.4.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill21",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "ShowEntityFloatMessage: not included in the visual sequence projection",
+          "JDOLDFECMPL: not included in the visual sequence projection",
+          "RandomConfig: not included in the visual sequence projection",
+          "CNLIMBPHJNP: not included in the visual sequence projection",
+          "SetSkillButtonAdditionalStatus: not included in the visual sequence projection",
+          "SetEffectProgress: not included in the visual sequence projection",
+          "SetDynamicValueBySkillProperty: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "SetEffectAnimatorTrigger: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.4.ready.-1": {
+      "runtime": {"policy": "ready", "selected": "Skill21"},
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Sparxie_00_Config.json", "skill": 4, "as": "ready"}
+      ],
+      "presentation": {
+        "label": "Skill21 · Ready",
+        "ready": {"config": "Config/ConfigCharacter/Avatar/Avatar_Sparxie_00_Config.json", "skill": 4}
+      },
+      "tags": ["ready-pose"]
+    },
+    "base.skill.5.perform": {
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "runtime": {"policy": "performance", "selected": "Skill04"},
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Sparxie_00_Skill04_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.5.clock.1", "progress": 0.2000000001},
+            {"op": "wait", "for": "skill.5.clock.1", "progress": 0.5000000004},
+            {"op": "wait", "for": "skill.5.clock.1", "progress": 0.8500000007},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit",
+              "direction": {},
+              "effect": {"path": "", "height": 1.2000000476837158, "minimum_interval": 0.0500000007, "maximum_count": 1},
+              "allow_position": true,
+              "as": "skill.5.hit.6"
+            },
+            {"op": "wait", "for": "skill.5.hit.6", "until": "accepted"}
+          ],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Sparxie_00_Skill04_Camera",
+          "run": [],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill04", "end": -1.0, "track": {"logic": 3}, "as": "skill.5.clock.1"},
+        {"op": "wait", "for": "skill.5.clock.1", "until": "animation_end"},
+        {"op": "wait", "for": "skill.5.clock.1", "progress": 0.2000000001},
+        {"op": "wait", "for": "skill.5.clock.1", "progress": 0.7000000006},
+        {"op": "wait", "for": "skill.5.clock.1", "progress": 0.8000000007},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill04",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "MakeCharacterHUDVisible: not included in the visual sequence projection",
+          "HideLevelStage: not included in the visual sequence projection",
+          "LoopExecuteTaskListWithInterval: not included in the visual sequence projection",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "LAJIKDENEOO: not included in the visual sequence projection",
+          "ModifyEntityBoostPoint: not included in the visual sequence projection",
+          "DIHCJLDIMNA: not included in the visual sequence projection",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "TriggerSkipDeadHandler: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "ScaleCharacterModel: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "SetSkillTargetFormationByPos: not included in the visual sequence projection",
+          "WaitTimelineFinish: not included in the visual sequence projection",
+          "SetTeamFormation: serial step depends on an unavailable source clock; no timing is inferred",
+          "ScaleCharacterModel: serial step depends on an unavailable source clock; no timing is inferred",
+          "HideLevelStage: serial step depends on an unavailable source clock; no timing is inferred"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.9.perform": {
+      "inputs": {
+        "skill.9.condition.ByContainBehaviorFlag.14": {"type": "bool", "default": false, "label": "ByContainBehaviorFlag", "description": "Manual source condition: $.AbilityList[7].OnStart[4].Predicate"},
+        "skill.9.condition.ByContainBehaviorFlag.60": {"type": "bool", "default": false, "label": "ByContainBehaviorFlag", "description": "Manual source condition: $.AbilityList[15].OnStart[14].Predicate"}
+      },
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "runtime": {"policy": "performance", "selected": "Skill12"},
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Sparxie_00_Skill02_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Sparxie_00_Skill11_Phase02",
+          "run": [
+            {
+              "op": "if",
+              "condition": {"op": "value", "name": "skill.9.condition.ByContainBehaviorFlag.14", "is": true},
+              "then": [],
+              "else": []
+            }
+          ],
+          "join": true
+        },
+        {"op": "effect.create", "effects": ["base.skill.9.effect.38"], "as": "skill.9.effect.38"},
+        {"op": "wait", "for": "skill.9.effect.38", "until": "accepted"},
+        {"op": "effect.create", "effects": ["base.skill.9.effect.39"], "as": "skill.9.effect.39"},
+        {"op": "wait", "for": "skill.9.effect.39", "until": "accepted"},
+        {"op": "effect.create", "effects": ["base.skill.9.effect.40"], "as": "skill.9.effect.40"},
+        {"op": "wait", "for": "skill.9.effect.40", "until": "accepted"},
+        {"op": "effect.create", "effects": ["base.skill.9.effect.41"], "as": "skill.9.effect.41"},
+        {"op": "wait", "for": "skill.9.effect.41", "until": "accepted"},
+        {"op": "effect.create", "effects": ["base.skill.9.effect.42"], "as": "skill.9.effect.42"},
+        {"op": "wait", "for": "skill.9.effect.42", "until": "accepted"},
+        {"op": "effect.create", "effects": ["base.skill.9.effect.43"], "as": "skill.9.effect.43"},
+        {"op": "wait", "for": "skill.9.effect.43", "until": "accepted"},
+        {"op": "effect.create", "effects": ["base.skill.9.effect.44"], "as": "skill.9.effect.44"},
+        {"op": "wait", "for": "skill.9.effect.44", "until": "accepted"},
+        {"op": "effect.create", "effects": ["base.skill.9.effect.45"], "as": "skill.9.effect.45"},
+        {"op": "wait", "for": "skill.9.effect.45", "until": "accepted"},
+        {"op": "effect.create", "effects": ["base.skill.9.effect.46"], "as": "skill.9.effect.46"},
+        {"op": "wait", "for": "skill.9.effect.46", "until": "accepted"},
+        {"op": "effect.create", "effects": ["base.skill.9.effect.47"], "as": "skill.9.effect.47"},
+        {"op": "wait", "for": "skill.9.effect.47", "until": "accepted"},
+        {"op": "effect.create", "effects": ["base.skill.9.effect.48"], "as": "skill.9.effect.48"},
+        {"op": "wait", "for": "skill.9.effect.48", "until": "accepted"},
+        {"op": "effect.create", "effects": ["base.skill.9.effect.49"], "as": "skill.9.effect.49"},
+        {"op": "wait", "for": "skill.9.effect.49", "until": "accepted"},
+        {"op": "effect.create", "effects": ["base.skill.9.effect.50"], "as": "skill.9.effect.50"},
+        {"op": "wait", "for": "skill.9.effect.50", "until": "accepted"},
+        {"op": "effect.create", "effects": ["base.skill.9.effect.51"], "as": "skill.9.effect.51"},
+        {"op": "wait", "for": "skill.9.effect.51", "until": "accepted"},
+        {"op": "effect.create", "effects": ["base.skill.9.effect.52"], "as": "skill.9.effect.52"},
+        {"op": "wait", "for": "skill.9.effect.52", "until": "accepted"},
+        {"op": "animation", "state": "Skill02_Gift", "end": -1.0, "track": {"logic": 3}, "as": "skill.9.clock.1"},
+        {"op": "wait", "for": "skill.9.clock.1", "until": "animation_end"},
+        {"op": "wait", "for": "skill.9.clock.1", "progress": 0.2029999999},
+        {"op": "wait", "for": "skill.9.clock.1", "progress": 1.0},
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "skill.9.condition.ByContainBehaviorFlag.60", "is": true},
+          "then": [
+            {
+              "op": "start",
+              "id": "Avatar_Sparxie_00_Skill11_Camera",
+              "run": [],
+              "join": true
+            },
+            {"op": "effect.remove", "effects": ["base.skill.9.effect.38"], "optional": ["base.skill.9.effect.38"], "as": "skill.9.remove.70.0"},
+            {"op": "wait", "for": "skill.9.remove.70.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Rabbit.prefab",
+              "immediate": true,
+              "as": "skill.9.remove.70.1"
+            },
+            {"op": "wait", "for": "skill.9.remove.70.1", "until": "accepted"},
+            {"op": "effect.remove", "effects": ["base.skill.9.effect.39"], "optional": ["base.skill.9.effect.39"], "as": "skill.9.remove.71.0"},
+            {"op": "wait", "for": "skill.9.remove.71.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Rabbit_02.prefab",
+              "immediate": true,
+              "as": "skill.9.remove.71.1"
+            },
+            {"op": "wait", "for": "skill.9.remove.71.1", "until": "accepted"},
+            {"op": "effect.remove", "effects": ["base.skill.9.effect.40"], "optional": ["base.skill.9.effect.40"], "as": "skill.9.remove.72.0"},
+            {"op": "wait", "for": "skill.9.remove.72.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Rabbit_03.prefab",
+              "immediate": true,
+              "as": "skill.9.remove.72.1"
+            },
+            {"op": "wait", "for": "skill.9.remove.72.1", "until": "accepted"},
+            {"op": "effect.remove", "effects": ["base.skill.9.effect.41"], "optional": ["base.skill.9.effect.41"], "as": "skill.9.remove.73.0"},
+            {"op": "wait", "for": "skill.9.remove.73.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Rabbit_04.prefab",
+              "immediate": true,
+              "as": "skill.9.remove.73.1"
+            },
+            {"op": "wait", "for": "skill.9.remove.73.1", "until": "accepted"},
+            {"op": "effect.remove", "effects": ["base.skill.9.effect.42"], "optional": ["base.skill.9.effect.42"], "as": "skill.9.remove.74.0"},
+            {"op": "wait", "for": "skill.9.remove.74.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Rabbit_05.prefab",
+              "immediate": true,
+              "as": "skill.9.remove.74.1"
+            },
+            {"op": "wait", "for": "skill.9.remove.74.1", "until": "accepted"},
+            {"op": "effect.remove", "effects": ["base.skill.9.effect.43"], "optional": ["base.skill.9.effect.43"], "as": "skill.9.remove.75.0"},
+            {"op": "wait", "for": "skill.9.remove.75.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Rabbit_Gift.prefab",
+              "immediate": true,
+              "as": "skill.9.remove.75.1"
+            },
+            {"op": "wait", "for": "skill.9.remove.75.1", "until": "accepted"},
+            {"op": "effect.remove", "effects": ["base.skill.9.effect.44"], "optional": ["base.skill.9.effect.44"], "as": "skill.9.remove.76.0"},
+            {"op": "wait", "for": "skill.9.remove.76.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_PK_01.prefab",
+              "immediate": true,
+              "as": "skill.9.remove.76.1"
+            },
+            {"op": "wait", "for": "skill.9.remove.76.1", "until": "accepted"},
+            {"op": "effect.remove", "effects": ["base.skill.9.effect.45"], "optional": ["base.skill.9.effect.45"], "as": "skill.9.remove.77.0"},
+            {"op": "wait", "for": "skill.9.remove.77.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_PKLine.prefab",
+              "immediate": true,
+              "as": "skill.9.remove.77.1"
+            },
+            {"op": "wait", "for": "skill.9.remove.77.1", "until": "accepted"},
+            {"op": "effect.remove", "effects": ["base.skill.9.effect.46"], "optional": ["base.skill.9.effect.46"], "as": "skill.9.remove.78.0"},
+            {"op": "wait", "for": "skill.9.remove.78.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_StencilMask.prefab",
+              "immediate": true,
+              "as": "skill.9.remove.78.1"
+            },
+            {"op": "wait", "for": "skill.9.remove.78.1", "until": "accepted"},
+            {"op": "effect.remove", "effects": ["base.skill.9.effect.47"], "optional": ["base.skill.9.effect.47"], "as": "skill.9.remove.79.0"},
+            {"op": "wait", "for": "skill.9.remove.79.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_face_01.prefab",
+              "immediate": true,
+              "as": "skill.9.remove.79.1"
+            },
+            {"op": "wait", "for": "skill.9.remove.79.1", "until": "accepted"},
+            {"op": "effect.remove", "effects": ["base.skill.9.effect.48"], "optional": ["base.skill.9.effect.48"], "as": "skill.9.remove.80.0"},
+            {"op": "wait", "for": "skill.9.remove.80.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_face_02.prefab",
+              "immediate": true,
+              "as": "skill.9.remove.80.1"
+            },
+            {"op": "wait", "for": "skill.9.remove.80.1", "until": "accepted"},
+            {"op": "effect.remove", "effects": ["base.skill.9.effect.49"], "optional": ["base.skill.9.effect.49"], "as": "skill.9.remove.81.0"},
+            {"op": "wait", "for": "skill.9.remove.81.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_face_03.prefab",
+              "immediate": true,
+              "as": "skill.9.remove.81.1"
+            },
+            {"op": "wait", "for": "skill.9.remove.81.1", "until": "accepted"},
+            {"op": "effect.remove", "effects": ["base.skill.9.effect.50"], "optional": ["base.skill.9.effect.50"], "as": "skill.9.remove.82.0"},
+            {"op": "wait", "for": "skill.9.remove.82.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Skin_01.prefab",
+              "immediate": true,
+              "as": "skill.9.remove.82.1"
+            },
+            {"op": "wait", "for": "skill.9.remove.82.1", "until": "accepted"},
+            {"op": "effect.remove", "effects": ["base.skill.9.effect.51"], "optional": ["base.skill.9.effect.51"], "as": "skill.9.remove.83.0"},
+            {"op": "wait", "for": "skill.9.remove.83.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Rabbit_Scene_01.prefab",
+              "immediate": true,
+              "as": "skill.9.remove.83.1"
+            },
+            {"op": "wait", "for": "skill.9.remove.83.1", "until": "accepted"},
+            {"op": "animation", "state": "Skill02", "end": -1.0, "track": {"logic": 3}, "as": "skill.9.clock.2"},
+            {"op": "wait", "for": "skill.9.clock.2", "until": "animation_end"},
+            {"op": "wait", "for": "skill.9.clock.2", "progress": 0.2400000002},
+            {"op": "wait", "for": "skill.9.clock.2", "progress": 0.3071428239},
+            {"op": "effect.remove", "effects": ["base.skill.9.effect.52"], "optional": ["base.skill.9.effect.52"], "as": "skill.9.remove.86.0"},
+            {"op": "wait", "for": "skill.9.remove.86.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Avatar.prefab",
+              "immediate": true,
+              "as": "skill.9.remove.86.1"
+            },
+            {"op": "wait", "for": "skill.9.remove.86.1", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_UI_01.prefab",
+              "immediate": true,
+              "as": "skill.9.remove.87.0"
+            },
+            {"op": "wait", "for": "skill.9.remove.87.0", "until": "accepted"},
+            {"op": "wait", "for": "skill.9.clock.2", "progress": 1.0},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_scene01.prefab",
+              "fade": false,
+              "immediate": true,
+              "as": "skill.9.remove.90.0"
+            },
+            {"op": "wait", "for": "skill.9.remove.90.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Boom_01.prefab",
+              "fade": false,
+              "immediate": true,
+              "as": "skill.9.remove.91.0"
+            },
+            {"op": "wait", "for": "skill.9.remove.91.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_StencilMask_01.prefab",
+              "fade": false,
+              "immediate": true,
+              "as": "skill.9.remove.92.0"
+            },
+            {"op": "wait", "for": "skill.9.remove.92.0", "until": "accepted"},
+            {"op": "animation", "state": "StandBy", "end": -1.0, "track": {"logic": 1}, "as": "skill.9.clock.3"},
+            {"op": "wait", "for": "skill.9.clock.3", "until": "animation_end"}
+          ],
+          "else": [
+            {
+              "op": "start",
+              "id": "Avatar_Sparxie_00_Skill11_Camera_V1",
+              "run": [],
+              "join": true
+            },
+            {"op": "effect.remove", "effects": ["base.skill.9.effect.43"], "optional": ["base.skill.9.effect.43"], "as": "skill.9.remove.111.0"},
+            {"op": "wait", "for": "skill.9.remove.111.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Rabbit_Gift.prefab",
+              "immediate": true,
+              "as": "skill.9.remove.111.1"
+            },
+            {"op": "wait", "for": "skill.9.remove.111.1", "until": "accepted"},
+            {"op": "effect.remove", "effects": ["base.skill.9.effect.44"], "optional": ["base.skill.9.effect.44"], "as": "skill.9.remove.112.0"},
+            {"op": "wait", "for": "skill.9.remove.112.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_PK_01.prefab",
+              "immediate": true,
+              "as": "skill.9.remove.112.1"
+            },
+            {"op": "wait", "for": "skill.9.remove.112.1", "until": "accepted"},
+            {"op": "effect.remove", "effects": ["base.skill.9.effect.45"], "optional": ["base.skill.9.effect.45"], "as": "skill.9.remove.113.0"},
+            {"op": "wait", "for": "skill.9.remove.113.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_PKLine.prefab",
+              "immediate": true,
+              "as": "skill.9.remove.113.1"
+            },
+            {"op": "wait", "for": "skill.9.remove.113.1", "until": "accepted"},
+            {"op": "effect.remove", "effects": ["base.skill.9.effect.46"], "optional": ["base.skill.9.effect.46"], "as": "skill.9.remove.114.0"},
+            {"op": "wait", "for": "skill.9.remove.114.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_StencilMask.prefab",
+              "immediate": true,
+              "as": "skill.9.remove.114.1"
+            },
+            {"op": "wait", "for": "skill.9.remove.114.1", "until": "accepted"},
+            {"op": "effect.remove", "effects": ["base.skill.9.effect.47"], "optional": ["base.skill.9.effect.47"], "as": "skill.9.remove.115.0"},
+            {"op": "wait", "for": "skill.9.remove.115.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_face_01.prefab",
+              "immediate": true,
+              "as": "skill.9.remove.115.1"
+            },
+            {"op": "wait", "for": "skill.9.remove.115.1", "until": "accepted"},
+            {"op": "effect.remove", "effects": ["base.skill.9.effect.48"], "optional": ["base.skill.9.effect.48"], "as": "skill.9.remove.116.0"},
+            {"op": "wait", "for": "skill.9.remove.116.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_face_02.prefab",
+              "immediate": true,
+              "as": "skill.9.remove.116.1"
+            },
+            {"op": "wait", "for": "skill.9.remove.116.1", "until": "accepted"},
+            {"op": "effect.remove", "effects": ["base.skill.9.effect.49"], "optional": ["base.skill.9.effect.49"], "as": "skill.9.remove.117.0"},
+            {"op": "wait", "for": "skill.9.remove.117.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_face_03.prefab",
+              "immediate": true,
+              "as": "skill.9.remove.117.1"
+            },
+            {"op": "wait", "for": "skill.9.remove.117.1", "until": "accepted"},
+            {"op": "effect.remove", "effects": ["base.skill.9.effect.50"], "optional": ["base.skill.9.effect.50"], "as": "skill.9.remove.118.0"},
+            {"op": "wait", "for": "skill.9.remove.118.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Skin_01.prefab",
+              "immediate": true,
+              "as": "skill.9.remove.118.1"
+            },
+            {"op": "wait", "for": "skill.9.remove.118.1", "until": "accepted"},
+            {"op": "effect.remove", "effects": ["base.skill.9.effect.51"], "optional": ["base.skill.9.effect.51"], "as": "skill.9.remove.119.0"},
+            {"op": "wait", "for": "skill.9.remove.119.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Rabbit_Scene_01.prefab",
+              "immediate": true,
+              "as": "skill.9.remove.119.1"
+            },
+            {"op": "wait", "for": "skill.9.remove.119.1", "until": "accepted"},
+            {"op": "animation", "state": "Skill02_V1", "end": -1.0, "track": {"logic": 3}, "as": "skill.9.clock.4"},
+            {"op": "wait", "for": "skill.9.clock.4", "until": "animation_end"},
+            {"op": "wait", "for": "skill.9.clock.4", "progress": 0.2400000002},
+            {"op": "wait", "for": "skill.9.clock.4", "progress": 0.3071428239},
+            {"op": "effect.remove", "effects": ["base.skill.9.effect.52"], "optional": ["base.skill.9.effect.52"], "as": "skill.9.remove.122.0"},
+            {"op": "wait", "for": "skill.9.remove.122.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Avatar.prefab",
+              "immediate": true,
+              "as": "skill.9.remove.122.1"
+            },
+            {"op": "wait", "for": "skill.9.remove.122.1", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_UI_01.prefab",
+              "immediate": true,
+              "as": "skill.9.remove.123.0"
+            },
+            {"op": "wait", "for": "skill.9.remove.123.0", "until": "accepted"},
+            {"op": "wait", "for": "skill.9.clock.4", "progress": 0.9310000007},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_scene01.prefab",
+              "fade": false,
+              "immediate": true,
+              "as": "skill.9.remove.126.0"
+            },
+            {"op": "wait", "for": "skill.9.remove.126.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Boom_01.prefab",
+              "fade": false,
+              "immediate": true,
+              "as": "skill.9.remove.127.0"
+            },
+            {"op": "wait", "for": "skill.9.remove.127.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Boom_V1_01.prefab",
+              "fade": false,
+              "immediate": true,
+              "as": "skill.9.remove.128.0"
+            },
+            {"op": "wait", "for": "skill.9.remove.128.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_StencilMask_01.prefab",
+              "fade": false,
+              "immediate": true,
+              "as": "skill.9.remove.129.0"
+            },
+            {"op": "wait", "for": "skill.9.remove.129.0", "until": "accepted"},
+            {"op": "effect.remove", "effects": ["base.skill.9.effect.38"], "optional": ["base.skill.9.effect.38"], "as": "skill.9.remove.130.0"},
+            {"op": "wait", "for": "skill.9.remove.130.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Rabbit.prefab",
+              "fade": false,
+              "immediate": true,
+              "as": "skill.9.remove.130.1"
+            },
+            {"op": "wait", "for": "skill.9.remove.130.1", "until": "accepted"},
+            {"op": "effect.remove", "effects": ["base.skill.9.effect.39"], "optional": ["base.skill.9.effect.39"], "as": "skill.9.remove.131.0"},
+            {"op": "wait", "for": "skill.9.remove.131.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Rabbit_02.prefab",
+              "fade": false,
+              "immediate": true,
+              "as": "skill.9.remove.131.1"
+            },
+            {"op": "wait", "for": "skill.9.remove.131.1", "until": "accepted"},
+            {"op": "effect.remove", "effects": ["base.skill.9.effect.40"], "optional": ["base.skill.9.effect.40"], "as": "skill.9.remove.132.0"},
+            {"op": "wait", "for": "skill.9.remove.132.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Rabbit_03.prefab",
+              "fade": false,
+              "immediate": true,
+              "as": "skill.9.remove.132.1"
+            },
+            {"op": "wait", "for": "skill.9.remove.132.1", "until": "accepted"},
+            {"op": "effect.remove", "effects": ["base.skill.9.effect.41"], "optional": ["base.skill.9.effect.41"], "as": "skill.9.remove.133.0"},
+            {"op": "wait", "for": "skill.9.remove.133.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Rabbit_04.prefab",
+              "fade": false,
+              "immediate": true,
+              "as": "skill.9.remove.133.1"
+            },
+            {"op": "wait", "for": "skill.9.remove.133.1", "until": "accepted"},
+            {"op": "effect.remove", "effects": ["base.skill.9.effect.42"], "optional": ["base.skill.9.effect.42"], "as": "skill.9.remove.134.0"},
+            {"op": "wait", "for": "skill.9.remove.134.0", "until": "accepted"},
+            {
+              "op": "effect.remove_event",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Rabbit_05.prefab",
+              "fade": false,
+              "immediate": true,
+              "as": "skill.9.remove.134.1"
+            },
+            {"op": "wait", "for": "skill.9.remove.134.1", "until": "accepted"},
+            {"op": "animation", "state": "StandBy", "end": -1.0, "track": {"logic": 1}, "as": "skill.9.clock.3"},
+            {"op": "wait", "for": "skill.9.clock.3", "until": "animation_end"}
+          ]
+        },
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {
+          "op": "effect.remove",
+          "effects": [
+            "base.skill.9.effect.38",
+            "base.skill.9.effect.39",
+            "base.skill.9.effect.40",
+            "base.skill.9.effect.41",
+            "base.skill.9.effect.42",
+            "base.skill.9.effect.43",
+            "base.skill.9.effect.44",
+            "base.skill.9.effect.45",
+            "base.skill.9.effect.46",
+            "base.skill.9.effect.47",
+            "base.skill.9.effect.48",
+            "base.skill.9.effect.49",
+            "base.skill.9.effect.50",
+            "base.skill.9.effect.51",
+            "base.skill.9.effect.52"
+          ],
+          "optional": [
+            "base.skill.9.effect.38",
+            "base.skill.9.effect.39",
+            "base.skill.9.effect.40",
+            "base.skill.9.effect.41",
+            "base.skill.9.effect.42",
+            "base.skill.9.effect.43",
+            "base.skill.9.effect.44",
+            "base.skill.9.effect.45",
+            "base.skill.9.effect.46",
+            "base.skill.9.effect.47",
+            "base.skill.9.effect.48",
+            "base.skill.9.effect.49",
+            "base.skill.9.effect.50",
+            "base.skill.9.effect.51",
+            "base.skill.9.effect.52"
+          ],
+          "as": "skill.9.remove-effects"
+        },
+        {"op": "wait", "for": "skill.9.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {
+          "op": "effect.remove",
+          "effects": [
+            "base.skill.9.effect.38",
+            "base.skill.9.effect.39",
+            "base.skill.9.effect.40",
+            "base.skill.9.effect.41",
+            "base.skill.9.effect.42",
+            "base.skill.9.effect.43",
+            "base.skill.9.effect.44",
+            "base.skill.9.effect.45",
+            "base.skill.9.effect.46",
+            "base.skill.9.effect.47",
+            "base.skill.9.effect.48",
+            "base.skill.9.effect.49",
+            "base.skill.9.effect.50",
+            "base.skill.9.effect.51",
+            "base.skill.9.effect.52"
+          ],
+          "optional": [
+            "base.skill.9.effect.38",
+            "base.skill.9.effect.39",
+            "base.skill.9.effect.40",
+            "base.skill.9.effect.41",
+            "base.skill.9.effect.42",
+            "base.skill.9.effect.43",
+            "base.skill.9.effect.44",
+            "base.skill.9.effect.45",
+            "base.skill.9.effect.46",
+            "base.skill.9.effect.47",
+            "base.skill.9.effect.48",
+            "base.skill.9.effect.49",
+            "base.skill.9.effect.50",
+            "base.skill.9.effect.51",
+            "base.skill.9.effect.52"
+          ],
+          "as": "skill.9.remove-effects"
+        },
+        {"op": "wait", "for": "skill.9.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill12",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "LookAt: not included in the visual sequence projection",
+          "HideLevelStage: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "ChangeCharacterConfigParam: not included in the visual sequence projection",
+          "LoopExecuteTaskListWithInterval: not included in the visual sequence projection",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "DamagePerformFinish: serial step depends on an unavailable source clock; no timing is inferred",
+          "SetControlSkillMapping: serial step depends on an unavailable source clock; no timing is inferred",
+          "TriggerSkipDeadHandler: serial step depends on an unavailable source clock; no timing is inferred",
+          "SkillPerformFinish: serial step depends on an unavailable source clock; no timing is inferred",
+          "PlayTimeline: not included in the visual sequence projection",
+          "TriggerEffect: effect needs a non-owned target, dynamic path, or Timeline attachment",
+          "SetEffectProgress: not included in the visual sequence projection",
+          "SetEffectAnimatorTrigger: not included in the visual sequence projection",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "StopTimeline: not included in the visual sequence projection",
+          "RemoveEffect: effect removal has no owned target binding",
+          "FrameCaptureIfNeed: not included in the visual sequence projection",
+          "ShowBattleAvatarPanel: not included in the visual sequence projection",
+          "SetViewModeEnabled: not included in the visual sequence projection",
+          "SetTeamFormation: serial step depends on an unavailable source clock; no timing is inferred",
+          "wait_request: source clock producer is conditional but its selection is not proven by this wait scope",
+          "hit: step depends on an omitted or unavailable source producer",
+          "wait_request: step depends on an omitted or unavailable source producer"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.9.ready.-1": {
+      "runtime": {"policy": "ready", "selected": "Skill12"},
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Sparxie_00_Config.json", "skill": 9, "as": "ready"}
+      ],
+      "presentation": {
+        "label": "Skill12 · Ready",
+        "ready": {"config": "Config/ConfigCharacter/Avatar/Avatar_Sparxie_00_Config.json", "skill": 9}
+      },
+      "tags": ["ready-pose"]
+    },
+    "base.skill.6.perform": {
+      "inputs": {
+        "event": {
+          "type": "integer",
+          "default": 0,
+          "label": "Callback",
+          "choices": [
+            {"value": 0, "label": "MAvatar_Sparxie_00_Maze_Damage: OnEnterBattle"}
+          ]
+        },
+        "callback.4054.condition.ByIsContainModifier.6": {
+          "type": "bool",
+          "default": true,
+          "label": "ByIsContainModifier",
+          "description": "Manual source condition: $.AbilityList[14].Modifiers[0].value._CallbackList[0].CallbackConfig[0].Predicate.PredicateList[0]"
+        },
+        "callback.4054.condition.ByIsMazeSkillAffectCurrentWave.7": {
+          "type": "bool",
+          "default": true,
+          "label": "ByIsMazeSkillAffectCurrentWave",
+          "description": "Manual source condition: $.AbilityList[14].Modifiers[0].value._CallbackList[0].CallbackConfig[0].Predicate.PredicateList[1]"
+        },
+        "callback.4054.condition.ByCompareWaveCount.8": {
+          "type": "bool",
+          "default": true,
+          "label": "ByCompareWaveCount",
+          "description": "Manual source condition: $.AbilityList[14].Modifiers[0].value._CallbackList[0].CallbackConfig[0].Predicate.PredicateList[2]"
+        }
+      },
+      "requires": [
+        {"op": "number", "name": "event", "compare": "ge", "value": 0},
+        {"op": "number", "name": "event", "compare": "lt", "value": 1}
+      ],
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "runtime": {"policy": "performance", "selected": "SkillMaze"},
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "callback.4054.condition.ByIsContainModifier.6", "is": true},
+          "then": [
+            {
+              "op": "if",
+              "condition": {"op": "value", "name": "callback.4054.condition.ByIsMazeSkillAffectCurrentWave.7", "is": true},
+              "then": [
+                {
+                  "op": "if",
+                  "condition": {"op": "value", "name": "callback.4054.condition.ByCompareWaveCount.8", "is": true},
+                  "then": [
+                    {
+                      "op": "hit",
+                      "target": "PreviewTarget",
+                      "animation": "Hit",
+                      "direction": {},
+                      "effect": {
+                        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Common_Hit.prefab",
+                        "height": 1.0,
+                        "minimum_interval": 0.0500000007,
+                        "maximum_count": 1
+                      },
+                      "allow_position": true,
+                      "as": "callback.4054.hit.3"
+                    },
+                    {"op": "wait", "for": "callback.4054.hit.3", "until": "accepted"}
+                  ],
+                  "else": []
+                }
+              ],
+              "else": []
+            }
+          ],
+          "else": []
+        },
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "SkillMaze",
+        "omissions": [
+          "Manual visual callback selection; no native combat modifier or automatic event simulation.",
+          "event: 0=MAvatar_Sparxie_00_Maze_Damage: OnEnterBattle",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "DamagePerformFinish: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "base.skill.8.perform": {
+      "use": "common.elemental.responses",
+      "runtime": {"policy": "performance", "selected": "PassiveSkill02"},
+      "next": "base.rest"
+    },
+    "base.preview.hit": {
+      "inputs": {
+        "kind": {
+          "type": "text",
+          "default": "Hit",
+          "label": "Hit type",
+          "choices": [
+            {"value": "Hit", "label": "Hit"},
+            {"value": "Hit_H", "label": "Hit_H"}
+          ]
+        }
+      },
+      "runtime": {"policy": "performance", "selected": ""},
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "kind", "is": "Hit_H"},
+          "then": [
+            {"op": "hit", "target": "Caster", "animation": "Hit_H", "as": "hit-heavy"},
+            {"op": "wait", "for": "hit-heavy"}
+          ],
+          "else": [
+            {"op": "hit", "target": "Caster", "animation": "Hit", "as": "hit"},
+            {"op": "wait", "for": "hit"}
+          ]
+        }
+      ],
+      "next": "base.rest",
+      "presentation": {"label": "Hit"},
+      "tags": ["manual-visual-callback"]
+    },
+    "base.source.7": {
+      "requires": [
+        {
+          "op": "unresolved",
+          "source": "Config/ConfigCharacter/Avatar/Avatar_Sparxie_00_Config.json:$.SkillList[7]",
+          "detail": "Retained source has no independently bound presentation unit"
+        }
+      ],
+      "trigger": "internal",
+      "run": [],
+      "presentation": {
+        "label": "SkillP01",
+        "listed": false,
+        "omissions": ["Retained source has no independently bound presentation unit"]
+      },
+      "tags": ["retained-source"]
+    },
+    "compiled.0.Avatar_Sparxie_00_Config.skill-0.entry": {
+      "requires": [
+        {"op": "target", "name": "AbilityTargetEntity", "allow_position": true},
+        {"op": "playback", "name": "performance", "values": ["ready"]},
+        {"op": "playback", "name": "selected", "is": "Skill01"}
+      ],
+      "runtime": {"policy": "continuous"},
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Sparxie_00_Skill01_Phase01",
+          "run": [
+            {"op": "facing.target", "target": "AbilityTargetEntity", "duration": 0.10000000149011612, "as": "$.AbilityList[0].OnStart[0]"},
+            {"op": "wait", "for": "$.AbilityList[0].OnStart[0]", "until": "accepted"},
+            {
+              "op": "start",
+              "id": "Avatar_Sparxie_00_Skill01_Phase02",
+              "run": [
+                {"op": "wait", "for": "body.0", "progress": 0.3000000002},
+                {"op": "attack.record", "target": "AbilityTargetEntity", "allow_position": true, "as": "$.AbilityList[1].OnStart[1].record"},
+                {"op": "wait", "for": "$.AbilityList[1].OnStart[1].record", "until": "accepted"},
+                {
+                  "op": "hit",
+                  "target": "AbilityTargetEntity",
+                  "animation": "Hit",
+                  "events": ["after_hit", "after_hit_all"],
+                  "direction": {},
+                  "effect": {
+                    "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill01_Hit01.prefab",
+                    "minimum_interval": 0.0500000007,
+                    "maximum_count": 1
+                  },
+                  "allow_position": true,
+                  "as": "$.AbilityList[1].OnStart[1]"
+                },
+                {"op": "wait", "for": "$.AbilityList[1].OnStart[1]", "until": "accepted"},
+                {"op": "attack.finish", "as": "$.AbilityList[1].OnStart[2]"},
+                {"op": "wait", "for": "$.AbilityList[1].OnStart[2]", "until": "accepted"},
+                {"op": "wait", "for": "body.0", "progress": 0.7760000003},
+                {"op": "playback.value", "variable": "performance", "operation": "set", "value": "finished", "as": "$.AbilityList[1].OnStart[4]"}
+              ],
+              "join": true
+            },
+            {"op": "animation", "state": "Skill01", "end": -1.0, "track": {"logic": 3}, "as": "body.0"},
+            {"op": "wait", "for": "body.0", "until": "started"},
+            {"op": "effect.create", "effects": ["compiled.0.Avatar_Sparxie_00_Config.skill-0.$.AbilityList[0].OnStart[4]"], "as": "$.AbilityList[0].OnStart[4]"},
+            {"op": "wait", "for": "$.AbilityList[0].OnStart[4]", "until": "accepted"},
+            {"op": "wait", "for": "body.0", "progress": 0.2679999996},
+            {"op": "effect.create", "effects": ["compiled.0.Avatar_Sparxie_00_Config.skill-0.$.AbilityList[0].OnStart[6]"], "as": "$.AbilityList[0].OnStart[6]"},
+            {"op": "wait", "for": "$.AbilityList[0].OnStart[6]", "until": "accepted"}
+          ],
+          "join": true
+        },
+        {"op": "join"},
+        {"op": "playback.value", "variable": "performance", "operation": "set", "value": "resetting", "as": "after"},
+        {"op": "call", "function": "@return.return"},
+        {"op": "wait", "for": "return", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return-position"},
+        {"op": "wait", "for": "return-position"},
+        {"op": "playback.value", "variable": "performance", "operation": "set", "value": "ready", "as": "reset"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.abort-return"},
+        {"op": "wait", "for": "abort-return", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "abort-position"},
+        {"op": "wait", "for": "abort-position"}
+      ],
+      "next": "compiled.0.Avatar_Sparxie_00_Config.skill-0.rest",
+      "presentation": {"label": "Avatar_Sparxie_00_Skill01_Phase01"},
+      "tags": ["entry-development"]
+    },
+    "compiled.0.Avatar_Sparxie_00_Config.skill-0.select": {
+      "requires": [
+        {"op": "playback", "name": "performance", "values": ["ready", "failed"]}
+      ],
+      "runtime": {"policy": "setting", "selected": "Skill01"},
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Sparxie_00_Config.json", "skill": 0, "as": "ready"},
+        {"op": "wait", "for": "ready"}
+      ],
+      "presentation": {
+        "label": "Skill01_Ready",
+        "ready": {"config": "Config/ConfigCharacter/Avatar/Avatar_Sparxie_00_Config.json", "skill": 0}
+      },
+      "tags": ["selection-development"]
+    },
+    "compiled.0.Avatar_Sparxie_00_Config.skill-0.rest": {
+      "trigger": "internal",
+      "runtime": {"policy": "ready", "selected": ""},
+      "run": [
+        {"op": "call", "function": "@return.idle"},
+        {"op": "wait", "for": "idle", "until": "submitted"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["stable-return"]
+    },
+    "@receiver-clear/base.callback.5359.receiver-property.3": {
+      "requires": [
+        {"op": "state", "name": "common.elemental.frozen-hit"}
+      ],
+      "mode": "input",
+      "run": [
+        {"op": "state.exit", "name": "common.elemental.frozen-hit", "only_caster": true, "as": "clear"},
+        {"op": "wait", "for": "clear"}
+      ],
+      "presentation": {
+        "label": "Clear hit effect override",
+        "kind": "setting",
+        "contexts": ["common.elemental.frozen-hit"]
+      },
+      "tags": ["visual-receiver-clear"]
+    },
+    "@idle": {
+      "runtime": {"policy": "ready", "selected": ""},
+      "run": [
+        {"op": "call", "function": "@return.rest.pose"}
+      ],
+      "presentation": {"label": "Idle"},
+      "tags": ["script-idle"]
+    },
+    "gift": {
+      "run": [
+        {
+          "op": "animation.cued",
+          "state": "Skill02_Gift",
+          "prepare": [
+            {
+              "op": "timeline.play",
+              "key": "timeline1",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_TimeLine_01.playable",
+              "shared_environment": true
+            },
+            {
+              "op": "effect.create",
+              "effects": [
+                "Rabbit",
+                "Rabbit_02",
+                "Rabbit_03",
+                "Rabbit_04",
+                "Rabbit_05",
+                "Rabbit_Gift",
+                "PK_01",
+                "PKLine",
+                "StencilMask",
+                "face_01",
+                "face_02",
+                "face_03",
+                "Skin_01",
+                "Rabbit_Scene_01",
+                "Avatar",
+                "Monster"
+              ]
+            },
+            {"op": "effect.progress", "effect": "PK_01", "value": 0},
+            {"op": "variable.set", "variable": "_PKLineProgress", "value": 0}
+          ],
+          "tracks": [
+            [
+              {
+                "at": 0.203,
+                "run": [
+                  {"op": "variable.set", "variable": "_PKLineProgress", "value": 0.3},
+                  {"op": "effect.progress", "effect": "PK_01", "value": {"variable": "_PKLineProgress"}, "seconds": 1},
+                  {"op": "effect.trigger", "when": {"choice": "fire", "is": "yes"}, "effects": ["PK_01"], "trigger": "Fire"}
+                ]
+              }
+            ],
+            [
+              {
+                "at": 0.633,
+                "run": [
+                  {"op": "effect.create", "when": {"choice": "prize", "is": "grand"}, "effects": ["Gift_02"]},
+                  {"op": "effect.create", "when": {"choice": "prize", "is": "minor"}, "effects": ["Gift_01"]}
+                ]
+              }
+            ]
+          ],
+          "restart_scope": true
+        }
+      ]
+    },
+    "resolve": {
+      "run": [
+        {
+          "op": "animation.cued",
+          "state": "Skill02",
+          "prepare": [
+            {"op": "timeline.stop", "key": "timeline1"},
+            {
+              "op": "timeline.play",
+              "key": "timeline2",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_TimeLine_02.playable",
+              "shared_environment": true,
+              "wrap_mode": 2
+            },
+            {
+              "op": "effect.remove",
+              "effects": [
+                "Rabbit",
+                "Rabbit_02",
+                "Rabbit_03",
+                "Rabbit_04",
+                "Rabbit_05",
+                "Rabbit_Gift",
+                "PK_01",
+                "PKLine",
+                "StencilMask",
+                "face_01",
+                "face_02",
+                "face_03",
+                "Skin_01",
+                "Rabbit_Scene_01"
+              ],
+              "immediate": true
+            },
+            {"op": "effect.progress", "effect": "PK_01", "value": 0.8, "seconds": 0.183}
+          ],
+          "tracks": [
+            [
+              {
+                "at": 0.24,
+                "run": [
+                  {"op": "effect.progress", "effect": "PK_01", "value": 1, "seconds": 0.1}
+                ]
+              },
+              {
+                "at": 0.3071428239,
+                "run": [
+                  {"op": "effect.remove", "effects": ["Avatar", "native.UI_01", "Monster"], "immediate": true}
+                ]
+              },
+              {
+                "at": 1,
+                "run": [
+                  {"op": "effect.remove", "effects": ["native.scene01", "native.Boom_01", "native.StencilMask_01"], "fade": false, "immediate": true}
+                ]
+              }
+            ]
+          ],
+          "then": {
+            "state": "StandBy",
+            "run": [
+              {"op": "timeline.stop", "key": "timeline2"},
+              {"op": "effect.create", "context": null, "effects": ["Common_Hit01"]}
+            ]
+          }
+        }
+      ]
+    },
+    "resolve_v1": {
+      "run": [
+        {
+          "op": "animation.cued",
+          "state": "Skill02_V1",
+          "complete_at": 0.931,
+          "prepare": [
+            {"op": "timeline.stop", "key": "timeline1"},
+            {
+              "op": "timeline.play",
+              "key": "timeline3",
+              "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_TimeLine_03.playable",
+              "shared_environment": true,
+              "wrap_mode": 2
+            },
+            {"op": "effect.trigger", "effects": ["Rabbit", "Rabbit_02", "Rabbit_03", "Rabbit_04", "Rabbit_05"], "trigger": "FadeOutTrigger_V1"},
+            {
+              "op": "effect.remove",
+              "effects": ["Rabbit_Gift", "PK_01", "PKLine", "StencilMask", "face_01", "face_02", "face_03", "Skin_01", "Rabbit_Scene_01"],
+              "immediate": true
+            },
+            {"op": "effect.progress", "effect": "PK_01", "value": 0.8, "seconds": 0.183}
+          ],
+          "tracks": [
+            [
+              {
+                "at": 0.24,
+                "run": [
+                  {"op": "effect.progress", "effect": "PK_01", "value": 1, "seconds": 0.1}
+                ]
+              },
+              {
+                "at": 0.3071428239,
+                "run": [
+                  {"op": "effect.remove", "effects": ["Avatar", "native.UI_01", "Monster"], "immediate": true}
+                ]
+              },
+              {
+                "at": 0.931,
+                "run": [
+                  {
+                    "op": "effect.remove",
+                    "optional": ["native.Boom_01", "native.StencilMask_01"],
+                    "effects": [
+                      "native.scene01",
+                      "native.Boom_01",
+                      "native.Boom_V1_01",
+                      "native.StencilMask_01",
+                      "Rabbit",
+                      "Rabbit_02",
+                      "Rabbit_03",
+                      "Rabbit_04",
+                      "Rabbit_05"
+                    ],
+                    "fade": false,
+                    "immediate": true
+                  }
+                ]
+              }
+            ]
+          ],
+          "then": {
+            "state": "StandBy",
+            "run": [
+              {"op": "timeline.stop", "key": "timeline3"}
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "functions": {
+    "@return.rest.pose": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "rest.pose.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "rest.pose"
+      }
+    ],
+    "@return.return.pose": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "return.pose.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "return.pose"
+      }
+    ],
+    "@return.return": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "return.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "return"
+      }
+    ],
+    "@return.abort-return": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "abort-return.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "abort-return"
+      }
+    ],
+    "@return.idle": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "idle.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "idle"
+      }
+    ]
+  },
+  "states": {},
+  "resources": {
+    "effects": {
+      "base.skill.1.effect.29": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Gift_02.prefab",
+        "target": "Caster",
+        "simulate_immediately": true,
+        "unique_name": "Eff_Avatar_Sparxie_00_Skill02_Gift_02"
+      },
+      "base.skill.1.effect.42": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Rabbit.prefab",
+        "target": "Caster",
+        "simulate_immediately": true,
+        "unique_name": "Eff_Avatar_Sparxie_00_Skill02_Rabbit"
+      },
+      "base.skill.1.effect.43": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Rabbit_02.prefab",
+        "target": "Caster",
+        "simulate_immediately": true,
+        "unique_name": "Eff_Avatar_Sparxie_00_Skill02_Rabbit_02"
+      },
+      "base.skill.1.effect.44": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Rabbit_03.prefab",
+        "target": "Caster",
+        "simulate_immediately": true,
+        "unique_name": "Eff_Avatar_Sparxie_00_Skill02_Rabbit_03"
+      },
+      "base.skill.1.effect.45": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Rabbit_04.prefab",
+        "target": "Caster",
+        "simulate_immediately": true,
+        "unique_name": "Eff_Avatar_Sparxie_00_Skill02_Rabbit_04"
+      },
+      "base.skill.1.effect.46": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Rabbit_05.prefab",
+        "target": "Caster",
+        "simulate_immediately": true,
+        "unique_name": "Eff_Avatar_Sparxie_00_Skill02_Rabbit_05"
+      },
+      "base.skill.1.effect.47": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Rabbit_Gift.prefab",
+        "target": "Caster",
+        "simulate_immediately": true,
+        "unique_name": "Eff_Avatar_Sparxie_00_Skill02_Rabbit_Gift"
+      },
+      "base.skill.1.effect.48": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_PK_01.prefab",
+        "target": "Caster",
+        "simulate_immediately": true,
+        "unique_name": "Eff_Avatar_Sparxie_00_Skill02_PK_01"
+      },
+      "base.skill.1.effect.49": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_PKLine.prefab",
+        "target": "Caster",
+        "simulate_immediately": true,
+        "unique_name": "Eff_Avatar_Sparxie_00_Skill02_PKLine"
+      },
+      "base.skill.1.effect.50": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_StencilMask.prefab",
+        "target": "Caster",
+        "simulate_immediately": true,
+        "unique_name": "Eff_Avatar_Sparxie_00_Skill02_StencilMask"
+      },
+      "base.skill.1.effect.51": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_face_01.prefab",
+        "target": "Caster",
+        "simulate_immediately": true,
+        "unique_name": "Eff_Avatar_Sparxie_00_Skill02_face_01"
+      },
+      "base.skill.1.effect.52": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_face_02.prefab",
+        "target": "Caster",
+        "simulate_immediately": true,
+        "unique_name": "Eff_Avatar_Sparxie_00_Skill02_face_02"
+      },
+      "base.skill.1.effect.53": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_face_03.prefab",
+        "target": "Caster",
+        "simulate_immediately": true,
+        "unique_name": "Eff_Avatar_Sparxie_00_Skill02_face_03"
+      },
+      "base.skill.1.effect.54": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Skin_01.prefab",
+        "target": "Caster",
+        "simulate_immediately": true,
+        "unique_name": "Eff_Avatar_Sparxie_00_Skill02_Skin_01"
+      },
+      "base.skill.1.effect.55": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Rabbit_Scene_01.prefab",
+        "target": "Caster",
+        "simulate_immediately": true,
+        "unique_name": "Eff_Avatar_Sparxie_00_Skill02_Rabbit_Scene_01"
+      },
+      "base.skill.1.effect.56": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Avatar.prefab",
+        "target": "Caster",
+        "simulate_immediately": true,
+        "unique_name": "Eff_Avatar_Sparxie_00_Skill02_Avatar"
+      },
+      "base.skill.4.effect.16": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Gift_02.prefab",
+        "target": "Caster",
+        "simulate_immediately": true,
+        "unique_name": "Eff_Avatar_Sparxie_00_Skill02_Gift_02"
+      },
+      "base.skill.9.effect.38": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Rabbit.prefab",
+        "target": "Caster",
+        "simulate_immediately": true,
+        "unique_name": "Eff_Avatar_Sparxie_00_Skill02_Rabbit"
+      },
+      "base.skill.9.effect.39": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Rabbit_02.prefab",
+        "target": "Caster",
+        "simulate_immediately": true,
+        "unique_name": "Eff_Avatar_Sparxie_00_Skill02_Rabbit_02"
+      },
+      "base.skill.9.effect.40": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Rabbit_03.prefab",
+        "target": "Caster",
+        "simulate_immediately": true,
+        "unique_name": "Eff_Avatar_Sparxie_00_Skill02_Rabbit_03"
+      },
+      "base.skill.9.effect.41": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Rabbit_04.prefab",
+        "target": "Caster",
+        "simulate_immediately": true,
+        "unique_name": "Eff_Avatar_Sparxie_00_Skill02_Rabbit_04"
+      },
+      "base.skill.9.effect.42": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Rabbit_05.prefab",
+        "target": "Caster",
+        "simulate_immediately": true,
+        "unique_name": "Eff_Avatar_Sparxie_00_Skill02_Rabbit_05"
+      },
+      "base.skill.9.effect.43": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Rabbit_Gift.prefab",
+        "target": "Caster",
+        "simulate_immediately": true,
+        "unique_name": "Eff_Avatar_Sparxie_00_Skill02_Rabbit_Gift"
+      },
+      "base.skill.9.effect.44": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_PK_01.prefab",
+        "target": "Caster",
+        "simulate_immediately": true,
+        "unique_name": "Eff_Avatar_Sparxie_00_Skill02_PK_01"
+      },
+      "base.skill.9.effect.45": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_PKLine.prefab",
+        "target": "Caster",
+        "simulate_immediately": true,
+        "unique_name": "Eff_Avatar_Sparxie_00_Skill02_PKLine"
+      },
+      "base.skill.9.effect.46": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_StencilMask.prefab",
+        "target": "Caster",
+        "simulate_immediately": true,
+        "unique_name": "Eff_Avatar_Sparxie_00_Skill02_StencilMask"
+      },
+      "base.skill.9.effect.47": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_face_01.prefab",
+        "target": "Caster",
+        "simulate_immediately": true,
+        "unique_name": "Eff_Avatar_Sparxie_00_Skill02_face_01"
+      },
+      "base.skill.9.effect.48": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_face_02.prefab",
+        "target": "Caster",
+        "simulate_immediately": true,
+        "unique_name": "Eff_Avatar_Sparxie_00_Skill02_face_02"
+      },
+      "base.skill.9.effect.49": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_face_03.prefab",
+        "target": "Caster",
+        "simulate_immediately": true,
+        "unique_name": "Eff_Avatar_Sparxie_00_Skill02_face_03"
+      },
+      "base.skill.9.effect.50": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Skin_01.prefab",
+        "target": "Caster",
+        "simulate_immediately": true,
+        "unique_name": "Eff_Avatar_Sparxie_00_Skill02_Skin_01"
+      },
+      "base.skill.9.effect.51": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Rabbit_Scene_01.prefab",
+        "target": "Caster",
+        "simulate_immediately": true,
+        "unique_name": "Eff_Avatar_Sparxie_00_Skill02_Rabbit_Scene_01"
+      },
+      "base.skill.9.effect.52": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Avatar.prefab",
+        "target": "Caster",
+        "simulate_immediately": true,
+        "unique_name": "Eff_Avatar_Sparxie_00_Skill02_Avatar"
+      },
+      "compiled.0.Avatar_Sparxie_00_Config.skill-0.$.AbilityList[0].OnStart[4]": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill01.prefab",
+        "target": "AbilityTargetEntity",
+        "mutex": {"interval": 0.0, "maximum": 1, "scope": "global"},
+        "attach_point": "SelectRoot",
+        "allow_position": true
+      },
+      "compiled.0.Avatar_Sparxie_00_Config.skill-0.$.AbilityList[0].OnStart[6]": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill01_Hit.prefab",
+        "target": "AbilityTargetEntity",
+        "mutex": {"interval": 0.0, "maximum": 1, "scope": "global"},
+        "attach_point": "SelectRoot",
+        "allow_position": true
+      },
+      "Common_Hit01": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Common_Hit01.prefab", "target": "AbilityTargetEntity"},
+      "Rabbit": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Rabbit.prefab", "target": "Caster", "simulate_immediately": true},
+      "Rabbit_02": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Rabbit_02.prefab", "target": "Caster", "simulate_immediately": true},
+      "Rabbit_03": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Rabbit_03.prefab", "target": "Caster", "simulate_immediately": true},
+      "Rabbit_04": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Rabbit_04.prefab", "target": "Caster", "simulate_immediately": true},
+      "Rabbit_05": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Rabbit_05.prefab", "target": "Caster", "simulate_immediately": true},
+      "Rabbit_Gift": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Rabbit_Gift.prefab",
+        "target": "Caster",
+        "simulate_immediately": true
+      },
+      "PK_01": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_PK_01.prefab", "target": "Caster", "simulate_immediately": true},
+      "PKLine": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_PKLine.prefab", "target": "Caster", "simulate_immediately": true},
+      "StencilMask": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_StencilMask.prefab",
+        "target": "Caster",
+        "simulate_immediately": true
+      },
+      "face_01": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_face_01.prefab", "target": "Caster", "simulate_immediately": true},
+      "face_02": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_face_02.prefab", "target": "Caster", "simulate_immediately": true},
+      "face_03": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_face_03.prefab", "target": "Caster", "simulate_immediately": true},
+      "Skin_01": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Skin_01.prefab", "target": "Caster", "simulate_immediately": true},
+      "Rabbit_Scene_01": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Rabbit_Scene_01.prefab",
+        "target": "Caster",
+        "simulate_immediately": true
+      },
+      "Avatar": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Avatar.prefab", "target": "Caster", "simulate_immediately": true},
+      "Monster": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Monster.prefab",
+        "target": "AbilityTargetAndAdjoinEntity",
+        "simulate_immediately": true
+      },
+      "Gift_01": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Gift_01.prefab", "target": "Caster", "simulate_immediately": true},
+      "Gift_02": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Sparxie_00/Eff_Avatar_Sparxie_00_Skill02_Gift_02.prefab", "target": "Caster", "simulate_immediately": true}
+    }
+  }
+}

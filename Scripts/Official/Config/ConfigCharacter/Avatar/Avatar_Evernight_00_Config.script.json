@@ -1,0 +1,811 @@
+{
+  "format": "hksr.script",
+  "id": "official-scripts:Config/ConfigCharacter/Avatar/Avatar_Evernight_00_Config.json",
+  "applies_to": "Config/ConfigCharacter/Avatar/Avatar_Evernight_00_Config.json",
+  "default": true,
+  "imports": ["Common/Elemental.json"],
+  "defaults": {
+    "targets": {
+      "PreviewTarget": {
+        "local_position": [0, 0, 6]
+      },
+      "callback.1506.target.CasterServant": {"alias": "Caster"}
+    }
+  },
+  "actions": {
+    "rest": {
+      "trigger": "internal",
+      "run": [
+        {"op": "call", "function": "@return.rest.pose"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["stable-return", "idle-provider"]
+    },
+    "skill.0.perform": {
+      "inputs": {
+        "skill.0.condition.ByTargetListAny.18": {
+          "type": "bool",
+          "default": false,
+          "label": "ByTargetListAny",
+          "description": "Manual source condition: $.AbilityList[0].OnStart[1].Predicate.PredicateList[0]"
+        },
+        "skill.0.condition.ByTargetTeam.19": {
+          "type": "bool",
+          "default": false,
+          "label": "ByTargetTeam",
+          "description": "Manual source condition: $.AbilityList[0].OnStart[1].Predicate.PredicateList[1]"
+        }
+      },
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "skill.0.condition.ByTargetListAny.18", "is": true},
+          "then": [
+            {
+              "op": "if",
+              "condition": {"op": "value", "name": "skill.0.condition.ByTargetTeam.19", "is": true},
+              "then": [
+                {
+                  "op": "start",
+                  "id": "Avatar_Evernight_00_Skill01_Far_Camera",
+                  "run": [],
+                  "join": true
+                },
+                {"op": "animation", "state": "Skill01", "end": 0.0, "track": {"logic": 3}, "as": "skill.0.clock.1"},
+                {
+                  "op": "movement",
+                  "animation": "skill.0.clock.1",
+                  "segments": [
+                    {
+                      "destination": "target",
+                      "name": "PreviewTarget",
+                      "target_geometry": true,
+                      "start": 0.0149999996,
+                      "end": 0.1319999999,
+                      "sample": {"distance": 4.2500000002, "percentage": 1.0, "include_radii": true}
+                    },
+                    {
+                      "destination": "target",
+                      "name": "PreviewTarget",
+                      "target_geometry": true,
+                      "start": 0.1319999999,
+                      "end": 0.3200000002,
+                      "sample": {"distance": 3.4000000003, "percentage": 1.0, "include_radii": true}
+                    },
+                    {
+                      "destination": "origin",
+                      "start": 0.7600000007,
+                      "end": 0.8740000005,
+                      "sample": {"distance": 0.0, "percentage": 1.0, "include_radii": true}
+                    }
+                  ],
+                  "as": "skill.0.clock.1.movement"
+                },
+                {"op": "wait", "for": "skill.0.clock.1", "progress": 0.0}
+              ],
+              "else": [
+                {
+                  "op": "start",
+                  "id": "Avatar_Evernight_00_Skill01_Camera",
+                  "run": [],
+                  "join": true
+                },
+                {"op": "animation", "state": "Skill01", "end": 0.0, "track": {"logic": 3}, "as": "skill.0.clock.1"},
+                {
+                  "op": "movement",
+                  "animation": "skill.0.clock.1",
+                  "segments": [
+                    {
+                      "destination": "target",
+                      "name": "PreviewTarget",
+                      "target_geometry": true,
+                      "start": 0.0149999996,
+                      "end": 0.1319999999,
+                      "sample": {"distance": 3.4000000003, "percentage": 1.0, "include_radii": true}
+                    },
+                    {
+                      "destination": "origin",
+                      "start": 0.7600000007,
+                      "end": 0.8740000005,
+                      "sample": {"distance": 0.0, "percentage": 1.0, "include_radii": true}
+                    }
+                  ],
+                  "as": "skill.0.clock.1.movement"
+                },
+                {"op": "wait", "for": "skill.0.clock.1", "progress": 0.0}
+              ]
+            }
+          ],
+          "else": [
+            {
+              "op": "start",
+              "id": "Avatar_Evernight_00_Skill01_Camera",
+              "run": [],
+              "join": true
+            },
+            {"op": "animation", "state": "Skill01", "end": 0.0, "track": {"logic": 3}, "as": "skill.0.clock.1"},
+            {
+              "op": "movement",
+              "animation": "skill.0.clock.1",
+              "segments": [
+                {
+                  "destination": "target",
+                  "name": "PreviewTarget",
+                  "target_geometry": true,
+                  "start": 0.0149999996,
+                  "end": 0.1319999999,
+                  "sample": {"distance": 3.4000000003, "percentage": 1.0, "include_radii": true}
+                },
+                {
+                  "destination": "origin",
+                  "start": 0.7600000007,
+                  "end": 0.8740000005,
+                  "sample": {"distance": 0.0, "percentage": 1.0, "include_radii": true}
+                }
+              ],
+              "as": "skill.0.clock.1.movement"
+            },
+            {"op": "wait", "for": "skill.0.clock.1", "progress": 0.0}
+          ]
+        },
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "Skill01",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "LookAt: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "TriggerAbility: serial step depends on an unavailable source clock; no timing is inferred",
+          "RadialBlurEffect: serial step depends on an unavailable source clock; no timing is inferred",
+          "SetCharacterPartsVisibility: serial step depends on an unavailable source clock; no timing is inferred"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "skill.0.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Evernight_00_Config.json", "skill": 0, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "skill.1.perform": {
+      "inputs": {
+        "skill.1.condition.ByIsContainModifier.9": {"type": "bool", "default": false, "label": "ByIsContainModifier", "description": "Manual source condition: $.AbilityList[2].OnStart[3].Predicate"}
+      },
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "skill.1.condition.ByIsContainModifier.9", "is": true},
+          "then": [
+            {"op": "animation", "state": "Skill21", "end": -1.0, "track": {"logic": 3}, "as": "skill.1.clock.1"},
+            {"op": "wait", "for": "skill.1.clock.1", "until": "animation_end"},
+            {
+              "op": "start",
+              "id": "Avatar_Evernight_00_Skill02_Phase02",
+              "run": [
+                {
+                  "op": "if",
+                  "condition": {"op": "value", "name": "skill.1.condition.ByIsContainModifier.9", "is": true},
+                  "then": [
+                    {"op": "wait", "for": "skill.1.clock.1", "progress": 0.5479999999},
+                    {"op": "wait", "for": "skill.1.clock.1", "progress": 1.0}
+                  ],
+                  "else": [
+                    {"op": "wait", "for": "skill.1.clock.2", "progress": 0.4369999999},
+                    {"op": "wait", "for": "skill.1.clock.2", "progress": 1.0}
+                  ]
+                }
+              ],
+              "join": true
+            },
+            {
+              "op": "start",
+              "id": "Avatar_Evernight_00_Skill02_2_Camera",
+              "run": [],
+              "join": true
+            }
+          ],
+          "else": [
+            {
+              "op": "start",
+              "id": "Avatar_Evernight_00_Skill02_Camera",
+              "run": [],
+              "join": true
+            },
+            {
+              "op": "start",
+              "id": "Avatar_Evernight_00_Skill02_Phase02",
+              "run": [
+                {
+                  "op": "if",
+                  "condition": {"op": "value", "name": "skill.1.condition.ByIsContainModifier.9", "is": true},
+                  "then": [
+                    {"op": "wait", "for": "skill.1.clock.1", "progress": 0.5479999999},
+                    {"op": "wait", "for": "skill.1.clock.1", "progress": 1.0}
+                  ],
+                  "else": [
+                    {"op": "wait", "for": "skill.1.clock.2", "progress": 0.4369999999},
+                    {"op": "wait", "for": "skill.1.clock.2", "progress": 1.0}
+                  ]
+                }
+              ],
+              "join": true
+            },
+            {"op": "animation", "state": "Skill02", "end": -1.0, "track": {"logic": 3}, "as": "skill.1.clock.2"},
+            {"op": "wait", "for": "skill.1.clock.2", "until": "animation_end"},
+            {"op": "wait", "for": "skill.1.clock.2", "progress": 0.01}
+          ]
+        },
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "Skill02",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "ScaleCharacterModel: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "LookAt: not included in the visual sequence projection",
+          "SetSkillTargetFormationByPos: not included in the visual sequence projection",
+          "HideLevelStage: not included in the visual sequence projection",
+          "LoseHPByRatio: not included in the visual sequence projection",
+          "CreateServant: not included in the visual sequence projection",
+          "TriggerAbility: invocation is not bound to the owned caster",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "WaitTimelineFinish: not included in the visual sequence projection",
+          "IncludeTaskListTemplate: serial step depends on an unavailable source clock; no timing is inferred"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "skill.1.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Evernight_00_Config.json", "skill": 1, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "skill.2.perform": {
+      "inputs": {
+        "segment": {
+          "type": "integer",
+          "default": 0,
+          "label": "Animation",
+          "choices": [
+            {"value": 0, "label": "StandBy"},
+            {"value": 1, "label": "Skill03_01"}
+          ]
+        }
+      },
+      "requires": [
+        {"op": "number", "name": "segment", "compare": "ge", "value": 0},
+        {"op": "number", "name": "segment", "compare": "lt", "value": 2}
+      ],
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "segment", "is": 1},
+          "then": [
+            {"op": "animation", "state": "Skill03_01", "end": 1, "track": {"logic": 3}, "as": "body"},
+            {"op": "wait", "for": "body", "until": "animation_end"}
+          ],
+          "else": [
+            {"op": "animation", "state": "StandBy", "end": 1, "track": {"logic": 1}, "as": "body"},
+            {"op": "wait", "for": "body", "until": "animation_end"}
+          ]
+        },
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "Skill03",
+        "omissions": [
+          "Only body animation and native events; additional ability choreography is not included.",
+          "segment: 0=StandBy, 1=Skill03_01",
+          "SetDynamicValueClientOnly: not included in the visual sequence projection",
+          "StopTimeline: not included in the visual sequence projection",
+          "GlobalMainIntensityEffect: not included in the visual sequence projection",
+          "HideLevelStage: not included in the visual sequence projection",
+          "SetSkillTargetFormationByPos: not included in the visual sequence projection",
+          "CreateServant: not included in the visual sequence projection",
+          "TriggerAbility: invocation is not bound to the owned caster",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "SetAttachmentVisibility: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "TriggerAbility: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitTimelineFinish: serial step depends on an unavailable source clock; no timing is inferred",
+          "SkillPerformFinish: serial step depends on an unavailable source clock; no timing is inferred",
+          "TryStartConnectUltraSkillFrameCapture: serial step depends on an unavailable source clock; no timing is inferred",
+          "IncludeTaskListTemplate: serial step depends on an unavailable source clock; no timing is inferred",
+          "HideLevelStage: serial step depends on an unavailable source clock; no timing is inferred",
+          "SetTeamFormation: serial step depends on an unavailable source clock; no timing is inferred",
+          "MoveToTargetPosition: serial step depends on an unavailable source clock; no timing is inferred"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "skill.2.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Evernight_00_Config.json", "skill": 2, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "skill.3.perform": {
+      "inputs": {
+        "skill.3.condition.ByIsContainModifier.9": {"type": "bool", "default": false, "label": "ByIsContainModifier", "description": "Manual source condition: $.AbilityList[5].OnStart[3].Predicate"}
+      },
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "skill.3.condition.ByIsContainModifier.9", "is": true},
+          "then": [
+            {"op": "animation", "state": "Skill21", "end": -1.0, "track": {"logic": 3}, "as": "skill.3.clock.1"},
+            {"op": "wait", "for": "skill.3.clock.1", "until": "animation_end"},
+            {
+              "op": "start",
+              "id": "Avatar_Evernight_00_Skill21_Phase02",
+              "run": [
+                {
+                  "op": "if",
+                  "condition": {"op": "value", "name": "skill.3.condition.ByIsContainModifier.9", "is": true},
+                  "then": [
+                    {"op": "wait", "for": "skill.3.clock.1", "progress": 0.5479999999},
+                    {"op": "wait", "for": "skill.3.clock.1", "progress": 1.0}
+                  ],
+                  "else": [
+                    {"op": "wait", "for": "skill.3.clock.2", "progress": 0.4369999999},
+                    {"op": "wait", "for": "skill.3.clock.2", "progress": 1.0}
+                  ]
+                }
+              ],
+              "join": true
+            },
+            {
+              "op": "start",
+              "id": "Avatar_Evernight_00_Skill02_2_Camera",
+              "run": [],
+              "join": true
+            }
+          ],
+          "else": [
+            {
+              "op": "start",
+              "id": "Avatar_Evernight_00_Skill02_Camera",
+              "run": [],
+              "join": true
+            },
+            {
+              "op": "start",
+              "id": "Avatar_Evernight_00_Skill21_Phase02",
+              "run": [
+                {
+                  "op": "if",
+                  "condition": {"op": "value", "name": "skill.3.condition.ByIsContainModifier.9", "is": true},
+                  "then": [
+                    {"op": "wait", "for": "skill.3.clock.1", "progress": 0.5479999999},
+                    {"op": "wait", "for": "skill.3.clock.1", "progress": 1.0}
+                  ],
+                  "else": [
+                    {"op": "wait", "for": "skill.3.clock.2", "progress": 0.4369999999},
+                    {"op": "wait", "for": "skill.3.clock.2", "progress": 1.0}
+                  ]
+                }
+              ],
+              "join": true
+            },
+            {"op": "animation", "state": "Skill02", "end": -1.0, "track": {"logic": 3}, "as": "skill.3.clock.2"},
+            {"op": "wait", "for": "skill.3.clock.2", "until": "animation_end"},
+            {"op": "wait", "for": "skill.3.clock.2", "progress": 0.01}
+          ]
+        },
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "Skill21",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "ScaleCharacterModel: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "LookAt: not included in the visual sequence projection",
+          "SetSkillTargetFormationByPos: not included in the visual sequence projection",
+          "HideLevelStage: not included in the visual sequence projection",
+          "TriggerAbility: invocation is not bound to the owned caster",
+          "LoseHPByRatio: not included in the visual sequence projection",
+          "HealHP: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "WaitTimelineFinish: not included in the visual sequence projection",
+          "IncludeTaskListTemplate: serial step depends on an unavailable source clock; no timing is inferred"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "skill.3.ready.-1": {
+      "trigger": "internal",
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Evernight_00_Config.json", "skill": 3, "as": "ready"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["ready-pose"]
+    },
+    "skill.4.perform": {
+      "inputs": {
+        "cue": {
+          "type": "integer",
+          "default": 0,
+          "label": "Effect",
+          "choices": [
+            {"value": 0, "label": "OnStack"}
+          ]
+        }
+      },
+      "requires": [
+        {"op": "number", "name": "cue", "compare": "ge", "value": 0},
+        {"op": "number", "name": "cue", "compare": "lt", "value": 1}
+      ],
+      "run": [
+        {"op": "effect.create", "effects": ["skill.4.effect.0"], "as": "effect"},
+        {"op": "wait", "for": "effect", "until": "accepted"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "effect.remove", "effects": ["skill.4.effect.0"], "optional": ["skill.4.effect.0"], "as": "remove"},
+        {"op": "wait", "for": "remove", "until": "accepted"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "SkillP01",
+        "omissions": [
+          "Actor-owned effect cue only. Original callback conditions and timing are manual inputs; use Finish to end.",
+          "cue: 0=OnStack",
+          "SetCharacterPartsVisibility: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["manual-effect-cue", "partial-presentation"]
+    },
+    "callback.1502": {
+      "run": [
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "MAvatar_Evernight_00_Skill02_ChangeSkill: OnStack",
+        "listed": false,
+        "omissions": [
+          "Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects.",
+          "SetControlSkillMapping: Skill mapping is configuration, not a request to play its destination ready pose; native mapping is not executed"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation", "diagnostic-omission-only"]
+    },
+    "callback.1503": {
+      "run": [
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "MAvatar_Evernight_00_Skill02_ChangeSkill: OnDestroy",
+        "listed": false,
+        "omissions": [
+          "Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects.",
+          "SetControlSkillMapping: Skill mapping is configuration, not a request to play its destination ready pose; native mapping is not executed"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation", "diagnostic-omission-only"]
+    },
+    "callback.1504": {
+      "run": [
+        {"op": "effect.create", "effects": ["callback.1504.effect.1"], "as": "callback.1504.effect.1"},
+        {"op": "wait", "for": "callback.1504.effect.1", "until": "accepted"},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "effect.remove", "effects": ["callback.1504.effect.1"], "optional": ["callback.1504.effect.1"], "as": "callback.1504.remove-effects"},
+        {"op": "wait", "for": "callback.1504.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "effect.remove", "effects": ["callback.1504.effect.1"], "optional": ["callback.1504.effect.1"], "as": "callback.1504.remove-effects"},
+        {"op": "wait", "for": "callback.1504.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "MAvatar_Evernight_00_UltraMode_Effect_Normal: OnStack",
+        "omissions": ["Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects."]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "callback.1505": {
+      "trigger": "internal",
+      "run": [
+        {
+          "op": "effect.remove_event",
+          "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Evernight_00/Eff_Avatar_Evernight_00_Servant00_Red_Ready.prefab",
+          "as": "callback.1505.remove.1.0"
+        },
+        {"op": "wait", "for": "callback.1505.remove.1.0", "until": "accepted"},
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "MAvatar_Evernight_00_UltraMode_Effect_Normal: OnDestroy",
+        "listed": false,
+        "omissions": ["Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects."]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation", "resource-cleanup-helper"]
+    },
+    "callback.1506": {
+      "bindings": {
+        "targets": ["callback.1506.target.CasterServant"]
+      },
+      "run": [
+        {"op": "effect.create", "effects": ["callback.1506.effect.18"], "as": "callback.1506.effect.18"},
+        {"op": "wait", "for": "callback.1506.effect.18", "until": "accepted"},
+        {"op": "effect.create", "effects": ["callback.1506.effect.24"], "as": "callback.1506.effect.24"},
+        {"op": "wait", "for": "callback.1506.effect.24", "until": "accepted"},
+        {"op": "effect.create", "effects": ["callback.1506.effect.30"], "as": "callback.1506.effect.30"},
+        {"op": "wait", "for": "callback.1506.effect.30", "until": "accepted"},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {
+          "op": "effect.remove",
+          "effects": ["callback.1506.effect.18", "callback.1506.effect.24", "callback.1506.effect.30"],
+          "optional": ["callback.1506.effect.18", "callback.1506.effect.24", "callback.1506.effect.30"],
+          "as": "callback.1506.remove-effects"
+        },
+        {"op": "wait", "for": "callback.1506.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {
+          "op": "effect.remove",
+          "effects": ["callback.1506.effect.18", "callback.1506.effect.24", "callback.1506.effect.30"],
+          "optional": ["callback.1506.effect.18", "callback.1506.effect.24", "callback.1506.effect.30"],
+          "as": "callback.1506.remove-effects"
+        },
+        {"op": "wait", "for": "callback.1506.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "rest",
+      "presentation": {
+        "label": "MAvatar_Evernight_00_UltraMode_Effect: OnStack",
+        "omissions": [
+          "Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects.",
+          "RemoveEffect: effect removal has no owned target binding",
+          "TriggerEffect: callback target CasterServant is a selected owned actor input, defaulting to this actor; native event payload is not assumed",
+          "TriggerEffect: effect needs a non-owned target, dynamic path, or Timeline attachment"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "skill.6.perform": {"use": "common.elemental.responses", "next": "rest"},
+    "preview.hit": {
+      "inputs": {
+        "kind": {
+          "type": "text",
+          "default": "Hit",
+          "label": "Hit type",
+          "choices": [
+            {"value": "Hit", "label": "Hit"},
+            {"value": "Hit_H", "label": "Hit_H"}
+          ]
+        }
+      },
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "kind", "is": "Hit_H"},
+          "then": [
+            {"op": "hit", "target": "Caster", "animation": "Hit_H", "as": "hit-heavy"},
+            {"op": "wait", "for": "hit-heavy"}
+          ],
+          "else": [
+            {"op": "hit", "target": "Caster", "animation": "Hit", "as": "hit"},
+            {"op": "wait", "for": "hit"}
+          ]
+        }
+      ],
+      "next": "rest",
+      "presentation": {"label": "Hit"},
+      "tags": ["manual-visual-callback"]
+    },
+    "source.5": {
+      "requires": [
+        {
+          "op": "unresolved",
+          "source": "Config/ConfigCharacter/Avatar/Avatar_Evernight_00_Config.json:$.SkillList[5]",
+          "detail": "Retained source has no independently bound presentation unit"
+        }
+      ],
+      "trigger": "internal",
+      "run": [],
+      "presentation": {
+        "label": "SkillMaze",
+        "listed": false,
+        "omissions": ["Retained source has no independently bound presentation unit"]
+      },
+      "tags": ["retained-source"]
+    },
+    "@receiver-clear/callback.5359.receiver-property.3": {
+      "requires": [
+        {"op": "state", "name": "common.elemental.frozen-hit"}
+      ],
+      "mode": "input",
+      "run": [
+        {"op": "state.exit", "name": "common.elemental.frozen-hit", "only_caster": true, "as": "clear"},
+        {"op": "wait", "for": "clear"}
+      ],
+      "presentation": {
+        "label": "Clear hit effect override",
+        "kind": "setting",
+        "contexts": ["common.elemental.frozen-hit"]
+      },
+      "tags": ["visual-receiver-clear"]
+    }
+  },
+  "functions": {
+    "@return.rest.pose": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "rest.pose.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "rest.pose"
+      }
+    ],
+    "@return.return.pose": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "return.pose.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "return.pose"
+      }
+    ]
+  },
+  "states": {},
+  "resources": {
+    "effects": {
+      "skill.4.effect.0": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Evernight_00/Eff_Avatar_Evernight_00_Servant00_Red_Ready.prefab", "target": "Caster"},
+      "callback.1504.effect.1": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Evernight_00/Eff_Avatar_Evernight_00_Servant00_Red_Ready.prefab", "target": "Caster"},
+      "callback.1506.effect.18": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Evernight_00/Eff_Avatar_Evernight_00_Servant00_Red.prefab", "target": "callback.1506.target.CasterServant"},
+      "callback.1506.effect.24": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Evernight_00/Eff_Avatar_Evernight_00_Servant00_Red_Mat01.prefab",
+        "target": "callback.1506.target.CasterServant"
+      },
+      "callback.1506.effect.30": {
+        "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Evernight_00/Eff_Avatar_Evernight_00_Servant00_Red_Mat02.prefab",
+        "target": "callback.1506.target.CasterServant"
+      }
+    }
+  }
+}

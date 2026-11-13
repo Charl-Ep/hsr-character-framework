@@ -1,0 +1,1340 @@
+{
+  "format": "hksr.script",
+  "id": "official-scripts:Config/ConfigCharacter/Avatar/Avatar_Jade_00_Config.json",
+  "applies_to": "Config/ConfigCharacter/Avatar/Avatar_Jade_00_Config.json",
+  "default": true,
+  "imports": ["Common/Elemental.json"],
+  "defaults": {
+    "targets": {
+      "PreviewTarget": {
+        "local_position": [0, 0, 6]
+      },
+      "AbilityTargetEntity": {
+        "local_position": [0, 0, 6]
+      },
+      "SkillPointEntity": {"alias": "AbilityTargetEntity"}
+    }
+  },
+  "actions": {
+    "base.rest": {
+      "trigger": "internal",
+      "runtime": {"policy": "ready", "selected": ""},
+      "run": [
+        {"op": "call", "function": "@return.rest.pose"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["stable-return", "idle-provider"]
+    },
+    "base.skill.0.perform": {
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "runtime": {"policy": "performance", "selected": "Skill01"},
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Jade_00_Skill01_Camera",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Jade_00_Skill01_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.0.clock.1", "progress": 0.2900000002},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit_H",
+              "direction": {},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Jade_00/Eff_Avatar_Jade_00_Skill01_Hit01.prefab",
+                "height": 1.0,
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.0.hit.10"
+            },
+            {"op": "wait", "for": "skill.0.hit.10", "until": "accepted"},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit_H",
+              "direction": {},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Jade_00/Eff_Avatar_Jade_00_Skill01_Hit01.prefab",
+                "height": 1.0,
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "skill.0.hit.12"
+            },
+            {"op": "wait", "for": "skill.0.hit.12", "until": "accepted"}
+          ],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill01", "end": 0.0, "track": {"logic": 3}, "as": "skill.0.clock.1"},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.0},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.263},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.3179999997},
+        {"op": "wait", "for": "skill.0.clock.1", "progress": 0.8200000007},
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill01",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "WaitAnimState: wait does not have an owned animation clock in this scope",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "LookAt: not included in the visual sequence projection",
+          "RadialBlurEffect: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.0.ready.-1": {
+      "runtime": {"policy": "ready", "selected": "Skill01"},
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Jade_00_Config.json", "skill": 0, "as": "ready"}
+      ],
+      "presentation": {
+        "label": "Skill01 · Ready",
+        "ready": {"config": "Config/ConfigCharacter/Avatar/Avatar_Jade_00_Config.json", "skill": 0}
+      },
+      "tags": ["ready-pose"]
+    },
+    "base.skill.1.perform": {
+      "runtime": {"policy": "performance", "selected": "Skill02"},
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Jade_00_Skill02_Phase02",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Jade_00_Skill02_Camera",
+          "run": [],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill02", "end": -1.0, "track": {"logic": 3}, "as": "skill.1.clock.1"},
+        {"op": "wait", "for": "skill.1.clock.1", "until": "animation_end"},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill02",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "SyncCharLightAndCameraDir: not included in the visual sequence projection",
+          "TriggerEffect: effect needs a non-owned target, dynamic path, or Timeline attachment",
+          "SetCameraRootFollow: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "GlobalMainIntensityEffect: not included in the visual sequence projection",
+          "WaitTimelineFinish: not included in the visual sequence projection",
+          "VCameraConfigChange: serial step depends on an unavailable source clock; no timing is inferred",
+          "TriggerAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "TriggerAbility: serial step depends on an unavailable source clock; no timing is inferred",
+          "WaitAnimState: serial step depends on an unavailable source clock; no timing is inferred",
+          "RadialBlurEffect: serial step depends on an unavailable source clock; no timing is inferred",
+          "GlobalMainIntensityEffect: serial step depends on an unavailable source clock; no timing is inferred",
+          "MoveToTargetPosition: serial step depends on an unavailable source clock; no timing is inferred",
+          "SyncCharLightAndCameraDir: serial step depends on an unavailable source clock; no timing is inferred",
+          "wait_request: wait depends on an omitted source producer"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.1.ready.-1": {
+      "runtime": {"policy": "ready", "selected": "Skill02"},
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Jade_00_Config.json", "skill": 1, "as": "ready"}
+      ],
+      "presentation": {
+        "label": "Skill02 · Ready",
+        "ready": {"config": "Config/ConfigCharacter/Avatar/Avatar_Jade_00_Config.json", "skill": 1}
+      },
+      "tags": ["ready-pose"]
+    },
+    "base.skill.2.perform": {
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "runtime": {"policy": "performance", "selected": "Skill03"},
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Jade_00_Skill03_Camera",
+          "run": [
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.2449999998}
+          ],
+          "join": true
+        },
+        {
+          "op": "start",
+          "id": "Avatar_Jade_00_Skill03_Phase02",
+          "run": [
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.2679999996},
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.8300000007},
+            {
+              "op": "hit",
+              "target": "PreviewTarget",
+              "animation": "Hit_H",
+              "direction": {},
+              "effect": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Jade_00/Eff_Avatar_Jade_00_Skill03_Hit.prefab", "minimum_interval": 0.0500000007, "maximum_count": 1},
+              "allow_position": true,
+              "as": "skill.2.hit.11"
+            },
+            {"op": "wait", "for": "skill.2.hit.11", "until": "accepted"},
+            {"op": "wait", "for": "skill.2.clock.1", "progress": 0.8200000007}
+          ],
+          "join": true
+        },
+        {"op": "animation", "state": "Skill03", "end": -1.0, "track": {"logic": 3}, "as": "skill.2.clock.1"},
+        {"op": "wait", "for": "skill.2.clock.1", "until": "animation_end"},
+        {"op": "wait", "for": "skill.2.clock.1", "progress": 0.8300000007},
+        {"op": "wait", "for": "skill.2.clock.1", "progress": 0.9300000008},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Skill03",
+        "omissions": [
+          "Retained visual task order and animation clocks; other operations are not included.",
+          "SetTeamFormation: not included in the visual sequence projection",
+          "ScaleCharacterModel: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "SetSkillTargetFormationByPos: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "TriggerSkipDeadHandler: not included in the visual sequence projection",
+          "SkillPerformFinish: not included in the visual sequence projection",
+          "HideLevelStage: not included in the visual sequence projection",
+          "TryStartConnectUltraSkillFrameCapture: not included in the visual sequence projection",
+          "WaitTimelineFinish: not included in the visual sequence projection",
+          "ScaleCharacterModel: serial step depends on an unavailable source clock; no timing is inferred",
+          "HideLevelStage: serial step depends on an unavailable source clock; no timing is inferred",
+          "GlobalMainIntensityEffect: serial step depends on an unavailable source clock; no timing is inferred",
+          "SetTeamFormation: serial step depends on an unavailable source clock; no timing is inferred"
+        ]
+      },
+      "tags": ["official-script", "partial-presentation"]
+    },
+    "base.skill.2.ready.-1": {
+      "runtime": {"policy": "ready", "selected": "Skill03"},
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Jade_00_Config.json", "skill": 2, "as": "ready"}
+      ],
+      "presentation": {
+        "label": "Skill03 · Ready",
+        "ready": {"config": "Config/ConfigCharacter/Avatar/Avatar_Jade_00_Config.json", "skill": 2}
+      },
+      "tags": ["ready-pose"]
+    },
+    "base.skill.3.perform": {
+      "inputs": {
+        "cue": {
+          "type": "integer",
+          "default": 0,
+          "label": "Effect",
+          "choices": [
+            {"value": 0, "label": "Avatar_Jade_00_Passive_Phase01"},
+            {"value": 1, "label": "Avatar_Jade_00_Passive_Phase01"},
+            {"value": 2, "label": "Avatar_Jade_00_Passive_Phase01"},
+            {"value": 3, "label": "Avatar_Jade_00_Passive_Phase01"},
+            {"value": 4, "label": "Avatar_Jade_00_Passive_Phase01"},
+            {"value": 5, "label": "Avatar_Jade_00_Passive_Phase01"},
+            {"value": 6, "label": "Avatar_Jade_00_Passive_Phase01"}
+          ]
+        }
+      },
+      "requires": [
+        {"op": "number", "name": "cue", "compare": "ge", "value": 0},
+        {"op": "number", "name": "cue", "compare": "lt", "value": 7}
+      ],
+      "runtime": {"policy": "performance", "selected": "SkillP01"},
+      "run": [
+        {
+          "op": "switch",
+          "name": "cue",
+          "cases": [
+            {
+              "is": 1,
+              "run": [
+                {"op": "effect.create", "effects": ["base.skill.3.effect.1"], "as": "effect"},
+                {"op": "wait", "for": "effect", "until": "accepted"},
+                {
+                  "op": "repeat",
+                  "until_finish": true,
+                  "run": [
+                    {"op": "wait", "frame": true}
+                  ]
+                },
+                {"op": "effect.remove", "effects": ["base.skill.3.effect.1"], "optional": ["base.skill.3.effect.1"], "as": "remove"},
+                {"op": "wait", "for": "remove", "until": "accepted"}
+              ],
+              "label": "Avatar_Jade_00_Passive_Phase01"
+            },
+            {
+              "is": 2,
+              "run": [
+                {"op": "effect.create", "effects": ["base.skill.3.effect.2"], "as": "effect"},
+                {"op": "wait", "for": "effect", "until": "accepted"},
+                {
+                  "op": "repeat",
+                  "until_finish": true,
+                  "run": [
+                    {"op": "wait", "frame": true}
+                  ]
+                },
+                {"op": "effect.remove", "effects": ["base.skill.3.effect.2"], "optional": ["base.skill.3.effect.2"], "as": "remove"},
+                {"op": "wait", "for": "remove", "until": "accepted"}
+              ],
+              "label": "Avatar_Jade_00_Passive_Phase01"
+            },
+            {
+              "is": 3,
+              "run": [
+                {"op": "effect.create", "effects": ["base.skill.3.effect.3"], "as": "effect"},
+                {"op": "wait", "for": "effect", "until": "accepted"},
+                {
+                  "op": "repeat",
+                  "until_finish": true,
+                  "run": [
+                    {"op": "wait", "frame": true}
+                  ]
+                },
+                {"op": "effect.remove", "effects": ["base.skill.3.effect.3"], "optional": ["base.skill.3.effect.3"], "as": "remove"},
+                {"op": "wait", "for": "remove", "until": "accepted"}
+              ],
+              "label": "Avatar_Jade_00_Passive_Phase01"
+            },
+            {
+              "is": 4,
+              "run": [
+                {"op": "effect.create", "effects": ["base.skill.3.effect.4"], "as": "effect"},
+                {"op": "wait", "for": "effect", "until": "accepted"},
+                {
+                  "op": "repeat",
+                  "until_finish": true,
+                  "run": [
+                    {"op": "wait", "frame": true}
+                  ]
+                },
+                {"op": "effect.remove", "effects": ["base.skill.3.effect.4"], "optional": ["base.skill.3.effect.4"], "as": "remove"},
+                {"op": "wait", "for": "remove", "until": "accepted"}
+              ],
+              "label": "Avatar_Jade_00_Passive_Phase01"
+            },
+            {
+              "is": 5,
+              "run": [
+                {"op": "effect.create", "effects": ["base.skill.3.effect.5"], "as": "effect"},
+                {"op": "wait", "for": "effect", "until": "accepted"},
+                {
+                  "op": "repeat",
+                  "until_finish": true,
+                  "run": [
+                    {"op": "wait", "frame": true}
+                  ]
+                },
+                {"op": "effect.remove", "effects": ["base.skill.3.effect.5"], "optional": ["base.skill.3.effect.5"], "as": "remove"},
+                {"op": "wait", "for": "remove", "until": "accepted"}
+              ],
+              "label": "Avatar_Jade_00_Passive_Phase01"
+            },
+            {
+              "is": 6,
+              "run": [
+                {"op": "effect.create", "effects": ["base.skill.3.effect.6"], "as": "effect"},
+                {"op": "wait", "for": "effect", "until": "accepted"},
+                {
+                  "op": "repeat",
+                  "until_finish": true,
+                  "run": [
+                    {"op": "wait", "frame": true}
+                  ]
+                },
+                {"op": "effect.remove", "effects": ["base.skill.3.effect.6"], "optional": ["base.skill.3.effect.6"], "as": "remove"},
+                {"op": "wait", "for": "remove", "until": "accepted"}
+              ],
+              "label": "Avatar_Jade_00_Passive_Phase01"
+            }
+          ],
+          "default": [
+            {"op": "effect.create", "effects": ["base.skill.3.effect.0"], "as": "effect"},
+            {"op": "wait", "for": "effect", "until": "accepted"},
+            {
+              "op": "repeat",
+              "until_finish": true,
+              "run": [
+                {"op": "wait", "frame": true}
+              ]
+            },
+            {"op": "effect.remove", "effects": ["base.skill.3.effect.0"], "optional": ["base.skill.3.effect.0"], "as": "remove"},
+            {"op": "wait", "for": "remove", "until": "accepted"}
+          ]
+        }
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "SkillP01",
+        "omissions": [
+          "Actor-owned effect cue only. Original callback conditions and timing are manual inputs; use Finish to end.",
+          "cue: 0=Avatar_Jade_00_Passive_Phase01, 1=Avatar_Jade_00_Passive_Phase01, 2=Avatar_Jade_00_Passive_Phase01, 3=Avatar_Jade_00_Passive_Phase01, 4=Avatar_Jade_00_Passive_Phase01, 5=Avatar_Jade_00_Passive_Phase01, 6=Avatar_Jade_00_Passive_Phase01"
+        ]
+      },
+      "tags": ["manual-effect-cue", "partial-presentation"]
+    },
+    "base.callback.2263": {
+      "bindings": {
+        "targets": ["Recipient"]
+      },
+      "runtime": {"policy": "performance", "selected": ""},
+      "run": [
+        {
+          "op": "for_each",
+          "bind": "callback.2263.member.3",
+          "targets": ["Recipient"],
+          "collection": "callback.2263.targets.4",
+          "run": [
+            {
+              "op": "hit",
+              "target": "callback.2263.member.3",
+              "animation": "",
+              "direction": {},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Jade_00/Eff_Avatar_Jade_00_Skill02_Hit_01.prefab",
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "callback.2263.hit.5"
+            },
+            {"op": "wait", "for": "callback.2263.hit.5", "until": "accepted"}
+          ],
+          "empty": []
+        },
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "MAvatar_Jade_00_BPSkill: OnAfterAttack",
+        "omissions": [
+          "Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects.",
+          "LoseHPByRatio: not included in the visual sequence projection",
+          "SetDynamicValueByAttackTargetCount: not included in the visual sequence projection",
+          "Retarget: recipient collection is explicitly selected; native filtering, random selection and count limits are not simulated"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "base.callback.2264": {
+      "bindings": {
+        "targets": ["Recipient"]
+      },
+      "runtime": {"policy": "performance", "selected": ""},
+      "run": [
+        {"op": "effect.create", "effects": ["base.callback.2264.effect.3"], "as": "callback.2264.effect.3"},
+        {"op": "wait", "for": "callback.2264.effect.3", "until": "accepted"},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "effect.remove", "effects": ["base.callback.2264.effect.3"], "optional": ["base.callback.2264.effect.3"], "as": "callback.2264.remove-effects"},
+        {"op": "wait", "for": "callback.2264.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "effect.remove", "effects": ["base.callback.2264.effect.3"], "optional": ["base.callback.2264.effect.3"], "as": "callback.2264.remove-effects"},
+        {"op": "wait", "for": "callback.2264.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "MAvatar_Jade_00_BPSkill: OnStack",
+        "omissions": [
+          "Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects.",
+          "RemoveEffect: effect removal has no owned target binding",
+          "ModifierAttachEffect: manual bound-effect preview; modifier flags, collider-height offset, native mutex and automatic visibility/lifetime are not applied"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "base.callback.2281": {
+      "bindings": {
+        "targets": ["Recipient"]
+      },
+      "runtime": {"policy": "performance", "selected": ""},
+      "run": [
+        {
+          "op": "for_each",
+          "bind": "callback.2281.member.1",
+          "targets": ["Recipient"],
+          "collection": "callback.2281.targets.2",
+          "run": [
+            {
+              "op": "hit",
+              "target": "callback.2281.member.1",
+              "animation": "",
+              "direction": {},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Jade_00/Eff_Avatar_Jade_00_Skill02_Hit_01.prefab",
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "callback.2281.hit.3"
+            },
+            {"op": "wait", "for": "callback.2281.hit.3", "until": "accepted"}
+          ],
+          "empty": []
+        },
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "MAvatar_Jade_00_BPSkillSelf: OnAfterAttack",
+        "omissions": [
+          "Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects.",
+          "Retarget: recipient collection is explicitly selected; native filtering, random selection and count limits are not simulated"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "base.callback.2282": {
+      "bindings": {
+        "targets": ["Recipient"]
+      },
+      "runtime": {"policy": "performance", "selected": ""},
+      "run": [
+        {"op": "effect.create", "effects": ["base.callback.2282.effect.4"], "as": "callback.2282.effect.4"},
+        {"op": "wait", "for": "callback.2282.effect.4", "until": "accepted"},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "effect.remove", "effects": ["base.callback.2282.effect.4"], "optional": ["base.callback.2282.effect.4"], "as": "callback.2282.remove-effects"},
+        {"op": "wait", "for": "callback.2282.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "effect.remove", "effects": ["base.callback.2282.effect.4"], "optional": ["base.callback.2282.effect.4"], "as": "callback.2282.remove-effects"},
+        {"op": "wait", "for": "callback.2282.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "MAvatar_Jade_00_BPSkillSelf: OnStack",
+        "omissions": [
+          "Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects.",
+          "RemoveEffect: effect removal has no owned target binding",
+          "ModifierAttachEffect: manual bound-effect preview; modifier flags, collider-height offset, native mutex and automatic visibility/lifetime are not applied"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "base.callback.2283": {
+      "bindings": {
+        "targets": ["Recipient"]
+      },
+      "runtime": {"policy": "performance", "selected": ""},
+      "run": [
+        {
+          "op": "for_each",
+          "bind": "callback.2283.member.3",
+          "targets": ["Recipient"],
+          "collection": "callback.2283.targets.4",
+          "run": [
+            {
+              "op": "hit",
+              "target": "callback.2283.member.3",
+              "animation": "",
+              "direction": {},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Jade_00/Eff_Avatar_Jade_00_Skill02_Hit_01.prefab",
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "callback.2283.hit.5"
+            },
+            {"op": "wait", "for": "callback.2283.hit.5", "until": "accepted"}
+          ],
+          "empty": []
+        },
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "MAvatar_Jade_00_Rank06_BPSkill: OnAfterAttack",
+        "omissions": [
+          "Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects.",
+          "LoseHPByRatio: not included in the visual sequence projection",
+          "SetDynamicValueByAttackTargetCount: not included in the visual sequence projection",
+          "Retarget: recipient collection is explicitly selected; native filtering, random selection and count limits are not simulated"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "base.callback.2284": {
+      "bindings": {
+        "targets": ["Recipient"]
+      },
+      "runtime": {"policy": "performance", "selected": ""},
+      "run": [
+        {"op": "effect.create", "effects": ["base.callback.2284.effect.3"], "as": "callback.2284.effect.3"},
+        {"op": "wait", "for": "callback.2284.effect.3", "until": "accepted"},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "effect.remove", "effects": ["base.callback.2284.effect.3"], "optional": ["base.callback.2284.effect.3"], "as": "callback.2284.remove-effects"},
+        {"op": "wait", "for": "callback.2284.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "effect.remove", "effects": ["base.callback.2284.effect.3"], "optional": ["base.callback.2284.effect.3"], "as": "callback.2284.remove-effects"},
+        {"op": "wait", "for": "callback.2284.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "MAvatar_Jade_00_Rank06_BPSkill: OnStack",
+        "omissions": [
+          "Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects.",
+          "RemoveEffect: effect removal has no owned target binding",
+          "ModifierAttachEffect: manual bound-effect preview; modifier flags, collider-height offset, native mutex and automatic visibility/lifetime are not applied"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "base.callback.2287": {
+      "bindings": {
+        "targets": ["Recipient"]
+      },
+      "runtime": {"policy": "performance", "selected": ""},
+      "run": [
+        {
+          "op": "for_each",
+          "bind": "callback.2287.member.1",
+          "targets": ["Recipient"],
+          "collection": "callback.2287.targets.2",
+          "run": [
+            {
+              "op": "hit",
+              "target": "callback.2287.member.1",
+              "animation": "",
+              "direction": {},
+              "effect": {
+                "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Jade_00/Eff_Avatar_Jade_00_Skill02_Hit_01.prefab",
+                "minimum_interval": 0.0500000007,
+                "maximum_count": 1
+              },
+              "allow_position": true,
+              "as": "callback.2287.hit.3"
+            },
+            {"op": "wait", "for": "callback.2287.hit.3", "until": "accepted"}
+          ],
+          "empty": []
+        },
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "MAvatar_Jade_00_Rank06_BPSkillSelf: OnAfterAttack",
+        "omissions": [
+          "Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects.",
+          "Retarget: recipient collection is explicitly selected; native filtering, random selection and count limits are not simulated"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "base.callback.2288": {
+      "bindings": {
+        "targets": ["Recipient"]
+      },
+      "runtime": {"policy": "performance", "selected": ""},
+      "run": [
+        {"op": "effect.create", "effects": ["base.callback.2288.effect.4"], "as": "callback.2288.effect.4"},
+        {"op": "wait", "for": "callback.2288.effect.4", "until": "accepted"},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {"op": "effect.remove", "effects": ["base.callback.2288.effect.4"], "optional": ["base.callback.2288.effect.4"], "as": "callback.2288.remove-effects"},
+        {"op": "wait", "for": "callback.2288.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "effect.remove", "effects": ["base.callback.2288.effect.4"], "optional": ["base.callback.2288.effect.4"], "as": "callback.2288.remove-effects"},
+        {"op": "wait", "for": "callback.2288.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "MAvatar_Jade_00_Rank06_BPSkillSelf: OnStack",
+        "omissions": [
+          "Manual actor-owned visual callback; gameplay trigger and original caster/receiver selection are not simulated. Use Finish to release held effects.",
+          "RemoveEffect: effect removal has no owned target binding",
+          "ModifierAttachEffect: manual bound-effect preview; modifier flags, collider-height offset, native mutex and automatic visibility/lifetime are not applied"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "base.followup.0": {
+      "inputs": {
+        "followup.0.condition.ByIsContainModifier.11": {"type": "bool", "default": false, "label": "ByIsContainModifier", "description": "Manual source condition: $.AbilityList[8].OnStart[6].Predicate"},
+        "followup.0.condition.ByIsContainModifier.63": {"type": "bool", "default": true, "label": "ByIsContainModifier", "description": "Manual source condition: $.AbilityList[8].OnStart[8].Predicate"}
+      },
+      "bindings": {
+        "targets": ["PreviewTarget"]
+      },
+      "runtime": {"policy": "performance", "selected": ""},
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Jade_00_Passive_Camera_Start",
+          "run": [],
+          "join": true
+        },
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "followup.0.condition.ByIsContainModifier.11", "is": true},
+          "then": [
+            {
+              "op": "start",
+              "id": "Avatar_Jade_00_Passive_Phase02_01",
+              "run": [],
+              "join": true
+            },
+            {"op": "sound", "event": "Ev_sfx_avatar_PassiveSkill_Jade", "as": "followup.0.sound.34"},
+            {"op": "sound", "event": "Ev_vo_avatar_passive_skill_jade", "as": "followup.0.sound.35"},
+            {"op": "effect.create", "effects": ["base.followup.0.effect.36"], "as": "followup.0.effect.36"},
+            {"op": "wait", "for": "followup.0.effect.36", "until": "accepted"}
+          ],
+          "else": [
+            {
+              "op": "start",
+              "id": "Avatar_Jade_00_Passive_Phase02_02",
+              "run": [],
+              "join": true
+            },
+            {"op": "sound", "event": "Ev_sfx_avatar_PassiveSkill_hvy_Jade", "as": "followup.0.sound.60"},
+            {"op": "sound", "event": "Ev_vo_avatar_passive_skill02_jade", "as": "followup.0.sound.61"},
+            {"op": "effect.create", "effects": ["base.followup.0.effect.62"], "as": "followup.0.effect.62"},
+            {"op": "wait", "for": "followup.0.effect.62", "until": "accepted"}
+          ]
+        },
+        {"op": "animation", "state": "PassiveSkill", "end": -1.0, "track": {"logic": 3}, "as": "followup.0.clock.1"},
+        {"op": "wait", "for": "followup.0.clock.1", "until": "animation_end"},
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "followup.0.condition.ByIsContainModifier.63", "is": true},
+          "then": [
+            {"op": "effect.create", "effects": ["base.followup.0.effect.65"], "as": "followup.0.effect.65"},
+            {"op": "wait", "for": "followup.0.effect.65", "until": "accepted"},
+            {"op": "effect.create", "effects": ["base.followup.0.effect.66"], "as": "followup.0.effect.66"},
+            {"op": "wait", "for": "followup.0.effect.66", "until": "accepted"}
+          ],
+          "else": []
+        },
+        {"op": "wait", "for": "followup.0.clock.1", "progress": 0.2139999999},
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "followup.0.condition.ByIsContainModifier.63", "is": true},
+          "then": [
+            {"op": "effect.create", "effects": ["base.followup.0.effect.67"], "as": "followup.0.effect.67"},
+            {"op": "wait", "for": "followup.0.effect.67", "until": "accepted"},
+            {"op": "effect.create", "effects": ["base.followup.0.effect.68"], "as": "followup.0.effect.68"},
+            {"op": "wait", "for": "followup.0.effect.68", "until": "accepted"}
+          ],
+          "else": []
+        },
+        {"op": "wait", "for": "followup.0.clock.1", "progress": 0.9900000009},
+        {"op": "join"},
+        {
+          "op": "repeat",
+          "until_finish": true,
+          "run": [
+            {"op": "wait", "frame": true}
+          ]
+        },
+        {
+          "op": "effect.remove",
+          "effects": [
+            "base.followup.0.effect.36",
+            "base.followup.0.effect.62",
+            "base.followup.0.effect.65",
+            "base.followup.0.effect.66",
+            "base.followup.0.effect.67",
+            "base.followup.0.effect.68"
+          ],
+          "optional": [
+            "base.followup.0.effect.36",
+            "base.followup.0.effect.62",
+            "base.followup.0.effect.65",
+            "base.followup.0.effect.66",
+            "base.followup.0.effect.67",
+            "base.followup.0.effect.68"
+          ],
+          "as": "followup.0.remove-effects"
+        },
+        {"op": "wait", "for": "followup.0.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {
+          "op": "effect.remove",
+          "effects": [
+            "base.followup.0.effect.36",
+            "base.followup.0.effect.62",
+            "base.followup.0.effect.65",
+            "base.followup.0.effect.66",
+            "base.followup.0.effect.67",
+            "base.followup.0.effect.68"
+          ],
+          "optional": [
+            "base.followup.0.effect.36",
+            "base.followup.0.effect.62",
+            "base.followup.0.effect.65",
+            "base.followup.0.effect.66",
+            "base.followup.0.effect.67",
+            "base.followup.0.effect.68"
+          ],
+          "as": "followup.0.remove-effects"
+        },
+        {"op": "wait", "for": "followup.0.remove-effects", "until": "accepted"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "Avatar_Jade_00_Passive_Phase01",
+        "omissions": [
+          "Manual follow-up presentation; no native action queue or combat condition evaluation.",
+          "retained visual sequence",
+          "SetTeamFormation: not included in the visual sequence projection",
+          "ScaleCharacterModel: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "SetSkillTargetFormationByPos: not included in the visual sequence projection",
+          "GlobalMainIntensityEffect: not included in the visual sequence projection",
+          "VCameraConfigChange: not included in the visual sequence projection",
+          "DamageByAttackProperty: target collections use one explicit preview target or the forward point",
+          "DamageByAttackProperty: hit presentation not projected: hit requires an explicit motion/source binding: HitMotion",
+          "DamagePerformFinish: not included in the visual sequence projection",
+          "TargetTimeSlow: actor unit requires an explicit owned receiver; non-Caster bindings are retained for routing review",
+          "HideLevelStage: not included in the visual sequence projection",
+          "WaitTimelineFinish: not included in the visual sequence projection",
+          "PredicateTaskList: serial step depends on an unavailable source clock; no timing is inferred",
+          "ScaleCharacterModel: serial step depends on an unavailable source clock; no timing is inferred",
+          "wait_request: reserved source clock has no submitted producer",
+          "hit: step depends on an omitted or unavailable source producer",
+          "wait_request: step depends on an omitted or unavailable source producer"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "base.skill.4.perform": {
+      "inputs": {
+        "event": {
+          "type": "integer",
+          "default": 0,
+          "label": "Callback",
+          "choices": [
+            {"value": 0, "label": "StageAbility_Maze_Jade_Modifier: OnEnterBattle"}
+          ]
+        },
+        "callback.2270.condition.ByIsContainModifier.9": {
+          "type": "bool",
+          "default": true,
+          "label": "ByIsContainModifier",
+          "description": "Manual source condition: $.AbilityList[11].Modifiers[0].value._CallbackList[0].CallbackConfig[0].Predicate.PredicateList[0]"
+        },
+        "callback.2270.condition.ByIsMazeSkillAffectCurrentWave.10": {
+          "type": "bool",
+          "default": true,
+          "label": "ByIsMazeSkillAffectCurrentWave",
+          "description": "Manual source condition: $.AbilityList[11].Modifiers[0].value._CallbackList[0].CallbackConfig[0].Predicate.PredicateList[1]"
+        },
+        "callback.2270.condition.ByCompareWaveCount.11": {
+          "type": "bool",
+          "default": true,
+          "label": "ByCompareWaveCount",
+          "description": "Manual source condition: $.AbilityList[11].Modifiers[0].value._CallbackList[0].CallbackConfig[0].Predicate.PredicateList[2]"
+        }
+      },
+      "requires": [
+        {"op": "number", "name": "event", "compare": "ge", "value": 0},
+        {"op": "number", "name": "event", "compare": "lt", "value": 1}
+      ],
+      "bindings": {
+        "targets": ["Recipient"]
+      },
+      "runtime": {"policy": "performance", "selected": "SkillMaze"},
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "callback.2270.condition.ByIsContainModifier.9", "is": true},
+          "then": [
+            {
+              "op": "if",
+              "condition": {"op": "value", "name": "callback.2270.condition.ByIsMazeSkillAffectCurrentWave.10", "is": true},
+              "then": [
+                {
+                  "op": "if",
+                  "condition": {"op": "value", "name": "callback.2270.condition.ByCompareWaveCount.11", "is": true},
+                  "then": [
+                    {
+                      "op": "for_each",
+                      "bind": "callback.2270.member.2",
+                      "targets": ["Recipient"],
+                      "collection": "callback.2270.targets.3",
+                      "run": [
+                        {
+                          "op": "hit",
+                          "target": "callback.2270.member.2",
+                          "animation": "Hit",
+                          "direction": {},
+                          "effect": {
+                            "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Jade_00/Eff_Avatar_Jade_00_Skill01_Hit01.prefab",
+                            "height": 1.0,
+                            "minimum_interval": 0.0500000007,
+                            "maximum_count": 1
+                          },
+                          "allow_position": true,
+                          "as": "callback.2270.hit.4"
+                        },
+                        {"op": "wait", "for": "callback.2270.hit.4", "until": "accepted"}
+                      ],
+                      "empty": []
+                    }
+                  ],
+                  "else": []
+                }
+              ],
+              "else": []
+            }
+          ],
+          "else": []
+        },
+        {"op": "join"},
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.return.pose"},
+        {"op": "wait", "for": "return.pose", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return.position"},
+        {"op": "wait", "for": "return.position"}
+      ],
+      "next": "base.rest",
+      "presentation": {
+        "label": "SkillMaze",
+        "omissions": [
+          "Manual visual callback selection; no native combat modifier or automatic event simulation.",
+          "event: 0=StageAbility_Maze_Jade_Modifier: OnEnterBattle",
+          "Retarget: recipient collection is explicitly selected; native filtering, random selection and count limits are not simulated",
+          "DamagePerformFinish: not included in the visual sequence projection"
+        ]
+      },
+      "tags": ["manual-visual-callback", "partial-presentation"]
+    },
+    "base.skill.5.perform": {
+      "use": "common.elemental.responses",
+      "runtime": {"policy": "performance", "selected": "PassiveSkill02"},
+      "next": "base.rest"
+    },
+    "base.preview.hit": {
+      "inputs": {
+        "kind": {
+          "type": "text",
+          "default": "Hit",
+          "label": "Hit type",
+          "choices": [
+            {"value": "Hit", "label": "Hit"},
+            {"value": "Hit_H", "label": "Hit_H"}
+          ]
+        }
+      },
+      "runtime": {"policy": "performance", "selected": ""},
+      "run": [
+        {
+          "op": "if",
+          "condition": {"op": "value", "name": "kind", "is": "Hit_H"},
+          "then": [
+            {"op": "hit", "target": "Caster", "animation": "Hit_H", "as": "hit-heavy"},
+            {"op": "wait", "for": "hit-heavy"}
+          ],
+          "else": [
+            {"op": "hit", "target": "Caster", "animation": "Hit", "as": "hit"},
+            {"op": "wait", "for": "hit"}
+          ]
+        }
+      ],
+      "next": "base.rest",
+      "presentation": {"label": "Hit"},
+      "tags": ["manual-visual-callback"]
+    },
+    "compiled.0.Avatar_Jade_00_Config.skill-0.entry": {
+      "requires": [
+        {"op": "target", "name": "AbilityTargetAdjoinEntity"},
+        {"op": "target", "name": "AbilityTargetEntity", "allow_position": true},
+        {"op": "playback", "name": "performance", "values": ["ready"]},
+        {"op": "playback", "name": "selected", "is": "Skill01"}
+      ],
+      "runtime": {"policy": "continuous"},
+      "run": [
+        {
+          "op": "start",
+          "id": "Avatar_Jade_00_Skill01_Phase01",
+          "run": [
+            {
+              "op": "start",
+              "id": "Avatar_Jade_00_Skill01_Phase02",
+              "run": [
+                {"op": "wait", "for": "body.0", "progress": 0.2900000002},
+                {"op": "attack.record", "target": "AbilityTargetEntity", "allow_position": true, "as": "$.AbilityList[1].OnStart[1].record"},
+                {"op": "wait", "for": "$.AbilityList[1].OnStart[1].record", "until": "accepted"},
+                {
+                  "op": "hit",
+                  "target": "AbilityTargetEntity",
+                  "animation": "Hit_H",
+                  "events": ["after_hit", "after_hit_all"],
+                  "direction": {},
+                  "effect": {
+                    "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Jade_00/Eff_Avatar_Jade_00_Skill01_Hit01.prefab",
+                    "height": 1.0,
+                    "minimum_interval": 0.0500000007,
+                    "maximum_count": 1
+                  },
+                  "allow_position": true,
+                  "as": "$.AbilityList[1].OnStart[1]"
+                },
+                {"op": "wait", "for": "$.AbilityList[1].OnStart[1]", "until": "accepted"},
+                {"op": "attack.record", "target": "AbilityTargetAdjoinEntity", "as": "$.AbilityList[1].OnStart[2].record"},
+                {"op": "wait", "for": "$.AbilityList[1].OnStart[2].record", "until": "accepted"},
+                {
+                  "op": "hit",
+                  "target": "AbilityTargetAdjoinEntity",
+                  "animation": "Hit_H",
+                  "events": ["after_hit", "after_hit_all"],
+                  "direction": {},
+                  "effect": {
+                    "path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Jade_00/Eff_Avatar_Jade_00_Skill01_Hit01.prefab",
+                    "height": 1.0,
+                    "minimum_interval": 0.0500000007,
+                    "maximum_count": 1
+                  },
+                  "as": "$.AbilityList[1].OnStart[2]"
+                },
+                {"op": "wait", "for": "$.AbilityList[1].OnStart[2]", "until": "accepted"},
+                {"op": "attack.finish", "as": "$.AbilityList[1].OnStart[3]"},
+                {"op": "wait", "for": "$.AbilityList[1].OnStart[3]", "until": "accepted"},
+                {"op": "playback.value", "variable": "performance", "operation": "set", "value": "finished", "as": "$.AbilityList[1].OnStart[4]"}
+              ],
+              "join": true
+            },
+            {"op": "facing.target", "target": "AbilityTargetEntity", "duration": 0.20000000298023224, "as": "$.AbilityList[0].OnStart[2]"},
+            {"op": "wait", "for": "$.AbilityList[0].OnStart[2]", "until": "accepted"},
+            {"op": "animation", "state": "Skill01", "end": 0.0, "track": {"logic": 3}, "as": "body.0"},
+            {"op": "wait", "for": "body.0", "progress": 0.0},
+            {"op": "wait", "for": "body.0", "progress": 0.263},
+            {"op": "wait", "for": "body.0", "progress": 0.3179999997},
+            {"op": "wait", "for": "body.0", "progress": 0.8200000007}
+          ],
+          "join": true
+        },
+        {"op": "join"},
+        {"op": "playback.value", "variable": "performance", "operation": "set", "value": "resetting", "as": "after"},
+        {"op": "call", "function": "@return.return"},
+        {"op": "wait", "for": "return", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "return-position"},
+        {"op": "wait", "for": "return-position"},
+        {"op": "playback.value", "variable": "performance", "operation": "set", "value": "ready", "as": "reset"}
+      ],
+      "on_interrupt": [
+        {"op": "call", "function": "@return.abort-return"},
+        {"op": "wait", "for": "abort-return", "until": "submitted"},
+        {"op": "movement", "clock": "instant", "segments": [{"destination": "origin", "preserve_height": false}], "as": "abort-position"},
+        {"op": "wait", "for": "abort-position"}
+      ],
+      "next": "compiled.0.Avatar_Jade_00_Config.skill-0.rest",
+      "presentation": {"label": "Avatar_Jade_00_Skill01_Phase01"},
+      "tags": ["entry-development"]
+    },
+    "compiled.0.Avatar_Jade_00_Config.skill-0.select": {
+      "requires": [
+        {"op": "playback", "name": "performance", "values": ["ready", "failed"]}
+      ],
+      "runtime": {"policy": "setting", "selected": "Skill01"},
+      "run": [
+        {"op": "ready_pose", "config": "Config/ConfigCharacter/Avatar/Avatar_Jade_00_Config.json", "skill": 0, "as": "ready"},
+        {"op": "wait", "for": "ready"}
+      ],
+      "presentation": {
+        "label": "Skill01_Ready",
+        "ready": {"config": "Config/ConfigCharacter/Avatar/Avatar_Jade_00_Config.json", "skill": 0}
+      },
+      "tags": ["selection-development"]
+    },
+    "compiled.0.Avatar_Jade_00_Config.skill-0.rest": {
+      "trigger": "internal",
+      "runtime": {"policy": "ready", "selected": ""},
+      "run": [
+        {"op": "call", "function": "@return.idle"},
+        {"op": "wait", "for": "idle", "until": "submitted"}
+      ],
+      "presentation": {"listed": false},
+      "tags": ["stable-return"]
+    },
+    "@receiver-clear/base.callback.5359.receiver-property.3": {
+      "requires": [
+        {"op": "state", "name": "common.elemental.frozen-hit"}
+      ],
+      "mode": "input",
+      "run": [
+        {"op": "state.exit", "name": "common.elemental.frozen-hit", "only_caster": true, "as": "clear"},
+        {"op": "wait", "for": "clear"}
+      ],
+      "presentation": {
+        "label": "Clear hit effect override",
+        "kind": "setting",
+        "contexts": ["common.elemental.frozen-hit"]
+      },
+      "tags": ["visual-receiver-clear"]
+    },
+    "@idle": {
+      "runtime": {"policy": "ready", "selected": ""},
+      "run": [
+        {"op": "call", "function": "@return.rest.pose"}
+      ],
+      "presentation": {"label": "Idle"},
+      "tags": ["script-idle"]
+    }
+  },
+  "functions": {
+    "@return.rest.pose": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "rest.pose.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "rest.pose"
+      }
+    ],
+    "@return.return.pose": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "return.pose.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "return.pose"
+      }
+    ],
+    "@return.return": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "return.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "return"
+      }
+    ],
+    "@return.abort-return": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "abort-return.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "abort-return"
+      }
+    ],
+    "@return.idle": [
+      {"op": "expression", "state": "Emo_Default", "current_idle": true, "as": "idle.expression"},
+      {
+        "op": "animation",
+        "state": "StandBy",
+        "current_idle": true,
+        "end": 0,
+        "restart": false,
+        "track": {"logic": 1, "extra": 6, "previous_end": 1},
+        "as": "idle"
+      }
+    ]
+  },
+  "states": {},
+  "resources": {
+    "effects": {
+      "base.skill.3.effect.0": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Jade_00/Eff_Avatar_Jade_00_PasiveSkill_Start.prefab", "target": "Caster"},
+      "base.skill.3.effect.6": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Jade_00/Eff_Avatar_Jade_00_PassivesSkill_Snake_01.prefab", "target": "Caster"},
+      "base.skill.3.effect.5": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Jade_00/Eff_Avatar_Jade_00_PasiveSkill_End02_Eye.prefab", "target": "Caster"},
+      "base.skill.3.effect.4": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Jade_00/Eff_Avatar_Jade_00_PasiveSkill_End02_02.prefab", "target": "Caster"},
+      "base.skill.3.effect.3": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Jade_00/Eff_Avatar_Jade_00_PasiveSkill_End02_02.prefab", "target": "Caster"},
+      "base.skill.3.effect.2": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Jade_00/Eff_Avatar_Jade_00_PasiveSkill_End02_Scene.prefab", "target": "Caster"},
+      "base.skill.3.effect.1": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Jade_00/Eff_Avatar_Jade_00_PasiveSkill_Start.prefab", "target": "Caster"},
+      "base.callback.2264.effect.3": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Jade_00/Eff_Avatar_Jade_00_Skill02_Buff_Loop.prefab", "target": "Recipient", "attach_to_target": true},
+      "base.callback.2282.effect.4": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Jade_00/Eff_Avatar_Jade_00_Skill02_Buff_Loop.prefab", "target": "Recipient", "attach_to_target": true},
+      "base.callback.2284.effect.3": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Jade_00/Eff_Avatar_Jade_00_Skill02_Buff_Loop.prefab", "target": "Recipient", "attach_to_target": true},
+      "base.callback.2288.effect.4": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Jade_00/Eff_Avatar_Jade_00_Skill02_Buff_Loop.prefab", "target": "Recipient", "attach_to_target": true},
+      "base.followup.0.effect.36": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Jade_00/Eff_Avatar_Jade_00_PasiveSkill_Start.prefab", "target": "Caster"},
+      "base.followup.0.effect.62": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Jade_00/Eff_Avatar_Jade_00_PasiveSkill_Start.prefab", "target": "Caster"},
+      "base.followup.0.effect.65": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Jade_00/Eff_Avatar_Jade_00_PasiveSkill_End02_Scene.prefab", "target": "Caster"},
+      "base.followup.0.effect.66": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Jade_00/Eff_Avatar_Jade_00_PasiveSkill_End02_02.prefab", "target": "Caster"},
+      "base.followup.0.effect.67": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Jade_00/Eff_Avatar_Jade_00_PasiveSkill_End02_02.prefab", "target": "Caster"},
+      "base.followup.0.effect.68": {"path": "Effects/Eff_Prefab/Eff_Avatar/Eff_Jade_00/Eff_Avatar_Jade_00_PasiveSkill_End02_Eye.prefab", "target": "Caster"}
+    }
+  }
+}
